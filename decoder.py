@@ -79,7 +79,7 @@ def cpr2position(cprlat0, cprlat1, cprlon0, cprlon1, t0, t1):
     cprlat_even = cprlat0 / 131072.0
     cprlat_odd  = cprlat1 / 131072.0
     cprlon_even = cprlon0 / 131072.0
-    cprlon_odd  = cprlon0 / 131072.0
+    cprlon_odd  = cprlon1 / 131072.0
 
     air_d_lat_even = 360.0 / 60 
     air_d_lat_odd = 360.0 / 59 
