@@ -25,7 +25,6 @@ MODES_CHECKSUM_TABLE = [
     0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000, 0x000000
 ]
 
-
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings. """
     length = len(hexstr) * 4
@@ -34,40 +33,33 @@ def hex2bin(hexstr):
         msgbin = '0' + msgbin
     return msgbin
 
-def bin2int(msgbin):
-    return int(msgbin, 2)
+def bin2int(binstr):
+    return int(binstr, 2)
 
+def hex2int(hexstr):
+    return int(hexstr, 16)
 
 def checksum(msg):
-    nbits = len(msg)
-
-    if nbits == 28: 
+    if len(msg) == 28: 
         offset = 0
-    elif nbits == 14:
+    elif len(msg) == 14:
         offset = 112-56
     else:
         # raise exception
         return False
 
-    print msg
     msgbin = hex2bin(msg)
-    checksumhex = msg[22:28]
-    checksum = int(checksumhex, 16)
+    checksum = int(msg[22:28], 16)
 
     crc = 0
-    for i in xrange(nbits):
+    for i in xrange(len(msgbin)):
         if int(msgbin[i]):
             crc ^= MODES_CHECKSUM_TABLE[i+offset]
-
-    print bin(crc)
-    print bin(checksum)
-    print
 
     if crc == checksum:
         return True
     else:
         return False
-
 
 def get_df(msg):
     """Decode Downlink Format vaule, bits 1 to 5."""
