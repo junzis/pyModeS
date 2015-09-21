@@ -238,14 +238,18 @@ def get_callsign(msg):
     return cs
 
 
-def cprN(lat, isodd):
-    nl = cprNL(lat) - isodd
+def cprN(lat, is_odd):
+    nl = cprNL(lat) - is_odd
     return nl if nl > 1 else 1
 
 
 def cprNL(lat):
-    nz = 60
-    a = 1 - math.cos(math.pi * 2 / nz)
-    b = math.cos(math.pi / 180.0 * abs(lat)) ** 2
-    nl = 2 * math.pi / (math.acos(1 - a/b))
-    return int(nl)
+    try:
+        nz = 60
+        a = 1 - math.cos(math.pi * 2 / nz)
+        b = math.cos(math.pi / 180.0 * abs(lat)) ** 2
+        nl = 2 * math.pi / (math.acos(1 - a/b))
+        return int(nl)
+    except:
+        # happens when latitude is +/-90 degree
+        return 1
