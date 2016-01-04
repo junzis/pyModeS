@@ -103,6 +103,42 @@ def get_tc(msg):
     return bin2int(msgbin[32:37])
 
 
+def get_nic(msg):
+    """
+    Calculate NIC, navigation integrity category,
+    return -1 if not applicable
+    """
+    msgbin = hex2bin(msg)
+    tc = get_tc(msg)
+    nic_sup_b = bin2int(msgbin[39])
+
+    if tc in [0, 18, 22]:
+        nic = 0
+    elif tc == 17:
+        nic = 1
+    elif tc == 16:
+        if nic_sup_b:
+            nic = 3
+        else:
+            nic = 2
+    elif tc == 15:
+        nic = 4
+    elif tc == 14:
+        nic = 5
+    elif tc == 13:
+        nic = 6
+    elif tc == 12:
+        nic = 7
+    elif tc == 11:
+        if nic_sup_b:
+            nic = 9
+        else:
+            nic = 8
+    else:
+        nic = -1
+    return nic
+
+
 def get_oe_flag(msg):
     """Check the odd/even flag. Bit 54, 0 for even, 1 for odd."""
     msgbin = hex2bin(msg)
