@@ -134,6 +134,10 @@ def get_nic(msg):
             nic = 9
         else:
             nic = 8
+    elif tc in [10, 21]:
+        nic = 10
+    elif tc in [9, 20]:
+        nic = 11
     else:
         nic = -1
     return nic
