@@ -214,45 +214,64 @@ def cpr2position(cprlat0, cprlat1, cprlon0, cprlon1, t0, t1):
     # compute ni, longitude index m, and longitude
     if (t0 > t1):
         ni = cprN(lat_even, 0)
-        m = math.floor(cprlon_even * (cprNL(lat_even)-1)
-                       - cprlon_odd * cprNL(lat_even) + 0.5)
+        m = math.floor(cprlon_even * (cprNL(lat_even)-1) -
+                       cprlon_odd * cprNL(lat_even) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_even)
         lat = lat_even
     else:
         ni = cprN(lat_odd, 1)
-        m = math.floor(cprlon_even * (cprNL(lat_odd)-1)
-                       - cprlon_odd * cprNL(lat_odd) + 0.5)
+        m = math.floor(cprlon_even * (cprNL(lat_odd)-1) -
+                       cprlon_odd * cprNL(lat_odd) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_odd)
         lat = lat_odd
 
     if lon > 180:
         lon = lon - 360
 
-    return [lat, lon]
+    return lat, lon
+
+def get_velocity(msg):
+    """Calculate the speed, heading, and vertical rate"""
+
+    msgbin = hex2bin(msg)
+
+    subtype = bin2int(msgbin[37:40])
+
+    if subtype in (1, 2):
+        v_ew_sign = bin2int(msgbin[45])
+        v_ew = bin2int(msgbin[46:56]) - 1       # east-west velocity
+
+        v_ns_sign = bin2int(msgbin[56])
+        v_ns = bin2int(msgbin[57:67]) - 1       # north-south velocity
+
+        v_we = -1*v_ew if v_ew_sign else v_ew
+        v_sn = -1*v_ns if v_ns_sign else v_ns
+
+        spd = math.sqrt(v_sn*v_sn + v_we*v_we)  # unit in kts
+
+        hdg = math.atan2(v_we, v_sn)
+        hdg = math.degrees(hdg)                 # convert to degrees
+        hdg = hdg if hdg >= 0 else hdg + 360    # no negative val
+
+        tag = 'GS'
+
+    else:
+        hdg = bin2int(msgbin[46:56]) / 1024.0 * 360.0
+        spd = bin2int(msgbin[57:67])
+
+        tag = 'AS'
+
+    vr_sign = bin2int(msgbin[68])
+    vr = bin2int(msgbin[68:77])             # vertical rate
+    rocd = -1*vr if vr_sign else vr         # rate of climb/descend
+
+    return int(spd), hdg, int(rocd), tag
 
 
 def get_speed_heading(msg):
     """Calculate the speed and heading."""
-    msgbin = hex2bin(msg)
-
-    v_ew_dir = bin2int(msgbin[45])
-    v_ew = bin2int(msgbin[46:56])       # east-west velocity
-
-    v_ns_dir = bin2int(msgbin[56])
-    v_ns = bin2int(msgbin[57:67])       # north-south velocity
-
-    v_ew = -1*v_ew if v_ew_dir else v_ew
-    v_ns = -1*v_ns if v_ns_dir else v_ns
-
-    # vr       = bin2int(msgbin[68:77])       # vertical rate
-    # vr_dir   = bin2int(msgbin[77])
-
-    speed = math.sqrt(v_ns*v_ns + v_ew*v_ew)    # unit in kts
-
-    heading = math.atan2(v_ew, v_ns)
-    heading = heading * 360.0 / (2 * math.pi)   # convert to degrees
-    heading = heading if heading >= 0 else heading + 360     # no negative val
-    return [speed, heading]
+    spd, hdg, rocd, tag = get_velocity(msg)
+    return spd, hdg
 
 
 def get_callsign(msg):
