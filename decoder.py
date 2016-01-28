@@ -42,11 +42,10 @@ MODES_CHECKSUM_TABLE = [
 
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings. """
-    length = len(hexstr) * 4
-    msgbin = bin(int(hexstr, 16))[2:]
-    while ((len(msgbin)) < length):
-        msgbin = '0' + msgbin
-    return msgbin
+    scale = 16
+    num_of_bits = len(hexstr) * math.log(scale, 2)
+    binstr = bin(int(hexstr, scale))[2:].zfill(int(num_of_bits))
+    return binstr
 
 
 def bin2int(binstr):
@@ -229,6 +228,7 @@ def cpr2position(cprlat0, cprlat1, cprlon0, cprlon1, t0, t1):
         lon = lon - 360
 
     return lat, lon
+
 
 def get_velocity(msg):
     """Calculate the speed, heading, and vertical rate"""
