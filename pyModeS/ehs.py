@@ -18,29 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import util
-
-
-def crc(msg):
-    """Calculate the cyclic redundancy checksum of an message
-    Args:
-        msg (String): 28 or 14 bytes hexadecimal message string
-    Returns:
-        int: checksum in integer
-    """
-    if len(msg) == 28:
-        offset = 0
-    elif len(msg) == 14:
-        offset = 112-56
-    else:
-        raise RuntimeError("wrong message length, need to be 28 or 14 bytes")
-
-    msgbin = util.hex2bin(msg)
-
-    crc = 0
-    for i in xrange(len(msgbin)):
-        if int(msgbin[i]):
-            crc ^= util.MODES_CHECKSUM_TABLE[i+offset]
-    return crc
+from util import crc
 
 
 def df(msg):
@@ -71,7 +49,7 @@ def icao(msg):
         # raise RuntimeError("Message DF must be in (4, 5, 20, 21)")
         return None
 
-    c0 = crc(msg)
+    c0 = util.bin2int(crc(msg, encode=True))
     c1 = util.hex2int(msg[-6:])
     icao = '%06X' % (c0 ^ c1)
     return icao

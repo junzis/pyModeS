@@ -19,36 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
 import util
-
-
-def checksum(msg):
-    """CRC check the ADS-B message
-    Args:
-        msg (string): 28 bytes hexadecimal message string
-    Returns:
-        bool: Checksum passed or not
-    """
-    if len(msg) == 28:
-        offset = 0
-    elif len(msg) == 14:
-        offset = 112-56
-    else:
-        # raise exception
-        return False
-
-    msgbin = util.hex2bin(msg)
-    checksum = int(msg[22:28], 16)
-
-    crc = 0
-    for i in xrange(len(msgbin)):
-        # print msgbin[i]
-        if int(msgbin[i]):
-            crc ^= util.MODES_CHECKSUM_TABLE[i+offset]
-
-    if crc == checksum:
-        return True
-    else:
-        return False
+from util import crc
 
 
 def df(msg):

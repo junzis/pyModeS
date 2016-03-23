@@ -7,6 +7,22 @@ sys.path.insert(0, parentdir)
 import pyModeS as pms
 from pyModeS import adsb
 from pyModeS import ehs
+from pyModeS import util
+
+
+# === TEST common functions ===
+def test_hex2bin():
+    assert util.hex2bin('6E406B') == "011011100100000001101011"
+
+
+def test_crc():
+    # crc decoder
+    checksum = util.crc("8D406B902015A678D4D220AA4BDA")
+    assert checksum == "000000000000000000000000"
+
+    # crc encoder
+    parity = util.crc("8D406B902015A678D4D220AA4BDA", encode=True)
+    assert util.hex2bin("AA4BDA") == parity
 
 
 # === TEST ADS-B package ===
