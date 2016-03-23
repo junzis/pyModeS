@@ -41,6 +41,19 @@ Usage
 
     import pyModeS as pms
 
+
+Common function for Mode-S message:
+
+.. code:: python
+
+    pms.df(msg)                 # Downlink Format
+    pms.crc(msg, encode=False)  # Perform CRC or generate parity bit 
+
+    pms.hex2bin(str)    # Convert hexadecimal string to binary string
+    pms.bin2int(str)    # Convert binary string to integer
+    pms.hex2int(str)    # Convert hexadecimal string to integer
+
+
 Core functions for ADS-B decoding:
 
 .. code:: python
