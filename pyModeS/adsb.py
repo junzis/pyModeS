@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import math
-import util
-from util import crc
+from . import util
+from .util import crc
 
 
 def df(msg):
