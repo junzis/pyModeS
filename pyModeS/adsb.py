@@ -204,13 +204,13 @@ def airborne_position(msg0, msg1, t0, t1):
 
     # compute ni, longitude index m, and longitude
     if (t0 > t1):
-        ni = _cprN(lat_even, 0)
+        ni = max(_cprNL(lat_even), 1)
         m = util.floor(cprlon_even * (_cprNL(lat_even)-1) -
                        cprlon_odd * _cprNL(lat_even) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_even)
         lat = lat_even
     else:
-        ni = _cprN(lat_odd, 1)
+        ni = max(_cprNL(lat_odd) - 1, 1)
         m = util.floor(cprlon_even * (_cprNL(lat_odd)-1) -
                        cprlon_odd * _cprNL(lat_odd) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_odd)
@@ -225,11 +225,6 @@ def airborne_position(msg0, msg1, t0, t1):
 def surface_position(msg0, msg1, t0, t1):
     # TODO: implement surface positon decoding
     raise RuntimeError('suface position decoding to be implemented soon...')
-
-
-def _cprN(lat, is_odd):
-    nl = _cprNL(lat) - is_odd
-    return nl if nl > 1 else 1
 
 
 def _cprNL(lat):
