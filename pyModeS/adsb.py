@@ -153,7 +153,18 @@ def cprlon(msg):
 
 
 def position(msg0, msg1, t0, t1):
-    """Decode position from the combination of even and odd position message
+    if (5 <= typecode(msg0) <= 8 and 5 <= typecode(msg1) <= 8):
+        return surface_position(msg0, msg1, t0, t1)
+
+    elif (9 <= typecode(msg0) <= 18 and 9 <= typecode(msg1) <= 18):
+        return airborne_position(msg0, msg1, t0, t1)
+
+    else:
+        raise RuntimeError("incorrect or inconsistant message types")
+
+
+def airborne_position(msg0, msg1, t0, t1):
+    """Decode airborn position from a pair of even and odd position message
         131072 is 2^17, since CPR lat and lon are 17 bits each.
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
@@ -163,11 +174,6 @@ def position(msg0, msg1, t0, t1):
     Returns:
         (float, float): (latitude, longitude) of the aircraft
     """
-    if typecode(msg0) < 5 or typecode(msg0) > 18:
-        raise RuntimeError("%s: Not a position message" % msg0)
-
-    if typecode(msg1) < 5 or typecode(msg1) > 18:
-        raise RuntimeError("%s: Not a position message" % msg1)
 
     msgbin0 = util.hex2bin(msg0)
     msgbin1 = util.hex2bin(msg1)
@@ -181,7 +187,7 @@ def position(msg0, msg1, t0, t1):
     air_d_lat_odd = 360.0 / 59
 
     # compute latitude index 'j'
-    j = int(math.floor(59 * cprlat_even - 60 * cprlat_odd + 0.5))
+    j = util.floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
 
     lat_even = float(air_d_lat_even * (j % 60 + cprlat_even))
     lat_odd = float(air_d_lat_odd * (j % 59 + cprlat_odd))
@@ -199,13 +205,13 @@ def position(msg0, msg1, t0, t1):
     # compute ni, longitude index m, and longitude
     if (t0 > t1):
         ni = _cprN(lat_even, 0)
-        m = math.floor(cprlon_even * (_cprNL(lat_even)-1) -
+        m = util.floor(cprlon_even * (_cprNL(lat_even)-1) -
                        cprlon_odd * _cprNL(lat_even) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_even)
         lat = lat_even
     else:
         ni = _cprN(lat_odd, 1)
-        m = math.floor(cprlon_even * (_cprNL(lat_odd)-1) -
+        m = util.floor(cprlon_even * (_cprNL(lat_odd)-1) -
                        cprlon_odd * _cprNL(lat_odd) + 0.5)
         lon = (360.0 / ni) * (m % ni + cprlon_odd)
         lat = lat_odd
@@ -216,6 +222,11 @@ def position(msg0, msg1, t0, t1):
     return round(lat, 5), round(lon, 5)
 
 
+def surface_position(msg0, msg1, t0, t1):
+    # TODO: implement surface positon decoding
+    raise RuntimeError('suface position decoding to be implemented soon...')
+
+
 def _cprN(lat, is_odd):
     nl = _cprNL(lat) - is_odd
     return nl if nl > 1 else 1
@@ -223,11 +234,12 @@ def _cprN(lat, is_odd):
 
 def _cprNL(lat):
     try:
-        nz = 60
-        a = 1 - math.cos(math.pi * 2 / nz)
+        nz = 15
+        a = 1 - math.cos(math.pi / (2 * nz))
         b = math.cos(math.pi / 180.0 * abs(lat)) ** 2
         nl = 2 * math.pi / (math.acos(1 - a/b))
-        return int(nl)
+        NL = util.floor(nl)
+        return NL
     except:
         # happens when latitude is +/-90 degree
         return 1

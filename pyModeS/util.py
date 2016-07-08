@@ -71,3 +71,11 @@ def crc(msg, encode=False):
     # last 24 bits
     reminder = ''.join(msgbin[-24:])
     return reminder
+
+
+def floor(x):
+    """ Mode-S floor function
+    Defined as the greatest integer value k, such that k <= x
+    eg.: floor(3.6) = 3, while floor(-3.6) = -4
+    """
+    return int(math.floor(x))
