@@ -228,16 +228,21 @@ def surface_position(msg0, msg1, t0, t1):
 
 
 def _cprNL(lat):
-    try:
-        nz = 15
-        a = 1 - math.cos(math.pi / (2 * nz))
-        b = math.cos(math.pi / 180.0 * abs(lat)) ** 2
-        nl = 2 * math.pi / (math.acos(1 - a/b))
-        NL = util.floor(nl)
-        return NL
-    except:
-        # happens when latitude is +/-90 degree
+    if lat == 0:
+        return 59
+
+    if lat == 87 or lat == -87:
+        return 2
+
+    if lat > 87 or lat < -87:
         return 1
+
+    nz = 15
+    a = 1 - math.cos(math.pi / (2 * nz))
+    b = math.cos(math.pi / 180.0 * abs(lat)) ** 2
+    nl = 2 * math.pi / (math.acos(1 - a/b))
+    NL = util.floor(nl)
+    return NL
 
 
 def altitude(msg):
