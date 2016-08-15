@@ -356,7 +356,7 @@ def velocity(msg):
         tag = 'AS'
 
     vr_sign = util.bin2int(msgbin[68])
-    vr = util.bin2int(msgbin[68:77])             # vertical rate
+    vr = util.bin2int(msgbin[69:77])             # vertical rate
     rocd = -1*vr if vr_sign else vr         # rate of climb/descend
 
     return int(spd), round(hdg, 1), int(rocd), tag
