@@ -4,8 +4,12 @@
    contain the root `toctree` directive.
 
 
-pyModeS API documents
+pyModeS APIs
 =====================
+
+This document contains all the functions within pyModeS package. 
+
+Source code and user guide: https://github.com/junzis/pyModeS
 
 
 pyModeS.adsb module

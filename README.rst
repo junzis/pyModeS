@@ -16,7 +16,7 @@ develop to decode the following messages:
       heading, and roll angle, etc.
 
 A detailed manuel on Mode-S decoding is published by the author, at:  
-http://adsb-decode-guide.readthedocs.org
+http://adsb-decode-guide.readthedocs.io
 
 
 Source code
@@ -24,6 +24,8 @@ Source code
 Checkourt and contribute to this open source project at:   
 https://github.com/junzis/pyModeS
 
+API documentation at:   
+http://pymodes.readthedocs.io
 
 Install
 -------
