@@ -1,21 +1,23 @@
+# Copyright (C) 2015 Junzi Sun (TU Delft)
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
 """
 Common functions for ADS-B and Mode-S EHS decoder
-
-Copyright (C) 2015 Junzi Sun (TU Delft)
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 
 import math
 
@@ -32,10 +34,12 @@ def hex2bin(hexstr):
 
 
 def bin2int(binstr):
+    """Convert a binary string to integer. """
     return int(binstr, 2)
 
 
 def hex2int(hexstr):
+    """Convert a hexdecimal string to integer. """
     return int(hexstr, 16)
 
 
@@ -75,7 +79,9 @@ def crc(msg, encode=False):
 
 def floor(x):
     """ Mode-S floor function
-    Defined as the greatest integer value k, such that k <= x
-    eg.: floor(3.6) = 3, while floor(-3.6) = -4
+
+        Defined as the greatest integer value k, such that k <= x
+
+        eg.: floor(3.6) = 3, while floor(-3.6) = -4
     """
     return int(math.floor(x))

@@ -1,20 +1,20 @@
+# Copyright (C) 2015 Junzi Sun (TU Delft)
+
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """
 A python package for decoding ABS-D messages.
-
-Copyright (C) 2015 Junzi Sun (TU Delft)
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import math
@@ -169,6 +169,18 @@ def cprlon(msg):
 
 
 def position(msg0, msg1, t0, t1):
+    """Decode position from a pair of even and odd position message 
+    (works with both airborne and surface position messages)
+
+    Args:
+        msg0 (string): even message (28 bytes hexadecimal string)
+        msg1 (string): odd message (28 bytes hexadecimal string)
+        t0 (int): timestamps for the even message
+        t1 (int): timestamps for the odd message
+
+    Returns:
+        (float, float): (latitude, longitude) of the aircraft
+    """
     if (5 <= typecode(msg0) <= 8 and 5 <= typecode(msg1) <= 8):
         return surface_position(msg0, msg1, t0, t1)
 
@@ -181,7 +193,6 @@ def position(msg0, msg1, t0, t1):
 
 def airborne_position(msg0, msg1, t0, t1):
     """Decode airborn position from a pair of even and odd position message
-    131072 is 2^17, since CPR lat and lon are 17 bits each.
 
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
@@ -196,6 +207,7 @@ def airborne_position(msg0, msg1, t0, t1):
     msgbin0 = util.hex2bin(msg0)
     msgbin1 = util.hex2bin(msg1)
 
+    # 131072 is 2^17, since CPR lat and lon are 17 bits each.
     cprlat_even = util.bin2int(msgbin0[54:71]) / 131072.0
     cprlon_even = util.bin2int(msgbin0[71:88]) / 131072.0
     cprlat_odd = util.bin2int(msgbin1[54:71]) / 131072.0
@@ -241,6 +253,20 @@ def airborne_position(msg0, msg1, t0, t1):
 
 
 def position_with_ref(msg, lat_ref, lon_ref):
+    """Decode position with only one message,
+    knowing reference nearby location, such as previously
+    calculated location, ground station, or airport location, etc.
+    (works with both airborne and surface position messages)
+
+    Args:
+        msg0 (string): even message (28 bytes hexadecimal string)
+        msg1 (string): odd message (28 bytes hexadecimal string)
+        t0 (int): timestamps for the even message
+        t1 (int): timestamps for the odd message
+
+    Returns:
+        (float, float): (latitude, longitude) of the aircraft
+    """
     if 5 <= typecode(msg) <= 8:
         return airborne_position_with_ref(msg, lat_ref, lon_ref)
 
@@ -252,8 +278,9 @@ def position_with_ref(msg, lat_ref, lon_ref):
 
 
 def airborne_position_with_ref(msg, lat_ref, lon_ref):
-    """Decode airborn position with one message,
-    knowing previous reference location
+    """Decode airborne position with only one message,
+    knowing reference nearby location, such as previously calculated location,
+    ground station, or airport location, etc.
 
     Args:
         msg (string): even message (28 bytes hexadecimal string)
@@ -297,7 +324,7 @@ def surface_position(msg0, msg1, t0, t1):
 
 
 def surface_position_with_ref(msg, lat_ref, lon_ref):
-    """Decode surface position with one message,
+    """Decode surface position with only one message,
     knowing reference nearby location, such as previously calculated location,
     ground station, or airport location, etc.
 
@@ -338,6 +365,8 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
 
 
 def _cprNL(lat):
+    """NL() function in CPR decoding
+    """
     if lat == 0:
         return 59
 
