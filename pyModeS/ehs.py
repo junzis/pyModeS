@@ -23,8 +23,10 @@ from .util import crc
 
 def df(msg):
     """Get the downlink format (DF) number
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         int: DF number
     """
@@ -38,9 +40,11 @@ def data(msg):
 
 def icao(msg):
     """Calculate the ICAO address from an Mode-S message
-        with DF4, DF5, DF20, DF21
+    with DF4, DF5, DF20, DF21
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         String: ICAO address in 6 bytes hexadecimal string
     """
@@ -57,8 +61,9 @@ def icao(msg):
 
 def checkbits(data, sb, msb, lsb):
     """Check if the status bit and field bits are consistency. This Function
-        is used for checking BDS code versions.
+    is used for checking BDS code versions.
     """
+
     # status bit, most significant bit, least significant bit
     status = int(data[sb-1])
     value = util.bin2int(data[msb-1:lsb])
@@ -76,11 +81,14 @@ def checkbits(data, sb, msb, lsb):
 
 def isBDS20(msg):
     """Check if a message is likely to be BDS code 2,0
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         bool: True or False
     """
+
     # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
 
@@ -99,8 +107,10 @@ def isBDS20(msg):
 
 def callsign(msg):
     """Aircraft callsign
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS40) string
+
     Returns:
         string: callsign, max. 8 chars
     """
@@ -127,11 +137,14 @@ def callsign(msg):
 
 def isBDS40(msg):
     """Check if a message is likely to be BDS code 4,0
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         bool: True or False
     """
+
     # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
 
@@ -152,8 +165,10 @@ def isBDS40(msg):
 
 def alt_mcp(msg):
     """Selected altitude, MCP/FCU
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS40) string
+
     Returns:
         int: altitude in feet
     """
@@ -164,8 +179,10 @@ def alt_mcp(msg):
 
 def alt_fms(msg):
     """Selected altitude, FMS
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS40) string
+
     Returns:
         int: altitude in feet
     """
@@ -176,8 +193,10 @@ def alt_fms(msg):
 
 def pbaro(msg):
     """Barometric pressure setting
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS40) string
+
     Returns:
         float: pressure in millibar
     """
@@ -192,11 +211,14 @@ def pbaro(msg):
 
 def isBDS50(msg):
     """Check if a message is likely to be BDS code 5,0
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         bool: True or False
     """
+
     # status bit 1, 12, 24, 35, 46
     d = util.hex2bin(data(msg))
 
@@ -226,8 +248,10 @@ def isBDS50(msg):
 
 def roll(msg):
     """Aircraft roll angle
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
+
     Returns:
         float: angle in degrees,
                negative->left wing down, positive->right wing down
@@ -241,8 +265,10 @@ def roll(msg):
 
 def track(msg):
     """True track angle
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
+
     Returns:
         float: angle in degrees to true north (from 0 to 360)
     """
@@ -255,8 +281,10 @@ def track(msg):
 
 def gs(msg):
     """Aircraft ground speed
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
+
     Returns:
         int: ground speed in knots
     """
@@ -267,8 +295,10 @@ def gs(msg):
 
 def rtrack(msg):
     """Track angle rate
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
+
     Returns:
         float: angle rate in degrees/second
     """
@@ -281,8 +311,10 @@ def rtrack(msg):
 
 def tas(msg):
     """Aircraft true airspeed
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
+
     Returns:
         int: true airspeed in knots
     """
@@ -297,8 +329,10 @@ def tas(msg):
 
 def isBDS60(msg):
     """Check if a message is likely to be BDS code 6,0
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         bool: True or False
     """
@@ -328,8 +362,10 @@ def isBDS60(msg):
 
 def heading(msg):
     """Megnetic heading of aircraft
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
+
     Returns:
         float: heading in degrees to megnetic north (from 0 to 360)
     """
@@ -342,8 +378,10 @@ def heading(msg):
 
 def ias(msg):
     """Indicated airspeed
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
+
     Returns:
         int: indicated airspeed in knots
     """
@@ -354,8 +392,10 @@ def ias(msg):
 
 def mach(msg):
     """Aircraft MACH number
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
+
     Returns:
         float: MACH number
     """
@@ -366,8 +406,10 @@ def mach(msg):
 
 def baro_vr(msg):
     """Vertical rate from barometric measurement
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
+
     Returns:
         int: vertical rate in feet/minutes
     """
@@ -380,8 +422,10 @@ def baro_vr(msg):
 
 def ins_vr(msg):
     """Vertical rate messured by onbard equiments (IRS, AHRS)
+
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
+
     Returns:
         int: vertical rate in feet/minutes
     """
@@ -394,8 +438,10 @@ def ins_vr(msg):
 
 def BDS(msg):
     """Estimate the most likely BDS code of an message
+
     Args:
         msg (String): 28 bytes hexadecimal message string
+
     Returns:
         String|None: Version: "BDS40", "BDS50", or "BDS60". Or None, if nothing
             matched

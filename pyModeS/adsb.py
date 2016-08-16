@@ -24,8 +24,10 @@ from .util import crc
 
 def df(msg):
     """Get the downlink format (DF) number
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: DF number
     """
@@ -34,8 +36,10 @@ def df(msg):
 
 def icao(msg):
     """Get the ICAO 24 bits address, bytes 3 to 8.
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         String: ICAO address in 6 bytes hexadecimal string
     """
@@ -49,8 +53,10 @@ def data(msg):
 
 def typecode(msg):
     """Type code of ADS-B message
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: type code number
     """
@@ -63,8 +69,10 @@ def typecode(msg):
 # ---------------------------------------------
 def category(msg):
     """Aircraft category number
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: category number
     """
@@ -77,8 +85,10 @@ def category(msg):
 
 def callsign(msg):
     """Aircraft callsign
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         string: callsign
     """
@@ -112,8 +122,10 @@ def callsign(msg):
 
 def oe_flag(msg):
     """Check the odd/even flag. Bit 54, 0 for even, 1 for odd.
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: 0 or 1, for even or odd frame
     """
@@ -126,8 +138,10 @@ def oe_flag(msg):
 
 def cprlat(msg):
     """CPR encoded latitude
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: encoded latitude
     """
@@ -140,8 +154,10 @@ def cprlat(msg):
 
 def cprlon(msg):
     """CPR encoded longitude
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: encoded longitude
     """
@@ -165,12 +181,14 @@ def position(msg0, msg1, t0, t1):
 
 def airborne_position(msg0, msg1, t0, t1):
     """Decode airborn position from a pair of even and odd position message
-        131072 is 2^17, since CPR lat and lon are 17 bits each.
+    131072 is 2^17, since CPR lat and lon are 17 bits each.
+
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
         msg1 (string): odd message (28 bytes hexadecimal string)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
+
     Returns:
         (float, float): (latitude, longitude) of the aircraft
     """
@@ -236,10 +254,12 @@ def position_with_ref(msg, lat_ref, lon_ref):
 def airborne_position_with_ref(msg, lat_ref, lon_ref):
     """Decode airborn position with one message,
     knowing previous reference location
+
     Args:
         msg (string): even message (28 bytes hexadecimal string)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
+
     Returns:
         (float, float): (latitude, longitude) of the aircraft
     """
@@ -280,10 +300,12 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     """Decode surface position with one message,
     knowing reference nearby location, such as previously calculated location,
     ground station, or airport location, etc.
+
     Args:
         msg (string): even message (28 bytes hexadecimal string)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
+
     Returns:
         (float, float): (latitude, longitude) of the aircraft
     """
@@ -335,8 +357,10 @@ def _cprNL(lat):
 
 def altitude(msg):
     """Decode aircraft altitude
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: altitude in feet
     """
@@ -355,8 +379,10 @@ def altitude(msg):
 
 def nic(msg):
     """Calculate NIC, navigation integrity category
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         int: NIC number (from 0 to 11), -1 if not applicable
     """
@@ -404,8 +430,10 @@ def nic(msg):
 
 def velocity(msg):
     """Calculate the speed, heading, and vertical rate
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         (int, float, int, string): speed (kt), heading (degree),
             rate of climb/descend (ft/min), and speed type
@@ -452,8 +480,10 @@ def velocity(msg):
 
 def speed_heading(msg):
     """Get speed and heading only from the velocity message
+
     Args:
         msg (string): 28 bytes hexadecimal message string
+
     Returns:
         (int, float): speed (kt), heading (degree)
     """
