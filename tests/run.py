@@ -133,7 +133,7 @@ def test_ehs_BDS60_functions():
 # === Decode sample data file ===
 
 def adsb_decode_all(n=None):
-    print "===== Decode all ADS-B sample data====="
+    print("===== Decode all ADS-B sample data=====")
     import csv
     f = open('adsb.csv', 'rt')
 
@@ -149,9 +149,9 @@ def adsb_decode_all(n=None):
         icao = adsb.icao(m)
         tc = adsb.typecode(m)
         if 1 <= tc <= 4:
-            print ts, m, icao, tc, adsb.category(m), adsb.callsign(m)
+            print(ts, m, icao, tc, adsb.category(m), adsb.callsign(m))
         if tc == 19:
-            print ts, m, icao, tc, adsb.velocity(m)
+            print(ts, m, icao, tc, adsb.velocity(m))
         if 5 <= tc <= 18:
             if adsb.oe_flag(m):
                 msg1 = m
@@ -163,11 +163,11 @@ def adsb_decode_all(n=None):
             if msg0 and msg1:
                 pos = adsb.position(msg0, msg1, t0, t1)
                 alt = adsb.altitude(m)
-                print ts, m, icao, tc, pos, alt
+                print(ts, m, icao, tc, pos, alt)
 
 
 def ehs_decode_all(n=None):
-    print "===== Decode all Mode-S EHS sample data====="
+    print("===== Decode all Mode-S EHS sample data=====")
     import csv
     f = open('ehs.csv', 'rt')
     for i, r in enumerate(csv.reader(f)):
@@ -181,26 +181,22 @@ def ehs_decode_all(n=None):
 
         if vBDS:
             if vBDS == "BDS20":
-                print ts, m, icao, vBDS, ehs.callsign(m)
+                print(ts, m, icao, vBDS, ehs.callsign(m))
 
             if vBDS == "BDS40":
-                print ts, m, icao, vBDS, ehs.alt_mcp(m), \
-                      ehs.alt_fms(m), ehs.pbaro(m)
+                print(ts, m, icao, vBDS, ehs.alt_mcp(m), \
+                      ehs.alt_fms(m), ehs.pbaro(m))
 
             if vBDS == "BDS50":
-                print ts, m, icao, vBDS, ehs.roll(m), ehs.track(m), \
-                      ehs.gs(m), ehs.rtrack(m), ehs.tas(m)
+                print(ts, m, icao, vBDS, ehs.roll(m), ehs.track(m), \
+                      ehs.gs(m), ehs.rtrack(m), ehs.tas(m))
 
             if vBDS == "BDS60":
-                print ts, m, icao, vBDS, ehs.heading(m), ehs.ias(m), \
-                      ehs.mach(m), ehs.baro_vr(m), ehs.ins_vr(m)
+                print(ts, m, icao, vBDS, ehs.heading(m), ehs.ias(m), \
+                      ehs.mach(m), ehs.baro_vr(m), ehs.ins_vr(m))
         else:
-            print ts, m, icao, vBDS
+            print(ts, m, icao, vBDS)
 
 if __name__ == '__main__':
-    # adsb_decode_all(100)
-    # ehs_decode_all(100)
-
-
-    adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357",
-                                          49.0, 6.0)
+    adsb_decode_all(100)
+    ehs_decode_all(100)
