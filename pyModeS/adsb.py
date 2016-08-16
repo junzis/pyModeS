@@ -222,9 +222,97 @@ def airborne_position(msg0, msg1, t0, t1):
     return round(lat, 5), round(lon, 5)
 
 
+def position_with_ref(msg, lat_ref, lon_ref):
+    if 5 <= typecode(msg) <= 8:
+        return airborne_position_with_ref(msg, lat_ref, lon_ref)
+
+    elif 9 <= typecode(msg) <= 18:
+        return surface_position_with_ref(msg, lat_ref, lon_ref)
+
+    else:
+        raise RuntimeError("incorrect or inconsistant message types")
+
+
+def airborne_position_with_ref(msg, lat_ref, lon_ref):
+    """Decode airborn position with one message,
+    knowing previous reference location
+    Args:
+        msg (string): even message (28 bytes hexadecimal string)
+        lat_ref: previous known latitude
+        lon_ref: previous known longitude
+    Returns:
+        (float, float): (latitude, longitude) of the aircraft
+    """
+
+    i = oe_flag(msg)
+    d_lat = 360.0/59 if i else 360.0/60
+
+    msgbin = util.hex2bin(msg)
+    cprlat = util.bin2int(msgbin[54:71]) / 131072.0
+    cprlon = util.bin2int(msgbin[71:88]) / 131072.0
+
+    j = util.floor(lat_ref / d_lat) \
+        + util.floor(0.5 + ((lat_ref % d_lat) / d_lat) - cprlat)
+
+    lat = d_lat * (j + cprlat)
+
+    ni = _cprNL(lat) - i
+
+    if ni > 0:
+        d_lon = 360.0 / ni
+    else:
+        d_lon = 360.0
+
+    m = util.floor(lon_ref / d_lon) \
+        + util.floor(0.5 + ((lon_ref % d_lon) / d_lon) - cprlon)
+
+    lon = d_lon * (m + cprlon)
+
+    return round(lat, 5), round(lon, 5)
+
+
 def surface_position(msg0, msg1, t0, t1):
-    # TODO: implement surface positon decoding
+    # TODO: implement surface positon
     raise RuntimeError('suface position decoding to be implemented soon...')
+
+
+def surface_position_with_ref(msg, lat_ref, lon_ref):
+    """Decode surface position with one message,
+    knowing reference nearby location, such as previously calculated location,
+    ground station, or airport location, etc.
+    Args:
+        msg (string): even message (28 bytes hexadecimal string)
+        lat_ref: previous known latitude
+        lon_ref: previous known longitude
+    Returns:
+        (float, float): (latitude, longitude) of the aircraft
+    """
+
+    i = oe_flag(msg)
+    d_lat = 90.0/59 if i else 90.0/60
+
+    msgbin = util.hex2bin(msg)
+    cprlat = util.bin2int(msgbin[54:71]) / 131072.0
+    cprlon = util.bin2int(msgbin[71:88]) / 131072.0
+
+    j = util.floor(lat_ref / d_lat) \
+        + util.floor(0.5 + ((lat_ref % d_lat) / d_lat) - cprlat)
+
+    lat = d_lat * (j + cprlat)
+
+    ni = _cprNL(lat) - i
+
+    if ni > 0:
+        d_lon = 360.0 / ni
+    else:
+        d_lon = 360.0
+
+    m = util.floor(lon_ref / d_lon) \
+        + util.floor(0.5 + ((lon_ref % d_lon) / d_lon) - cprlon)
+
+    lon = d_lon * (m + cprlon)
+
+    return round(lat, 5), round(lon, 5)
 
 
 def _cprNL(lat):
@@ -356,8 +444,8 @@ def velocity(msg):
         tag = 'AS'
 
     vr_sign = util.bin2int(msgbin[68])
-    vr = util.bin2int(msgbin[68:77])             # vertical rate
-    rocd = -1*vr if vr_sign else vr         # rate of climb/descend
+    vr = util.bin2int(msgbin[69:78])            # vertical rate
+    rocd = -1*vr if vr_sign else vr             # rate of climb/descend
 
     return int(spd), round(hdg, 1), int(rocd), tag
 

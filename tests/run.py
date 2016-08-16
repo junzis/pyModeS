@@ -39,11 +39,26 @@ def test_adsb_callsign():
     assert adsb.callsign("8D406B902015A678D4D220AA4BDA") == "EZY85MH_"
 
 
-def test_adsb_position():
-    pos = adsb.position("8D40058B58C901375147EFD09357",
-                        "8D40058B58C904A87F402D3B8C59",
-                        1446332400, 1446332405)
+def test_adsb_airborne_position():
+    pos = adsb.airborne_position("8D40058B58C901375147EFD09357",
+                                 "8D40058B58C904A87F402D3B8C59",
+                                 1446332400, 1446332405)
     assert pos == (49.81755, 6.08442)
+
+
+def test_adsb_airborne_position_with_ref():
+    pos = adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357",
+                                          49.0, 6.0)
+    assert pos == (49.82410, 6.06785)
+    pos = adsb.airborne_position_with_ref("8D40058B58C904A87F402D3B8C59",
+                                          49.0, 6.0)
+    assert pos == (49.81755, 6.08442)
+
+
+def test_adsb_surface_position_with_ref():
+    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B22B4A8",
+                                         -43.5, 172.5)
+    assert pos == (-43.48564, 175.87195)
 
 
 def test_adsb_alt():
@@ -53,8 +68,8 @@ def test_adsb_alt():
 def test_adsb_velocity():
     vgs = adsb.velocity("8D485020994409940838175B284F")
     vas = adsb.velocity("8DA05F219B06B6AF189400CBC33F")
-    assert vgs == (159, 182.9, -263, 'GS')
-    assert vas == (376, 244.0, -274, 'AS')
+    assert vgs == (159, 182.9, -14, 'GS')
+    assert vas == (376, 244.0, -37, 'AS')
 
 
 def test_nic():
@@ -183,5 +198,9 @@ def ehs_decode_all(n=None):
             print ts, m, icao, vBDS
 
 if __name__ == '__main__':
-    adsb_decode_all(100)
-    ehs_decode_all(100)
+    # adsb_decode_all(100)
+    # ehs_decode_all(100)
+
+
+    adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357",
+                                          49.0, 6.0)

@@ -60,7 +60,7 @@ Core functions for ADS-B decoding:
 
     pms.adsb.icao(msg)
     pms.adsb.callsign(msg)
-    pms.adsb.position(msg_odd, msg_even, t_odd, t_even)
+    pms.adsb.position(msg_even, msg_odd, t_even, t_odd)
     pms.adsb.altitude(msg)
     pms.adsb.velocity(msg)
     pms.adsb.speed_heading(msg)
