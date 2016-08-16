@@ -61,9 +61,14 @@ Core functions for ADS-B decoding:
     pms.adsb.icao(msg)
     pms.adsb.callsign(msg)
     pms.adsb.position(msg_even, msg_odd, t_even, t_odd)
+    pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
     pms.adsb.altitude(msg)
     pms.adsb.velocity(msg)
     pms.adsb.speed_heading(msg)
+
+**Hint: When you have a fix position of the aircraft or you know the
+location of your receiver, it is convinent to use `position_with_ref()` method
+to decode with only one position message (either odd or even)**
 
 Core functions for EHS decoding:
 
