@@ -443,8 +443,7 @@ def BDS(msg):
         msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        String|None: Version: "BDS40", "BDS50", or "BDS60". Or None, if nothing
-            matched
+        String or None: Version: "BDS20", "BDS40", "BDS50", or "BDS60". Or None, if nothing matched
     """
     is2 = isBDS20(msg)
     is4 = isBDS40(msg)
