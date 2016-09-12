@@ -17,8 +17,8 @@
 A python package for decoding ModeS (DF20, DF21) messages.
 """
 
-from . import util
-from .util import crc
+from pyModeS import util
+from pyModeS.util import crc
 
 
 def df(msg):
