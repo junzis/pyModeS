@@ -109,3 +109,10 @@ Some helper functions:
     pms.hex2bin(msg)        # convert hexadecimal string to binary string
     pms.hex2int(msg)        # convert hexadecimal string to integer
     pms.bin2int(msg)        # convert binary string to integer
+
+Developement
+------------
+To run tests, run the following commands:
+```
+$ tox
+```
