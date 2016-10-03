@@ -18,7 +18,7 @@ A python package for decoding ABS-D messages.
 """
 
 import math
-from pyModeS import util
+from . import util
 
 
 def df(msg):
