@@ -206,6 +206,53 @@ def pbaro(msg):
 
 
 # ------------------------------------------
+# DF 20/21, BDS 4,0
+# ------------------------------------------
+
+def isBDS44(msg):
+    """Check if a message is likely to be BDS code 4,4
+    Meteorological routine air report
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+
+    # status bit 5, 15, 24, 36, 49
+    d = util.hex2bin(data(msg))
+
+    result = True
+
+    result = result & checkbits(d, 5, 6, 14) \
+        & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
+        & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
+
+    return result
+
+
+def wind(msg):
+    """reported wind speed and direction
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS44) string
+
+    Returns:
+        (int, float): speed (kt), direction (degree)
+    """
+    d = util.hex2bin(data(msg))
+
+    status = int(d[4])
+    if not status:
+        return None
+
+    speed = util.bin2int(d[5:14])   # knots
+    direction = util.bin2int(d[15:23]) * 180.0 / 128.0  # degree
+    return round(speed, 0), round(direction, 1)
+
+
+# ------------------------------------------
 # DF 20/21, BDS 5,0
 # ------------------------------------------
 
