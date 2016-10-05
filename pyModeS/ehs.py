@@ -206,12 +206,15 @@ def pbaro(msg):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 4,0
+# DF 20/21, BDS 4,4
 # ------------------------------------------
 
 def isBDS44(msg):
     """Check if a message is likely to be BDS code 4,4
     Meteorological routine air report
+
+    WARNING: there is two different definition for BDS4,4. This part of the
+    decoder is likely to be wrong...
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -225,9 +228,22 @@ def isBDS44(msg):
 
     result = True
 
-    result = result & checkbits(d, 5, 6, 14) \
-        & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
-        & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
+    # --- current version ---
+    result = result & checkbits(d, 5, 6, 23) \
+        & checkbits(d, 35, 36, 46) & checkbits(d, 47, 48, 49) \
+        & checkbits(d, 50, 51, 56)
+
+    # # --- revised future version ---
+    # result = result & checkbits(d, 5, 6, 14) \
+    #     & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
+    #     & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
+
+    if wind(msg) and wind(msg)[0] > 250:
+        result &= False
+
+    # if temperature(msg):
+    #     if temperature(msg) > 60 or temperature(msg) < -80:
+    #         result &= False
 
     return result
 
@@ -248,8 +264,63 @@ def wind(msg):
         return None
 
     speed = util.bin2int(d[5:14])   # knots
-    direction = util.bin2int(d[15:23]) * 180.0 / 128.0  # degree
+    direction = util.bin2int(d[14:23]) * 180.0 / 256.0  # degree
     return round(speed, 0), round(direction, 1)
+
+
+def temperature(msg):
+    """reported air temperature
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS44) string
+
+    Returns:
+        float: tmeperature in Celsius degree
+    """
+    d = util.hex2bin(data(msg))
+
+    sign = int(d[23])    # 1 -> minus
+    temp = util.bin2int(d[24:34]) * 0.25   # celsius
+    temp = round(temp, 1)
+    return -1 * temp if sign else temp
+
+
+def pressure(msg):
+    """reported average static pressure
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS44) string
+
+    Returns:
+        int: static pressure in hPa
+    """
+    d = util.hex2bin(data(msg))
+
+    status = int(d[34])
+    if not status:
+        return None
+
+    p = util.bin2int(d[35:46])    # hPa
+    return p
+
+
+def humidity(msg):
+    """reported humidity
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS44) string
+
+    Returns:
+        float: percentage of humidity, [0 - 100] %
+    """
+    d = util.hex2bin(data(msg))
+
+    status = int(d[49])
+    if not status:
+        return None
+
+    hm = util.bin2int(d[50:56]) * 100.0 / 64    # %
+    return round(hm, 1)
 
 
 # ------------------------------------------
