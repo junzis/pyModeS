@@ -85,3 +85,7 @@ def floor(x):
         eg.: floor(3.6) = 3, while floor(-3.6) = -4
     """
     return int(math.floor(x))
+
+
+def test():
+    print('test here')

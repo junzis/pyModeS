@@ -492,17 +492,16 @@ def BDS(msg):
     Returns:
         String or None: Version: "BDS20", "BDS40", "BDS50", or "BDS60". Or None, if nothing matched
     """
-    is2 = isBDS20(msg)
-    is4 = isBDS40(msg)
-    is5 = isBDS50(msg)
-    is6 = isBDS60(msg)
-    if is2 and not is4 and not is5 and not is6:
-        return "BDS20"
-    elif not is2 and is4 and not is5 and not is6:
-        return "BDS40"
-    elif not is2 and not is4 and is5 and not is6:
-        return "BDS50"
-    elif not is2 and not is4 and not is5 and is6:
-        return "BDS60"
+    is20 = isBDS20(msg)
+    is44 = isBDS44(msg)
+    is40 = isBDS40(msg)
+    is50 = isBDS50(msg)
+    is60 = isBDS60(msg)
+
+    BDS = ["BDS20", "BDS40", "BDS44", "BDS50", "BDS60"]
+    isBDS = [is20, is40, is44, is50, is60]
+
+    if sum(isBDS) == 1:
+        return BDS[isBDS.index(True)]
     else:
         return None
