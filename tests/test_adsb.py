@@ -37,6 +37,13 @@ def test_adsb_surface_position_with_ref():
     assert pos == (-43.48564, 175.87195)
 
 
+def test_adsb_surface_position():
+    pos = adsb.surface_position("8CC8200A3AC8F009BCDEF2000000",
+                                "8FC8200A3AB8F5F893096B000000",
+                                0, 2,
+                                -43.496, 172.558)
+    assert pos == (-43.48564, 172.53942)
+
 def test_adsb_alt():
     assert adsb.altitude("8D40058B58C901375147EFD09357") == 39000
 

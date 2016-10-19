@@ -12,7 +12,8 @@ def test_ehs_BDS():
     assert ehs.BDS("A0001839CA3800315800007448D9") == 'BDS40'
     assert ehs.BDS("A000139381951536E024D4CCF6B5") == 'BDS50'
     assert ehs.BDS("A000029CFFBAA11E2004727281F1") == 'BDS60'
-    assert ehs.BDS("A0281838CAE9E12FA03FFF2DDDE5") is None
+    assert ehs.BDS("A0281838CAE9E12FA03FFF2DDDE5") == 'BDS44'
+    assert ehs.BDS("A00017B0C8480030A4000024512F") is None
 
 
 def test_ehs_BDS20_callsign():

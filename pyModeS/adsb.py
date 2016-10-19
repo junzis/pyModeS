@@ -167,8 +167,8 @@ def cprlon(msg):
     return util.bin2int(msgbin[71:88])
 
 
-def position(msg0, msg1, t0, t1):
-    """Decode position from a pair of even and odd position message 
+def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
+    """Decode position from a pair of even and odd position message
     (works with both airborne and surface position messages)
 
     Args:
@@ -181,7 +181,12 @@ def position(msg0, msg1, t0, t1):
         (float, float): (latitude, longitude) of the aircraft
     """
     if (5 <= typecode(msg0) <= 8 and 5 <= typecode(msg1) <= 8):
-        return surface_position(msg0, msg1, t0, t1)
+        if (not lat_ref) or (not lon_ref):
+            raise RuntimeError("Surface position encountered, a reference \
+                               position lat/lon required. Location of \
+                               receiver can be used.")
+        else:
+            return surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref)
 
     elif (9 <= typecode(msg0) <= 18 and 9 <= typecode(msg1) <= 18):
         return airborne_position(msg0, msg1, t0, t1)
@@ -233,17 +238,17 @@ def airborne_position(msg0, msg1, t0, t1):
 
     # compute ni, longitude index m, and longitude
     if (t0 > t1):
-        ni = max(_cprNL(lat_even), 1)
-        m = util.floor(cprlon_even * (_cprNL(lat_even)-1) -
-                       cprlon_odd * _cprNL(lat_even) + 0.5)
-        lon = (360.0 / ni) * (m % ni + cprlon_even)
         lat = lat_even
+        nl = _cprNL(lat)
+        ni = max(_cprNL(lat)- 0, 1)
+        m = util.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        lon = (360.0 / ni) * (m % ni + cprlon_even)
     else:
-        ni = max(_cprNL(lat_odd) - 1, 1)
-        m = util.floor(cprlon_even * (_cprNL(lat_odd)-1) -
-                       cprlon_odd * _cprNL(lat_odd) + 0.5)
-        lon = (360.0 / ni) * (m % ni + cprlon_odd)
         lat = lat_odd
+        nl = _cprNL(lat)
+        ni = max(_cprNL(lat) - 1, 1)
+        m = util.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        lon = (360.0 / ni) * (m % ni + cprlon_odd)
 
     if lon > 180:
         lon = lon - 360
@@ -255,7 +260,9 @@ def position_with_ref(msg, lat_ref, lon_ref):
     """Decode position with only one message,
     knowing reference nearby location, such as previously
     calculated location, ground station, or airport location, etc.
-    (works with both airborne and surface position messages)
+    Works with both airborne and surface position messages.
+    The reference position shall be with in 180NM (airborne) or 45NM (surface)
+    of the true position.
 
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
@@ -279,7 +286,8 @@ def position_with_ref(msg, lat_ref, lon_ref):
 def airborne_position_with_ref(msg, lat_ref, lon_ref):
     """Decode airborne position with only one message,
     knowing reference nearby location, such as previously calculated location,
-    ground station, or airport location, etc.
+    ground station, or airport location, etc. The reference position shall
+    be with in 180NM of the true position.
 
     Args:
         msg (string): even message (28 bytes hexadecimal string)
@@ -317,15 +325,83 @@ def airborne_position_with_ref(msg, lat_ref, lon_ref):
     return round(lat, 5), round(lon, 5)
 
 
-def surface_position(msg0, msg1, t0, t1):
-    # TODO: implement surface positon
-    raise RuntimeError('suface position decoding to be implemented soon...')
+def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
+    """Decode surface position from a pair of even and odd position message,
+    the lat/lon of receiver must be provided to yield the correct solution.
+
+    Args:
+        msg0 (string): even message (28 bytes hexadecimal string)
+        msg1 (string): odd message (28 bytes hexadecimal string)
+        t0 (int): timestamps for the even message
+        t1 (int): timestamps for the odd message
+        lat_ref (float): latitude of the receiver
+        lon_ref (float): longitude of the receiver
+
+    Returns:
+        (float, float): (latitude, longitude) of the aircraft
+    """
+
+    msgbin0 = util.hex2bin(msg0)
+    msgbin1 = util.hex2bin(msg1)
+
+    # 131072 is 2^17, since CPR lat and lon are 17 bits each.
+    cprlat_even = util.bin2int(msgbin0[54:71]) / 131072.0
+    cprlon_even = util.bin2int(msgbin0[71:88]) / 131072.0
+    cprlat_odd = util.bin2int(msgbin1[54:71]) / 131072.0
+    cprlon_odd = util.bin2int(msgbin1[71:88]) / 131072.0
+
+    air_d_lat_even = 90.0 / 60
+    air_d_lat_odd = 90.0 / 59
+
+    # compute latitude index 'j'
+    j = util.floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
+
+    # solution for north hemisphere
+    lat_even_n = float(air_d_lat_even * (j % 60 + cprlat_even))
+    lat_odd_n = float(air_d_lat_odd * (j % 59 + cprlat_odd))
+
+    # solution for north hemisphere
+    lat_even_s = lat_even_n - 90.0
+    lat_odd_s = lat_odd_n - 90.0
+
+    # chose which solution corrispondes to receiver location
+    lat_even = lat_even_n if lat_ref > 0 else lat_even_s
+    lat_odd = lat_odd_n if lat_ref > 0 else lat_odd_s
+
+    # check if both are in the same latidude zone, rare but possible
+    if _cprNL(lat_even) != _cprNL(lat_odd):
+        return None
+
+    # compute ni, longitude index m, and longitude
+    if (t0 > t1):
+        lat = lat_even
+        nl = _cprNL(lat_even)
+        ni = max(_cprNL(lat_even) - 0, 1)
+        m = util.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        lon = (90.0 / ni) * (m % ni + cprlon_even)
+    else:
+        lat = lat_odd
+        nl = _cprNL(lat_odd)
+        ni = max(_cprNL(lat_odd) - 1, 1)
+        m = util.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        lon = (90.0 / ni) * (m % ni + cprlon_odd)
+
+    # four possible longitude solutions
+    lons = [lon, lon + 90.0, lon + 180.0, lon + 270.0]
+
+    # the closest solution to receiver is the correct one
+    dls = [abs(lon_ref - l) for l in lons]
+    imin = min(range(4), key=dls.__getitem__)
+    lon = lons[imin]
+
+    return round(lat, 5), round(lon, 5)
 
 
 def surface_position_with_ref(msg, lat_ref, lon_ref):
     """Decode surface position with only one message,
     knowing reference nearby location, such as previously calculated location,
-    ground station, or airport location, etc.
+    ground station, or airport location, etc. The reference position shall
+    be with in 45NM of the true position.
 
     Args:
         msg (string): even message (28 bytes hexadecimal string)

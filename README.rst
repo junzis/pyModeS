@@ -15,16 +15,16 @@ develop to decode the following messages:
       true airspeed, indicated airspeed, mach number, track angle,
       heading, and roll angle, etc.
 
-A detailed manuel on Mode-S decoding is published by the author, at:  
+A detailed manuel on Mode-S decoding is published by the author, at:
 http://adsb-decode-guide.readthedocs.io
 
 
 Source code
 -----------
-Checkourt and contribute to this open source project at:   
+Checkourt and contribute to this open source project at:
 https://github.com/junzis/pyModeS
 
-API documentation at:   
+API documentation at:
 http://pymodes.readthedocs.io
 
 Install
@@ -49,7 +49,7 @@ Common function for Mode-S message:
 .. code:: python
 
     pms.df(msg)                 # Downlink Format
-    pms.crc(msg, encode=False)  # Perform CRC or generate parity bit 
+    pms.crc(msg, encode=False)  # Perform CRC or generate parity bit
 
     pms.hex2bin(str)    # Convert hexadecimal string to binary string
     pms.bin2int(str)    # Convert binary string to integer
@@ -62,15 +62,24 @@ Core functions for ADS-B decoding:
 
     pms.adsb.icao(msg)
     pms.adsb.callsign(msg)
-    pms.adsb.position(msg_even, msg_odd, t_even, t_odd)
+
+    pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
+    pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
+    pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
+
     pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
+    pms.adsb.airborne_position_with_ref(msg, lat_ref, lon_ref)
+    pms.adsb.surface_position_with_ref(msg, lat_ref, lon_ref)
+
     pms.adsb.altitude(msg)
     pms.adsb.velocity(msg)
     pms.adsb.speed_heading(msg)
 
-**Hint: When you have a fix position of the aircraft or you know the
-location of your receiver, it is convinent to use `position_with_ref()` method
-to decode with only one position message (either odd or even)**
+**Hint: When you have a fix position of the aircraft, it is convenient to
+use `position_with_ref()` method to decode with only one position message
+(either odd or even). This works with both airborne and surface position
+messages. But the reference position shall be with in 180NM (airborne)
+or 45NM (surface) of the true position.**
 
 Core functions for EHS decoding:
 
