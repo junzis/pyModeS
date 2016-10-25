@@ -1,27 +1,27 @@
 A Python Mode-S Decoder
 =======================
 
-Python library for Mode-S message decoding. Two seprate methods are
-develop to decode the following messages:
+Python library for Mode-S message decoding. Two separate methods are
+implemented to decode the following messages:
 
 -  Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)
 
-   -  aircraft infomation that cotains: icao address, position,
-      altitude, velocity (ground speed), and callsign, etc.
+   -  aircraft information that contains: ICAO address, position,
+      altitude, velocity (ground speed), callsign, etc.
 
 -  Mode-S Enhanced Surveillance (EHS) (DF20 and DF21)
 
-   -  additional information in response to SSR interogation, such as:
+   -  additional information in response to SSR interrogation, such as:
       true airspeed, indicated airspeed, mach number, track angle,
-      heading, and roll angle, etc.
+      heading, roll angle, etc.
 
-A detailed manuel on Mode-S decoding is published by the author, at:
+A detailed manual on Mode-S decoding is published by the author, at:
 http://adsb-decode-guide.readthedocs.io
 
 
 Source code
 -----------
-Checkourt and contribute to this open source project at:
+Checkout and contribute to this open source project at:
 https://github.com/junzis/pyModeS
 
 API documentation at:
@@ -85,7 +85,7 @@ Core functions for EHS decoding:
 
 .. code:: python
 
-    pms.ehs.icao(msg)       # icao address
+    pms.ehs.icao(msg)       # ICAO address
     pms.ehs.BDS(msg)        # Comm-B Data Selector Version
 
     # for BDS version 2,0
@@ -109,15 +109,6 @@ Core functions for EHS decoding:
     pms.ehs.mach(msg)       # MACH number
     pms.ehs.baro_vr(msg)    # barometric altitude rate (ft/min)
     pms.ehs.ins_vr(msg)     # inertial vertical speed (ft/min)
-
-Some helper functions:
-
-.. code:: python
-
-    pms.df(msg)             # downlink format of a Mode-S message
-    pms.hex2bin(msg)        # convert hexadecimal string to binary string
-    pms.hex2int(msg)        # convert hexadecimal string to integer
-    pms.bin2int(msg)        # convert binary string to integer
 
 Developement
 ------------
