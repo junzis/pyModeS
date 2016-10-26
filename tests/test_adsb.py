@@ -51,8 +51,8 @@ def test_adsb_alt():
 def test_adsb_velocity():
     vgs = adsb.velocity("8D485020994409940838175B284F")
     vas = adsb.velocity("8DA05F219B06B6AF189400CBC33F")
-    assert vgs == (159, 182.9, -14, 'GS')
-    assert vas == (376, 244.0, -37, 'AS')
+    assert vgs == (159, 182.9, -832, 'GS')
+    assert vas == (376, 244.0, -2304, 'AS')
 
 
 def test_nic():
