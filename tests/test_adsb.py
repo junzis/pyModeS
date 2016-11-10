@@ -32,9 +32,9 @@ def test_adsb_airborne_position_with_ref():
 
 
 def test_adsb_surface_position_with_ref():
-    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B22B4A8",
+    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B000000",
                                          -43.5, 172.5)
-    assert pos == (-43.48564, 175.87195)
+    assert pos == (-43.48564, 172.53942)
 
 
 def test_adsb_surface_position():

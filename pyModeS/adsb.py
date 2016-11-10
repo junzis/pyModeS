@@ -427,9 +427,9 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     ni = _cprNL(lat) - i
 
     if ni > 0:
-        d_lon = 360.0 / ni
+        d_lon = 90.0 / ni
     else:
-        d_lon = 360.0
+        d_lon = 90.0
 
     m = util.floor(lon_ref / d_lon) \
         + util.floor(0.5 + ((lon_ref % d_lon) / d_lon) - cprlon)
