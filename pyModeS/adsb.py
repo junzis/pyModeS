@@ -274,10 +274,10 @@ def position_with_ref(msg, lat_ref, lon_ref):
         (float, float): (latitude, longitude) of the aircraft
     """
     if 5 <= typecode(msg) <= 8:
-        return airborne_position_with_ref(msg, lat_ref, lon_ref)
+        return surface_position_with_ref(msg, lat_ref, lon_ref)
 
     elif 9 <= typecode(msg) <= 18:
-        return surface_position_with_ref(msg, lat_ref, lon_ref)
+        return airborne_position_with_ref(msg, lat_ref, lon_ref)
 
     else:
         raise RuntimeError("incorrect or inconsistant message types")

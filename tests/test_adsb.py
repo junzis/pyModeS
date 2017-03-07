@@ -22,6 +22,13 @@ def test_adsb_position():
     assert pos == (49.81755, 6.08442)
 
 
+def test_adsb_position_with_ref():
+    pos = adsb.position_with_ref("8D40058B58C901375147EFD09357", 49.0, 6.0)
+    assert pos == (49.82410, 6.06785)
+    pos = adsb.position_with_ref("8FC8200A3AB8F5F893096B000000", -43.5, 172.5)
+    assert pos == (-43.48564, 172.53942)
+
+
 def test_adsb_airborne_position_with_ref():
     pos = adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357",
                                           49.0, 6.0)
