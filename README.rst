@@ -72,8 +72,12 @@ Core functions for ADS-B decoding:
     pms.adsb.surface_position_with_ref(msg, lat_ref, lon_ref)
 
     pms.adsb.altitude(msg)
-    pms.adsb.velocity(msg)
-    pms.adsb.speed_heading(msg)
+
+    pms.adsb.velocity(msg)          # handles both surface & airborne messages
+    pms.adsb.speed_heading(msg)     # handles both surface & airborne messages
+    pms.adsb.surface_velocity(msg)
+    pms.adsb.airborne_velocity(msg)
+
 
 **Hint: When you have a fix position of the aircraft, it is convenient to
 use `position_with_ref()` method to decode with only one position message

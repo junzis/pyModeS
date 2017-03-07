@@ -534,6 +534,42 @@ def nic(msg):
 
 def velocity(msg):
     """Calculate the speed, heading, and vertical rate
+    (handles both airborne or surface message)
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+
+    Returns:
+        (int, float, int, string): speed (kt), heading (degree),
+            rate of climb/descend (ft/min), and speed type
+            ('GS' for ground speed, 'AS' for airspeed)
+    """
+
+    if 5 <= typecode(msg) <= 8:
+        return surface_velocity(msg)
+
+    elif typecode(msg) == 19:
+        return airborne_velocity(msg)
+
+    else:
+        raise RuntimeError("incorrect or inconsistant message types")
+
+def speed_heading(msg):
+    """Get speed and heading only from the velocity message
+    (handles both airborne or surface message)
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+
+    Returns:
+        (int, float): speed (kt), heading (degree)
+    """
+    spd, hdg, rocd, tag = velocity(msg)
+    return spd, hdg
+
+
+def airborne_velocity(msg):
+    """Calculate the speed, heading, and vertical rate
 
     Args:
         msg (string): 28 bytes hexadecimal message string
@@ -582,14 +618,43 @@ def velocity(msg):
     return int(spd), round(hdg, 1), int(rocd), tag
 
 
-def speed_heading(msg):
-    """Get speed and heading only from the velocity message
-
+def surface_velocity(msg):
+    """Decode surface velocity from from a surface position message
     Args:
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float): speed (kt), heading (degree)
+        (int, float, int, string): speed (kt), heading (degree),
+            rate of climb/descend (ft/min), and speed type
+            ('GS' for ground speed, 'AS' for airspeed)
     """
-    spd, hdg, rocd, tag = velocity(msg)
-    return spd, hdg
+
+    if typecode(msg) < 5 or typecode(msg) > 8:
+        raise RuntimeError("%s: Not a surface message" % msg)
+
+    msgbin = util.hex2bin(msg)
+
+    # heading
+    hdg_status = int(msgbin[44])
+    if hdg_status == 1:
+        hdg = util.bin2int(msgbin[45:52]) * 360.0 / 128.0
+    else:
+        hdg = None
+
+    # ground movment / speed
+    mov = util.bin2int(msgbin[37:44])
+
+    if mov == 0 or mov > 124:
+        spd = None
+    elif mov == 1:
+        spd = 0
+    elif mov == 124:
+        spd = 175
+    else:
+        movs = [2, 9, 13, 39, 94, 109, 124]
+        kts = [0.125, 1, 2, 15, 70, 100, 175]
+        i = next(m[0] for m in enumerate(movs) if m[1] > mov)
+        step = (kts[i] - kts[i-1]) * 1.0 / (movs[i]-movs[i-1])
+        spd = kts[i-1] + (mov-movs[i-1]) * step
+
+        return round(spd, 2), round(hdg, 1), 0, 'GS'
