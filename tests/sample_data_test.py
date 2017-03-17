@@ -62,7 +62,8 @@ def ehs_decode_all(n=None):
                       ehs.alt_fms(m), ehs.pbaro(m))
 
             if vBDS == "BDS44":
-                print(ts, m, icao, vBDS, ehs.wind(m))
+                print(ts, m, icao, vBDS, ehs.wind(m),
+                      ehs.temperature(m), ehs.pressure(m))
 
             if vBDS == "BDS50":
                 print(ts, m, icao, vBDS, ehs.roll(m), ehs.track(m),
