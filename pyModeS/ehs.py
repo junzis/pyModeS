@@ -352,7 +352,7 @@ def isBDS50(msg):
         if abs(roll(msg)) > 30:
             result &= False
 
-    if gs(msg) > 500:
+    if gs(msg) > 600:
         result &= False
 
     if tas(msg) > 500:
