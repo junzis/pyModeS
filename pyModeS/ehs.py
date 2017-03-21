@@ -234,7 +234,6 @@ def isBDS44(msg, rev=True):
 
     else:
         # status bit 5, 15, 24, 36, 49
-
         result = result & checkbits(d, 5, 6, 14) \
             & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
             & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)

@@ -3,6 +3,13 @@
 See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
+
+Steps for deploying a new verison:
+1. Increase the version number
+2. remove the old deployment under [dist] folder
+3. run: python setup.py sdist
+   run: python setup.py bdist_wheel --universal
+4. twine upload dist/*
 """
 
 # Always prefer setuptools over distutils
@@ -23,7 +30,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.8',
+    version='1.0.9',
 
     description='Python Mode-S Decoder',
     long_description=long_description,
