@@ -10,6 +10,7 @@ implemented to decode the following messages:
       altitude, velocity (ground speed), callsign, etc.
 
 -  Mode-S Enhanced Surveillance (EHS) (DF20 and DF21). Additional information in response to SSR interrogation, such as: true airspeed, indicated airspeed, mach number, wind, temperature, etc.
+
    - BDS 2,0   Aircraft identification
    - BDS 2,1   Aircraft and airline registration markings
    - BDS 4,0   Selected vertical intention
