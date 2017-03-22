@@ -18,7 +18,7 @@ A python package for decoding ABS-D messages.
 """
 
 import math
-from . import util
+import util
 
 
 def df(msg):
@@ -638,6 +638,7 @@ def surface_velocity(msg):
     hdg_status = int(msgbin[44])
     if hdg_status == 1:
         hdg = util.bin2int(msgbin[45:52]) * 360.0 / 128.0
+        hdg = round(hdg, 1)
     else:
         hdg = None
 
@@ -656,5 +657,6 @@ def surface_velocity(msg):
         i = next(m[0] for m in enumerate(movs) if m[1] > mov)
         step = (kts[i] - kts[i-1]) * 1.0 / (movs[i]-movs[i-1])
         spd = kts[i-1] + (mov-movs[i-1]) * step
+        spd = round(spd, 2)
 
-        return round(spd, 2), round(hdg, 1), 0, 'GS'
+    return spd, hdg, 0, 'GS'

@@ -1,7 +1,6 @@
-# If you get import error run with ipython
-from pyModeS import adsb
-from pyModeS import ehs
-from pyModeS import util
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/pyModeS')
+import adsb, ehs, util
 
 
 # === Decode sample data file ===
@@ -54,27 +53,33 @@ def ehs_decode_all(n=None):
         vBDS = ehs.BDS(m)
 
         if vBDS:
+            if isinstance(vBDS, list):
+                print(ts, m, icao, vBDS)
             if vBDS == "BDS20":
                 print(ts, m, icao, vBDS, ehs.callsign(m))
 
             if vBDS == "BDS40":
-                print(ts, m, icao, vBDS, ehs.alt_mcp(m),
-                      ehs.alt_fms(m), ehs.pbaro(m))
+                print(ts, m, icao, vBDS, ehs.alt40mcp(m),
+                      ehs.alt40fms(m), ehs.p40baro(m))
 
             if vBDS == "BDS44":
-                print(ts, m, icao, vBDS, ehs.wind(m),
-                      ehs.temperature(m), ehs.pressure(m))
+                print(ts, m, icao, vBDS, ehs.wind44(m),
+                      ehs.temp44(m), ehs.p44(m))
 
             if vBDS == "BDS50":
-                print(ts, m, icao, vBDS, ehs.roll(m), ehs.track(m),
-                      ehs.gs(m), ehs.rtrack(m), ehs.tas(m))
+                print(ts, m, icao, vBDS, ehs.roll50(m), ehs.trk50(m),
+                      ehs.gs50(m), ehs.rtrk50(m), ehs.tas50(m))
+
+            if vBDS == "BDS53":
+                print(ts, m, icao, vBDS, ehs.hdg53(m), ehs.ias53(m),
+                      ehs.mach53(m), ehs.tas53(m), ehs.vr53(m))
 
             if vBDS == "BDS60":
-                print(ts, m, icao, vBDS, ehs.heading(m), ehs.ias(m),
-                      ehs.mach(m), ehs.baro_vr(m), ehs.ins_vr(m))
+                print(ts, m, icao, vBDS, ehs.hdg60(m), ehs.ias60(m),
+                      ehs.mach60(m), ehs.vr60baro(m), ehs.vr60ins(m))
         else:
             print(ts, m, icao, 'UNKNOWN')
 
 if __name__ == '__main__':
-    adsb_decode_all(100)
+    # adsb_decode_all(100)
     ehs_decode_all(100)

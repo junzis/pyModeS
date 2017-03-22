@@ -17,8 +17,8 @@
 A python package for decoding ModeS (DF20, DF21) messages.
 """
 
-from . import util
-from .util import crc
+import util
+from util import crc
 
 
 def df(msg):
@@ -163,7 +163,7 @@ def isBDS40(msg):
     return result
 
 
-def alt_mcp(msg):
+def alt40mcp(msg):
     """Selected altitude, MCP/FCU
 
     Args:
@@ -177,7 +177,7 @@ def alt_mcp(msg):
     return alt
 
 
-def alt_fms(msg):
+def alt40fms(msg):
     """Selected altitude, FMS
 
     Args:
@@ -191,7 +191,7 @@ def alt_fms(msg):
     return alt
 
 
-def pbaro(msg):
+def p40baro(msg):
     """Barometric pressure setting
 
     Args:
@@ -209,7 +209,7 @@ def pbaro(msg):
 # DF 20/21, BDS 4,4
 # ------------------------------------------
 
-def isBDS44(msg, rev=True):
+def isBDS44(msg, rev=False):
     """Check if a message is likely to be BDS code 4,4
     Meteorological routine air report
 
@@ -238,18 +238,18 @@ def isBDS44(msg, rev=True):
             & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
             & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
 
-    vw = wind(msg, rev=rev)
+    vw = wind44(msg, rev=rev)
     if vw and vw[0] > 250:
         result &= False
 
-    # if temperature(msg):
-    #     if temperature(msg) > 60 or temperature(msg) < -80:
+    # if temp44(msg):
+    #     if temp44(msg) > 60 or temp44(msg) < -80:
     #         result &= False
 
     return result
 
 
-def wind(msg, rev=True):
+def wind44(msg, rev=False):
     """reported wind speed and direction
 
     Args:
@@ -282,7 +282,7 @@ def wind(msg, rev=True):
     return round(speed, 0), round(direction, 1)
 
 
-def temperature(msg, rev=True):
+def temp44(msg, rev=False):
     """reported air temperature
 
     Args:
@@ -308,10 +308,10 @@ def temperature(msg, rev=True):
         temp = util.bin2int(d[25:35]) * 0.125   # celsius
         temp = round(temp, 1)
 
-    return temp if sign else -1*temp
+    return -1*temp if sign else temp
 
 
-def pressure(msg, rev=True):
+def p44(msg, rev=False):
     """reported average static pressure
 
     Args:
@@ -340,7 +340,7 @@ def pressure(msg, rev=True):
     return p
 
 
-def humidity(msg, rev=True):
+def hum44(msg, rev=False):
     """reported humidity
 
     Args:
@@ -371,10 +371,12 @@ def humidity(msg, rev=True):
 
 # ------------------------------------------
 # DF 20/21, BDS 5,0
+# Track and turn report
 # ------------------------------------------
 
 def isBDS50(msg):
     """Check if a message is likely to be BDS code 5,0
+    (Track and turn report)
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -395,23 +397,23 @@ def isBDS50(msg):
     if d[2:11] == "000000000":
         result &= True
     else:
-        if abs(roll(msg)) > 30:
+        if abs(roll50(msg)) > 30:
             result &= False
 
-    if gs(msg) > 600:
+    if gs50(msg) > 600:
         result &= False
 
-    if tas(msg) > 500:
+    if tas50(msg) > 500:
         result &= False
 
-    if abs(tas(msg) - gs(msg)) > 100:
+    if abs(tas50(msg) - gs50(msg)) > 100:
         result &= False
 
     return result
 
 
-def roll(msg):
-    """Aircraft roll angle
+def roll50(msg):
+    """Roll angle, BDS 5,0 message
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
@@ -422,13 +424,13 @@ def roll(msg):
     """
     d = util.hex2bin(data(msg))
     sign = int(d[1])    # 1 -> left wing down
-    value = util.bin2int(d[2:11]) * 45 / 256.0    # degree
+    value = util.bin2int(d[2:11]) * 45.0 / 256.0    # degree
     angle = -1 * value if sign else value
     return round(angle, 1)
 
 
-def track(msg):
-    """True track angle
+def trk50(msg):
+    """True track angle, BDS 5,0 message
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
@@ -438,13 +440,13 @@ def track(msg):
     """
     d = util.hex2bin(data(msg))
     sign = int(d[12])   # 1 -> west
-    value = util.bin2int(d[13:23]) * 90 / 512.0    # degree
+    value = util.bin2int(d[13:23]) * 90.0 / 512.0    # degree
     angle = 360 - value if sign else value
     return round(angle, 1)
 
 
-def gs(msg):
-    """Aircraft ground speed
+def gs50(msg):
+    """Ground speed, BDS 5,0 message
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
@@ -457,8 +459,8 @@ def gs(msg):
     return spd
 
 
-def rtrack(msg):
-    """Track angle rate
+def rtrk50(msg):
+    """Track angle rate, BDS 5,0 message
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
@@ -468,13 +470,13 @@ def rtrack(msg):
     """
     d = util.hex2bin(data(msg))
     sign = int(d[35])    # 1 -> minus
-    value = util.bin2int(d[36:45]) * 8 / 256.0    # degree / sec
+    value = util.bin2int(d[36:45]) * 8.0 / 256.0    # degree / sec
     angle = -1 * value if sign else value
     return round(angle, 3)
 
 
-def tas(msg):
-    """Aircraft true airspeed
+def tas50(msg):
+    """Aircraft true airspeed, BDS 5,0 message
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS50) string
@@ -483,8 +485,121 @@ def tas(msg):
         int: true airspeed in knots
     """
     d = util.hex2bin(data(msg))
-    spd = util.bin2int(d[46:56]) * 2   # kts
-    return spd
+    tas = util.bin2int(d[46:56]) * 2   # kts
+    return tas
+
+
+# ------------------------------------------
+# DF 20/21, BDS 5,3
+# Air-referenced state vector
+# ------------------------------------------
+
+def isBDS53(msg):
+    """Check if a message is likely to be BDS code 5,3
+    (Air-referenced state vector)
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+
+    # status bit 1, 13, 24, 34, 47
+    d = util.hex2bin(data(msg))
+
+    result = True
+
+    result = result & checkbits(d, 1, 3, 12) & checkbits(d, 13, 14, 23) \
+        & checkbits(d, 24, 25, 33) & checkbits(d, 34, 35, 46) \
+        & checkbits(d, 47, 49, 56)
+
+    if ias53(msg) > 500:
+        result &= False
+
+    if mach53(msg) > 1:
+        result &= False
+
+    if tas53(msg) > 500:
+        result &= False
+
+    if abs(vr53(msg)) > 8000:
+        result &= False
+
+    return result
+
+
+def hdg53(msg):
+    """Magnetic heading, BDS 5,3 message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS53) string
+
+    Returns:
+        float: angle in degrees to true north (from 0 to 360)
+    """
+    d = util.hex2bin(data(msg))
+    sign = int(d[1])                               # 1 -> west
+    value = util.bin2int(d[2:12]) * 90.0 / 512.0   # degree
+    angle = 360 - value if sign else value
+    return round(angle, 1)
+
+
+def ias53(msg):
+    """Indicated airspeed, DBS 5,3 message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message
+
+    Returns:
+        int: indicated arispeed in knots
+    """
+    d = util.hex2bin(data(msg))
+    ias = util.bin2int(d[13:23])    # knots
+    return ias
+
+
+def mach53(msg):
+    """MACH number, DBS 5,3 message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message
+
+    Returns:
+        float: MACH number
+    """
+    d = util.hex2bin(data(msg))
+    mach = util.bin2int(d[24:33]) * 0.008
+    return round(mach, 3)
+
+
+def tas53(msg):
+    """Aircraft true airspeed, BDS 5,3 message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message
+
+    Returns:
+        float: true airspeed in knots
+    """
+    d = util.hex2bin(data(msg))
+    tas = util.bin2int(d[34:46]) * 0.5   # kts
+    return round(tas, 1)
+
+def vr53(msg):
+    """Vertical rate
+
+    Args:
+        msg (String): 28 bytes hexadecimal message (BDS60) string
+
+    Returns:
+        int: vertical rate in feet/minutes
+    """
+    d = util.hex2bin(data(msg))
+    sign = d[47]                            # 1 -> minus
+    value = util.bin2int(d[48:56]) * 64     # feet/min
+    roc = -1*value if sign else value
+    return roc
 
 
 # ------------------------------------------
@@ -509,22 +624,22 @@ def isBDS60(msg):
         & checkbits(d, 24, 25, 34) & checkbits(d, 35, 36, 45) \
         & checkbits(d, 46, 47, 56)
 
-    if not (1 < ias(msg) < 500):
+    if not (1 < ias60(msg) < 500):
         result &= False
 
-    if not (0.0 < mach(msg) < 1.0):
+    if not (0.0 < mach60(msg) < 1.0):
         result &= False
 
-    if abs(baro_vr(msg)) > 5000:
+    if abs(vr60baro(msg)) > 5000:
         result &= False
 
-    if abs(ins_vr(msg)) > 5000:
+    if abs(vr60ins(msg)) > 5000:
         result &= False
 
     return result
 
 
-def heading(msg):
+def hdg60(msg):
     """Megnetic heading of aircraft
 
     Args:
@@ -540,7 +655,7 @@ def heading(msg):
     return round(hdg, 1)
 
 
-def ias(msg):
+def ias60(msg):
     """Indicated airspeed
 
     Args:
@@ -554,7 +669,7 @@ def ias(msg):
     return ias
 
 
-def mach(msg):
+def mach60(msg):
     """Aircraft MACH number
 
     Args:
@@ -568,7 +683,7 @@ def mach(msg):
     return round(mach, 3)
 
 
-def baro_vr(msg):
+def vr60baro(msg):
     """Vertical rate from barometric measurement
 
     Args:
@@ -584,7 +699,7 @@ def baro_vr(msg):
     return roc
 
 
-def ins_vr(msg):
+def vr60ins(msg):
     """Vertical rate messured by onbard equiments (IRS, AHRS)
 
     Args:
@@ -610,15 +725,19 @@ def BDS(msg):
         String or None: Version: "BDS20", "BDS40", "BDS50", or "BDS60". Or None, if nothing matched
     """
     is20 = isBDS20(msg)
-    is44 = isBDS44(msg)
     is40 = isBDS40(msg)
+    is44 = isBDS44(msg)
+    is44rev = isBDS44(msg, rev=True)
     is50 = isBDS50(msg)
+    is53 = isBDS53(msg)
     is60 = isBDS60(msg)
 
-    BDS = ["BDS20", "BDS40", "BDS44", "BDS50", "BDS60"]
-    isBDS = [is20, is40, is44, is50, is60]
+    BDS = ["BDS20", "BDS40", "BDS44", "BDS44REV", "BDS50", "BDS53", "BDS60"]
+    isBDS = [is20, is40, is44, is44rev, is50, is53, is60]
 
+    if sum(isBDS) == 0:
+        return None
     if sum(isBDS) == 1:
         return BDS[isBDS.index(True)]
     else:
-        return None
+        return [bds for (bds, i) in zip(BDS, isBDS) if i]
