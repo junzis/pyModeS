@@ -1,1 +1,1 @@
-pyModeS==1.0.5
+pyModeS==1.1.0
