@@ -17,9 +17,8 @@
 A python package for decoding ModeS (DF20, DF21) messages.
 """
 
-import util
-from util import crc
-
+from __future__ import absolute_import, print_function, division
+from . import util
 
 def df(msg):
     """Get the downlink format (DF) number
@@ -53,7 +52,7 @@ def icao(msg):
         # raise RuntimeError("Message DF must be in (4, 5, 20, 21)")
         return None
 
-    c0 = util.bin2int(crc(msg, encode=True))
+    c0 = util.bin2int(util.crc(msg, encode=True))
     c1 = util.hex2int(msg[-6:])
     icao = '%06X' % (c0 ^ c1)
     return icao

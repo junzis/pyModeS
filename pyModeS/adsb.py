@@ -17,8 +17,9 @@
 A python package for decoding ABS-D messages.
 """
 
+from __future__ import absolute_import, print_function, division
 import math
-import util
+from . import util
 
 
 def df(msg):

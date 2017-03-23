@@ -1,6 +1,4 @@
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/pyModeS')
-import adsb, ehs, util
+from pyModeS import adsb, ehs, util
 
 
 # === Decode sample data file ===

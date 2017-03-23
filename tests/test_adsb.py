@@ -1,6 +1,4 @@
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))+'/pyModeS')
-import adsb
+from pyModeS import adsb
 
 # === TEST ADS-B package ===
 
