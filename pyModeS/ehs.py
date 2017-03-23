@@ -476,16 +476,19 @@ def isBDS50(msg):
     if d[2:11] == "000000000":
         result &= True
     else:
-        if abs(roll50(msg)) > 30:
+        roll = abs(roll50(msg))
+        if roll and roll > 30:
             result &= False
 
-    if gs50(msg) > 600:
+    gs = gs50(msg)
+    if gs and gs > 600:
         result &= False
 
-    if tas50(msg) > 500:
+    tas = tas50(msg)
+    if tas and tas > 500:
         result &= False
 
-    if abs(tas50(msg) - gs50(msg)) > 200:
+    if gs and tas and abs(tas50(msg) - gs50(msg)) > 200:
         result &= False
 
     return result
@@ -622,16 +625,20 @@ def isBDS53(msg):
     if not result:
         return False
 
-    if ias53(msg) > 500:
+    ias = ias53(msg)
+    if ias and ias > 500:
         result &= False
 
-    if mach53(msg) > 1:
+    mach = mach53(msg)
+    if mach and mach > 1:
         result &= False
 
-    if tas53(msg) > 500:
+    tas = tas53(msg)
+    if tas and tas > 500:
         result &= False
 
-    if abs(vr53(msg)) > 8000:
+    vr = vr53(msg)
+    if vr and abs(vr) > 8000:
         result &= False
 
     return result
@@ -759,16 +766,20 @@ def isBDS60(msg):
     if not result:
         return False
 
-    if not (1 < ias60(msg) < 500):
+    ias = ias60(msg)
+    if ias and ias > 500:
         result &= False
 
-    if not (0.0 < mach60(msg) < 1.0):
+    mach = mach60(msg)
+    if mach and mach > 1:
         result &= False
 
-    if abs(vr60baro(msg)) > 5000:
+    vrb = vr60baro(msg)
+    if vrb and abs(vrb) > 5000:
         result &= False
 
-    if abs(vr60ins(msg)) > 5000:
+    vri = vr60ins(msg)
+    if vri and abs(vri) > 5000:
         result &= False
 
     return result
