@@ -9,6 +9,10 @@ def test_ehs_icao():
     assert ehs.icao("A000029CFFBAA11E2004727281F1") == '4243D0'
 
 
+def test_df20alt():
+    assert ehs.df20alt("A02014B400000000000000F9D514") == 33300
+
+
 def test_ehs_BDS():
     assert ehs.BDS("A0001838201584F23468207CDFA5") == 'BDS20'
     assert ehs.BDS("A0001839CA3800315800007448D9") == 'BDS40'

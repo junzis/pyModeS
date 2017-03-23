@@ -76,6 +76,59 @@ def checkbits(data, sb, msb, lsb):
 
 
 # ------------------------------------------
+# Common functions
+# ------------------------------------------
+def isnull(msg):
+    """check if the data bits are all zeros
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+    d = util.hex2bin(data(msg))
+
+    if util.bin2int(d) > 0:
+        return False
+    else:
+        return True
+
+
+def df20alt(msg):
+    """Computes the altitude from DF20  bit 20-32
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        int: altitude in ft
+    """
+
+    if df(msg) != 20:
+        raise RuntimeError("Message must be Downlink Format 20.")
+
+    # Altitude code, bit 20-32
+    mbin = util.hex2bin(msg)
+
+    mbit = mbin[25]   # M bit: 26
+    qbit = mbin[27]   # Q bit: 28
+
+
+    if mbit == '0':         # unit in ft
+        if qbit == '1':     # 25ft interval
+            vbin = mbin[19:25] + mbin[26] + mbin[28:32]
+            alt = util.bin2int(vbin) * 25
+        if qbit == '0':     # 100ft interval
+            # to be implemented
+            alt = None
+    if mbit == '1':         # unit in meter
+        vbin = mbin[19:25] + mbin[26:32]
+        alt = int(util.bin2int(vbin) * 3.28084)  # convert to ft
+
+    return alt
+
+# ------------------------------------------
 # DF 20/21, BDS 2,0
 # ------------------------------------------
 
@@ -88,6 +141,9 @@ def isBDS20(msg):
     Returns:
         bool: True or False
     """
+
+    if isnull(msg):
+        return False
 
     # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
@@ -145,6 +201,9 @@ def isBDS40(msg):
         bool: True or False
     """
 
+    if isnull(msg):
+        return False
+
     # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
 
@@ -173,6 +232,10 @@ def alt40mcp(msg):
         int: altitude in feet
     """
     d = util.hex2bin(data(msg))
+
+    if d[0] == '0':
+        return None
+
     alt = util.bin2int(d[1:13]) * 16    # ft
     return alt
 
@@ -187,6 +250,10 @@ def alt40fms(msg):
         int: altitude in feet
     """
     d = util.hex2bin(data(msg))
+
+    if d[13] == '0':
+        return None
+
     alt = util.bin2int(d[14:26]) * 16    # ft
     return alt
 
@@ -201,6 +268,10 @@ def p40baro(msg):
         float: pressure in millibar
     """
     d = util.hex2bin(data(msg))
+
+    if d[26] == '0':
+        return None
+
     p = util.bin2int(d[27:39]) * 0.1 + 800    # millibar
     return p
 
@@ -221,6 +292,9 @@ def isBDS44(msg, rev=False):
         bool: True or False
     """
 
+    if isnull(msg):
+        return False
+
     d = util.hex2bin(data(msg))
 
     result = True
@@ -231,12 +305,14 @@ def isBDS44(msg, rev=False):
             & checkbits(d, 35, 36, 46) & checkbits(d, 47, 48, 49) \
             & checkbits(d, 50, 51, 56)
 
-
     else:
         # status bit 5, 15, 24, 36, 49
         result = result & checkbits(d, 5, 6, 14) \
             & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
             & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
+
+    if not result:
+        return False
 
     vw = wind44(msg, rev=rev)
     if vw and vw[0] > 250:
@@ -295,13 +371,14 @@ def temp44(msg, rev=False):
     d = util.hex2bin(data(msg))
 
     if not rev:
+        if d[22] == '0':
+            return None
+
         sign = int(d[23])
         temp = util.bin2int(d[24:34]) * 0.125   # celsius
         temp = round(temp, 1)
-
     else:
-        status = int(d[23])
-        if not status:
+        if d[23] == '0':
             return None
 
         sign = int(d[24])
@@ -324,15 +401,13 @@ def p44(msg, rev=False):
     d = util.hex2bin(data(msg))
 
     if not rev:
-        status = int(d[34])
-        if not status:
+        if d[34] == '0':
             return None
 
         p = util.bin2int(d[35:46])    # hPa
 
     else:
-        status = int(d[35])
-        if not status:
+        if d[35] == '0':
             return None
 
         p = util.bin2int(d[36:47])    # hPa
@@ -353,15 +428,13 @@ def hum44(msg, rev=False):
     d = util.hex2bin(data(msg))
 
     if not rev:
-        status = int(d[49])
-        if not status:
+        if d[49] == '0':
             return None
 
         hm = util.bin2int(d[50:56]) * 100.0 / 64    # %
 
     else:
-        status = int(d[48])
-        if not status:
+        if d[48] == '0':
             return None
 
         hm = util.bin2int(d[49:56])    # %
@@ -385,6 +458,9 @@ def isBDS50(msg):
         bool: True or False
     """
 
+    if isnull(msg):
+        return False
+
     # status bit 1, 12, 24, 35, 46
     d = util.hex2bin(data(msg))
 
@@ -393,6 +469,9 @@ def isBDS50(msg):
     result = result & checkbits(d, 1, 3, 11) & checkbits(d, 12, 13, 23) \
         & checkbits(d, 24, 25, 34) & checkbits(d, 35, 36, 45) \
         & checkbits(d, 46, 47, 56)
+
+    if not result:
+        return False
 
     if d[2:11] == "000000000":
         result &= True
@@ -406,7 +485,7 @@ def isBDS50(msg):
     if tas50(msg) > 500:
         result &= False
 
-    if abs(tas50(msg) - gs50(msg)) > 100:
+    if abs(tas50(msg) - gs50(msg)) > 200:
         result &= False
 
     return result
@@ -423,6 +502,10 @@ def roll50(msg):
                negative->left wing down, positive->right wing down
     """
     d = util.hex2bin(data(msg))
+
+    if d[0] == '0':
+        return None
+
     sign = int(d[1])    # 1 -> left wing down
     value = util.bin2int(d[2:11]) * 45.0 / 256.0    # degree
     angle = -1 * value if sign else value
@@ -439,6 +522,10 @@ def trk50(msg):
         float: angle in degrees to true north (from 0 to 360)
     """
     d = util.hex2bin(data(msg))
+
+    if d[11] == '0':
+        return None
+
     sign = int(d[12])   # 1 -> west
     value = util.bin2int(d[13:23]) * 90.0 / 512.0    # degree
     angle = 360 - value if sign else value
@@ -455,6 +542,10 @@ def gs50(msg):
         int: ground speed in knots
     """
     d = util.hex2bin(data(msg))
+
+    if d[23] == '0':
+        return None
+
     spd = util.bin2int(d[24:34]) * 2    # kts
     return spd
 
@@ -469,6 +560,13 @@ def rtrk50(msg):
         float: angle rate in degrees/second
     """
     d = util.hex2bin(data(msg))
+
+    if d[34] == '0':
+        return None
+
+    if d[36:45] == "111111111":
+        return None
+
     sign = int(d[35])    # 1 -> minus
     value = util.bin2int(d[36:45]) * 8.0 / 256.0    # degree / sec
     angle = -1 * value if sign else value
@@ -485,6 +583,10 @@ def tas50(msg):
         int: true airspeed in knots
     """
     d = util.hex2bin(data(msg))
+
+    if d[45] == '0':
+        return None
+
     tas = util.bin2int(d[46:56]) * 2   # kts
     return tas
 
@@ -505,6 +607,9 @@ def isBDS53(msg):
         bool: True or False
     """
 
+    if isnull(msg):
+        return False
+
     # status bit 1, 13, 24, 34, 47
     d = util.hex2bin(data(msg))
 
@@ -513,6 +618,9 @@ def isBDS53(msg):
     result = result & checkbits(d, 1, 3, 12) & checkbits(d, 13, 14, 23) \
         & checkbits(d, 24, 25, 33) & checkbits(d, 34, 35, 46) \
         & checkbits(d, 47, 49, 56)
+
+    if not result:
+        return False
 
     if ias53(msg) > 500:
         result &= False
@@ -539,6 +647,10 @@ def hdg53(msg):
         float: angle in degrees to true north (from 0 to 360)
     """
     d = util.hex2bin(data(msg))
+
+    if d[0] == '0':
+        return None
+
     sign = int(d[1])                               # 1 -> west
     value = util.bin2int(d[2:12]) * 90.0 / 512.0   # degree
     angle = 360 - value if sign else value
@@ -555,6 +667,10 @@ def ias53(msg):
         int: indicated arispeed in knots
     """
     d = util.hex2bin(data(msg))
+
+    if d[12] == '0':
+        return None
+
     ias = util.bin2int(d[13:23])    # knots
     return ias
 
@@ -569,6 +685,10 @@ def mach53(msg):
         float: MACH number
     """
     d = util.hex2bin(data(msg))
+
+    if d[23] == '0':
+        return None
+
     mach = util.bin2int(d[24:33]) * 0.008
     return round(mach, 3)
 
@@ -583,6 +703,10 @@ def tas53(msg):
         float: true airspeed in knots
     """
     d = util.hex2bin(data(msg))
+
+    if d[33] == '0':
+        return None
+
     tas = util.bin2int(d[34:46]) * 0.5   # kts
     return round(tas, 1)
 
@@ -596,6 +720,10 @@ def vr53(msg):
         int: vertical rate in feet/minutes
     """
     d = util.hex2bin(data(msg))
+
+    if d[46] == '0':
+        return None
+
     sign = d[47]                            # 1 -> minus
     value = util.bin2int(d[48:56]) * 64     # feet/min
     roc = -1*value if sign else value
@@ -615,6 +743,10 @@ def isBDS60(msg):
     Returns:
         bool: True or False
     """
+
+    if isnull(msg):
+        return False
+
     # status bit 1, 13, 24, 35, 46
     d = util.hex2bin(data(msg))
 
@@ -623,6 +755,9 @@ def isBDS60(msg):
     result = result & checkbits(d, 1, 2, 12) & checkbits(d, 13, 14, 23) \
         & checkbits(d, 24, 25, 34) & checkbits(d, 35, 36, 45) \
         & checkbits(d, 46, 47, 56)
+
+    if not result:
+        return False
 
     if not (1 < ias60(msg) < 500):
         result &= False
@@ -649,6 +784,10 @@ def hdg60(msg):
         float: heading in degrees to megnetic north (from 0 to 360)
     """
     d = util.hex2bin(data(msg))
+
+    if d[0] == '0':
+        return None
+
     sign = int(d[1])    # 1 -> west
     value = util.bin2int(d[2:12]) * 90 / 512.0  # degree
     hdg = 360 - value if sign else value
@@ -665,6 +804,10 @@ def ias60(msg):
         int: indicated airspeed in knots
     """
     d = util.hex2bin(data(msg))
+
+    if d[12] == '0':
+        return None
+
     ias = util.bin2int(d[13:23])    # kts
     return ias
 
@@ -679,6 +822,10 @@ def mach60(msg):
         float: MACH number
     """
     d = util.hex2bin(data(msg))
+
+    if d[23] == '0':
+        return None
+
     mach = util.bin2int(d[24:34]) * 2.048 / 512.0
     return round(mach, 3)
 
@@ -693,6 +840,10 @@ def vr60baro(msg):
         int: vertical rate in feet/minutes
     """
     d = util.hex2bin(data(msg))
+
+    if d[34] == '0':
+        return None
+
     sign = d[35]    # 1 -> minus
     value = util.bin2int(d[36:45]) * 32   # feet/min
     roc = -1*value if sign else value
@@ -709,6 +860,10 @@ def vr60ins(msg):
         int: vertical rate in feet/minutes
     """
     d = util.hex2bin(data(msg))
+
+    if d[45] == '0':
+        return None
+
     sign = d[46]    # 1 -> minus
     value = util.bin2int(d[47:56]) * 32   # feet/min
     roc = -1*value if sign else value
@@ -724,6 +879,10 @@ def BDS(msg):
     Returns:
         String or None: Version: "BDS20", "BDS40", "BDS50", or "BDS60". Or None, if nothing matched
     """
+
+    if isnull(msg):
+        return None
+
     is20 = isBDS20(msg)
     is40 = isBDS40(msg)
     is44 = isBDS44(msg)
