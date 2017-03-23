@@ -315,7 +315,7 @@ def isBDS44(msg, rev=False):
         return False
 
     vw = wind44(msg, rev=rev)
-    if vw and vw[0] > 250:
+    if vw is not None and vw[0] > 250:
         result &= False
 
     # if temp44(msg):
@@ -481,14 +481,14 @@ def isBDS50(msg):
             result &= False
 
     gs = gs50(msg)
-    if gs and gs > 600:
+    if gs is not None and gs > 600:
         result &= False
 
     tas = tas50(msg)
-    if tas and tas > 500:
+    if tas is not None and tas > 500:
         result &= False
 
-    if gs and tas and abs(tas50(msg) - gs50(msg)) > 200:
+    if (gs is not None) and (tas is not None) and (abs(tas - gs) > 200):
         result &= False
 
     return result
@@ -626,19 +626,19 @@ def isBDS53(msg):
         return False
 
     ias = ias53(msg)
-    if ias and ias > 500:
+    if ias is not None and ias > 500:
         result &= False
 
     mach = mach53(msg)
-    if mach and mach > 1:
+    if mach is not None and mach > 1:
         result &= False
 
     tas = tas53(msg)
-    if tas and tas > 500:
+    if tas is not None and tas > 500:
         result &= False
 
     vr = vr53(msg)
-    if vr and abs(vr) > 8000:
+    if vr is not None and abs(vr) > 8000:
         result &= False
 
     return result
@@ -767,19 +767,19 @@ def isBDS60(msg):
         return False
 
     ias = ias60(msg)
-    if ias and ias > 500:
+    if ias is not None and ias > 500:
         result &= False
 
     mach = mach60(msg)
-    if mach and mach > 1:
+    if mach is not None and mach > 1:
         result &= False
 
     vrb = vr60baro(msg)
-    if vrb and abs(vrb) > 5000:
+    if vrb is not None and abs(vrb) > 5000:
         result &= False
 
     vri = vr60ins(msg)
-    if vri and abs(vri) > 5000:
+    if vri is not None and abs(vri) > 5000:
         result &= False
 
     return result
