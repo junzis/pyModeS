@@ -856,7 +856,7 @@ def vr60baro(msg):
 
     sign = d[35]    # 1 -> minus
     value = util.bin2int(d[36:45]) * 32   # feet/min
-    roc = -1*value if sign else value
+    roc = value if sign else -1*value
     return roc
 
 
@@ -876,7 +876,7 @@ def vr60ins(msg):
 
     sign = d[46]    # 1 -> minus
     value = util.bin2int(d[47:56]) * 32   # feet/min
-    roc = -1*value if sign else value
+    roc = value if sign else -1*value
     return roc
 
 
