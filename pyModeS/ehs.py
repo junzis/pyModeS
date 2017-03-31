@@ -127,8 +127,48 @@ def df20alt(msg):
 
     return alt
 
+
 # ------------------------------------------
-# DF 20/21, BDS 2,0
+# BDS 1,7
+# Common usage GICB capability report
+# ------------------------------------------
+
+def isBDS17(msg):
+    """Check if a message is likely to be BDS code 1,7
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+
+    if isnull(msg):
+        return False
+
+    d = util.hex2bin(data(msg))
+
+    result = True
+
+    if util.bin2int(d[28:56]) != 0:
+        result &= False
+
+    return result
+
+def cap17(msg):
+    allbds = ['05', '06', '07', '08', '09', '0A', '20', '21', '40', '41',
+              '42', '43', '44', '45', '48', '50', '51', '52', '53', '54',
+              '55', '56', '5F', '60', 'NA', 'NA', 'E1', 'E2']
+
+    d = util.hex2bin(data(msg))
+    idx = [i for i, v in enumerate(d[:28]) if v=='1']
+    capacity = ['BDS'+allbds[i] for i in idx if allbds[i] is not 'NA']
+
+    return capacity
+
+# ------------------------------------------
+# BDS 2,0
+# Aircraft identification
 # ------------------------------------------
 
 def isBDS20(msg):
@@ -187,7 +227,8 @@ def callsign(msg):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 4,0
+# BDS 4,0
+# Selected vertical intention
 # ------------------------------------------
 
 def isBDS40(msg):
@@ -276,7 +317,8 @@ def p40baro(msg):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 4,4
+# BDS 4,4
+# Meteorological routine air report
 # ------------------------------------------
 
 def isBDS44(msg, rev=False):
@@ -442,7 +484,7 @@ def hum44(msg, rev=False):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 5,0
+# BDS 5,0
 # Track and turn report
 # ------------------------------------------
 
@@ -594,7 +636,7 @@ def tas50(msg):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 5,3
+# BDS 5,3
 # Air-referenced state vector
 # ------------------------------------------
 
@@ -737,7 +779,7 @@ def vr53(msg):
 
 
 # ------------------------------------------
-# DF 20/21, BDS 6,0
+# BDS 6,0
 # ------------------------------------------
 
 def isBDS60(msg):
@@ -773,12 +815,11 @@ def isBDS60(msg):
     if mach is not None and mach > 1:
         result &= False
 
-    vrb = vr60baro(msg)
-    if vrb is not None and abs(vrb) > 5000:
-        result &= False
+
+    # leave out the check from vr60baro, due to very noisy measurement
 
     vri = vr60ins(msg)
-    if vri is not None and abs(vri) > 5000:
+    if vri is not None and abs(vri) > 10000:
         result &= False
 
     return result
@@ -841,7 +882,7 @@ def mach60(msg):
 
 
 def vr60baro(msg):
-    """Vertical rate from barometric measurement
+    """Vertical rate from barometric measurement, this value may be very noisy.
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string
@@ -893,6 +934,7 @@ def BDS(msg):
     if isnull(msg):
         return None
 
+    is17 = isBDS17(msg)
     is20 = isBDS20(msg)
     is40 = isBDS40(msg)
     is44 = isBDS44(msg)
@@ -901,12 +943,12 @@ def BDS(msg):
     is53 = isBDS53(msg)
     is60 = isBDS60(msg)
 
-    BDS = ["BDS20", "BDS40", "BDS44", "BDS44REV", "BDS50", "BDS53", "BDS60"]
-    isBDS = [is20, is40, is44, is44rev, is50, is53, is60]
+    BDS = ["BDS17", "BDS20", "BDS40", "BDS44", "BDS44REV", "BDS50", "BDS53", "BDS60"]
+    isBDS = [is17, is20, is40, is44, is44rev, is50, is53, is60]
 
     if sum(isBDS) == 0:
         return None
-    if sum(isBDS) == 1:
+    elif sum(isBDS) == 1:
         return BDS[isBDS.index(True)]
     else:
         return [bds for (bds, i) in zip(BDS, isBDS) if i]
