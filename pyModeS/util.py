@@ -85,3 +85,16 @@ def floor(x):
         eg.: floor(3.6) = 3, while floor(-3.6) = -4
     """
     return int(math.floor(x))
+
+
+def bin2gray(binary, nbits):
+    """Convert binary to greycode"""
+    graycode = binary
+    for i in range(1, nbits):
+        bit = str(int(binary[i-1]) ^ int(binary[i]))
+        graycode = str(graycode[:i]) + str(bit)
+    return graycode
+
+def gray2bin(greycode, nbits):
+    """Convert greycode to binary"""
+    return bin2gray(greycode, nbits)    # simply XOR again

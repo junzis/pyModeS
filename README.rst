@@ -48,7 +48,8 @@ Usage
     import pyModeS as pms
 
 
-Common function for Mode-S message:
+Common functions:
+*****************
 
 .. code:: python
 
@@ -59,8 +60,12 @@ Common function for Mode-S message:
     pms.bin2int(str)    # Convert binary string to integer
     pms.hex2int(str)    # Convert hexadecimal string to integer
 
+    pms.bin2gray(str)    # Convert binary string to grey code
+    pms.gray2bin(str)    # Convert grey code to binary string
+
 
 Core functions for ADS-B decoding:
+**********************************
 
 .. code:: python
 
@@ -83,17 +88,31 @@ Core functions for ADS-B decoding:
     pms.adsb.airborne_velocity(msg)
 
 
-**Hint: When you have a fix position of the aircraft, it is convenient to
+Hint: When you have a fix position of the aircraft, it is convenient to
 use `position_with_ref()` method to decode with only one position message
 (either odd or even). This works with both airborne and surface position
 messages. But the reference position shall be with in 180NM (airborne)
-or 45NM (surface) of the true position.**
+or 45NM (surface) of the true position.
+
+Core functions for ELS decoding:
+********************************
+
+.. code:: python
+
+    pms.els.icao(msg)       # ICAO address
+    pms.els.df4alt(msg)     # Altitude from any DF4 message
+    pms.ehs.df5id(msg)     # Squawk code from any DF5 message
+
 
 Core functions for EHS decoding:
+********************************
 
 .. code:: python
 
     pms.ehs.icao(msg)       # ICAO address
+    pms.ehs.df20alt(msg)    # Altitude from any DF20 message
+    pms.ehs.df21id(msg)     # Squawk code from any DF21 message
+
     pms.ehs.BDS(msg)        # Comm-B Data Selector Version
 
     # for BDS version 2,0

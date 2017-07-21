@@ -18,65 +18,15 @@ A python package for decoding ModeS (DF20, DF21) messages.
 """
 
 from __future__ import absolute_import, print_function, division
-from . import util
+from . import util, modes_common
 
-def df(msg):
-    """Get the downlink format (DF) number
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        int: DF number
-    """
-    return util.df(msg)
-
+def icao(msg):
+    return modes_common.icao(msg)
 
 def data(msg):
     """Return the data frame in the message, bytes 9 to 22"""
     return msg[8:22]
 
-
-def icao(msg):
-    """Calculate the ICAO address from an Mode-S message
-    with DF4, DF5, DF20, DF21
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        String: ICAO address in 6 bytes hexadecimal string
-    """
-
-    if df(msg) not in (4, 5, 20, 21):
-        # raise RuntimeError("Message DF must be in (4, 5, 20, 21)")
-        return None
-
-    c0 = util.bin2int(util.crc(msg, encode=True))
-    c1 = util.hex2int(msg[-6:])
-    icao = '%06X' % (c0 ^ c1)
-    return icao
-
-
-def checkbits(data, sb, msb, lsb):
-    """Check if the status bit and field bits are consistency. This Function
-    is used for checking BDS code versions.
-    """
-
-    # status bit, most significant bit, least significant bit
-    status = int(data[sb-1])
-    value = util.bin2int(data[msb-1:lsb])
-
-    if not status:
-        if value != 0:
-            return False
-
-    return True
-
-
-# ------------------------------------------
-# Common functions
-# ------------------------------------------
 def isnull(msg):
     """check if the data bits are all zeros
 
@@ -93,9 +43,27 @@ def isnull(msg):
     else:
         return True
 
+def checkbits(data, sb, msb, lsb):
+    """Check if the status bit and field bits are consistency. This Function
+    is used for checking BDS code versions.
+    """
+
+    # status bit, most significant bit, least significant bit
+    status = int(data[sb-1])
+    value = util.bin2int(data[msb-1:lsb])
+
+    if not status:
+        if value != 0:
+            return False
+
+    return True
+
+# ------------------------------------------
+# Common functions
+# ------------------------------------------
 
 def df20alt(msg):
-    """Computes the altitude from DF20  bit 20-32
+    """Computes the altitude from DF20 message, bit 20-32
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -104,29 +72,26 @@ def df20alt(msg):
         int: altitude in ft
     """
 
-    if df(msg) != 20:
+    if util.df(msg) != 20:
         raise RuntimeError("Message must be Downlink Format 20.")
 
-    # Altitude code, bit 20-32
-    mbin = util.hex2bin(msg)
-
-    mbit = mbin[25]   # M bit: 26
-    qbit = mbin[27]   # Q bit: 28
+    return modes_common.altcode(msg)
 
 
-    if mbit == '0':         # unit in ft
-        if qbit == '1':     # 25ft interval
-            vbin = mbin[19:25] + mbin[26] + mbin[28:32]
-            alt = util.bin2int(vbin) * 25 - 1000
-        if qbit == '0':     # 100ft interval
-            # to be implemented
-            alt = None
-    if mbit == '1':         # unit in meter
-        vbin = mbin[19:25] + mbin[26:31]
-        alt = int(util.bin2int(vbin) * 3.28084)  # convert to ft
+def df21id(msg):
+    """Computes identity (squawk code) from DF21, bit 20-32
 
-    return alt
+    Args:
+        msg (String): 28 bytes hexadecimal message string
 
+    Returns:
+        string: squawk code
+    """
+
+    if util.df(msg) != 21:
+        raise RuntimeError("Message must be Downlink Format 21.")
+
+    return modes_common.idcode(msg)
 
 # ------------------------------------------
 # BDS 1,7
