@@ -6,11 +6,17 @@ implemented to decode the following messages:
 
 -  Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)
 
-   -  aircraft information that contains: ICAO address, position,
-      altitude, velocity (ground speed), callsign, etc.
+   -  aircraft information that contains: ICAO address, position, altitude, velocity (ground speed), callsign, etc.
+
+-  Mode-S Elementary Surveillance (ELS) (DF4 and DF5).
+
+   - DF4: Altitude
+   - DF5: Squawk code
 
 -  Mode-S Enhanced Surveillance (EHS) (DF20 and DF21). Additional information in response to SSR interrogation, such as: true airspeed, indicated airspeed, mach number, wind, temperature, etc.
 
+   - DF20: Altitude
+   - DF21: Squawk code
    - BDS 2,0   Aircraft identification
    - BDS 2,1   Aircraft and airline registration markings
    - BDS 4,0   Selected vertical intention
