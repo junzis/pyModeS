@@ -153,9 +153,24 @@ def isBDS17(msg):
     if util.bin2int(d[28:56]) != 0:
         result &= False
 
+    caps = cap17(msg)
+
+    # basic BDS codes for ADS-B shall be supported
+    #   assuming ADS-B out is installed (2017EU/2020US mandate)
+    if not set(['BDS05', 'BDS06', 'BDS09', 'BDS20']).issubset(l):
+        result &= False
+
     return result
 
 def cap17(msg):
+    """Extract capacities from BDS 1,7 message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        list: list of suport BDS codes
+    """
     allbds = ['05', '06', '07', '08', '09', '0A', '20', '21', '40', '41',
               '42', '43', '44', '45', '48', '50', '51', '52', '53', '54',
               '55', '56', '5F', '60', 'NA', 'NA', 'E1', 'E2']
