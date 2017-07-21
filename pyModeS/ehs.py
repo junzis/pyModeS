@@ -117,12 +117,12 @@ def df20alt(msg):
     if mbit == '0':         # unit in ft
         if qbit == '1':     # 25ft interval
             vbin = mbin[19:25] + mbin[26] + mbin[28:32]
-            alt = util.bin2int(vbin) * 25
+            alt = util.bin2int(vbin) * 25 - 1000
         if qbit == '0':     # 100ft interval
             # to be implemented
             alt = None
     if mbit == '1':         # unit in meter
-        vbin = mbin[19:25] + mbin[26:32]
+        vbin = mbin[19:25] + mbin[26:31]
         alt = int(util.bin2int(vbin) * 3.28084)  # convert to ft
 
     return alt
