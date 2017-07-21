@@ -679,4 +679,8 @@ def altitude_diff(msg):
     msgbin = util.hex2bin(msg)
     sign = -1 if int(msgbin[80]) else 1
     value = util.bin2int(msgbin[81:88]) * 25
-    return sign * value
+
+    if value == 0 or value == 127:
+        return None
+    else:
+        return sign * value
