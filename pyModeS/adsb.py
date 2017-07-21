@@ -492,7 +492,7 @@ def nic(msg):
         int: NIC number (from 0 to 11), -1 if not applicable
     """
     if typecode(msg) < 9 or typecode(msg) > 18:
-        raise RuntimeError("%s: Not a airborne position message" % msg)
+        raise RuntimeError("%s: Not a airborne position message, expecting 8<TC<19" % msg)
 
     msgbin = util.hex2bin(msg)
     tc = typecode(msg)
@@ -553,7 +553,7 @@ def velocity(msg):
         return airborne_velocity(msg)
 
     else:
-        raise RuntimeError("incorrect or inconsistant message types")
+        raise RuntimeError("incorrect or inconsistant message types, expecting 4<TC<9 or TC=19")
 
 def speed_heading(msg):
     """Get speed and heading only from the velocity message
@@ -582,21 +582,21 @@ def airborne_velocity(msg):
     """
 
     if typecode(msg) != 19:
-        raise RuntimeError("%s: Not a airborne velocity message" % msg)
+        raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
 
     msgbin = util.hex2bin(msg)
 
     subtype = util.bin2int(msgbin[37:40])
 
     if subtype in (1, 2):
-        v_ew_sign = util.bin2int(msgbin[45])
+        v_ew_sign = -1 if int(msgbin[45]) else 1
         v_ew = util.bin2int(msgbin[46:56]) - 1       # east-west velocity
 
-        v_ns_sign = util.bin2int(msgbin[56])
+        v_ns_sign = -1 if int(msgbin[56]) else 1
         v_ns = util.bin2int(msgbin[57:67]) - 1       # north-south velocity
 
-        v_we = -1*v_ew if v_ew_sign else v_ew
-        v_sn = -1*v_ns if v_ns_sign else v_ns
+        v_we = v_ew_sign * v_ew
+        v_sn = v_ns_sign * v_ns
 
         spd = math.sqrt(v_sn*v_sn + v_we*v_we)  # unit in kts
 
@@ -612,9 +612,9 @@ def airborne_velocity(msg):
 
         tag = 'AS'
 
-    vr_sign = util.bin2int(msgbin[68])
+    vr_sign = -1 if int(msgbin[68]) else 1
     vr = (util.bin2int(msgbin[69:78]) - 1) * 64     # vertical rate, fpm
-    rocd = -1*vr if vr_sign else vr                 # rate of climb/descend
+    rocd = vr_sign * vr
 
     return int(spd), round(hdg, 1), int(rocd), tag
 
@@ -631,7 +631,7 @@ def surface_velocity(msg):
     """
 
     if typecode(msg) < 5 or typecode(msg) > 8:
-        raise RuntimeError("%s: Not a surface message" % msg)
+        raise RuntimeError("%s: Not a surface message, expecting 5<TC<8" % msg)
 
     msgbin = util.hex2bin(msg)
 
@@ -661,3 +661,22 @@ def surface_velocity(msg):
         spd = round(spd, 2)
 
     return spd, hdg, 0, 'GS'
+
+def altitude_diff(msg):
+    """Decode the differece between GNSS and barometric altitude
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, TC=19
+
+    Returns:
+        int: Altitude difference in ft. Negative value indicates GNSS altitude
+            below barometric altitude.
+    """
+
+    if typecode(msg) != 19:
+        raise RuntimeError("incorrect message types, expecting TC=19")
+
+    msgbin = util.hex2bin(msg)
+    sign = -1 if int(msgbin[80]) else 1
+    value = util.bin2int(msgbin[81:88]) * 25
+    return sign * value

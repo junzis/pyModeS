@@ -8,7 +8,7 @@ def test_ehs_icao():
 
 
 def test_df20alt():
-    assert ehs.df20alt("A02014B400000000000000F9D514") == 33300
+    assert ehs.df20alt("A02014B400000000000000F9D514") == 32300
 
 
 def test_ehs_BDS():

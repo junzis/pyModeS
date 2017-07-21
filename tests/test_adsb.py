@@ -61,6 +61,7 @@ def test_adsb_velocity():
     assert vgs == (159, 182.9, -832, 'GS')
     assert vas == (376, 244.0, -2304, 'AS')
     assert vgs_surface == (19.0, 42.2, 0 , 'GS')
+    assert adsb.altitude_diff('8D485020994409940838175B284F') == 575
 
 
 def test_nic():
