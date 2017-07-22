@@ -498,7 +498,7 @@ def isBDS50(msg):
         result &= True
     else:
         roll = abs(roll50(msg))
-        if roll and roll > 30:
+        if roll and roll > 60:
             result &= False
 
     gs = gs50(msg)
