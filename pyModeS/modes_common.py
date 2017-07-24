@@ -24,7 +24,8 @@ def icao(msg):
 
 
 def idcode(msg):
-    """Computes identity (squawk code) from DF5 or DF21 message, bit 20-32
+    """Computes identity (squawk code) from DF5 or DF21 message, bit 20-32.
+    credit: @fbyrkjeland
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -61,7 +62,8 @@ def idcode(msg):
 
 
 def altcode(msg):
-    """Computes the altitude from DF4 or DF20 message, bit 20-32
+    """Computes the altitude from DF4 or DF20 message, bit 20-32.
+    credit: @fbyrkjeland
 
     Args:
         msg (String): 28 bytes hexadecimal message string
