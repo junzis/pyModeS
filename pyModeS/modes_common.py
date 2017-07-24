@@ -102,11 +102,11 @@ def altcode(msg):
             D4 = mbin[31]
 
             # standard greycode
-            gc5 = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4
+            gc5 = C2 + C1 + B4 + B2 + B1 + A4 + A2 + A1
             N5 = int(util.gray2bin(gc5, 8), 2)
 
             # in 100-ft step must be converted
-            gc1 = C1 + C2 + C4
+            gc1 = D4 + D2 + D1
             N1 = int(util.gray2bin(gc1, 3), 2) - 1
 
             if N1 == 6:
