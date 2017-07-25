@@ -532,7 +532,7 @@ def roll50(msg):
 
     sign = int(d[1])    # 1 -> left wing down
     value = util.bin2int(d[2:11]) * 45.0 / 256.0    # degree
-    angle = -1 * value if sign else value
+    angle = value - 90.0 if sign else value
     return round(angle, 1)
 
 
@@ -552,7 +552,8 @@ def trk50(msg):
 
     sign = int(d[12])   # 1 -> west
     value = util.bin2int(d[13:23]) * 90.0 / 512.0    # degree
-    angle = 360 - value if sign else value
+    angle = value - 180 if sign else value
+    angle = angle + 360 if angle < 0. else angle
     return round(angle, 1)
 
 
@@ -821,7 +822,8 @@ def hdg60(msg):
 
     sign = int(d[1])    # 1 -> west
     value = util.bin2int(d[2:12]) * 90 / 512.0  # degree
-    hdg = 360 - value if sign else value
+    hdg = value - 180 if sign else value
+    hdg = hdg + 360 if hdg < 0. else hdg
     return round(hdg, 1)
 
 
