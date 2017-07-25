@@ -50,19 +50,19 @@ def test_ehs_BDS60_functions():
     assert ehs.vr60baro("A000029CFFBAA11E2004727281F1") == 0
     assert ehs.vr60ins("A000029CFFBAA11E2004727281F1") == 3648
 
-def test_greycode_to_altitude():
-    assert modes_common.grey2alt('00000000010') == -1000
-    assert modes_common.grey2alt('00000001010') == -500
-    assert modes_common.grey2alt('00000011011') == -100
-    assert modes_common.grey2alt('00000011010') == 0
-    assert modes_common.grey2alt('00000011110') == 100
-    assert modes_common.grey2alt('00000010011') == 600
-    assert modes_common.grey2alt('00000110010') == 1000
-    assert modes_common.grey2alt('00001001001') == 5800
-    assert modes_common.grey2alt('00011100100') == 10300
-    assert modes_common.grey2alt('01100011010') == 32000
-    assert modes_common.grey2alt('01110000100') == 46300
-    assert modes_common.grey2alt('01010101100') == 50200
-    assert modes_common.grey2alt('11011110100') == 73200
-    assert modes_common.grey2alt('10000000011') == 126600
-    assert modes_common.grey2alt('10000000001') == 126700
+def test_graycode_to_altitude():
+    assert modes_common.gray2alt('00000000010') == -1000
+    assert modes_common.gray2alt('00000001010') == -500
+    assert modes_common.gray2alt('00000011011') == -100
+    assert modes_common.gray2alt('00000011010') == 0
+    assert modes_common.gray2alt('00000011110') == 100
+    assert modes_common.gray2alt('00000010011') == 600
+    assert modes_common.gray2alt('00000110010') == 1000
+    assert modes_common.gray2alt('00001001001') == 5800
+    assert modes_common.gray2alt('00011100100') == 10300
+    assert modes_common.gray2alt('01100011010') == 32000
+    assert modes_common.gray2alt('01110000100') == 46300
+    assert modes_common.gray2alt('01010101100') == 50200
+    assert modes_common.gray2alt('11011110100') == 73200
+    assert modes_common.gray2alt('10000000011') == 126600
+    assert modes_common.gray2alt('10000000001') == 126700
