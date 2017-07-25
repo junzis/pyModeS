@@ -101,8 +101,8 @@ def altcode(msg):
             B4 = mbin[30]
             D4 = mbin[31]
 
-            greystr =  D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
-            alt = grey2alt(greystr)
+            graystr =  D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
+            alt = gray2alt(graystr)
 
     if mbit == '1':         # unit in meter
         vbin = mbin[19:25] + mbin[26:31]
@@ -110,7 +110,7 @@ def altcode(msg):
 
     return alt
 
-def grey2alt(codestr):
+def gray2alt(codestr):
     gc500 = codestr[:8]
     n500 = util.gray2int(gc500)
 
