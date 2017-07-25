@@ -392,18 +392,28 @@ def temp44(msg, rev=False):
     d = util.hex2bin(data(msg))
 
     if not rev:
-        if d[22] == '0':
-            return None
+        # if d[22] == '0':
+        #     return None
 
         sign = int(d[23])
-        temp = util.bin2int(d[24:34]) * 0.125   # celsius
+        value = util.bin2int(d[24:34])
+
+        if sign:
+            value = value - 1024
+
+        temp = value * 0.125   # celsius
         temp = round(temp, 1)
     else:
-        if d[23] == '0':
-            return None
+        # if d[23] == '0':
+        #     return None
 
         sign = int(d[24])
-        temp = util.bin2int(d[25:35]) * 0.125   # celsius
+        value = util.bin2int(d[25:35])
+
+        if sign:
+            value = value - 1024
+
+        temp = value * 0.125   # celsius
         temp = round(temp, 1)
 
     return -1*temp if sign else temp
@@ -531,8 +541,12 @@ def roll50(msg):
         return None
 
     sign = int(d[1])    # 1 -> left wing down
-    value = util.bin2int(d[2:11]) * 45.0 / 256.0    # degree
-    angle = -1 * value if sign else value
+    value = util.bin2int(d[2:11])
+
+    if sign:
+        value = value - 512
+
+    angle = value * 45.0 / 256.0    # degree
     return round(angle, 1)
 
 
@@ -551,9 +565,18 @@ def trk50(msg):
         return None
 
     sign = int(d[12])   # 1 -> west
-    value = util.bin2int(d[13:23]) * 90.0 / 512.0    # degree
-    angle = 360 - value if sign else value
-    return round(angle, 1)
+    value = util.bin2int(d[13:23])
+
+    if sign:
+        value = value - 1024
+
+    trk = value * 90.0 / 512.0
+
+    # convert from [-180, 180] to [0, 360]
+    if trk < 0:
+        trk = 360 + trk
+
+    return round(trk, 1)
 
 
 def gs50(msg):
@@ -592,8 +615,11 @@ def rtrk50(msg):
         return None
 
     sign = int(d[35])    # 1 -> minus
-    value = util.bin2int(d[36:45]) * 8.0 / 256.0    # degree / sec
-    angle = -1 * value if sign else value
+    value = util.bin2int(d[36:45])
+    if sign:
+        value = value - 512
+
+    angle = value * 8.0 / 256.0    # degree / sec
     return round(angle, 3)
 
 
@@ -679,10 +705,19 @@ def hdg53(msg):
     if d[0] == '0':
         return None
 
-    sign = int(d[1])                               # 1 -> west
-    value = util.bin2int(d[2:12]) * 90.0 / 512.0   # degree
-    angle = 360 - value if sign else value
-    return round(angle, 1)
+    sign = int(d[1])    # 1 -> west
+    value = util.bin2int(d[2:12])
+
+    if sign:
+        value = value - 1024
+
+    hdg = value * 90.0 / 512.0   # degree
+
+    # convert from [-180, 180] to [0, 360]
+    if hdg < 0:
+        hdg = 360 + hdg
+
+    return round(hdg, 1)
 
 
 def ias53(msg):
@@ -752,9 +787,12 @@ def vr53(msg):
     if d[46] == '0':
         return None
 
-    sign = d[47]                            # 1 -> minus
-    value = util.bin2int(d[48:56]) * 64     # feet/min
-    roc = -1*value if sign else value
+    sign = d[47]    # 1 -> minus
+    value = util.bin2int(d[48:56])
+
+    if sign:
+        value = value - 256
+    roc = value * 64     # feet/min
     return roc
 
 
@@ -795,7 +833,6 @@ def isBDS60(msg):
     if mach is not None and mach > 1:
         result &= False
 
-
     # leave out the check from vr60baro, due to very noisy measurement
 
     vri = vr60ins(msg)
@@ -820,8 +857,17 @@ def hdg60(msg):
         return None
 
     sign = int(d[1])    # 1 -> west
-    value = util.bin2int(d[2:12]) * 90 / 512.0  # degree
-    hdg = 360 - value if sign else value
+    value = util.bin2int(d[2:12])
+
+    if sign:
+        value = value - 1024
+
+    hdg = value * 90 / 512.0  # degree
+
+    # convert from [-180, 180] to [0, 360]
+    if hdg < 0:
+        hdg = 360 + hdg
+
     return round(hdg, 1)
 
 
@@ -876,8 +922,12 @@ def vr60baro(msg):
         return None
 
     sign = d[35]    # 1 -> minus
-    value = util.bin2int(d[36:45]) * 32   # feet/min
-    roc = value if sign else -1*value
+    value = util.bin2int(d[36:45])
+
+    if sign:
+        value = value - 512
+
+    roc = value * 32   # feet/min
     return roc
 
 
@@ -896,8 +946,12 @@ def vr60ins(msg):
         return None
 
     sign = d[46]    # 1 -> minus
-    value = util.bin2int(d[47:56]) * 32   # feet/min
-    roc = value if sign else -1*value
+    value = util.bin2int(d[47:56])
+
+    if sign:
+        value = value - 512
+
+    roc = value * 32   # feet/min
     return roc
 
 

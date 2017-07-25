@@ -14,10 +14,9 @@ def test_df20alt():
 def test_ehs_BDS():
     assert ehs.BDS("A0001838201584F23468207CDFA5") == 'BDS20'
     assert ehs.BDS("A0001839CA3800315800007448D9") == 'BDS40'
-    assert ehs.BDS("A0000691E8D9DF1AFFB7F740A137") == 'BDS44'
+    assert ehs.BDS("A000031DBAA9DD18622C441330E9") == 'BDS44'
     assert ehs.BDS("A000139381951536E024D4CCF6B5") == 'BDS50'
-    assert ehs.BDS("A000029CFFBAA11E2004727281F1") == 'BDS60'
-
+    assert ehs.BDS("A00004128F39F91A7E27C46ADC21") == 'BDS60'
 
 def test_ehs_BDS20_callsign():
     assert ehs.callsign("A000083E202CC371C31DE0AA1CCF") == 'KLM1017_'
@@ -29,26 +28,21 @@ def test_ehs_BDS40_functions():
     assert ehs.alt40fms("A000029C85E42F313000007047D3") == 3008
     assert ehs.p40baro("A000029C85E42F313000007047D3") == 1020.0
 
-def test_ehs_BDS44_functions():
-    assert ehs.wind44("A0000691E8D9DF1AFFB7F740A137") == (54.0, 168.0)
-    assert ehs.temp44("A0000691E8D9DF1AFFB7F740A137") == -13.4
-    assert ehs.p44("A0000691E8D9DF1AFFB7F740A137") == 2029
-    assert ehs.hum44("A0000691E8D9DF1AFFB7F740A137") == 85.9
-
 def test_ehs_BDS50_functions():
     assert ehs.roll50("A000139381951536E024D4CCF6B5") == 2.1
     assert ehs.trk50("A000139381951536E024D4CCF6B5") == 114.3
     assert ehs.gs50("A000139381951536E024D4CCF6B5") == 438
     assert ehs.rtrk50("A000139381951536E024D4CCF6B5") == 0.125
     assert ehs.tas50("A000139381951536E024D4CCF6B5") == 424
-
+    # signed values
+    assert ehs.roll50("A0001691FFD263377FFCE02B2BF9") == -0.4
 
 def test_ehs_BDS60_functions():
-    assert ehs.hdg60("A000029CFFBAA11E2004727281F1") == 180.9
-    assert ehs.ias60("A000029CFFBAA11E2004727281F1") == 336
-    assert ehs.mach60("A000029CFFBAA11E2004727281F1") == 0.48
-    assert ehs.vr60baro("A000029CFFBAA11E2004727281F1") == 0
-    assert ehs.vr60ins("A000029CFFBAA11E2004727281F1") == 3648
+    assert ehs.hdg60("A00004128F39F91A7E27C46ADC21") == 42.7
+    assert ehs.ias60("A00004128F39F91A7E27C46ADC21") == 252
+    assert ehs.mach60("A00004128F39F91A7E27C46ADC21") == 0.42
+    assert ehs.vr60baro("A00004128F39F91A7E27C46ADC21") == -1920
+    assert ehs.vr60ins("A00004128F39F91A7E27C46ADC21") == -1920
 
 def test_graycode_to_altitude():
     assert modes_common.gray2alt('00000000010') == -1000

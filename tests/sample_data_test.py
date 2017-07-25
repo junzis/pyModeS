@@ -62,7 +62,7 @@ def ehs_decode_all(n=None):
 
             if vBDS == "BDS44":
                 print(ts, m, icao, vBDS, ehs.wind44(m),
-                      ehs.temp44(m), ehs.p44(m))
+                      ehs.temp44(m), ehs.p44(m), ehs.hum44(m))
 
             if vBDS == "BDS50":
                 print(ts, m, icao, vBDS, ehs.roll50(m), ehs.trk50(m),
@@ -79,5 +79,5 @@ def ehs_decode_all(n=None):
             print(ts, m, icao, 'UNKNOWN')
 
 if __name__ == '__main__':
-    # adsb_decode_all(100)
+    adsb_decode_all(100)
     ehs_decode_all(100)
