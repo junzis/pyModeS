@@ -87,14 +87,11 @@ def floor(x):
     return int(math.floor(x))
 
 
-def bin2gray(binary, nbits):
-    """Convert binary to greycode"""
-    graycode = binary
-    for i in range(1, nbits):
-        bit = str(int(binary[i-1]) ^ int(binary[i]))
-        graycode = str(graycode[:i]) + str(bit)
-    return graycode
-
-def gray2bin(greycode, nbits):
-    """Convert greycode to binary"""
-    return bin2gray(greycode, nbits)    # simply XOR again
+def gray2int(graystr):
+    """Convert greycode to binary (DF4, 20 altitude coding)"""
+    num = bin2int(graystr)
+    num ^= (num >> 8)
+    num ^= (num >> 4)
+    num ^= (num >> 2)
+    num ^= (num >> 1)
+    return num

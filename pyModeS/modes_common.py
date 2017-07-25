@@ -95,29 +95,37 @@ def altcode(msg):
             A4 = mbin[24]
             # _ = mbin[25]
             B1 = mbin[26]
-            # _ = mbin[27]
+            # D1 = mbin[27]     # always zero
             B2 = mbin[28]
             D2 = mbin[29]
             B4 = mbin[30]
             D4 = mbin[31]
 
-            # standard greycode
-            gc5 = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4
-            N5 = int(util.gray2bin(gc5, 8), 2)
+            greystr =  D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
+            alt = grey2alt(greystr)
 
-            # in 100-ft step must be converted
-            gc1 = C1 + C2 + C4
-            N1 = int(util.gray2bin(gc1, 3), 2) - 1
-
-            if N1 == 6:
-                N1 = 4
-
-            if N5%2 != 0:
-                N1 = 4 - N1
-
-            alt = (N5*500 + N1*100) - 1200
     if mbit == '1':         # unit in meter
         vbin = mbin[19:25] + mbin[26:31]
         alt = int(util.bin2int(vbin) * 3.28084)  # convert to ft
 
+    return alt
+
+def grey2alt(codestr):
+    gc500 = codestr[:8]
+    n500 = util.gray2int(gc500)
+
+    # in 100-ft step must be converted first
+    gc100 = codestr[8:]
+    n100 = util.gray2int(gc100)
+
+    if n100 in [0, 5, 6]:
+        return None
+
+    if n100 == 7:
+        n100 = 5
+
+    if n500%2:
+        n100 = 6 - n100
+
+    alt = (n500*500 + n100*100) - 1300
     return alt
