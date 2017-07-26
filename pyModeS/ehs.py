@@ -833,11 +833,8 @@ def isBDS60(msg):
     if mach is not None and mach > 1:
         result &= False
 
-    # leave out the check from vr60baro, due to very noisy measurement
-
-    vri = vr60ins(msg)
-    if vri is not None and abs(vri) > 10000:
-        result &= False
+    # leave out the check from vertical rates,
+    #   due to very noisy measurement
 
     return result
 
