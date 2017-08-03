@@ -469,8 +469,13 @@ def altitude(msg):
     Returns:
         int: altitude in feet
     """
-    if typecode(msg) < 9 or typecode(msg) > 18:
+
+    if typecode(msg) < 5 or typecode(msg) > 18:
         raise RuntimeError("%s: Not a position message" % msg)
+
+    if typecode(msg) >=5 and typecode(msg) <=8:
+        # surface position, altitude 0
+        return 0
 
     msgbin = util.hex2bin(msg)
     q = msgbin[47]
