@@ -1,8 +1,7 @@
-A Python Mode-S Decoder
-=======================
+The Python Mode-S Decoder
+=========================
 
-Python library for Mode-S message decoding. Two separate methods are
-implemented to decode the following messages:
+Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
 -  Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)
 
@@ -25,7 +24,7 @@ implemented to decode the following messages:
    - BDS 5,3   Air-referenced state vector
    - BDS 6,0   Heading and speed report
 
-A detailed manual on Mode-S decoding is published by the author, at:
+Detailed manual on Mode-S decoding is published by the author, at:
 http://adsb-decode-guide.readthedocs.io
 
 
@@ -37,17 +36,19 @@ https://github.com/junzis/pyModeS
 API documentation at:
 http://pymodes.readthedocs.io
 
+
 Install
 -------
 
-Checkout source code, or install using pip:
+The easiest installation is to use pip:
 
 ::
 
     pip install pyModeS
 
-Usage
------
+
+Use the library
+---------------
 
 .. code:: python
 
@@ -66,8 +67,7 @@ Common functions:
     pms.bin2int(str)    # Convert binary string to integer
     pms.hex2int(str)    # Convert hexadecimal string to integer
 
-    pms.bin2gray(str)    # Convert binary string to grey code
-    pms.gray2bin(str)    # Convert grey code to binary string
+    pms.gray2int(str)    # Convert grey code to interger
 
 
 Core functions for ADS-B decoding:
@@ -94,7 +94,7 @@ Core functions for ADS-B decoding:
     pms.adsb.airborne_velocity(msg)
 
 
-Hint: When you have a fix position of the aircraft, it is convenient to
+Note: When you have a fix position of the aircraft, it is convenient to
 use `position_with_ref()` method to decode with only one position message
 (either odd or even). This works with both airborne and surface position
 messages. But the reference position shall be with in 180NM (airborne)
@@ -164,7 +164,7 @@ Core functions for EHS decoding:
 
 Developement
 ------------
-To run tests, run the following commands:
+To perform unit tests. First install ``tox`` through pip, Then, run the following commands:
 ```
 $ tox
 ```
