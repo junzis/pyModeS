@@ -339,9 +339,9 @@ def isBDS44(msg, rev=False):
     if vw is not None and vw[0] > 250:
         result &= False
 
-    # if temp44(msg):
-    #     if temp44(msg) > 60 or temp44(msg) < -80:
-    #         result &= False
+    if temp44(msg):
+        if temp44(msg) > 60 or temp44(msg) < -80:
+            result &= False
 
     return result
 
