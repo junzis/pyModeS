@@ -325,13 +325,18 @@ def isBDS44(msg, rev=False):
         result = result & checkbits(d, 5, 6, 23) \
             & checkbits(d, 35, 36, 46) & checkbits(d, 47, 48, 49) \
             & checkbits(d, 50, 51, 56)
-
+        # Bits 1-4 indicate source, values > 4 reserved and should not occur
+        if util.bin2int(d[0:4]) > 4:
+            result &= False
     else:
         # status bit 5, 15, 24, 36, 49
         result = result & checkbits(d, 5, 6, 14) \
             & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
             & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
-
+        # Bits 1-4 are reserved and should be zero
+        if util.bin2int(d[0:4]) != 0:
+            result &= False
+        
     if not result:
         return False
 
@@ -342,6 +347,8 @@ def isBDS44(msg, rev=False):
     if temp44(msg):
         if temp44(msg) > 60 or temp44(msg) < -80:
             result &= False
+    elif temp44(msg) == 0:
+        result &= False
 
     return result
 
