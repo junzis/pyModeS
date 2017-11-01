@@ -44,7 +44,7 @@ The easiest installation is to use pip:
 
 ::
 
-    pip install pyModeS
+  pip install pyModeS
 
 
 Use the library
@@ -52,7 +52,7 @@ Use the library
 
 .. code:: python
 
-    import pyModeS as pms
+  import pyModeS as pms
 
 
 Common functions:
@@ -60,14 +60,14 @@ Common functions:
 
 .. code:: python
 
-    pms.df(msg)                 # Downlink Format
-    pms.crc(msg, encode=False)  # Perform CRC or generate parity bit
+  pms.df(msg)                 # Downlink Format
+  pms.crc(msg, encode=False)  # Perform CRC or generate parity bit
 
-    pms.hex2bin(str)    # Convert hexadecimal string to binary string
-    pms.bin2int(str)    # Convert binary string to integer
-    pms.hex2int(str)    # Convert hexadecimal string to integer
+  pms.hex2bin(str)    # Convert hexadecimal string to binary string
+  pms.bin2int(str)    # Convert binary string to integer
+  pms.hex2int(str)    # Convert hexadecimal string to integer
 
-    pms.gray2int(str)    # Convert grey code to interger
+  pms.gray2int(str)    # Convert grey code to interger
 
 
 Core functions for ADS-B decoding:
@@ -75,23 +75,28 @@ Core functions for ADS-B decoding:
 
 .. code:: python
 
-    pms.adsb.icao(msg)
-    pms.adsb.callsign(msg)
+  pms.adsb.icao(msg)
+  pms.adsb.typecode(msg)
 
-    pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
-    pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
-    pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
+  # typecode 1-4
+  pms.adsb.callsign(msg)
 
-    pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
-    pms.adsb.airborne_position_with_ref(msg, lat_ref, lon_ref)
-    pms.adsb.surface_position_with_ref(msg, lat_ref, lon_ref)
+  # typecode 5-8 (surface) and 9-18 (airborne)
+  pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
+  pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
+  pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
 
-    pms.adsb.altitude(msg)
+  pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
+  pms.adsb.airborne_position_with_ref(msg, lat_ref, lon_ref)
+  pms.adsb.surface_position_with_ref(msg, lat_ref, lon_ref)
 
-    pms.adsb.velocity(msg)          # handles both surface & airborne messages
-    pms.adsb.speed_heading(msg)     # handles both surface & airborne messages
-    pms.adsb.surface_velocity(msg)
-    pms.adsb.airborne_velocity(msg)
+  pms.adsb.altitude(msg)
+
+  # typecode: 19
+  pms.adsb.velocity(msg)          # handles both surface & airborne messages
+  pms.adsb.speed_heading(msg)     # handles both surface & airborne messages
+  pms.adsb.surface_velocity(msg)
+  pms.adsb.airborne_velocity(msg)
 
 
 Note: When you have a fix position of the aircraft, it is convenient to
@@ -105,9 +110,9 @@ Core functions for ELS decoding:
 
 .. code:: python
 
-    pms.els.icao(msg)       # ICAO address
-    pms.els.df4alt(msg)     # Altitude from any DF4 message
-    pms.ehs.df5id(msg)     # Squawk code from any DF5 message
+  pms.els.icao(msg)       # ICAO address
+  pms.els.df4alt(msg)     # Altitude from any DF4 message
+  pms.ehs.df5id(msg)     # Squawk code from any DF5 message
 
 
 Core functions for EHS decoding:
@@ -115,56 +120,57 @@ Core functions for EHS decoding:
 
 .. code:: python
 
-    pms.ehs.icao(msg)       # ICAO address
-    pms.ehs.df20alt(msg)    # Altitude from any DF20 message
-    pms.ehs.df21id(msg)     # Squawk code from any DF21 message
+  pms.ehs.icao(msg)       # ICAO address
+  pms.ehs.df20alt(msg)    # Altitude from any DF20 message
+  pms.ehs.df21id(msg)     # Squawk code from any DF21 message
 
-    pms.ehs.BDS(msg)        # Comm-B Data Selector Version
+  pms.ehs.BDS(msg)        # Comm-B Data Selector Version
 
-    # for BDS version 2,0
-    pms.ehs.isBDS20(msg)    # Check if message is BDS 2,0
-    pms.ehs.callsign(msg)   # Aircraft callsign
+  # for BDS version 2,0
+  pms.ehs.isBDS20(msg)    # Check if message is BDS 2,0
+  pms.ehs.callsign(msg)   # Aircraft callsign
 
-    # for BDS version 4,0
-    pms.ehs.isBDS40(msg)    # Check if message is BDS 4,0
-    pms.ehs.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
-    pms.ehs.alt40fms(msg)   # FMS selected altitude (ft)
-    pms.ehs.p40baro(msg)    # Barometric pressure (mb)
+  # for BDS version 4,0
+  pms.ehs.isBDS40(msg)    # Check if message is BDS 4,0
+  pms.ehs.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
+  pms.ehs.alt40fms(msg)   # FMS selected altitude (ft)
+  pms.ehs.p40baro(msg)    # Barometric pressure (mb)
 
-    # for BDS version 4,4
-    pms.ehs.isBDS44(msg, rev=False) # Check if message is BDS 4,4
-    pms.ehs.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
-    pms.ehs.temp44(msg, rev=False)  # temperature (C)
-    pms.ehs.p44(msg, rev=False)     # pressure (hPa)
-    pms.ehs.hum44(msg, rev=False)   # humidity (%)
+  # for BDS version 4,4
+  pms.ehs.isBDS44(msg, rev=False) # Check if message is BDS 4,4
+  pms.ehs.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
+  pms.ehs.temp44(msg, rev=False)  # temperature (C)
+  pms.ehs.p44(msg, rev=False)     # pressure (hPa)
+  pms.ehs.hum44(msg, rev=False)   # humidity (%)
 
-    # for BDS version 5,0
-    pms.ehs.isBDS50(msg)    # Check if message is BDS 5,0
-    pms.ehs.roll50(msg)     # roll angle (deg)
-    pms.ehs.trk50(msg)      # track angle (deg)
-    pms.ehs.gs50(msg)       # ground speed (kt)
-    pms.ehs.rtrk50(msg)     # track angle rate (deg/sec)
-    pms.ehs.tas50(msg)      # true airspeed (kt)
+  # for BDS version 5,0
+  pms.ehs.isBDS50(msg)    # Check if message is BDS 5,0
+  pms.ehs.roll50(msg)     # roll angle (deg)
+  pms.ehs.trk50(msg)      # track angle (deg)
+  pms.ehs.gs50(msg)       # ground speed (kt)
+  pms.ehs.rtrk50(msg)     # track angle rate (deg/sec)
+  pms.ehs.tas50(msg)      # true airspeed (kt)
 
-    # for BDS version 5,3
-    pms.ehs.isBDS53(msg)    # Check if message is BDS 5,3
-    pms.ehs.hdg53(msg)      # magnetic heading (deg)
-    pms.ehs.ias53(msg)      # indicated airspeed (kt)
-    pms.ehs.mach53(msg)     # MACH number
-    pms.ehs.tas53(msg)      # true airspeed (kt)
-    pms.ehs.vr53(msg)       # vertical rate (fpm)
+  # for BDS version 5,3
+  pms.ehs.isBDS53(msg)    # Check if message is BDS 5,3
+  pms.ehs.hdg53(msg)      # magnetic heading (deg)
+  pms.ehs.ias53(msg)      # indicated airspeed (kt)
+  pms.ehs.mach53(msg)     # MACH number
+  pms.ehs.tas53(msg)      # true airspeed (kt)
+  pms.ehs.vr53(msg)       # vertical rate (fpm)
 
-    # for BDS version 6,0
-    pms.ehs.isBDS60(msg)    # Check if message is BDS 6,0
-    pms.ehs.hdg60(msg)      # heading (deg)
-    pms.ehs.ias60(msg)      # indicated airspeed (kt)
-    pms.ehs.mach60(msg)     # MACH number
-    pms.ehs.vr60baro(msg)   # barometric altitude rate (ft/min)
-    pms.ehs.vr60ins(msg)    # inertial vertical speed (ft/min)
+  # for BDS version 6,0
+  pms.ehs.isBDS60(msg)    # Check if message is BDS 6,0
+  pms.ehs.hdg60(msg)      # heading (deg)
+  pms.ehs.ias60(msg)      # indicated airspeed (kt)
+  pms.ehs.mach60(msg)     # MACH number
+  pms.ehs.vr60baro(msg)   # barometric altitude rate (ft/min)
+  pms.ehs.vr60ins(msg)    # inertial vertical speed (ft/min)
 
 Developement
 ------------
 To perform unit tests. First install ``tox`` through pip, Then, run the following commands:
-```
-$ tox
-```
+
+.. code:: bash
+
+  $ tox
