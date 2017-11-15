@@ -266,10 +266,9 @@ def position_with_ref(msg, lat_ref, lon_ref):
     of the true position.
 
     Args:
-        msg0 (string): even message (28 bytes hexadecimal string)
-        msg1 (string): odd message (28 bytes hexadecimal string)
-        t0 (int): timestamps for the even message
-        t1 (int): timestamps for the odd message
+        msg (string): even message (28 bytes hexadecimal string)
+        lat_ref: previous known latitude
+        lon_ref: previous known longitude
 
     Returns:
         (float, float): (latitude, longitude) of the aircraft
@@ -546,7 +545,7 @@ def velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, int, string): speed (kt), heading (degree),
+        (int, float, int, string): speed (kt), ground track or heading (degree),
             rate of climb/descend (ft/min), and speed type
             ('GS' for ground speed, 'AS' for airspeed)
     """
@@ -561,17 +560,17 @@ def velocity(msg):
         raise RuntimeError("incorrect or inconsistant message types, expecting 4<TC<9 or TC=19")
 
 def speed_heading(msg):
-    """Get speed and heading only from the velocity message
+    """Get speed and ground track (or heading) from the velocity message
     (handles both airborne or surface message)
 
     Args:
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float): speed (kt), heading (degree)
+        (int, float): speed (kt), ground track or heading (degree)
     """
-    spd, hdg, rocd, tag = velocity(msg)
-    return spd, hdg
+    spd, trk_or_hdg, rocd, tag = velocity(msg)
+    return spd, trk_or_hdg
 
 
 def airborne_velocity(msg):
@@ -581,7 +580,7 @@ def airborne_velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, int, string): speed (kt), heading (degree),
+        (int, float, int, string): speed (kt), ground track or heading (degree),
             rate of climb/descend (ft/min), and speed type
             ('GS' for ground speed, 'AS' for airspeed)
     """
@@ -593,6 +592,9 @@ def airborne_velocity(msg):
 
     subtype = util.bin2int(msgbin[37:40])
 
+    if util.bin2int(msgbin[46:56]) == 0 or util.bin2int(msgbin[46:56]) == 0:
+        return None
+
     if subtype in (1, 2):
         v_ew_sign = -1 if int(msgbin[45]) else 1
         v_ew = util.bin2int(msgbin[46:56]) - 1       # east-west velocity
@@ -600,28 +602,31 @@ def airborne_velocity(msg):
         v_ns_sign = -1 if int(msgbin[56]) else 1
         v_ns = util.bin2int(msgbin[57:67]) - 1       # north-south velocity
 
+
         v_we = v_ew_sign * v_ew
         v_sn = v_ns_sign * v_ns
 
         spd = math.sqrt(v_sn*v_sn + v_we*v_we)  # unit in kts
 
-        hdg = math.atan2(v_we, v_sn)
-        hdg = math.degrees(hdg)                 # convert to degrees
-        hdg = hdg if hdg >= 0 else hdg + 360    # no negative val
+        trk = math.atan2(v_we, v_sn)
+        trk = math.degrees(trk)                 # convert to degrees
+        trk = trk if trk >= 0 else trk + 360    # no negative val
 
         tag = 'GS'
+        trk_or_hdg = trk
 
     else:
         hdg = util.bin2int(msgbin[46:56]) / 1024.0 * 360.0
         spd = util.bin2int(msgbin[57:67])
 
         tag = 'AS'
+        trk_or_hdg = hdg
 
     vr_sign = -1 if int(msgbin[68]) else 1
     vr = (util.bin2int(msgbin[69:78]) - 1) * 64     # vertical rate, fpm
     rocd = vr_sign * vr
 
-    return int(spd), round(hdg, 1), int(rocd), tag
+    return int(spd), round(trk_or_hdg, 1), int(rocd), tag
 
 
 def surface_velocity(msg):
