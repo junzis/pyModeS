@@ -592,7 +592,7 @@ def airborne_velocity(msg):
 
     subtype = util.bin2int(msgbin[37:40])
 
-    if util.bin2int(msgbin[46:56]) == 0 or util.bin2int(msgbin[46:56]) == 0:
+    if util.bin2int(msgbin[46:56]) == 0 or util.bin2int(msgbin[57:67]) == 0:
         return None
 
     if subtype in (1, 2):
