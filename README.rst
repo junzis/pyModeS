@@ -46,6 +46,12 @@ The easiest installation is to use pip:
 
   pip install pyModeS
 
+To install latest devlopment version from the GitHub:
+
+::
+
+  pip install git+https://github.com/junzis/pyModeS
+
 
 Use the library
 ---------------
