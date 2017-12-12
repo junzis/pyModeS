@@ -574,7 +574,7 @@ def speed_heading(msg):
 
 
 def airborne_velocity(msg):
-    """Calculate the speed, heading, and vertical rate
+    """Calculate the speed, track (or heading), and vertical rate
 
     Args:
         msg (string): 28 bytes hexadecimal message string
@@ -635,7 +635,7 @@ def surface_velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, int, string): speed (kt), heading (degree),
+        (int, float, int, string): speed (kt), ground track (degree),
             rate of climb/descend (ft/min), and speed type
             ('GS' for ground speed, 'AS' for airspeed)
     """
@@ -645,13 +645,13 @@ def surface_velocity(msg):
 
     msgbin = util.hex2bin(msg)
 
-    # heading
-    hdg_status = int(msgbin[44])
-    if hdg_status == 1:
-        hdg = util.bin2int(msgbin[45:52]) * 360.0 / 128.0
-        hdg = round(hdg, 1)
+    # ground track
+    trk_status = int(msgbin[44])
+    if trk_status == 1:
+        trk = util.bin2int(msgbin[45:52]) * 360.0 / 128.0
+        trk = round(trk, 1)
     else:
-        hdg = None
+        trk = None
 
     # ground movment / speed
     mov = util.bin2int(msgbin[37:44])
@@ -670,7 +670,7 @@ def surface_velocity(msg):
         spd = kts[i-1] + (mov-movs[i-1]) * step
         spd = round(spd, 2)
 
-    return spd, hdg, 0, 'GS'
+    return spd, trk, 0, 'GS'
 
 def altitude_diff(msg):
     """Decode the differece between GNSS and barometric altitude
