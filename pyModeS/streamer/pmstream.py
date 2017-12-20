@@ -1,6 +1,7 @@
 from __future__ import print_function, division
 import os
 import sys
+import argparse
 import curses
 import numpy as np
 import time
@@ -16,11 +17,17 @@ ADSB_TS = []
 EHS_MSG = []
 EHS_TS = []
 
-HOST = 'sil.lr.tudelft.nl'
-PORT = 30334
+parser = argparse.ArgumentParser()
+parser.add_argument('--server', help='server address or IP', required=True)
+parser.add_argument('--port', help='Raw beast port', required=True)
+parser.add_argument('--lat0', help='Latitude of receiver', required=True)
+parser.add_argument('--lon0', help='Longitude of receiver', required=True)
+args = parser.parse_args()
 
-LAT0 = 51.9899
-LON0 = 4.3754
+SERVER = args.server
+PORT = int(args.port)
+LAT0 = float(args.lat0)     # 51.9899 for TU Delft
+LON0 = float(args.lon0)     # 4.3754
 
 class ModesClient(BaseClient):
     def __init__(self, host, port):
@@ -58,7 +65,7 @@ class ModesClient(BaseClient):
 
 sys.stdout = open(os.devnull, 'w')
 
-client = ModesClient(host=HOST, port=PORT)
+client = ModesClient(host=SERVER, port=PORT)
 client.daemon = True
 client.start()
 

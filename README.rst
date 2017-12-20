@@ -1,4 +1,4 @@
-The Python Mode-S Decoder (2.0-Dev branch)
+The Python Mode-S Decoder (dev-2.0 branch)
 ==========================================
 
 Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
