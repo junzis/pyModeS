@@ -1,5 +1,5 @@
-The Python Mode-S Decoder
-=========================
+The Python Mode-S Decoder (2.0-Dev branch)
+==========================================
 
 Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
@@ -26,6 +26,13 @@ Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
 Detailed manual on Mode-S decoding is published by the author, at:
 http://adsb-decode-guide.readthedocs.io
+
+
+New features in v2.0
+---------------------
+- ADS-B and EHS data streaming
+- Active aircraft viewing (in terminal)
+- More advanced BDS identification in Enhanced Mode-S
 
 
 Source code
