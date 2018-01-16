@@ -33,6 +33,7 @@ New features in v2.0
 - ADS-B and EHS data streaming
 - Active aircraft viewing (in terminal)
 - More advanced BDS identification in Enhanced Mode-S
+- Optimize decoding speed
 
 
 Source code

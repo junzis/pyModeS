@@ -19,17 +19,13 @@ Common functions for ADS-B and Mode-S EHS decoder
 """
 
 
-import math
-
-# the polynominal generattor code for CRC
-GENERATOR = "1111111111111010000001001"
+import numpy as np
 
 
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings. """
-    scale = 16
-    num_of_bits = len(hexstr) * math.log(scale, 2)
-    binstr = bin(int(hexstr, scale))[2:].zfill(int(num_of_bits))
+    num_of_bits = len(hexstr) * 4
+    binstr = bin(int(hexstr, 16))[2:].zfill(int(num_of_bits))
     return binstr
 
 
@@ -41,6 +37,16 @@ def bin2int(binstr):
 def hex2int(hexstr):
     """Convert a hexdecimal string to integer. """
     return int(hexstr, 16)
+
+
+def bin2np(binstr):
+    """Convert a binary string to numpy array. """
+    return np.fromstring(binstr, 'u1') - ord('0')
+
+
+def np2bin(npbin):
+    """Convert a binary numpy array to string. """
+    return np.array2string(npbin, separator='')[1:-1]
 
 
 def df(msg):
@@ -59,21 +65,25 @@ def crc(msg, encode=False):
         string: message checksum, or partity bits (encoder)
     """
 
-    msgbin = list(hex2bin(msg))
+    # the polynominal generattor code for CRC [1111111111111010000001001]
+    generator = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,1,0,0,1])
+    ng = len(generator)
+
+    msgnpbin = bin2np(hex2bin(msg))
 
     if encode:
-        msgbin[-24:] = ['0'] * 24
+        msgnpbin[-24:] = [0] * 24
 
     # loop all bits, except last 24 piraty bits
-    for i in range(len(msgbin)-24):
-        # if 1, perform modulo 2 multiplication,
-        if msgbin[i] == '1':
-            for j in range(len(GENERATOR)):
-                # modulo 2 multiplication = XOR
-                msgbin[i+j] = str((int(msgbin[i+j]) ^ int(GENERATOR[j])))
+    for i in range(len(msgnpbin)-24):
+        if msgnpbin[i] == 0:
+            continue
+
+        # perform XOR, when 1
+        msgnpbin[i:i+ng] = np.bitwise_xor(msgnpbin[i:i+ng], generator)
 
     # last 24 bits
-    reminder = ''.join(msgbin[-24:])
+    reminder = np2bin(msgnpbin[-24:])
     return reminder
 
 
@@ -84,7 +94,7 @@ def floor(x):
 
         eg.: floor(3.6) = 3, while floor(-3.6) = -4
     """
-    return int(math.floor(x))
+    return int(np.floor(x))
 
 
 def gray2int(graystr):
