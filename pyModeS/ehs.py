@@ -336,7 +336,7 @@ def isBDS44(msg, rev=False):
         # Bits 1-4 are reserved and should be zero
         if util.bin2int(d[0:4]) != 0:
             result &= False
-        
+
     if not result:
         return False
 
@@ -794,7 +794,7 @@ def vr53(msg):
     if d[46] == '0':
         return None
 
-    sign = d[47]    # 1 -> minus
+    sign = int(d[47])    # 1 -> minus
     value = util.bin2int(d[48:56])
 
     if sign:
@@ -925,7 +925,7 @@ def vr60baro(msg):
     if d[34] == '0':
         return None
 
-    sign = d[35]    # 1 -> minus
+    sign = int(d[35])    # 1 -> minus
     value = util.bin2int(d[36:45])
 
     if sign:
@@ -949,7 +949,7 @@ def vr60ins(msg):
     if d[45] == '0':
         return None
 
-    sign = d[46]    # 1 -> minus
+    sign = int(d[46])    # 1 -> minus
     value = util.bin2int(d[47:56])
 
     if sign:
