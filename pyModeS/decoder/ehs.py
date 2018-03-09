@@ -843,8 +843,13 @@ def isBDS60(msg):
     if mach is not None and mach > 1:
         result &= False
 
-    # leave out the check from vertical rates,
-    #   due to very noisy measurement
+    vr_baro = vr60baro(msg)
+    if vr_baro is not None and abs(vr_baro) > 6000:
+        result &= False
+
+    vr_ins = vr60ins(msg)
+    if vr_ins is not None and abs(vr_ins) > 6000:
+        result &= False
 
     return result
 
@@ -973,7 +978,7 @@ def BDS(msg):
         msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        String or None: Version: "BDS20", "BDS40", "BDS50", or "BDS60". Or None, if nothing matched
+        String or None: BDS version, or possible versions, or None if nothing matches.
     """
 
     if isnull(msg):
@@ -996,4 +1001,5 @@ def BDS(msg):
     elif sum(isBDS) == 1:
         return BDS[isBDS.index(True)]
     else:
-        return [bds for (bds, i) in zip(BDS, isBDS) if i]
+        bds_ = [bds for (bds, i) in zip(BDS, isBDS) if i]
+        return ','.join(bds_)
