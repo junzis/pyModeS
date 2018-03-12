@@ -48,17 +48,18 @@ http://pymodes.readthedocs.io
 Install
 -------
 
-The easiest installation is to use pip:
+The easiest installation (stable version of 1.x) is to use pip:
 
 ::
 
   pip install pyModeS
 
-To install latest devlopment version from the GitHub:
+
+To install latest development version (dev-2.0) from the GitHub:
 
 ::
 
-  pip install git+https://github.com/junzis/pyModeS
+  pip install git+https://github.com/junzis/pyModeS@dev-2.0
 
 
 Use the library
