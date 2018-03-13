@@ -1002,9 +1002,9 @@ def BDS(msg):
     elif sum(isBDS) == 1:
         return BDS[isBDS.index(True)]
     else:
-        return = [bds for (bds, i) in zip(BDS, isBDS) if i]
+        bds_ = [bds for (bds, i) in zip(BDS, isBDS) if i]
+        return ','.join(bds_)
 
-    
 def Vxy(V, angle):
     Vx = V*np.sin(np.deg2rad(angle))
     Vy = V*np.cos(np.deg2rad(angle))
