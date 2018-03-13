@@ -19,6 +19,7 @@ A python package for decoding ModeS (DF20, DF21) messages.
 
 from __future__ import absolute_import, print_function, division
 from . import util, modes_common
+from scipy.stats import multivariate_normal
 
 def icao(msg):
     return modes_common.icao(msg)
@@ -1001,5 +1002,70 @@ def BDS(msg):
     elif sum(isBDS) == 1:
         return BDS[isBDS.index(True)]
     else:
-        bds_ = [bds for (bds, i) in zip(BDS, isBDS) if i]
-        return ','.join(bds_)
+        return = [bds for (bds, i) in zip(BDS, isBDS) if i]
+
+    
+def Vxy(V, angle):
+    Vx = V*np.sin(np.deg2rad(angle))
+    Vy = V*np.cos(np.deg2rad(angle))
+    return Vx, Vy
+
+def BDSv2(msg, SPDref=np.nan, TRKref=np.nan, ALTref=np.nan):
+    """Use probabilistic method to determine the most likely BDS code of an message
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+        SPDref (float): reference speed (for example ADS-B GS)
+        TRKref (float): reference track (for example ADS-B TRK)
+        ALTref (float): reference altitude (for example ADS-B altitude)
+
+    Returns:
+        String or None: BDS version, or possible versions, or None if nothing matches.
+    """
+
+    BDS = pms.ehs.BDS(msg)
+    
+    if type(BDS) != list:
+        return BDS
+    else:        
+        if 'BDS53' in BDS:
+            BDS.remove('BDS53')
+    
+        if 'BDS40' in BDS:
+            fms = pms.ehs.alt40fms(msg)
+            mcp = pms.ehs.alt40mcp(msg)
+            baro = pms.ehs.p40baro(msg)
+            
+            if fms != None:
+                if (((fms % 100) <= 8) or ((fms % 100) >= 92)) and fms < 50500:
+                    return 'BDS40'
+            if mcp != None:
+                if (((mcp % 100) <= 8) or ((mcp % 100) >= 92)) and mcp < 50500:
+                    return 'BDS40'
+            if baro != None:
+               if (983 <= baro <= 1043): #1013 -+ 30
+                    return 'BDS40'
+
+        if set(BDS).issubset(['BDS50', 'BDS60']):
+            if ~(np.isnan(SPDref) or np.isnan(TRKref) or np.isnan(ALTref)):
+                meanV = Vxy(SPDref, TRKref)
+                sigmaV = 20
+                covV = [[sigmaV**2, 0], [0, sigmaV**2]]
+                
+                try: # Because register field is not available.
+                    pBDS50 = multivariate_normal(meanV, covV).pdf(Vxy(pms.ehs.gs50(msg), pms.ehs.trk50(msg)))
+                    pBDS60_1 = multivariate_normal(meanV, covV).pdf(Vxy(aero.mach2tas(pms.ehs.mach60(msg), ALTref*aero.ft)/aero.kts, pms.ehs.hdg60(msg)))
+                    pBDS60_2 = multivariate_normal(meanV, covV).pdf(Vxy(aero.cas2tas(pms.ehs.ias60(msg)*aero.kts, ALTref*aero.ft)/aero.kts, pms.ehs.hdg60(msg)))
+                    pBDS60 = max(pBDS60_1, pBDS60_2)
+        
+                except:
+                    return BDS
+        
+                if pBDS50 + pBDS60 > 0: #Avoid None values
+                    if pBDS50 > pBDS60:
+                        return 'BDS50'
+                    elif pBDS50 < pBDS60:
+                        return 'BDS60'
+       
+        return BDS
+
