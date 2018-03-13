@@ -1,8 +1,7 @@
-from __future__ import print_function, division
+from __future__ import absolute_import, print_function, division
 import numpy as np
 import time
-import pyModeS as pms
-
+from pyModeS.decoder import adsb, ehs
 
 class Stream():
     def __init__(self, lat0, lon0):
@@ -32,8 +31,8 @@ class Stream():
 
         # process adsb message
         for t, msg in zip(adsb_ts, adsb_msgs):
-            icao = pms.adsb.icao(msg)
-            tc = pms.adsb.typecode(msg)
+            icao = adsb.icao(msg)
+            tc = adsb.typecode(msg)
 
             if icao not in self.acs:
                 self.acs[icao] = {
@@ -52,10 +51,10 @@ class Stream():
             self.acs[icao]['t'] = t
 
             if 1 <= tc <= 4:
-                self.acs[icao]['callsign'] = pms.adsb.callsign(msg)
+                self.acs[icao]['callsign'] = adsb.callsign(msg)
 
             if (5 <= tc <= 8) or (tc == 19):
-                vdata = pms.adsb.velocity(msg)
+                vdata = adsb.velocity(msg)
                 if vdata is None:
                     continue
 
@@ -69,7 +68,7 @@ class Stream():
                 self.acs[icao]['tv'] = t
 
             if (5 <= tc <= 18):
-                oe = pms.adsb.oe_flag(msg)
+                oe = adsb.oe_flag(msg)
                 self.acs[icao][oe] = msg
                 self.acs[icao]['t'+str(oe)] = t
 
@@ -77,12 +76,12 @@ class Stream():
                     # use single message decoding
                     rlat = self.acs[icao]['lat']
                     rlon = self.acs[icao]['lon']
-                    latlon = pms.adsb.position_with_ref(msg, rlat, rlon)
+                    latlon = adsb.position_with_ref(msg, rlat, rlon)
                 elif ('t0' in self.acs[icao]) and ('t1' in self.acs[icao]) and \
                      (abs(self.acs[icao]['t0'] - self.acs[icao]['t1']) < 10):
                     # use multi message decoding
                     try:
-                        latlon = pms.adsb.position(
+                        latlon = adsb.position(
                             self.acs[icao][0],
                             self.acs[icao][1],
                             self.acs[icao]['t0'],
@@ -99,29 +98,29 @@ class Stream():
                     self.acs[icao]['tpos'] = t
                     self.acs[icao]['lat'] = latlon[0]
                     self.acs[icao]['lon'] = latlon[1]
-                    self.acs[icao]['alt'] = pms.adsb.altitude(msg)
+                    self.acs[icao]['alt'] = adsb.altitude(msg)
                     local_updated_acs_buffer.append(icao)
 
         # process ehs message
         for t, msg in zip(ehs_ts, ehs_msgs):
-            icao = pms.ehs.icao(msg)
+            icao = ehs.icao(msg)
 
             if icao not in self.acs:
                 continue
 
-            bds = pms.ehs.BDS(msg)
+            bds = ehs.BDS(msg)
 
             if bds == 'BDS50':
-                tas = pms.ehs.tas50(msg)
+                tas = ehs.tas50(msg)
 
                 if tas:
                     self.acs[icao]['t50'] = t
                     self.acs[icao]['tas'] = tas
 
             elif bds == 'BDS60':
-                ias = pms.ehs.ias60(msg)
-                hdg = pms.ehs.hdg60(msg)
-                mach = pms.ehs.mach60(msg)
+                ias = ehs.ias60(msg)
+                hdg = ehs.hdg60(msg)
+                mach = ehs.mach60(msg)
 
                 if ias or hdg or mach:
                     self.acs[icao]['t60'] = t

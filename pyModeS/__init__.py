@@ -6,3 +6,5 @@ from .decoder import ehs
 from .decoder import els
 from .decoder import util
 from .decoder import modes_common
+from .extra import aero
+from .extra import beastclient

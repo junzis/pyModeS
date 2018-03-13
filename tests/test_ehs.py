@@ -14,9 +14,13 @@ def test_df20alt():
 def test_ehs_BDS():
     assert ehs.BDS("A0001838201584F23468207CDFA5") == 'BDS20'
     assert ehs.BDS("A0001839CA3800315800007448D9") == 'BDS40'
-    # assert ehs.BDS("A000031DBAA9DD18622C441330E9") == 'BDS44'
     assert ehs.BDS("A000139381951536E024D4CCF6B5") == 'BDS50'
     assert ehs.BDS("A00004128F39F91A7E27C46ADC21") == 'BDS60'
+
+def test_ehs_isBDS50or60():
+    assert ehs.isBDS50or60("A0001838201584F23468207CDFA5", 0, 0, 0) == None
+    assert ehs.isBDS50or60("A0000000FFDA9517000464000000", 182, 237, 1250) == 'BDS50'
+    assert ehs.isBDS50or60("A0000000919A5927E23444000000", 413, 54, 18700) == 'BDS60'
 
 def test_ehs_BDS20_callsign():
     assert ehs.callsign("A000083E202CC371C31DE0AA1CCF") == 'KLM1017_'

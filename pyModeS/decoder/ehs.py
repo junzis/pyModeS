@@ -18,8 +18,9 @@ A python package for decoding ModeS (DF20, DF21) messages.
 """
 
 from __future__ import absolute_import, print_function, division
-from . import util, modes_common
-from scipy.stats import multivariate_normal
+import numpy as np
+from pyModeS.decoder import util, modes_common
+from pyModeS.extra import aero
 
 def icao(msg):
     return modes_common.icao(msg)
@@ -972,6 +973,61 @@ def vr60ins(msg):
     return roc
 
 
+def isBDS50or60(msg, spd_ref, trk_ref, alt_ref):
+    """Use reference ground speed and trk to determine BDS50 and DBS60
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+        spd_ref (float): reference speed (ADS-B ground speed), kts
+        trk_ref (float): reference track (ADS-B track angle), deg
+        alt_ref (float): reference altitude (ADS-B altitude), ft
+
+    Returns:
+        String or None: BDS version, or possible versions, or None if nothing matches.
+    """
+    def vxy(v, angle):
+        vx = v * np.sin(np.deg2rad(angle))
+        vy = v * np.cos(np.deg2rad(angle))
+        return vx, vy
+
+    if not (isBDS50(msg) and isBDS60(msg)):
+        return None
+
+    h50 = trk50(msg)
+    v50 = gs50(msg)
+    h50 = np.nan if h50 is None else h50
+    v50 = np.nan if v50 is None else v50
+
+
+    h60 = hdg60(msg)
+    m60 = mach60(msg)
+    i60 = ias60(msg)
+    h60 = np.nan if h60 is None else h60
+    m60 = np.nan if m60 is None else m60
+    i60 = np.nan if i60 is None else i60
+
+    XY5 = vxy(v50*aero.kts, h50)
+    XY6m = vxy(aero.mach2tas(m60, alt_ref*aero.ft), h60)
+    XY6i = vxy(aero.cas2tas(i60*aero.kts, alt_ref*aero.ft), h60)
+
+    allbds = ['BDS50', 'BDS60', 'BDS60']
+
+    X = np.array([XY5, XY6m, XY6i])
+    Mu = np.array(vxy(spd_ref*aero.kts, trk_ref*aero.kts))
+
+    # compute Mahalanobis distance matrix
+    # Cov = [[20**2, 0], [0, 20**2]]
+    # mmatrix = np.sqrt(np.dot(np.dot(X-Mu, np.linalg.inv(Cov)), (X-Mu).T))
+    # dist = np.diag(mmatrix)
+
+    # since the covariance matrix is identity matrix,
+    #     M-dist is same as eculidian distance
+    dist = np.linalg.norm(X-Mu, axis=1)
+    BDS = allbds[np.nanargmin(dist)]
+
+    return BDS
+
+
 def BDS(msg):
     """Estimate the most likely BDS code of an message
 
@@ -994,78 +1050,16 @@ def BDS(msg):
     is53 = isBDS53(msg)
     is60 = isBDS60(msg)
 
-    BDS = ["BDS17", "BDS20", "BDS40", "BDS44", "BDS44REV", "BDS50", "BDS53", "BDS60"]
+    allbds = np.array([
+        "BDS17", "BDS20", "BDS40", "BDS44", "BDS44REV",
+        "BDS50", "BDS53", "BDS60"
+    ])
+
     isBDS = [is17, is20, is40, is44, is44rev, is50, is53, is60]
 
-    if sum(isBDS) == 0:
+    bds = ','.join(sorted(allbds[isBDS]))
+
+    if len(bds) == 0:
         return None
-    elif sum(isBDS) == 1:
-        return BDS[isBDS.index(True)]
     else:
-        bds_ = [bds for (bds, i) in zip(BDS, isBDS) if i]
-        return ','.join(bds_)
-
-def Vxy(V, angle):
-    Vx = V*np.sin(np.deg2rad(angle))
-    Vy = V*np.cos(np.deg2rad(angle))
-    return Vx, Vy
-
-def BDSv2(msg, SPDref=np.nan, TRKref=np.nan, ALTref=np.nan):
-    """Use probabilistic method to determine the most likely BDS code of an message
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-        SPDref (float): reference speed (for example ADS-B GS)
-        TRKref (float): reference track (for example ADS-B TRK)
-        ALTref (float): reference altitude (for example ADS-B altitude)
-
-    Returns:
-        String or None: BDS version, or possible versions, or None if nothing matches.
-    """
-
-    BDS = pms.ehs.BDS(msg)
-    
-    if type(BDS) != list:
-        return BDS
-    else:        
-        if 'BDS53' in BDS:
-            BDS.remove('BDS53')
-    
-        if 'BDS40' in BDS:
-            fms = pms.ehs.alt40fms(msg)
-            mcp = pms.ehs.alt40mcp(msg)
-            baro = pms.ehs.p40baro(msg)
-            
-            if fms != None:
-                if (((fms % 100) <= 8) or ((fms % 100) >= 92)) and fms < 50500:
-                    return 'BDS40'
-            if mcp != None:
-                if (((mcp % 100) <= 8) or ((mcp % 100) >= 92)) and mcp < 50500:
-                    return 'BDS40'
-            if baro != None:
-               if (983 <= baro <= 1043): #1013 -+ 30
-                    return 'BDS40'
-
-        if set(BDS).issubset(['BDS50', 'BDS60']):
-            if ~(np.isnan(SPDref) or np.isnan(TRKref) or np.isnan(ALTref)):
-                meanV = Vxy(SPDref, TRKref)
-                sigmaV = 20
-                covV = [[sigmaV**2, 0], [0, sigmaV**2]]
-                
-                try: # Because register field is not available.
-                    pBDS50 = multivariate_normal(meanV, covV).pdf(Vxy(pms.ehs.gs50(msg), pms.ehs.trk50(msg)))
-                    pBDS60_1 = multivariate_normal(meanV, covV).pdf(Vxy(aero.mach2tas(pms.ehs.mach60(msg), ALTref*aero.ft)/aero.kts, pms.ehs.hdg60(msg)))
-                    pBDS60_2 = multivariate_normal(meanV, covV).pdf(Vxy(aero.cas2tas(pms.ehs.ias60(msg)*aero.kts, ALTref*aero.ft)/aero.kts, pms.ehs.hdg60(msg)))
-                    pBDS60 = max(pBDS60_1, pBDS60_2)
-        
-                except:
-                    return BDS
-        
-                if pBDS50 + pBDS60 > 0: #Avoid None values
-                    if pBDS50 > pBDS60:
-                        return 'BDS50'
-                    elif pBDS50 < pBDS60:
-                        return 'BDS60'
-       
-        return BDS
-
+        return bds
