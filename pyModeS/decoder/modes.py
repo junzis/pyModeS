@@ -110,13 +110,14 @@ def altcode(msg):
 
     return alt
 
+
 def gray2alt(codestr):
     gc500 = codestr[:8]
-    n500 = util.gray2int(gc500)
+    n500 = gray2int(gc500)
 
     # in 100-ft step must be converted first
     gc100 = codestr[8:]
-    n100 = util.gray2int(gc100)
+    n100 = gray2int(gc100)
 
     if n100 in [0, 5, 6]:
         return None
@@ -129,3 +130,13 @@ def gray2alt(codestr):
 
     alt = (n500*500 + n100*100) - 1300
     return alt
+
+
+def gray2int(graystr):
+    """Convert greycode to binary"""
+    num = util.bin2int(graystr)
+    num ^= (num >> 8)
+    num ^= (num >> 4)
+    num ^= (num >> 2)
+    num ^= (num >> 1)
+    return num

@@ -1,5 +1,5 @@
 from pyModeS import ehs
-from pyModeS import modes_common
+from pyModeS import modes
 
 def test_ehs_icao():
     assert ehs.icao("A0001839CA3800315800007448D9") == '400940'
@@ -7,8 +7,11 @@ def test_ehs_icao():
     assert ehs.icao("A000029CFFBAA11E2004727281F1") == '4243D0'
 
 
-def test_df20alt():
-    assert ehs.df20alt("A02014B400000000000000F9D514") == 32300
+def test_modes_altcode():
+    assert ehs.modes.altcode("A02014B400000000000000F9D514") == 32300
+
+def test_modes_idcode():
+    assert ehs.modes.idcode("A800292DFFBBA9383FFCEB903D01") == '1346'
 
 
 def test_ehs_BDS():
@@ -49,18 +52,18 @@ def test_ehs_BDS60_functions():
     assert ehs.vr60ins("A00004128F39F91A7E27C46ADC21") == -1920
 
 def test_graycode_to_altitude():
-    assert modes_common.gray2alt('00000000010') == -1000
-    assert modes_common.gray2alt('00000001010') == -500
-    assert modes_common.gray2alt('00000011011') == -100
-    assert modes_common.gray2alt('00000011010') == 0
-    assert modes_common.gray2alt('00000011110') == 100
-    assert modes_common.gray2alt('00000010011') == 600
-    assert modes_common.gray2alt('00000110010') == 1000
-    assert modes_common.gray2alt('00001001001') == 5800
-    assert modes_common.gray2alt('00011100100') == 10300
-    assert modes_common.gray2alt('01100011010') == 32000
-    assert modes_common.gray2alt('01110000100') == 46300
-    assert modes_common.gray2alt('01010101100') == 50200
-    assert modes_common.gray2alt('11011110100') == 73200
-    assert modes_common.gray2alt('10000000011') == 126600
-    assert modes_common.gray2alt('10000000001') == 126700
+    assert modes.gray2alt('00000000010') == -1000
+    assert modes.gray2alt('00000001010') == -500
+    assert modes.gray2alt('00000011011') == -100
+    assert modes.gray2alt('00000011010') == 0
+    assert modes.gray2alt('00000011110') == 100
+    assert modes.gray2alt('00000010011') == 600
+    assert modes.gray2alt('00000110010') == 1000
+    assert modes.gray2alt('00001001001') == 5800
+    assert modes.gray2alt('00011100100') == 10300
+    assert modes.gray2alt('01100011010') == 32000
+    assert modes.gray2alt('01110000100') == 46300
+    assert modes.gray2alt('01010101100') == 50200
+    assert modes.gray2alt('11011110100') == 73200
+    assert modes.gray2alt('10000000011') == 126600
+    assert modes.gray2alt('10000000001') == 126700

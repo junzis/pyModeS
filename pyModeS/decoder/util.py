@@ -97,11 +97,22 @@ def floor(x):
     return int(np.floor(x))
 
 
-def gray2int(graystr):
-    """Convert greycode to binary (DF4, 20 altitude coding)"""
-    num = bin2int(graystr)
-    num ^= (num >> 8)
-    num ^= (num >> 4)
-    num ^= (num >> 2)
-    num ^= (num >> 1)
-    return num
+def is_icao_assigned(icao):
+    """ Check whether the ICAO address is assigned (Annex 10, Vol 3)"""
+
+    if (icao is None) or (not isinstance(icao, str)) or (len(icao)!=6):
+        return False
+
+    icaoint = hex2int(icao)
+
+    if 0x200000 < icaoint < 0x27FFFF: return False      # AFI
+    if 0x280000 < icaoint < 0x28FFFF: return False      # SAM
+    if 0x500000 < icaoint < 0x5FFFFF: return False      # EUR, NAT
+    if 0x600000 < icaoint < 0x67FFFF: return False      # MID
+    if 0x680000 < icaoint < 0x6F0000: return False      # ASIA
+    if 0x900000 < icaoint < 0x9FFFFF: return False      # NAM, PAC
+    if 0xB00000 < icaoint < 0xBFFFFF: return False      # CAR
+    if 0xD00000 < icaoint < 0xDFFFFF: return False      # future
+    if 0xF00000 < icaoint < 0xFFFFFF: return False      # future
+
+    return True

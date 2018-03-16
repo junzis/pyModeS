@@ -19,17 +19,17 @@ A python package for decoding ModeS (DF20, DF21) messages.
 
 from __future__ import absolute_import, print_function, division
 import numpy as np
-from pyModeS.decoder import util, modes_common
+from pyModeS.decoder import util, modes
 from pyModeS.extra import aero
 
 def icao(msg):
-    return modes_common.icao(msg)
+    return modes.icao(msg)
 
 def data(msg):
     """Return the data frame in the message, bytes 9 to 22"""
     return msg[8:22]
 
-def isnull(msg):
+def allzeros(msg):
     """check if the data bits are all zeros
 
     Args:
@@ -45,7 +45,7 @@ def isnull(msg):
     else:
         return True
 
-def checkbits(data, sb, msb, lsb):
+def wrongstatus(data, sb, msb, lsb):
     """Check if the status bit and field bits are consistency. This Function
     is used for checking BDS code versions.
     """
@@ -56,44 +56,59 @@ def checkbits(data, sb, msb, lsb):
 
     if not status:
         if value != 0:
-            return False
+            return True
+
+    return False
+
+
+# ------------------------------------------
+# BDS 1,0
+# Data link capability report
+# ------------------------------------------
+
+def isBDS10(msg):
+    """Check if a message is likely to be BDS code 1,0
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+
+    if allzeros(msg):
+        return False
+
+    d = util.hex2bin(data(msg))
+
+    # first 8 bits must be 0x10
+    if d[0:8] != '00010000':
+        return False
+
+    # bit 10 to 14 are reserved
+    if util.bin2int(d[9:14]) != 0:
+        return False
+
+    # overlay capabilty conflict
+    if d[14] == '1' and util.bin2int(d[16:23]) < 5:
+        return False
+    if d[14] == '0' and util.bin2int(d[16:23]) > 4:
+        return False
 
     return True
 
-# ------------------------------------------
-# Common functions
-# ------------------------------------------
-
-def df20alt(msg):
-    """Computes the altitude from DF20 message, bit 20-32
+def ovc10(msg):
+    """Return the overlay control capability
 
     Args:
         msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        int: altitude in ft
+        int: Whether the transponder is OVC capable
     """
+    d = util.hex2bin(data(msg))
 
-    if util.df(msg) != 20:
-        raise RuntimeError("Message must be Downlink Format 20.")
-
-    return modes_common.altcode(msg)
-
-
-def df21id(msg):
-    """Computes identity (squawk code) from DF21, bit 20-32
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        string: squawk code
-    """
-
-    if util.df(msg) != 21:
-        raise RuntimeError("Message must be Downlink Format 21.")
-
-    return modes_common.idcode(msg)
+    return int(d[14])
 
 # ------------------------------------------
 # BDS 1,7
@@ -110,24 +125,22 @@ def isBDS17(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
     d = util.hex2bin(data(msg))
 
-    result = True
-
     if util.bin2int(d[28:56]) != 0:
-        result &= False
+        return False
 
     caps = cap17(msg)
 
     # basic BDS codes for ADS-B shall be supported
     #   assuming ADS-B out is installed (2017EU/2020US mandate)
     if not set(['BDS05', 'BDS06', 'BDS09', 'BDS20']).issubset(caps):
-        result &= False
+        return False
 
-    return result
+    return True
 
 def cap17(msg):
     """Extract capacities from BDS 1,7 message
@@ -148,6 +161,7 @@ def cap17(msg):
 
     return capacity
 
+
 # ------------------------------------------
 # BDS 2,0
 # Aircraft identification
@@ -163,23 +177,22 @@ def isBDS20(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
-    # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
 
-    result = True
+    # status bit 1, 14, and 27
 
     if util.bin2int(d[0:4]) != 2 or util.bin2int(d[4:8]) != 0:
-        result &= False
+        return False
 
     cs = callsign(msg)
 
     if '#' in cs:
-        result &= False
+        return False
 
-    return result
+    return True
 
 
 def callsign(msg):
@@ -223,25 +236,31 @@ def isBDS40(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
-    # status bit 1, 14, and 27
     d = util.hex2bin(data(msg))
 
-    result = True
+    # status bit 1, 14, and 27
 
-    result = result & checkbits(d, 1, 2, 13) \
-        & checkbits(d, 14, 15, 26) & checkbits(d, 27, 28, 39)
+    if wrongstatus(d, 1, 2, 13):
+        return False
+
+    if wrongstatus(d, 14, 15, 26):
+        return False
+
+    if wrongstatus(d, 27, 28, 39):
+        return False
 
     # bits 40-47 and 52-53 shall all be zero
+
     if util.bin2int(d[39:47]) != 0:
-        result &= False
+        return False
 
     if util.bin2int(d[51:53]) != 0:
-        result &= False
+        return False
 
-    return result
+    return True
 
 
 def alt40mcp(msg):
@@ -315,44 +334,62 @@ def isBDS44(msg, rev=False):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
     d = util.hex2bin(data(msg))
 
-    result = True
 
     if not rev:
         # status bit 5, 35, 47, 50
-        result = result & checkbits(d, 5, 6, 23) \
-            & checkbits(d, 35, 36, 46) & checkbits(d, 47, 48, 49) \
-            & checkbits(d, 50, 51, 56)
+        if wrongstatus(d, 5, 6, 23):
+            return False
+
+        if wrongstatus(d, 35, 36, 46):
+            return False
+
+        if wrongstatus(d, 47, 48, 49):
+            return False
+
+        if wrongstatus(d, 50, 51, 56):
+            return False
+
         # Bits 1-4 indicate source, values > 4 reserved and should not occur
         if util.bin2int(d[0:4]) > 4:
-            result &= False
+            return False
     else:
         # status bit 5, 15, 24, 36, 49
-        result = result & checkbits(d, 5, 6, 14) \
-            & checkbits(d, 15, 16, 23) & checkbits(d, 24, 25, 35) \
-            & checkbits(d, 36, 37, 47) & checkbits(d, 49, 50, 56)
+        if wrongstatus(d, 5, 6, 14):
+            return False
+
+        if wrongstatus(d, 15, 16, 23):
+            return False
+
+        if wrongstatus(d, 24, 25, 35):
+            return False
+
+        if wrongstatus(d, 36, 37, 47):
+            return False
+
+        if wrongstatus(d, 49, 50, 56):
+            return False
+
         # Bits 1-4 are reserved and should be zero
         if util.bin2int(d[0:4]) != 0:
-            result &= False
-
-    if not result:
-        return False
+            return False
 
     vw = wind44(msg, rev=rev)
     if vw is not None and vw[0] > 250:
-        result &= False
+        return False
 
     if temp44(msg):
         if temp44(msg) > 60 or temp44(msg) < -80:
-            result &= False
-    elif temp44(msg) == 0:
-        result &= False
+            return False
 
-    return result
+    elif temp44(msg) == 0:
+        return False
+
+    return True
 
 
 def wind44(msg, rev=False):
@@ -498,40 +535,45 @@ def isBDS50(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
-    # status bit 1, 12, 24, 35, 46
     d = util.hex2bin(data(msg))
 
-    result = True
+    # status bit 1, 12, 24, 35, 46
 
-    result = result & checkbits(d, 1, 3, 11) & checkbits(d, 12, 13, 23) \
-        & checkbits(d, 24, 25, 34) & checkbits(d, 35, 36, 45) \
-        & checkbits(d, 46, 47, 56)
-
-    if not result:
+    if wrongstatus(d, 1, 3, 11):
         return False
 
-    if d[2:11] == "000000000":
-        result &= True
-    else:
+    if wrongstatus(d, 12, 13, 23):
+        return False
+
+    if wrongstatus(d, 24, 25, 34):
+        return False
+
+    if wrongstatus(d, 35, 36, 45):
+        return False
+
+    if wrongstatus(d, 46, 47, 56):
+        return False
+
+    if d[2:11] != "000000000":
         roll = abs(roll50(msg))
         if roll and roll > 60:
-            result &= False
+            return False
 
     gs = gs50(msg)
     if gs is not None and gs > 600:
-        result &= False
+        return False
 
     tas = tas50(msg)
     if tas is not None and tas > 500:
-        result &= False
+        return False
 
     if (gs is not None) and (tas is not None) and (abs(tas - gs) > 200):
-        result &= False
+        return False
 
-    return result
+    return True
 
 
 def roll50(msg):
@@ -666,38 +708,45 @@ def isBDS53(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
-    # status bit 1, 13, 24, 34, 47
     d = util.hex2bin(data(msg))
 
-    result = True
+    # status bit 1, 13, 24, 34, 47
 
-    result = result & checkbits(d, 1, 3, 12) & checkbits(d, 13, 14, 23) \
-        & checkbits(d, 24, 25, 33) & checkbits(d, 34, 35, 46) \
-        & checkbits(d, 47, 49, 56)
+    if wrongstatus(d, 1, 3, 12):
+        return False
 
-    if not result:
+    if wrongstatus(d, 13, 14, 23):
+        return False
+
+    if wrongstatus(d, 24, 25, 33):
+        return False
+
+    if wrongstatus(d, 34, 35, 46):
+        return False
+
+    if wrongstatus(d, 47, 49, 56):
         return False
 
     ias = ias53(msg)
     if ias is not None and ias > 500:
-        result &= False
+        return False
 
     mach = mach53(msg)
     if mach is not None and mach > 1:
-        result &= False
+        return False
 
     tas = tas53(msg)
     if tas is not None and tas > 500:
-        result &= False
+        return False
 
     vr = vr53(msg)
     if vr is not None and abs(vr) > 8000:
-        result &= False
+        return False
 
-    return result
+    return True
 
 
 def hdg53(msg):
@@ -822,38 +871,45 @@ def isBDS60(msg):
         bool: True or False
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return False
 
-    # status bit 1, 13, 24, 35, 46
     d = util.hex2bin(data(msg))
 
-    result = True
+    # status bit 1, 13, 24, 35, 46
 
-    result = result & checkbits(d, 1, 2, 12) & checkbits(d, 13, 14, 23) \
-        & checkbits(d, 24, 25, 34) & checkbits(d, 35, 36, 45) \
-        & checkbits(d, 46, 47, 56)
+    if wrongstatus(d, 1, 2, 12):
+        return False
 
-    if not result:
+    if wrongstatus(d, 13, 14, 23):
+        return False
+
+    if wrongstatus(d, 24, 25, 34):
+        return False
+
+    if wrongstatus(d, 35, 36, 45):
+        return False
+
+    if wrongstatus(d, 46, 47, 56):
         return False
 
     ias = ias60(msg)
     if ias is not None and ias > 500:
-        result &= False
+        return False
 
     mach = mach60(msg)
     if mach is not None and mach > 1:
-        result &= False
+        return False
 
     vr_baro = vr60baro(msg)
     if vr_baro is not None and abs(vr_baro) > 6000:
-        result &= False
+        return False
 
     vr_ins = vr60ins(msg)
     if vr_ins is not None and abs(vr_ins) > 6000:
-        result &= False
+        return False
 
-    return result
+    return True
 
 
 def hdg60(msg):
@@ -1038,9 +1094,10 @@ def BDS(msg):
         String or None: BDS version, or possible versions, or None if nothing matches.
     """
 
-    if isnull(msg):
+    if allzeros(msg):
         return None
 
+    is10 = isBDS10(msg)
     is17 = isBDS17(msg)
     is20 = isBDS20(msg)
     is40 = isBDS40(msg)
@@ -1051,11 +1108,11 @@ def BDS(msg):
     is60 = isBDS60(msg)
 
     allbds = np.array([
-        "BDS17", "BDS20", "BDS40", "BDS44", "BDS44REV",
+        "BDS10", "BDS17", "BDS20", "BDS40", "BDS44", "BDS44REV",
         "BDS50", "BDS53", "BDS60"
     ])
 
-    isBDS = [is17, is20, is40, is44, is44rev, is50, is53, is60]
+    isBDS = [is10, is17, is20, is40, is44, is44rev, is50, is53, is60]
 
     bds = ','.join(sorted(allbds[isBDS]))
 
