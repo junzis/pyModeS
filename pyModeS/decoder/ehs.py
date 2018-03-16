@@ -585,7 +585,7 @@ def trk50(msg):
     if trk < 0:
         trk = 360 + trk
 
-    return round(trk, 1)
+    return round(trk, 2)
 
 
 def gs50(msg):
@@ -726,7 +726,7 @@ def hdg53(msg):
     if hdg < 0:
         hdg = 360 + hdg
 
-    return round(hdg, 1)
+    return round(hdg, 2)
 
 
 def ias53(msg):
@@ -882,7 +882,7 @@ def hdg60(msg):
     if hdg < 0:
         hdg = 360 + hdg
 
-    return round(hdg, 1)
+    return round(hdg, 2)
 
 
 def ias60(msg):
