@@ -140,3 +140,41 @@ def gray2int(graystr):
     num ^= (num >> 2)
     num ^= (num >> 1)
     return num
+
+
+def data(msg):
+    """Return the data frame in the message, bytes 9 to 22"""
+    return msg[8:-6]
+
+
+def allzeros(msg):
+    """check if the data bits are all zeros
+
+    Args:
+        msg (String): 28 bytes hexadecimal message string
+
+    Returns:
+        bool: True or False
+    """
+    d = util.hex2bin(data(msg))
+
+    if util.bin2int(d) > 0:
+        return False
+    else:
+        return True
+
+
+def wrongstatus(data, sb, msb, lsb):
+    """Check if the status bit and field bits are consistency. This Function
+    is used for checking BDS code versions.
+    """
+
+    # status bit, most significant bit, least significant bit
+    status = int(data[sb-1])
+    value = util.bin2int(data[msb-1:lsb])
+
+    if not status:
+        if value != 0:
+            return True
+
+    return False
