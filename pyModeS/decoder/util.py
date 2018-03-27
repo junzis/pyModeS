@@ -41,7 +41,7 @@ def hex2int(hexstr):
 
 def bin2np(binstr):
     """Convert a binary string to numpy array. """
-    return np.fromstring(binstr, 'u1') - ord('0')
+    return np.array([int(i) for i in binstr])
 
 
 def np2bin(npbin):
