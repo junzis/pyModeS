@@ -55,7 +55,7 @@ def isBDS50(msg):
     if wrongstatus(d, 46, 47, 56):
         return False
 
-    if d[2:11] != "000000000":
+    if d[1:11] != "0000000000":
         roll = abs(roll50(msg))
         if roll and roll > 60:
             return False
