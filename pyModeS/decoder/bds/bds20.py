@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
 # ------------------------------------------
 # BDS 2,0
 # Aircraft identification
 # ------------------------------------------
 
-def isBDS20(msg):
+def is20(msg):
     """Check if a message is likely to be BDS code 2,0
 
     Args:
@@ -42,7 +41,7 @@ def isBDS20(msg):
     if bin2int(d[0:4]) != 2 or bin2int(d[4:8]) != 0:
         return False
 
-    cs = callsign(msg)
+    cs = cs20(msg)
 
     if '#' in cs:
         return False
@@ -50,7 +49,7 @@ def isBDS20(msg):
     return True
 
 
-def callsign(msg):
+def cs20(msg):
     """Aircraft callsign
 
     Args:

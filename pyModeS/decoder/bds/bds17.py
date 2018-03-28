@@ -15,15 +15,16 @@
 
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
-# ------------------------------------------
-# BDS 1,7
-# Common usage GICB capability report
-# ------------------------------------------
+"""
+------------------------------------------
+  BDS 1,7
+  Common usage GICB capability report
+------------------------------------------
+"""
 
-def isBDS17(msg):
+def is17(msg):
     """Check if a message is likely to be BDS code 1,7
 
     Args:

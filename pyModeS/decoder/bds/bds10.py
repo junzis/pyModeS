@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
 # ------------------------------------------
 # BDS 1,0
 # Data link capability report
 # ------------------------------------------
 
-def isBDS10(msg):
+def is10(msg):
     """Check if a message is likely to be BDS code 1,0
 
     Args:

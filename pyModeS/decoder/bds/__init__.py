@@ -1,15 +1,35 @@
-from __future__ import absolute_import, print_function, division
+# Copyright (C) 2015 Junzi Sun (TU Delft)
 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+"""
+Common functions for Mode-S decoding
+"""
+
+from __future__ import absolute_import, print_function, division
 import numpy as np
+
 from pyModeS.extra import aero
-from pyModeS.decoder.modes import allzeros
-from pyModeS.decoder.bds.bds10 import isBDS10
-from pyModeS.decoder.bds.bds17 import isBDS17
-from pyModeS.decoder.bds.bds20 import isBDS20
-from pyModeS.decoder.bds.bds30 import isBDS30
-from pyModeS.decoder.bds.bds40 import isBDS40
-from pyModeS.decoder.bds.bds50 import isBDS50, trk50, gs50
-from pyModeS.decoder.bds.bds60 import isBDS60, hdg60, mach60, ias60
+from pyModeS.decoder.common import allzeros
+from pyModeS.decoder.bds.bds10 import is10
+from pyModeS.decoder.bds.bds17 import is17
+from pyModeS.decoder.bds.bds20 import is20
+from pyModeS.decoder.bds.bds30 import is30
+from pyModeS.decoder.bds.bds40 import is40
+from pyModeS.decoder.bds.bds50 import is50, trk50, gs50
+from pyModeS.decoder.bds.bds60 import is60, hdg60, mach60, ias60
 
 
 def is50or60(msg, spd_ref, trk_ref, alt_ref):
@@ -29,7 +49,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         vy = v * np.cos(np.deg2rad(angle))
         return vx, vy
 
-    if not (isBDS50(msg) and isBDS60(msg)):
+    if not (is50(msg) and is60(msg)):
         return None
 
     h50 = trk50(msg)
@@ -79,21 +99,21 @@ def infer(msg):
     if allzeros(msg):
         return None
 
-    is10 = isBDS10(msg)
-    is17 = isBDS17(msg)
-    is20 = isBDS20(msg)
-    is30 = isBDS30(msg)
-    is40 = isBDS40(msg)
-    is50 = isBDS50(msg)
-    is60 = isBDS60(msg)
+    IS10 = is10(msg)
+    IS17 = is17(msg)
+    IS20 = is20(msg)
+    IS30 = is30(msg)
+    IS40 = is40(msg)
+    IS50 = is50(msg)
+    IS60 = is60(msg)
 
     allbds = np.array([
         "BDS10", "BDS17", "BDS20", "BDS30", "BDS40", "BDS50", "BDS60"
     ])
 
-    isBDS = [is10, is17, is20, is30, is40, is50, is60]
+    mask = [IS10, IS17, IS20, IS30, IS40, IS50, IS60]
 
-    bds = ','.join(sorted(allbds[isBDS]))
+    bds = ','.join(sorted(allbds[mask]))
 
     if len(bds) == 0:
         return None

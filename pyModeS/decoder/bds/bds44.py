@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros, wrongstatus
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 
 # ------------------------------------------
 # BDS 4,4
 # Meteorological routine air report
 # ------------------------------------------
 
-def isBDS44(msg, rev=False):
+def is44(msg, rev=False):
     """Check if a message is likely to be BDS code 4,4
     Meteorological routine air report
 

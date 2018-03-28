@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
 # ------------------------------------------
 # BDS 3,0
 # ACAS active resolution advisory
 # ------------------------------------------
 
-def isBDS30(msg):
+def is30(msg):
     """Check if a message is likely to be BDS code 2,0
 
     Args:

@@ -18,6 +18,7 @@ Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
    - DF21: Squawk code
    - BDS 2,0   Aircraft identification
    - BDS 2,1   Aircraft and airline registration markings
+   - BDS 3,0   ACAS active resolution advisory
    - BDS 4,0   Selected vertical intention
    - BDS 4,4   Meteorological routine air report
    - BDS 5,0   Track and turn report
@@ -30,6 +31,7 @@ http://adsb-decode-guide.readthedocs.io
 
 New features in v2.0
 ---------------------
+- New structure of the libraries
 - ADS-B and EHS data streaming
 - Active aircraft viewing (in terminal)
 - More advanced BDS identification in Enhanced Mode-S
@@ -39,21 +41,15 @@ New features in v2.0
 Source code
 -----------
 Checkout and contribute to this open source project at:
-https://github.com/junzis/pyModeS
+https://github.com/junzis/pyModeS/tree/dev-2.0
 
 API documentation at:
 http://pymodes.readthedocs.io
+[To be updated]
 
 
 Install
 -------
-
-The easiest installation (stable version of 1.x) is to use pip:
-
-::
-
-  pip install pyModeS
-
 
 To install latest development version (dev-2.0) from the GitHub:
 
@@ -76,13 +72,13 @@ Common functions:
 .. code:: python
 
   pms.df(msg)                 # Downlink Format
+  pms.icao(msg)               # Infer the ICAO address from the message
   pms.crc(msg, encode=False)  # Perform CRC or generate parity bit
 
-  pms.hex2bin(str)    # Convert hexadecimal string to binary string
-  pms.bin2int(str)    # Convert binary string to integer
-  pms.hex2int(str)    # Convert hexadecimal string to integer
-
-  pms.gray2int(str)    # Convert grey code to interger
+  pms.hex2bin(str)      # Convert hexadecimal string to binary string
+  pms.bin2int(str)      # Convert binary string to integer
+  pms.hex2int(str)      # Convert hexadecimal string to integer
+  pms.gray2int(str)     # Convert grey code to interger
 
 
 Core functions for ADS-B decoding:
@@ -96,7 +92,7 @@ Core functions for ADS-B decoding:
   # typecode 1-4
   pms.adsb.callsign(msg)
 
-  # typecode 5-8 (surface) and 9-18 (airborne)
+  # typecode 5-8 (surface), 9-18 (airborne, barometric height), and 9-18 (airborne, GNSS height)
   pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
   pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
   pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
@@ -120,67 +116,73 @@ use `position_with_ref()` method to decode with only one position message
 messages. But the reference position shall be with in 180NM (airborne)
 or 45NM (surface) of the true position.
 
-Core functions for ELS decoding:
-********************************
+
+Common Mode-S functions
+************************
 
 .. code:: python
 
-  pms.els.icao(msg)       # ICAO address
-  pms.els.df4alt(msg)     # Altitude from any DF4 message
-  pms.ehs.df5id(msg)     # Squawk code from any DF5 message
+  pms.icao(msg)           # Infer the ICAO address from the message
+  pms.bds.infer(msg)      # Infer the Modes-S BDS code
+
+  pms.bds.is10(msg)       # check if BDS is 1,0 explicitly
+  pms.bds.is17(msg)       # check if BDS is 1,7 explicitly
+  pms.bds.is20(msg)       # check if BDS is 2,0 explicitly
+  pms.bds.is30(msg)       # check if BDS is 3,0 explicitly
+  pms.bds.is40(msg)       # check if BDS is 4,0 explicitly
+  pms.bds.is44(msg)       # check if BDS is 4,4 explicitly
+  pms.bds.is50(msg)       # check if BDS is 5,0 explicitly
+  pms.bds.is60(msg)       # check if BDS is 6,0 explicitly
+
+  # check if BDS is 5,0 or 6,0, give reference spd, trk, alt (from ADS-B)
+  pms.bds.is50or60(msg, spd_ref, trk_ref, alt_ref)
 
 
-Core functions for EHS decoding:
-********************************
+Mode-S elementary surveillance (ELS)
+*************************************
 
 .. code:: python
 
-  pms.ehs.icao(msg)       # ICAO address
-  pms.ehs.df20alt(msg)    # Altitude from any DF20 message
-  pms.ehs.df21id(msg)     # Squawk code from any DF21 message
+  pms.els.ovc10(msg)      # overlay capability, BDS 1,0
+  pms.els.cap17(msg)      # GICB capability, BDS 1,7
+  pms.els.cs20(msg)       # callsign, BDS 2,0
 
-  pms.ehs.BDS(msg)        # Comm-B Data Selector Version
 
-  # for BDS version 2,0
-  pms.ehs.isBDS20(msg)    # Check if message is BDS 2,0
-  pms.ehs.callsign(msg)   # Aircraft callsign
+Mode-S enhanced surveillance (EHS)
+***********************************
+
+.. code:: python
 
   # for BDS version 4,0
-  pms.ehs.isBDS40(msg)    # Check if message is BDS 4,0
   pms.ehs.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
   pms.ehs.alt40fms(msg)   # FMS selected altitude (ft)
   pms.ehs.p40baro(msg)    # Barometric pressure (mb)
 
-  # for BDS version 4,4
-  pms.ehs.isBDS44(msg, rev=False) # Check if message is BDS 4,4
-  pms.ehs.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
-  pms.ehs.temp44(msg, rev=False)  # temperature (C)
-  pms.ehs.p44(msg, rev=False)     # pressure (hPa)
-  pms.ehs.hum44(msg, rev=False)   # humidity (%)
-
   # for BDS version 5,0
-  pms.ehs.isBDS50(msg)    # Check if message is BDS 5,0
   pms.ehs.roll50(msg)     # roll angle (deg)
   pms.ehs.trk50(msg)      # track angle (deg)
   pms.ehs.gs50(msg)       # ground speed (kt)
   pms.ehs.rtrk50(msg)     # track angle rate (deg/sec)
   pms.ehs.tas50(msg)      # true airspeed (kt)
 
-  # for BDS version 5,3
-  pms.ehs.isBDS53(msg)    # Check if message is BDS 5,3
-  pms.ehs.hdg53(msg)      # magnetic heading (deg)
-  pms.ehs.ias53(msg)      # indicated airspeed (kt)
-  pms.ehs.mach53(msg)     # MACH number
-  pms.ehs.tas53(msg)      # true airspeed (kt)
-  pms.ehs.vr53(msg)       # vertical rate (fpm)
-
   # for BDS version 6,0
-  pms.ehs.isBDS60(msg)    # Check if message is BDS 6,0
   pms.ehs.hdg60(msg)      # heading (deg)
   pms.ehs.ias60(msg)      # indicated airspeed (kt)
   pms.ehs.mach60(msg)     # MACH number
   pms.ehs.vr60baro(msg)   # barometric altitude rate (ft/min)
   pms.ehs.vr60ins(msg)    # inertial vertical speed (ft/min)
+
+
+Meteorological routine air report (MRAR) [Experimental]
+*******************************************************
+
+.. code:: python
+
+  # for BDS version 4,4
+  pms.ehs.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
+  pms.ehs.temp44(msg, rev=False)  # temperature (C)
+  pms.ehs.p44(msg, rev=False)     # pressure (hPa)
+  pms.ehs.hum44(msg, rev=False)   # humidity (%)
 
 Developement
 ------------

@@ -6,7 +6,7 @@ import curses
 import numpy as np
 import time
 from threading import Lock
-from pyModeS.decoder import util
+import pyModeS as pms
 from pyModeS.extra.beastclient import BaseClient
 from pyModeS.streamer.stream import Stream
 from pyModeS.streamer.screen import Screen
@@ -43,7 +43,7 @@ class ModesClient(BaseClient):
             if len(msg) < 28:           # only process long messages
                 continue
 
-            df = util.df(msg)
+            df = pms.df(msg)
 
             if df == 17 or df == 18:
                 local_buffer_adsb_msg.append(msg)

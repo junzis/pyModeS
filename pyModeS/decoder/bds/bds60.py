@@ -14,15 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.util import hex2bin, bin2int
-from pyModeS.decoder.modes import data, allzeros, wrongstatus
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 
 # ------------------------------------------
 # BDS 6,0
 # Heading and speed report
 # ------------------------------------------
 
-def isBDS60(msg):
+def is60(msg):
     """Check if a message is likely to be BDS code 6,0
 
     Args:
