@@ -80,8 +80,11 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
 
     # since the covariance matrix is identity matrix,
     #     M-dist is same as eculidian distance
-    dist = np.linalg.norm(X-Mu, axis=1)
-    BDS = allbds[np.nanargmin(dist)]
+    try:
+        dist = np.linalg.norm(X-Mu, axis=1)
+        BDS = allbds[np.nanargmin(dist)]
+    except ValueError:
+        return None
 
     return BDS
 
