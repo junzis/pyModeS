@@ -211,3 +211,14 @@ def nic(msg):
     else:
         nic = -1
     return nic
+
+
+def oe_flag(msg):
+    """Check the odd/even flag. Bit 54, 0 for even, 1 for odd.
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+    Returns:
+        int: 0 or 1, for even or odd frame
+    """
+    msgbin = common.hex2bin(msg)
+    return int(msgbin[53])
