@@ -54,10 +54,9 @@ def is50(msg):
     if wrongstatus(d, 46, 47, 56):
         return False
 
-    if d[1:11] != "0000000000":
-        roll = abs(roll50(msg))
-        if roll and roll > 60:
-            return False
+    roll = roll50(msg)
+    if (roll is not None) and abs(roll) > 60:
+        return False
 
     gs = gs50(msg)
     if gs is not None and gs > 600:
