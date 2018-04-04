@@ -36,9 +36,7 @@ def is20(msg):
 
     d = hex2bin(data(msg))
 
-    # status bit 1, 14, and 27
-
-    if bin2int(d[0:4]) != 2 or bin2int(d[4:8]) != 0:
+    if d[0:8] != '00100000':
         return False
 
     cs = cs20(msg)

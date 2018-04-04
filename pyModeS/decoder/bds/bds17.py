@@ -46,7 +46,7 @@ def is17(msg):
 
     # basic BDS codes for ADS-B shall be supported
     #   assuming ADS-B out is installed (2017EU/2020US mandate)
-    if not set(['BDS05', 'BDS06', 'BDS09', 'BDS20']).issubset(caps):
+    if not set(['BDS05', 'BDS06', 'BDS08', 'BDS09', 'BDS20']).issubset(caps):
         return False
 
     return True
