@@ -45,8 +45,8 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         String or None: BDS version, or possible versions, or None if nothing matches.
     """
     def vxy(v, angle):
-        vx = v * np.sin(np.deg2rad(angle))
-        vy = v * np.cos(np.deg2rad(angle))
+        vx = v * np.sin(np.radians(angle))
+        vy = v * np.cos(np.radians(angle))
         return vx, vy
 
     if not (is50(msg) and is60(msg)):
@@ -71,7 +71,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     allbds = ['BDS50', 'BDS60', 'BDS60']
 
     X = np.array([XY5, XY6m, XY6i])
-    Mu = np.array(vxy(spd_ref*aero.kts, trk_ref*aero.kts))
+    Mu = np.array(vxy(spd_ref*aero.kts, trk_ref))
 
     # compute Mahalanobis distance matrix
     # Cov = [[20**2, 0], [0, 20**2]]
