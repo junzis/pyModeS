@@ -61,7 +61,6 @@ def is40(msg):
 
     if bin2int(d[51:53]) != 0:
         return False
-    
 
     return True
 
