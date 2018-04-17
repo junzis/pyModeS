@@ -56,18 +56,18 @@ def airborne_velocity(msg):
         v_ns_sign = -1 if mb[24]=='1' else 1
         v_ns = common.bin2int(mb[25:35]) - 1       # north-south velocity
 
-
         v_we = v_ew_sign * v_ew
         v_sn = v_ns_sign * v_ns
 
         spd = math.sqrt(v_sn*v_sn + v_we*v_we)  # unit in kts
+        spd = int(spd)
 
         trk = math.atan2(v_we, v_sn)
         trk = math.degrees(trk)                 # convert to degrees
         trk = trk if trk >= 0 else trk + 360    # no negative val
 
         tag = 'GS'
-        trk_or_hdg = trk
+        trk_or_hdg = round(trk, 2)
 
     else:
         if mb[13] == '0':
@@ -75,7 +75,7 @@ def airborne_velocity(msg):
         else:
             hdg = common.bin2int(mb[14:24]) / 1024.0 * 360.0
 
-        trk_or_hdg = hdg
+        trk_or_hdg = round(hdg, 2)
 
         spd = common.bin2int(mb[25:35])
         spd = None if spd==0 else spd-1
@@ -87,9 +87,9 @@ def airborne_velocity(msg):
 
     vr_sign = -1 if mb[36]=='1' else 1
     vr = common.bin2int(mb[37:46])
-    rocd = None if vr==0 else vr_sign*(vr-1)*64
+    rocd = None if vr==0 else int(vr_sign*(vr-1)*64)
 
-    return int(spd), round(trk_or_hdg, 2), int(rocd), tag
+    return spd, trk_or_hdg, rocd, tag
 
 def altitude_diff(msg):
     """Decode the differece between GNSS and barometric altitude
