@@ -47,6 +47,12 @@ def is40(msg):
 
     if wrongstatus(d, 27, 28, 39):
         return False
+    
+    if wrongstatus(d, 48, 49, 51):
+        return False
+    
+    if wrongstatus(d, 54, 55, 56):
+        return False
 
     # bits 40-47 and 52-53 shall all be zero
 
