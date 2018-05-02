@@ -161,7 +161,7 @@ def temp44(msg, rev=False):
         temp = value * 0.125   # celsius
         temp = round(temp, 1)
 
-    return -1*temp if sign else temp
+    return temp
 
 
 def p44(msg, rev=False):

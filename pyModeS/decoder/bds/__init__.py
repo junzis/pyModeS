@@ -23,13 +23,8 @@ import numpy as np
 
 from pyModeS.extra import aero
 from pyModeS.decoder.common import allzeros
-from pyModeS.decoder.bds.bds10 import is10
-from pyModeS.decoder.bds.bds17 import is17
-from pyModeS.decoder.bds.bds20 import is20
-from pyModeS.decoder.bds.bds30 import is30
-from pyModeS.decoder.bds.bds40 import is40
-from pyModeS.decoder.bds.bds50 import is50, trk50, gs50
-from pyModeS.decoder.bds.bds60 import is60, hdg60, mach60, ias60
+from pyModeS.decoder.bds import bds05, bds06, bds08, bds09, \
+    bds10, bds17, bds20, bds30, bds40, bds44, bds50, bds53, bds60
 
 
 def is50or60(msg, spd_ref, trk_ref, alt_ref):
@@ -49,18 +44,22 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         vy = v * np.cos(np.radians(angle))
         return vx, vy
 
-    if not (is50(msg) and is60(msg)):
+    if not (bds50.is50(msg) and bds60.is60(msg)):
         return None
 
-    h50 = trk50(msg)
-    v50 = gs50(msg)
-    h50 = np.nan if h50 is None else h50
-    v50 = np.nan if v50 is None else v50
+    h50 = bds50.trk50(msg)
+    v50 = bds50.gs50(msg)
 
-    h60 = hdg60(msg)
-    m60 = mach60(msg)
-    i60 = ias60(msg)
-    h60 = np.nan if h60 is None else h60
+    if h50 is None or v50 is None:
+        return 'BDS50,BDS60'
+
+    h60 = bds60.hdg60(msg)
+    m60 = bds60.mach60(msg)
+    i60 = bds60.ias60(msg)
+
+    if h60 is None or (m60 is None and i60 is None):
+        return 'BDS50,BDS60'
+
     m60 = np.nan if m60 is None else m60
     i60 = np.nan if i60 is None else i60
 
@@ -84,7 +83,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         dist = np.linalg.norm(X-Mu, axis=1)
         BDS = allbds[np.nanargmin(dist)]
     except ValueError:
-        return None
+        return 'BDS50,BDS60'
 
     return BDS
 
@@ -102,13 +101,13 @@ def infer(msg):
     if allzeros(msg):
         return None
 
-    IS10 = is10(msg)
-    IS17 = is17(msg)
-    IS20 = is20(msg)
-    IS30 = is30(msg)
-    IS40 = is40(msg)
-    IS50 = is50(msg)
-    IS60 = is60(msg)
+    IS10 = bds10.is10(msg)
+    IS17 = bds17.is17(msg)
+    IS20 = bds20.is20(msg)
+    IS30 = bds30.is30(msg)
+    IS40 = bds40.is40(msg)
+    IS50 = bds50.is50(msg)
+    IS60 = bds60.is60(msg)
 
     allbds = np.array([
         "BDS10", "BDS17", "BDS20", "BDS30", "BDS40", "BDS50", "BDS60"
