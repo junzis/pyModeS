@@ -1,5 +1,5 @@
 from __future__ import print_function
-from pyModeS import adsb, ehs, util
+from pyModeS import adsb, ehs
 
 
 # === Decode sample data file ===

@@ -1,5 +1,5 @@
 from __future__ import print_function
-from pyModeS import adsb, ehs, util
+from pyModeS import adsb, ehs, common
 
 
 # === Decode sample data file ===
@@ -50,10 +50,10 @@ def ehs_decode_all(df, n=None):
         ts = r[0]
         m = r[2]
 
-        df = util.df(m)
+        df = common.df(m)
         icao = ehs.icao(m)
         BDS = ehs.BDS(m)
-        code = ehs.df20alt(m) if df==20 else ehs.df21id(m)
+        code = common.altcode(m) if df == 20 else common.idcode(m)
 
         if not BDS:
             print(ts, m, icao, df, '%5s'%code, 'UNKNOWN')
