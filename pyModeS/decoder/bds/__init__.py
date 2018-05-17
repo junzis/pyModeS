@@ -22,7 +22,7 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 
 from pyModeS.extra import aero
-from pyModeS.decoder.common import allzeros
+from pyModeS.decoder import common
 from pyModeS.decoder.bds import bds05, bds06, bds08, bds09, \
     bds10, bds17, bds20, bds30, bds40, bds44, bds50, bds53, bds60
 
@@ -98,9 +98,33 @@ def infer(msg):
         String or None: BDS version, or possible versions, or None if nothing matches.
     """
 
-    if allzeros(msg):
+    df = common.df(msg)
+
+    if common.allzeros(msg):
         return None
 
+    # For ADS-B / Mode-S extended squitter
+    if df == 17:
+        tc = common.typecode(msg)
+
+        if 1 <= tc <= 4:
+            return 'BDS08'  # indentification and category
+        if 5 <= tc <= 8:
+            return 'BDS06'  # surface movement
+        if 9 <= tc <= 18:
+            return 'BDS05'  # airborne position, baro-alt
+        if tc == 19:
+            return 'BDS09'  # airborne velocity
+        if 20 <= tc <= 22:
+            return 'BDS05'  # airborne position, gnss-alt
+        if tc == 28:
+            return 'BDS61'  # aircraft status
+        if tc == 29:
+            return 'BDS62'  # target state and status
+        if tc == 31:
+            return 'BDS65'  # operational status
+
+    # For Comm-B replies, ELS + EHS only
     IS10 = bds10.is10(msg)
     IS17 = bds17.is17(msg)
     IS20 = bds20.is20(msg)
