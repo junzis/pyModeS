@@ -153,19 +153,19 @@ Mode-S enhanced surveillance (EHS)
 
 .. code:: python
 
-  # for BDS version 4,0
+  # for BDS code 4,0
   pms.commb.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
   pms.commb.alt40fms(msg)   # FMS selected altitude (ft)
   pms.commb.p40baro(msg)    # Barometric pressure (mb)
 
-  # for BDS version 5,0
+  # for BDS code 5,0
   pms.commb.roll50(msg)     # roll angle (deg)
   pms.commb.trk50(msg)      # track angle (deg)
   pms.commb.gs50(msg)       # ground speed (kt)
   pms.commb.rtrk50(msg)     # track angle rate (deg/sec)
   pms.commb.tas50(msg)      # true airspeed (kt)
 
-  # for BDS version 6,0
+  # for BDS code 6,0
   pms.commb.hdg60(msg)      # heading (deg)
   pms.commb.ias60(msg)      # indicated airspeed (kt)
   pms.commb.mach60(msg)     # MACH number
@@ -178,7 +178,7 @@ Meteorological routine air report (MRAR) [Experimental]
 
 .. code:: python
 
-  # for BDS version 4,4
+  # for BDS code 4,4
   pms.commb.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
   pms.commb.temp44(msg, rev=False)  # temperature (C)
   pms.commb.p44(msg, rev=False)     # pressure (hPa)
