@@ -143,9 +143,9 @@ Mode-S elementary surveillance (ELS)
 
 .. code:: python
 
-  pms.els.ovc10(msg)      # overlay capability, BDS 1,0
-  pms.els.cap17(msg)      # GICB capability, BDS 1,7
-  pms.els.cs20(msg)       # callsign, BDS 2,0
+  pms.commb.ovc10(msg)      # overlay capability, BDS 1,0
+  pms.commb.cap17(msg)      # GICB capability, BDS 1,7
+  pms.commb.cs20(msg)       # callsign, BDS 2,0
 
 
 Mode-S enhanced surveillance (EHS)
@@ -154,23 +154,23 @@ Mode-S enhanced surveillance (EHS)
 .. code:: python
 
   # for BDS version 4,0
-  pms.ehs.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
-  pms.ehs.alt40fms(msg)   # FMS selected altitude (ft)
-  pms.ehs.p40baro(msg)    # Barometric pressure (mb)
+  pms.commb.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
+  pms.commb.alt40fms(msg)   # FMS selected altitude (ft)
+  pms.commb.p40baro(msg)    # Barometric pressure (mb)
 
   # for BDS version 5,0
-  pms.ehs.roll50(msg)     # roll angle (deg)
-  pms.ehs.trk50(msg)      # track angle (deg)
-  pms.ehs.gs50(msg)       # ground speed (kt)
-  pms.ehs.rtrk50(msg)     # track angle rate (deg/sec)
-  pms.ehs.tas50(msg)      # true airspeed (kt)
+  pms.commb.roll50(msg)     # roll angle (deg)
+  pms.commb.trk50(msg)      # track angle (deg)
+  pms.commb.gs50(msg)       # ground speed (kt)
+  pms.commb.rtrk50(msg)     # track angle rate (deg/sec)
+  pms.commb.tas50(msg)      # true airspeed (kt)
 
   # for BDS version 6,0
-  pms.ehs.hdg60(msg)      # heading (deg)
-  pms.ehs.ias60(msg)      # indicated airspeed (kt)
-  pms.ehs.mach60(msg)     # MACH number
-  pms.ehs.vr60baro(msg)   # barometric altitude rate (ft/min)
-  pms.ehs.vr60ins(msg)    # inertial vertical speed (ft/min)
+  pms.commb.hdg60(msg)      # heading (deg)
+  pms.commb.ias60(msg)      # indicated airspeed (kt)
+  pms.commb.mach60(msg)     # MACH number
+  pms.commb.vr60baro(msg)   # barometric altitude rate (ft/min)
+  pms.commb.vr60ins(msg)    # inertial vertical speed (ft/min)
 
 
 Meteorological routine air report (MRAR) [Experimental]
@@ -179,10 +179,10 @@ Meteorological routine air report (MRAR) [Experimental]
 .. code:: python
 
   # for BDS version 4,4
-  pms.ehs.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
-  pms.ehs.temp44(msg, rev=False)  # temperature (C)
-  pms.ehs.p44(msg, rev=False)     # pressure (hPa)
-  pms.ehs.hum44(msg, rev=False)   # humidity (%)
+  pms.commb.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
+  pms.commb.temp44(msg, rev=False)  # temperature (C)
+  pms.commb.p44(msg, rev=False)     # pressure (hPa)
+  pms.commb.hum44(msg, rev=False)   # humidity (%)
 
 Developement
 ------------
