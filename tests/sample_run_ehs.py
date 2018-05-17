@@ -1,15 +1,17 @@
 from __future__ import print_function
-from pyModeS import adsb, ehs, util
-
+from pyModeS import adsb, ehs, common, bds as _bds
 
 # === Decode sample data file ===
 
 def bds_info(BDS, m):
-    if BDS == "BDS17":
+    if BDS == "BDS10":
+        info = [ehs.ovc10(m)]
+
+    elif BDS == "BDS17":
         info = ([i[-2:] for i in ehs.cap17(m)])
 
     elif BDS == "BDS20":
-        info = ehs.callsign(m)
+        info = [ehs.cs20(m)]
 
     elif BDS == "BDS40":
         info = (ehs.alt40mcp(m), ehs.alt40fms(m), ehs.p40baro(m))
@@ -50,22 +52,22 @@ def ehs_decode_all(df, n=None):
         ts = r[0]
         m = r[2]
 
-        df = util.df(m)
+        df = common.df(m)
         icao = ehs.icao(m)
-        BDS = ehs.BDS(m)
-        code = ehs.df20alt(m) if df==20 else ehs.df21id(m)
+        BDS = _bds.infer(m)
+        code = common.altcode(m) if df == 20 else common.idcode(m)
 
         if not BDS:
             print(ts, m, icao, df, '%5s'%code, 'UNKNOWN')
             continue
 
-        if isinstance(BDS, list):
-            print(ts, m, icao, df, '%5s'%code, end=' ')
-            for i, bds in enumerate(BDS):
+        if len(BDS.split(",")) > 1:
+            print(ts, m, icao, df, '%5s' % code, end=' ')
+            for i, bds in enumerate(BDS.split(",")):
                 if i == 0:
                     print(bds, *bds_info(bds, m))
                 else:
-                    print(' '*55, bds, *bds_info(bds, m))
+                    print(' ' * 55, bds, *bds_info(bds, m))
 
         else:
             print(ts, m, icao, df, '%5s'%code, BDS, *bds_info(BDS, m))
