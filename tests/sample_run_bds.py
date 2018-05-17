@@ -1,35 +1,32 @@
 from __future__ import print_function
-from pyModeS import adsb, ehs, common, bds as _bds
+from pyModeS import ehs, common, bds
 
 # === Decode sample data file ===
 
 def bds_info(BDS, m):
     if BDS == "BDS10":
-        info = [ehs.ovc10(m)]
+        info = [bds.bds10.ovc10(m)]
 
     elif BDS == "BDS17":
-        info = ([i[-2:] for i in ehs.cap17(m)])
+        info = ([i[-2:] for i in bds.bds17.cap17(m)])
 
     elif BDS == "BDS20":
-        info = [ehs.cs20(m)]
+        info = [bds.bds20.cs20(m)]
 
     elif BDS == "BDS40":
-        info = (ehs.alt40mcp(m), ehs.alt40fms(m), ehs.p40baro(m))
+        info = (bds.bds40.alt40mcp(m), bds.bds40.alt40fms(m), bds.bds40.p40baro(m))
 
     elif BDS == "BDS44":
-        info = (ehs.wind44(m), ehs.temp44(m), ehs.p44(m), ehs.hum44(m))
+        info = (bds.bds44.wind44(m), bds.bds44.temp44(m), bds.bds44.p44(m), bds.bds44.hum44(m))
 
     elif BDS == "BDS44REV":
-        info = (ehs.wind44(m, rev=True), ehs.temp44(m, rev=True), ehs.p44(m, rev=True), ehs.hum44(m, rev=True))
+        info = (bds.bds44.wind44(m, rev=True), bds.bds44.temp44(m, rev=True), bds.bds44.p44(m, rev=True), bds.bds44.hum44(m, rev=True))
 
     elif BDS == "BDS50":
-        info = (ehs.roll50(m), ehs.trk50(m), ehs.gs50(m), ehs.rtrk50(m), ehs.tas50(m))
-
-    elif BDS == "BDS53":
-        info = (ehs.hdg53(m), ehs.ias53(m), ehs.mach53(m), ehs.tas53(m), ehs.vr53(m))
+        info = (bds.bds50.roll50(m), bds.bds50.trk50(m), bds.bds50.gs50(m), bds.bds50.rtrk50(m), bds.bds50.tas50(m))
 
     elif BDS == "BDS60":
-        info = (ehs.hdg60(m), ehs.ias60(m), ehs.mach60(m), ehs.vr60baro(m), ehs.vr60ins(m))
+        info = (bds.bds60.hdg60(m), bds.bds60.ias60(m), bds.bds60.mach60(m), bds.bds60.vr60baro(m), bds.bds60.vr60ins(m))
 
     else:
         info = None
@@ -54,7 +51,7 @@ def ehs_decode_all(df, n=None):
 
         df = common.df(m)
         icao = ehs.icao(m)
-        BDS = _bds.infer(m)
+        BDS = bds.infer(m)
         code = common.altcode(m) if df == 20 else common.idcode(m)
 
         if not BDS:
@@ -63,11 +60,11 @@ def ehs_decode_all(df, n=None):
 
         if len(BDS.split(",")) > 1:
             print(ts, m, icao, df, '%5s' % code, end=' ')
-            for i, bds in enumerate(BDS.split(",")):
+            for i, _bds in enumerate(BDS.split(",")):
                 if i == 0:
-                    print(bds, *bds_info(bds, m))
+                    print(_bds, *bds_info(_bds, m))
                 else:
-                    print(' ' * 55, bds, *bds_info(bds, m))
+                    print(' ' * 55, _bds, *bds_info(_bds, m))
 
         else:
             print(ts, m, icao, df, '%5s'%code, BDS, *bds_info(BDS, m))
