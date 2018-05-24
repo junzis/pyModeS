@@ -61,6 +61,8 @@ class Stream():
                 spd, trk, roc, tag = vdata
                 if tag != 'GS':
                     continue
+                if (spd is None) or (trk is None):
+                    continue
 
                 self.acs[icao]['gs'] = spd
                 self.acs[icao]['trk'] = trk

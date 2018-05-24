@@ -74,8 +74,9 @@ def airborne_velocity(msg):
             hdg = None
         else:
             hdg = common.bin2int(mb[14:24]) / 1024.0 * 360.0
+            hdg = round(hdg, 2)
 
-        trk_or_hdg = round(hdg, 2)
+        trk_or_hdg = hdg
 
         spd = common.bin2int(mb[25:35])
         spd = None if spd==0 else spd-1
