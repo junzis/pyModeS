@@ -89,9 +89,9 @@ def icao(msg):
 
     DF = df(msg)
 
-    if DF in (17, 18):
+    if DF in (11, 17, 18):
         addr = msg[2:8]
-    elif DF in (4, 5, 20, 21):
+    elif DF in (0, 4, 5, 16, 20, 21):
         c0 = bin2int(crc(msg, encode=True))
         c1 = hex2int(msg[-6:])
         addr = '%06X' % (c0 ^ c1)
