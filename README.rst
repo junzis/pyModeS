@@ -7,25 +7,20 @@ Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
    -  aircraft information that contains: ICAO address, position, altitude, velocity (ground speed), callsign, etc.
 
--  Mode-S Elementary Surveillance (ELS) (DF4 and DF5).
-
-   - DF4: Altitude
-   - DF5: Squawk code
-
--  Mode-S Enhanced Surveillance (EHS) (DF20 and DF21). Additional information in response to SSR interrogation, such as: true airspeed, indicated airspeed, mach number, wind, temperature, etc.
+-  Mode-S Comm-B replies :Additional information in response to SSR interrogation, such as true airspeed, indicated airspeed, mach number, wind, temperature, etc.
 
    - DF20: Altitude
    - DF21: Squawk code
-   - BDS 2,0   Aircraft identification
-   - BDS 2,1   Aircraft and airline registration markings
-   - BDS 4,0   Selected vertical intention
-   - BDS 4,4   Meteorological routine air report
-   - BDS 5,0   Track and turn report
-   - BDS 5,3   Air-referenced state vector
-   - BDS 6,0   Heading and speed report
+   - DF20/21 BDS 2,0   Aircraft identification
+   - DF20/21 BDS 2,1   Aircraft and airline registration markings
+   - DF20/21 BDS 4,0   Selected vertical intention
+   - DF20/21 BDS 4,4   Meteorological routine air report
+   - DF20/21 BDS 5,0   Track and turn report
+   - DF20/21 BDS 5,3   Air-referenced state vector
+   - DF20/21 BDS 6,0   Heading and speed report
 
 Detailed manual on Mode-S decoding is published by the author, at:
-http://adsb-decode-guide.readthedocs.io
+http://mode-s.org/decode
 
 
 Source code
