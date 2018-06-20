@@ -3,33 +3,34 @@ The Python Mode-S Decoder (2.0-dev)
 
 Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
--  Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)
+**Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)**
 
-  - TC=1-4  / BDS 0,8: Aircraft identification and category
-  - TC=5-8  / BDS 0,6: Surface position
-  - TC=9-18 / BDS 0,5: Airborne position
-  - TC=19   / BDS 0,9: Airborne velocity
-  - TC=28   / BDS 6,1: Airborne status [to be implemented]
-  - TC=29   / BDS 6,2: Target state and status information [to be implemented]
-  - TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
-
-
--  Mode-S Comm-B replies (DF 20 / 21)
-
-  - BDS 1,0: Data link capability report
-  - BDS 1,7: Common usage GICB capability report
-  - BDS 2,0: Aircraft identification
-  - BDS 2,1: Aircraft and airline registration markings
-  - BDS 3,0: ACAS active resolution advisory
-  - BDS 4,0: Selected vertical intention
-  - BDS 4,4: Meteorological routine air report
-  - BDS 5,0: Track and turn report
-  - BDS 5,3: Air-referenced state vector
-  - BDS 6,0: Heading and speed report
+- TC=1-4  / BDS 0,8: Aircraft identification and category
+- TC=5-8  / BDS 0,6: Surface position
+- TC=9-18 / BDS 0,5: Airborne position
+- TC=19   / BDS 0,9: Airborne velocity
+- TC=28   / BDS 6,1: Airborne status [to be implemented]
+- TC=29   / BDS 6,2: Target state and status information [to be implemented]
+- TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
 
 
-- DF4 / DF20: Altitude code
-- DF4 / DF21: Identity code (squawk)
+**Mode-S Comm-B replies (DF 20 / 21)**
+
+- BDS 1,0: Data link capability report
+- BDS 1,7: Common usage GICB capability report
+- BDS 2,0: Aircraft identification
+- BDS 2,1: Aircraft and airline registration markings
+- BDS 3,0: ACAS active resolution advisory
+- BDS 4,0: Selected vertical intention
+- BDS 4,4: Meteorological routine air report
+- BDS 5,0: Track and turn report
+- BDS 5,3: Air-referenced state vector
+- BDS 6,0: Heading and speed report
+
+
+**DF4 / DF20: Altitude code**
+
+**DF4 / DF21: Identity code (squawk)**
 
 Detailed manual on Mode-S decoding is published by the author, at:
 https://mode-s.org/decode
