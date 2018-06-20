@@ -1,42 +1,53 @@
-The Python Mode-S Decoder (dev-2.0 branch)
+The Python Mode-S Decoder (2.0-dev)
 ==========================================
 
 Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
 -  Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)
 
-   -  aircraft information that contains: ICAO address, position, altitude, velocity (ground speed), callsign, etc.
+  - TC=1-4  / BDS 0,8: Aircraft identification and category
+  - TC=5-8  / BDS 0,6: Surface position
+  - TC=9-18 / BDS 0,5: Airborne position
+  - TC=19   / BDS 0,9: Airborne velocity
+  - TC=28   / BDS 6,1: Airborne status [to be implemented]
+  - TC=29   / BDS 6,2: Target state and status information [to be implemented]
+  - TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
 
--  Mode-S Comm-B replies - Additional information in response to SSR interrogation, such as: true airspeed, indicated airspeed, mach number, wind, temperature, etc.
 
-   - DF20: Altitude
-   - DF21: Squawk code
-   - BDS 2,0   Aircraft identification
-   - BDS 2,1   Aircraft and airline registration markings
-   - BDS 3,0   ACAS active resolution advisory
-   - BDS 4,0   Selected vertical intention
-   - BDS 4,4   Meteorological routine air report
-   - BDS 5,0   Track and turn report
-   - BDS 5,3   Air-referenced state vector
-   - BDS 6,0   Heading and speed report
+-  Mode-S Comm-B replies (DF 20 / 21)
+
+  - BDS 1,0: Data link capability report
+  - BDS 1,7: Common usage GICB capability report
+  - BDS 2,0: Aircraft identification
+  - BDS 2,1: Aircraft and airline registration markings
+  - BDS 3,0: ACAS active resolution advisory
+  - BDS 4,0: Selected vertical intention
+  - BDS 4,4: Meteorological routine air report
+  - BDS 5,0: Track and turn report
+  - BDS 5,3: Air-referenced state vector
+  - BDS 6,0: Heading and speed report
+
+
+- DF4 / DF20: Altitude code
+- DF4 / DF21: Identity code (squawk)
 
 Detailed manual on Mode-S decoding is published by the author, at:
-http://adsb-decode-guide.readthedocs.io
+https://mode-s.org/decode
 
 
 New features in v2.0
 ---------------------
 - New structure of the libraries
-- ADS-B and EHS data streaming
-- Active aircraft viewing (in terminal)
-- More advanced BDS identification in Enhanced Mode-S
-- Optimize decoding speed
+- ADS-B and Comm-B data streaming
+- Active aircraft viewing (terminal cursor)
+- Improved BDS identification
+- Optimizing decoding speed
 
 
 Source code
 -----------
 Checkout and contribute to this open source project at:
-https://github.com/junzis/pyModeS/tree/dev-2.0
+https://github.com/junzis/pyModeS
 
 API documentation at:
 http://pymodes.readthedocs.io
@@ -50,7 +61,7 @@ To install latest development version (dev-2.0) from the GitHub:
 
 ::
 
-  pip install git+https://github.com/junzis/pyModeS@dev-2.0
+  pip install git+https://github.com/junzis/pyModeS
 
 
 Use the library
