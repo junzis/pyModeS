@@ -124,6 +124,21 @@ messages. But the reference position shall be with in 180NM (airborne)
 or 45NM (surface) of the true position.
 
 
+Decode altitude replies in DF4 / DF20
+**************************************
+.. code:: python
+
+  pms.common.altcode(msg)   # Downlink format must be 4 or 20
+
+
+Decode identity replies in DF5 / DF21
+**************************************
+.. code:: python
+
+  pms.common.idcode(msg)   # Downlink format must be 5 or 21
+
+
+
 Common Mode-S functions
 ************************
 
