@@ -40,7 +40,7 @@ New features in v2.0
 ---------------------
 - New structure of the libraries
 - ADS-B and Comm-B data streaming
-- Active aircraft viewing (terminal cursor)
+- Active aircraft viewing (terminal curses)
 - Improved BDS identification
 - Optimizing decoding speed
 

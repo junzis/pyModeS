@@ -28,6 +28,7 @@ class Screen(Thread):
         Thread.__init__(self)
         self.screen = curses.initscr()
         curses.noecho()
+        curses.mousemask(1)
         self.screen.keypad(True)
         self.y = 3
         self.x = 1
