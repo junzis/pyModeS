@@ -70,7 +70,7 @@ Live view traffic
 ----------------------------------------------------
 Supports Mode-S Beast raw stream
 
-.. code:: python
+::
 
   pmslive --server URL/IP --port PORT --lat0 RECEIVER_LAT --lon0 RECEIVER_LON
 
