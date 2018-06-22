@@ -14,8 +14,8 @@ from pyModeS.streamer.screen import Screen
 LOCK = Lock()
 ADSB_MSG = []
 ADSB_TS = []
-EHS_MSG = []
-EHS_TS = []
+COMMB_MSG = []
+COMMB_TS = []
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--server', help='server address or IP', required=True)
@@ -58,11 +58,12 @@ class ModesClient(BaseClient):
         LOCK.acquire()
         ADSB_MSG.extend(local_buffer_adsb_msg)
         ADSB_TS.extend(local_buffer_adsb_ts)
-        EHS_MSG.extend(local_buffer_ehs_msg)
-        EHS_TS.extend(local_buffer_ehs_ts)
+        COMMB_MSG.extend(local_buffer_ehs_msg)
+        COMMB_TS.extend(local_buffer_ehs_ts)
         LOCK.release()
 
 
+# redirect all stdout to null, avoiding messing up with the screen
 sys.stdout = open(os.devnull, 'w')
 
 client = ModesClient(host=SERVER, port=PORT)
@@ -79,11 +80,11 @@ try:
     while True:
         if len(ADSB_MSG) > 200:
             LOCK.acquire()
-            stream.process_raw(ADSB_TS, ADSB_MSG, EHS_TS, EHS_MSG)
+            stream.process_raw(ADSB_TS, ADSB_MSG, COMMB_TS, COMMB_MSG)
             ADSB_MSG = []
             ADSB_TS = []
-            EHS_MSG = []
-            EHS_TS = []
+            COMMB_MSG = []
+            COMMB_TS = []
             LOCK.release()
 
         acs = stream.get_aircraft()

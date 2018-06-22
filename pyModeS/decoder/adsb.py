@@ -452,6 +452,8 @@ def sil(msg, version):
     elif tc == 31:
         sil = common.bin2int(msg[82:84])
 
+    sil_sup = None
+
     if version == 2:
         if version == 29:
             sil_sup = common.bin2int(msgbin[39])

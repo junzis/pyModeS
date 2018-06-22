@@ -4,7 +4,24 @@ import numpy as np
 import time
 from threading import Thread
 
-COLUMNS = ['lat', 'lon', 'alt', 'gs', 'tas', 'ias', 'mach', 'roc', 'trk', 'hdg', 't']
+COLUMNS = [
+    ('lat', 10),
+    ('lon', 10),
+    ('alt', 7),
+    ('gs', 5),
+    ('tas', 5),
+    ('ias', 5),
+    ('mach', 7),
+    ('roc', 7),
+    ('trk', 10),
+    ('hdg', 10),
+    ('ver', 4),
+    ('NIC', 5),
+    ('NACv', 5),
+    ('NACp', 5),
+    ('SIL', 5),
+    ('updated', 12),
+]
 
 class Screen(Thread):
     def __init__(self):
@@ -44,10 +61,10 @@ class Screen(Thread):
 
         row = 1
 
-        header = 'icao'
-        for c in COLUMNS:
+        header = '  icao'
+        for c, cw in COLUMNS:
             c = 'updated' if c=='t' else  c
-            header += '%10s' % c
+            header += (cw-len(c))*' ' + c
 
         if len(header) > self.scr_w - 2:
             header = header[:self.scr_w-3] + '>'
@@ -74,19 +91,15 @@ class Screen(Thread):
 
                 line += icao
 
-                for c in COLUMNS:
-
-                    if c == 't':
-                        val = str(int(ac[c]))
-                        line += '%12s' % val
-                    else:
-                        val = '' if ac[c] is None else ac[c]
-                        line += '%10s' % val
+                for c, cw in COLUMNS:
+                    val = '' if ac[c] is None else ac[c]
+                    val_str = str(val)
+                    line += (cw-len(val_str))*' ' + val_str
 
                 if len(line) > self.scr_w - 2:
                     line = line[:self.scr_w-3] + '>'
 
-            if self.lock_icao == icao:
+            if (icao is not None) and (self.lock_icao == icao):
                 self.screen.addstr(row, 1, line, curses.A_STANDOUT)
             elif row == self.y:
                 self.screen.addstr(row, 1, line, curses.A_BOLD)
