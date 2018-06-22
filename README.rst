@@ -65,6 +65,17 @@ To install latest development version (dev-2.0) from the GitHub:
   pip install git+https://github.com/junzis/pyModeS
 
 
+
+Live view traffic
+----------------------------------------------------
+Supports Mode-S Beast raw stream
+
+.. code:: python
+
+  pmslive --server URL/IP --port PORT --lat0 RECEIVER_LAT --lon0 RECEIVER_LON
+
+
+
 Use the library
 ---------------
 
