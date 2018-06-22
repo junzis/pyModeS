@@ -222,3 +222,269 @@ def oe_flag(msg):
     """
     msgbin = common.hex2bin(msg)
     return int(msgbin[53])
+
+# Uncertainty & accuracy
+
+def nic_v1(msg,nic_sup_b):
+    """Calculate NIC, navigation integrity category
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, nic_sup_b (int): NIC supplement
+
+    Returns:
+        int: NIC number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) < 5 or typecode(msg) > 22:
+        raise RuntimeError("%s: Not a surface position message (5<TC<8, )airborne position message (8<TC<19), airborne position with GNSS height (20<TC<22)" % msg)
+
+    tc = typecode(msg)
+
+    if tc in [0, 8, 18, 22]:
+        nic = 0
+    elif tc == 17:
+        nic = 1
+    elif tc == 16:
+        if nic_sup_b:
+            nic = 3
+        else:
+            nic = 2
+    elif tc == 15:
+        nic = 4
+    elif tc == 14:
+        nic = 5
+    elif tc == 13:
+        if nic_sup_b:
+            nic = 6
+        else:
+            nic = 6
+    elif tc == 12:
+        nic = 7
+    elif tc == 11:
+        if nic_sup_b:
+            nic = 9
+        else:
+            nic = 8
+    elif tc in [6, 10, 21]:
+        nic = 10
+    elif tc in [5, 9, 20]:
+        nic = 11
+    elif tc == 7:
+        if nic_sup_b:
+            nic = 9
+        else:
+            nic = 8
+    else:
+        nic = -1
+    return nic
+
+def nic_v2(msg,nic_a,nic_b,nic_c):
+    """Calculate NIC, navigation integrity category
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, nic_a (int): NIC supplement, nic_b (int): NIC supplement, nic_c (int): NIC supplement
+    Returns:
+        int: NIC number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) < 5 or typecode(msg) > 22:
+        raise RuntimeError("%s: Not a surface position message (5<TC<8, )airborne position message (8<TC<19), airborne position with GNSS height (20<TC<22)" % msg)
+
+    tc = typecode(msg)
+
+    if tc in [0, 18, 22]:
+        nic = 0
+    elif tc == 17:
+        nic = 1
+    elif tc == 16:
+        if nic_a:
+            nic = 3
+        else:
+            nic = 2
+    elif tc == 15:
+        nic = 4
+    elif tc == 14:
+        nic = 5
+    elif tc == 13:
+        if nic_a:
+            nic = 6
+        else:
+            if nic_b:
+                nic = 6
+            else:
+                nic = 6
+    elif tc == 12:
+        nic = 7
+    elif tc == 11:
+        if nic_a:
+            nic = 9
+        else:
+            nic = 8
+    elif tc in [6, 10, 21]:
+        nic = 10
+    elif tc in [5, 9, 20]:
+        nic = 11
+    elif tc == 8:
+        if nic_a:
+            if nic_c:
+                nic = 7
+            else:
+                nic = 6
+        else:
+            if nic_c:
+                nic = 6
+            else:
+                nic = 0
+    elif tc == 7:
+        if nic_a:
+            nic = 9
+        else:
+            nic = 8
+    else:
+        nic = -1
+    return nic
+
+
+
+def nic_s(msg):
+    """Calculate NICs, navigation integrity category supplement
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+
+    Returns:
+        int: NIC number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) != 31:
+        raise RuntimeError("%s: Not a status operation message, expecting TC = 31" % msg)
+
+    msgbin = common.hex2bin(msg)
+    nic_s = common.bin2int(msgbin[75])
+
+    return nic_s
+
+def nic_a_and_c(msg):
+    """Calculate NICa and NICc, navigation integrity category supplements
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+
+    Returns:
+        int: NIC number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) != 31:
+        raise RuntimeError("%s: Not a status operation message, expecting TC = 31" % msg)
+
+    msgbin = common.hex2bin(msg)
+    nic_a = common.bin2int(msgbin[75])
+    nic_c = common.bin2int(msgbin[51])
+
+    return nic_a, nic_c
+
+def nic_b(msg):
+    """Calculate NICb, navigation integrity category supplement
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string
+
+    Returns:
+        int: NIC number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) < 9 or typecode(msg) > 18:
+        raise RuntimeError("%s: Not a airborne position message, expecting 8<TC<19" % msg) 
+
+    msgbin = common.hex2bin(msg)
+    nic_b = common.bin2int(msgbin[39])
+
+    return nic_b
+
+def nac_p(msg):
+    """Calculate NACp, Navigation Accuracy Category - Position
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, TC = 29 or 31
+
+    Returns:
+        int: NACp number (from 0 to 11), -1 if not applicable
+    """
+    if typecode(msg) not in [29,31]:
+        raise RuntimeError("%s: Not a target state and status message neither operation status message, expecting TC = 29 or 31" % msg)
+
+    msgbin = common.hex2bin(msg)
+    tc = typecode(msg)
+    if tc == 29:
+        nac_p = common.bin2int(msgbin[71:75])
+    elif tc == 31:
+        nac_p = common.bin2int(msgbin[76:80])
+    else:
+        nac_p = -1
+    return nac_p
+
+
+def nac_v(msg):
+    """Calculate NACv, Navigation Accuracy Category - Velocity
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, TC = 19
+
+    Returns:
+        int: NACv number (from 0 to 4), -1 if not applicable
+    """
+    if typecode(msg) != 19:
+        raise RuntimeError("%s: Not an airborne velocity message, expecting TC = 19" % msg)
+
+    msgbin = common.hex2bin(msg)
+    tc = typecode(msg)
+    if tc == 19:
+        nac_v = common.bin2int(msgbin[42:45])
+    else:
+        nac_v = -1
+    return nac_v
+
+def sil(msg,version):
+    """Calculate SIL, Surveillance Integrity Level 
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string with TC = 29, 31
+
+    Returns:
+        int: sil number, -1 if not applicable
+    """
+    if typecode(msg) not in [29,31]:
+        raise RuntimeError("%s: Not a target state and status message neither operation status message, expecting TC = 29 or 31" % msg)
+
+    msgbin = common.hex2bin(msg)
+    tc = typecode(msg)
+    if tc == 29:
+        sil = common.bin2int(msgbin[76:78])
+    elif tc == 31:
+        sil = common.bin2int(msg[82:84])
+    else:
+        sil = -1
+
+    if version == 2:
+        if typecode(msg) == 29:
+            sils = common.bin2int(msgbin[39])
+        elif typecode(msg) == 31:
+            sils = common.bin2int(msgbin[86])
+    else:
+        sils = -1
+
+    return sil, sils
+
+def version(msg):
+    """ADS-B Version
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, TC = 31
+
+    Returns:
+        int: version number
+    """
+    msgbin = common.hex2bin(msg)
+    if typecode(msg) not in [29,31]:
+        raise RuntimeError("%s: Not a target state and status message neither operation status message, expecting TC = 29 or 31" % msg)
+
+    if typecode(msg) in [29,31]:
+        version = common.bin2int(msgbin[72:75])
+    else:
+        version = -1
+    return version

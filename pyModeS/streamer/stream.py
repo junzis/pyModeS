@@ -46,6 +46,11 @@ class Stream():
                     'ias': None,
                     'mach': None,
                     'hdg': None,
+                    'adsb_version' : None,    
+                    'nic_s' : None,
+                    'nic_a' : None,
+                    'nic_b' : None,
+                    'nic_c' : None
                 }
 
             self.acs[icao]['t'] = t
@@ -101,7 +106,48 @@ class Stream():
                     self.acs[icao]['lat'] = latlon[0]
                     self.acs[icao]['lon'] = latlon[1]
                     self.acs[icao]['alt'] = adsb.altitude(msg)
-                    local_updated_acs_buffer.append(icao)
+                    local_updated_acs_buffer.append(icao)acs[icao]['adsb_version'] 
+
+            # Uncertainty & accuracy
+            if (5 <= tc <= 8):
+                if self.acs[icao]['adsb_version']  == 1:
+                    if self.acs[icao]['nic_s'] != None:
+                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
+                elif self.acs[icao]['adsb_version']  == 2:
+                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
+                        self.nic = adsb.nic_v2(msg,self.nic_a,self.acs[icao]['nic_b'],self.acs[icao]['nic_c'])
+            if (9 <= tc <= 18):
+                if self.acs[icao]['adsb_version']  == 1:
+                    if self.acs[icao]['nic_s'] != None:
+                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
+                elif self.acs[icao]['adsb_version']  == 2:
+                    self.acs[icao]['nic_b'] = adsb.nic_b(msg)
+                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
+                        self.nic = adsb.nic_v2(msg,self.acs[icao]['nic_a'],self.nic_b,self.acs[icao]['nic_c'])
+            if tc == 19:
+                self.acs[icao]['nac_v'] = adsb.nac_v(msg)
+            if (20 <= tc <= 22):
+                if self.acs[icao]['adsb_version']  == 1:
+                    if self.acs[icao]['nic_s'] != None:
+                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
+                elif self.acs[icao]['adsb_version']  == 2:
+                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
+                        self.nic = adsb.nic_v2(msg,self.acs[icao]['nic_a'],self.acs[icao]['nic_b'],self.acs[icao]['nic_c'])
+            if tc == 29:
+                if self.acs[icao]['adsb_version'] != None:
+                    self.acs[icao]['sil'] = adsb.sil(msg,self.acs[icao]['adsb_version'])
+                self.acs[icao]['nac_p'] = adsb.nac_p(msg)
+            if tc == 31:
+                self.acs[icao]['adsb_version']  = adsb.version(msg)
+                self.acs[icao]['sil'] = adsb.version(msg)
+                self.acs[icao]['nac_p'] = adsb.nac_p(msg)
+                if self.acs[icao]['adsb_version']  == 1:
+                    self.acs[icao]['nic_s'] = adsb.nic_s(msg)
+                elif self.acs[icao]['adsb_version']  == 2:
+                    self.acs[icao]['nic_a'] , self.acs[icao]['nic_c'] = adsb.nic_a_and_c(msg)
+
+
+                
 
         # process ehs message
         for t, msg in zip(ehs_ts, ehs_msgs):
