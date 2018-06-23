@@ -7,7 +7,7 @@ import argparse
 import curses
 from threading import Lock
 import pyModeS as pms
-from pyModeS.extra.beastclient import BaseClient
+from pyModeS.extra.tcpclient import BaseClient
 from pyModeS.streamer.stream import Stream
 from pyModeS.streamer.screen import Screen
 
@@ -19,19 +19,21 @@ COMMB_TS = []
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--server', help='server address or IP', required=True)
-parser.add_argument('--port', help='Raw beast port', required=True)
-parser.add_argument('--lat0', help='Latitude of receiver', required=True)
-parser.add_argument('--lon0', help='Longitude of receiver', required=True)
+parser.add_argument('--port', help='raw data port', required=True)
+parser.add_argument('--rawtype', help='beast or avr', required=True)
+parser.add_argument('--latlon', help='receiver position', nargs=2, metavar=('LAT', 'LON'), required=True)
 args = parser.parse_args()
 
 SERVER = args.server
 PORT = int(args.port)
-LAT0 = float(args.lat0)     # 51.9899 for TU Delft
-LON0 = float(args.lon0)     # 4.3754
+RAWTYPE = args.rawtype
+LAT0 = float(args.latlon[0])
+LON0 = float(args.latlon[1])
+
 
 class ModesClient(BaseClient):
-    def __init__(self, host, port):
-        super(ModesClient, self).__init__(host, port)
+    def __init__(self, host, port, rawtype):
+        super(ModesClient, self).__init__(host, port, rawtype)
 
     def handle_messages(self, messages):
         local_buffer_adsb_msg = []
@@ -66,7 +68,7 @@ class ModesClient(BaseClient):
 # redirect all stdout to null, avoiding messing up with the screen
 sys.stdout = open(os.devnull, 'w')
 
-client = ModesClient(host=SERVER, port=PORT)
+client = ModesClient(host=SERVER, port=PORT, rawtype=RAWTYPE)
 client.daemon = True
 client.start()
 

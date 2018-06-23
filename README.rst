@@ -66,13 +66,20 @@ To install latest development version (dev-2.0) from the GitHub:
 
 
 
-Live view traffic
+Live view traffic (pmslive)
 ----------------------------------------------------
-Supports Mode-S Beast raw stream
+Supports **Mode-S Beast** and **AVR** raw stream
 
 ::
 
-  pmslive --server URL/IP --port PORT --lat0 RECEIVER_LAT --lon0 RECEIVER_LON
+  pmslive --server [server_address] --port [tcp_port] --rawtype [beast_or_avr] --latlon [lat] [lon]
+
+  Arguments:
+    -h, --help         show this help message and exit
+    --server SERVER    server address or IP
+    --port PORT        raw data port
+    --rawtype RAWTYPE  beast or avr
+    --latlon LAT LON   receiver position
 
 
 
