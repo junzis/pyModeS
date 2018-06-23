@@ -3,7 +3,7 @@ The Python Mode-S Decoder (2.0-dev)
 
 Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
-**Automatic Dependent Surveillance - Broadcast (ADS-B) (DF17)**
+**Automatic Dependent Surveillance - Broadcast (ADS-B) (DF 17/18)**
 
 - TC=1-4  / BDS 0,8: Aircraft identification and category
 - TC=5-8  / BDS 0,6: Surface position
@@ -165,17 +165,19 @@ Common Mode-S functions
   pms.icao(msg)           # Infer the ICAO address from the message
   pms.bds.infer(msg)      # Infer the Modes-S BDS code
 
-  pms.bds.is10(msg)       # check if BDS is 1,0 explicitly
-  pms.bds.is17(msg)       # check if BDS is 1,7 explicitly
-  pms.bds.is20(msg)       # check if BDS is 2,0 explicitly
-  pms.bds.is30(msg)       # check if BDS is 3,0 explicitly
-  pms.bds.is40(msg)       # check if BDS is 4,0 explicitly
-  pms.bds.is44(msg)       # check if BDS is 4,4 explicitly
-  pms.bds.is50(msg)       # check if BDS is 5,0 explicitly
-  pms.bds.is60(msg)       # check if BDS is 6,0 explicitly
-
   # check if BDS is 5,0 or 6,0, give reference spd, trk, alt (from ADS-B)
   pms.bds.is50or60(msg, spd_ref, trk_ref, alt_ref)
+
+  # check each BDS explicitly
+  pms.bds.bds10.is10(msg)
+  pms.bds.bds17.is17(msg)
+  pms.bds.bds20.is20(msg)
+  pms.bds.bds30.is30(msg)
+  pms.bds.bds40.is40(msg)
+  pms.bds.bds44.is44(msg)
+  pms.bds.bds50.is50(msg)
+  pms.bds.bds60.is60(msg)
+
 
 
 Mode-S elementary surveillance (ELS)
@@ -223,6 +225,7 @@ Meteorological routine air report (MRAR) [Experimental]
   pms.commb.temp44(msg, rev=False)  # temperature (C)
   pms.commb.p44(msg, rev=False)     # pressure (hPa)
   pms.commb.hum44(msg, rev=False)   # humidity (%)
+
 
 Developement
 ------------
