@@ -82,6 +82,8 @@ Supports **Mode-S Beast** and **AVR** raw stream
     --latlon LAT LON   receiver position
 
 
+Example screen shot:
+![pmslive-screenshot](doc/pmslive-screenshot.png?raw=true)
 
 Use the library
 ---------------
