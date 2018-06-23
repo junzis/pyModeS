@@ -83,7 +83,9 @@ Supports **Mode-S Beast** and **AVR** raw stream
 
 
 Example screen shot:
-![pmslive-screenshot](doc/pmslive-screenshot.png?raw=true)
+
+.. image:: https://github.com/junzis/pyModeS/raw/master/doc/pmslive-screenshot.png
+   :width: 700px
 
 Use the library
 ---------------
