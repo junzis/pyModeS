@@ -176,14 +176,25 @@ def oe_flag(msg):
     msgbin = common.hex2bin(msg)
     return int(msgbin[53])
 
-# Uncertainty & accuracy
-def nic(msg, *argv):
-    if len(argv) == 1:
-        # assume ads-b v1, only one supplement bit
-        return nic_v1(msg, *argv)
-    elif len(argv) == 3:
-        # assume ads-b v2, three supplement bits
-        return nic_v2(msg, *argv)
+
+def version(msg):
+    """ADS-B Version
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string, TC = 31
+
+    Returns:
+        int: version number
+    """
+    tc = typecode(msg)
+
+    if tc != 31:
+        raise RuntimeError("%s: Not a status operation message, expecting TC = 31" % msg)
+
+    msgbin = common.hex2bin(msg)
+    version = common.bin2int(msgbin[72:75])
+
+    return version
 
 
 def nic_v1(msg, nic_sup_b):
@@ -461,23 +472,3 @@ def sil(msg, version):
             sil_sup = common.bin2int(msgbin[86])
 
     return sil, sil_sup
-
-
-def version(msg):
-    """ADS-B Version
-
-    Args:
-        msg (string): 28 bytes hexadecimal message string, TC = 31
-
-    Returns:
-        int: version number
-    """
-    tc = typecode(msg)
-
-    if tc != 31:
-        raise RuntimeError("%s: Not a status operation message, expecting TC = 31" % msg)
-
-    msgbin = common.hex2bin(msg)
-    version = common.bin2int(msgbin[72:75])
-
-    return version

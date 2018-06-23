@@ -36,7 +36,7 @@ class Stream():
 
             if icao not in self.acs:
                 self.acs[icao] = {
-                    'updated': None,
+                    'live': None,
                     'lat': None,
                     'lon': None,
                     'alt': None,
@@ -54,7 +54,7 @@ class Stream():
                     'SIL' : None
                 }
 
-            self.acs[icao]['updated'] = int(t)
+            self.acs[icao]['live'] = int(t)
 
             if 1 <= tc <= 4:
                 self.acs[icao]['callsign'] = pms.adsb.callsign(msg)
@@ -110,34 +110,19 @@ class Stream():
                     local_updated_acs_buffer.append(icao)
 
             # Uncertainty & accuracy
-            if (5 <= tc <= 8):
-                if self.acs[icao]['ver']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v1(msg, self.acs[icao]['nic_s'])
-                elif self.acs[icao]['ver']  == 2:
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v2(msg, self.acs[icao]['nic_a'], self.acs[icao]['nic_b'], self.acs[icao]['nic_c'])
-            if (9 <= tc <= 18):
-                if self.acs[icao]['ver']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v1(msg, self.acs[icao]['nic_s'])
-                elif self.acs[icao]['ver']  == 2:
-                    self.acs[icao]['nic_b'] = pms.adsb.nic_b(msg)
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v2(msg, self.acs[icao]['nic_a'], self.acs[icao]['nic_b'], self.acs[icao]['nic_c'])
+            ac = self.acs[icao]
+
+            if (5 <= tc <= 8) or (9 <= tc <= 18) or (20 <= tc <= 22):
+                if (ac['ver'] == 1) and ('nic_s' in ac.keys()):
+                    self.acs[icao]['NIC'] = pms.adsb.nic_v1(msg, ac['nic_s'])
+                elif (ac['ver'] == 2) and ('nic_a' in ac.keys()) and ('nic_b' in ac.keys()):
+                    self.acs[icao]['NIC'] = pms.adsb.nic_v2(msg, ac['nic_a'], ac['nic_b'], ac['nic_c'])
             if tc == 19:
-                if self.acs[icao]['ver']  in [1, 2]:
+                if ac['ver'] in [1, 2]:
                     self.acs[icao]['NACv'] = pms.adsb.nac_v(msg)
-            if (20 <= tc <= 22):
-                if self.acs[icao]['ver']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v1(msg, self.acs[icao]['nic_s'])
-                elif self.acs[icao]['ver']  == 2:
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.acs[icao]['NIC'] = pms.adsb.nic_v2(msg, self.acs[icao]['nic_a'], self.acs[icao]['nic_b'], self.acs[icao]['nic_c'])
             if tc == 29:
-                if self.acs[icao]['ver'] != None:
-                    self.acs[icao]['SIL'], self.acs[icao]['sil_s'] = pms.adsb.sil(msg, self.acs[icao]['ver'])
+                if ac['ver'] != None:
+                    self.acs[icao]['SIL'], self.acs[icao]['sil_s'] = pms.adsb.sil(msg, ac['ver'])
                 self.acs[icao]['NACp'] = pms.adsb.nac_p(msg)
             if tc == 31:
                 self.acs[icao]['ver']  = pms.adsb.version(msg)
@@ -147,8 +132,6 @@ class Stream():
                     self.acs[icao]['nic_s'] = pms.adsb.nic_s(msg)
                 elif self.acs[icao]['ver']  == 2:
                     self.acs[icao]['nic_a'], self.acs[icao]['nic_c'] = pms.adsb.nic_a_c(msg)
-
-
 
 
         # process commb message
@@ -183,7 +166,7 @@ class Stream():
 
         # clear up old data
         for icao in list(self.acs.keys()):
-            if self.t - self.acs[icao]['updated'] > self.cache_timeout:
+            if self.t - self.acs[icao]['live'] > self.cache_timeout:
                 del self.acs[icao]
                 continue
 

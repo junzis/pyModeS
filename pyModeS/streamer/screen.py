@@ -1,4 +1,5 @@
 from __future__ import print_function, division
+import os
 import curses
 import numpy as np
 import time
@@ -20,7 +21,7 @@ COLUMNS = [
     ('NACv', 5),
     ('NACp', 5),
     ('SIL', 5),
-    ('updated', 12),
+    ('live', 6),
 ]
 
 class Screen(Thread):
@@ -45,7 +46,7 @@ class Screen(Thread):
 
     def draw_frame(self):
         self.screen.border(0)
-        self.screen.addstr(0, 2, "Online aircraft ('crtl+c' to exit, 'enter' to select)")
+        self.screen.addstr(0, 2, "Online aircraft ('ESC' to exit, 'Enter' to lock one)")
 
     def update(self):
         if len(self.acs) == 0:
@@ -64,11 +65,14 @@ class Screen(Thread):
 
         header = '  icao'
         for c, cw in COLUMNS:
-            c = 'updated' if c=='t' else  c
             header += (cw-len(c))*' ' + c
+
+        # fill end with spaces
+        header += (self.scr_w - 2 - len(header)) * ' '
 
         if len(header) > self.scr_w - 2:
             header = header[:self.scr_w-3] + '>'
+
 
         self.screen.addstr(row, 1, header)
 
@@ -93,9 +97,17 @@ class Screen(Thread):
                 line += icao
 
                 for c, cw in COLUMNS:
-                    val = '' if ac[c] is None else ac[c]
+                    if c=='live':
+                        val = int(time.time() - ac[c])
+                    elif ac[c] is None:
+                        val = ''
+                    else:
+                        val = ac[c]
                     val_str = str(val)
                     line += (cw-len(val_str))*' ' + val_str
+
+                # fill end with spaces
+                line += (self.scr_w - 2 - len(line)) * ' '
 
                 if len(line) > self.scr_w - 2:
                     line = line[:self.scr_w-3] + '>'
@@ -122,7 +134,10 @@ class Screen(Thread):
         while True:
             c = self.screen.getch()
 
-            if c == curses.KEY_HOME:
+            if c == 27:
+                curses.endwin()
+                os._exit(1)
+            elif c == curses.KEY_HOME:
                 self.x = 1
                 self.y = 1
             elif c == curses.KEY_NPAGE:
@@ -145,3 +160,6 @@ class Screen(Thread):
                     self.y = y_intent
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
                 self.lock_icao = (self.screen.instr(self.y, 1, 6)).decode()
+            elif c == curses.KEY_F5:
+                self.screen.refresh()
+                self.draw_frame()
