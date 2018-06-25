@@ -1,16 +1,35 @@
 from __future__ import print_function, division
+import os
 import curses
 import numpy as np
 import time
 from threading import Thread
 
-COLUMNS = ['lat', 'lon', 'alt', 'gs', 'tas', 'ias', 'mach', 'roc', 'trk', 'hdg', 't']
+COLUMNS = [
+    ('lat', 10),
+    ('lon', 10),
+    ('alt', 7),
+    ('gs', 5),
+    ('tas', 5),
+    ('ias', 5),
+    ('mach', 7),
+    ('roc', 7),
+    ('trk', 10),
+    ('hdg', 10),
+    ('ver', 4),
+    ('NIC', 5),
+    ('NACv', 5),
+    ('NACp', 5),
+    ('SIL', 5),
+    ('live', 6),
+]
 
 class Screen(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.screen = curses.initscr()
         curses.noecho()
+        curses.mousemask(1)
         self.screen.keypad(True)
         self.y = 3
         self.x = 1
@@ -27,7 +46,7 @@ class Screen(Thread):
 
     def draw_frame(self):
         self.screen.border(0)
-        self.screen.addstr(0, 2, "Online aircraft ('crtl+c' to exit, 'enter' to select)")
+        self.screen.addstr(0, 2, "Online aircraft ('ESC' to exit, 'Enter' to lock one)")
 
     def update(self):
         if len(self.acs) == 0:
@@ -44,13 +63,16 @@ class Screen(Thread):
 
         row = 1
 
-        header = 'icao'
-        for c in COLUMNS:
-            c = 'updated' if c=='t' else  c
-            header += '%10s' % c
+        header = '  icao'
+        for c, cw in COLUMNS:
+            header += (cw-len(c))*' ' + c
+
+        # fill end with spaces
+        header += (self.scr_w - 2 - len(header)) * ' '
 
         if len(header) > self.scr_w - 2:
             header = header[:self.scr_w-3] + '>'
+
 
         self.screen.addstr(row, 1, header)
 
@@ -74,19 +96,23 @@ class Screen(Thread):
 
                 line += icao
 
-                for c in COLUMNS:
-
-                    if c == 't':
-                        val = str(int(ac[c]))
-                        line += '%12s' % val
+                for c, cw in COLUMNS:
+                    if c=='live':
+                        val = int(time.time() - ac[c])
+                    elif ac[c] is None:
+                        val = ''
                     else:
-                        val = '' if ac[c] is None else ac[c]
-                        line += '%10s' % val
+                        val = ac[c]
+                    val_str = str(val)
+                    line += (cw-len(val_str))*' ' + val_str
+
+                # fill end with spaces
+                line += (self.scr_w - 2 - len(line)) * ' '
 
                 if len(line) > self.scr_w - 2:
                     line = line[:self.scr_w-3] + '>'
 
-            if self.lock_icao == icao:
+            if (icao is not None) and (self.lock_icao == icao):
                 self.screen.addstr(row, 1, line, curses.A_STANDOUT)
             elif row == self.y:
                 self.screen.addstr(row, 1, line, curses.A_BOLD)
@@ -108,7 +134,10 @@ class Screen(Thread):
         while True:
             c = self.screen.getch()
 
-            if c == curses.KEY_HOME:
+            if c == 27:
+                curses.endwin()
+                os._exit(1)
+            elif c == curses.KEY_HOME:
                 self.x = 1
                 self.y = 1
             elif c == curses.KEY_NPAGE:
@@ -131,3 +160,6 @@ class Screen(Thread):
                     self.y = y_intent
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
                 self.lock_icao = (self.screen.instr(self.y, 1, 6)).decode()
+            elif c == curses.KEY_F5:
+                self.screen.refresh()
+                self.draw_frame()

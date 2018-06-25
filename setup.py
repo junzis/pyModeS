@@ -117,4 +117,6 @@ setup(
     #         'sample=sample:main',
     #     ],
     # },
+
+    scripts=['pyModeS/streamer/pmslive'],
 )

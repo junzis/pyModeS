@@ -1,7 +1,7 @@
 from __future__ import absolute_import, print_function, division
 import numpy as np
 import time
-from pyModeS.decoder import adsb, ehs
+import pyModeS as pms
 
 class Stream():
     def __init__(self, lat0, lon0):
@@ -18,8 +18,8 @@ class Stream():
         self.cache_timeout = 60     # seconds
 
 
-    def process_raw(self, adsb_ts, adsb_msgs, ehs_ts, ehs_msgs, tnow=None):
-        """process a chunk of adsb and ehs messages recieved in the same
+    def process_raw(self, adsb_ts, adsb_msgs, commb_ts, commb_msgs, tnow=None):
+        """process a chunk of adsb and commb messages recieved in the same
         time period.
         """
         if tnow is None:
@@ -31,11 +31,12 @@ class Stream():
 
         # process adsb message
         for t, msg in zip(adsb_ts, adsb_msgs):
-            icao = adsb.icao(msg)
-            tc = adsb.typecode(msg)
+            icao = pms.icao(msg)
+            tc = pms.adsb.typecode(msg)
 
             if icao not in self.acs:
                 self.acs[icao] = {
+                    'live': None,
                     'lat': None,
                     'lon': None,
                     'alt': None,
@@ -46,20 +47,20 @@ class Stream():
                     'ias': None,
                     'mach': None,
                     'hdg': None,
-                    'adsb_version' : None,    
-                    'nic_s' : None,
-                    'nic_a' : None,
-                    'nic_b' : None,
-                    'nic_c' : None
+                    'ver' : None,
+                    'NIC' : None,
+                    'NACp' : None,
+                    'NACv' : None,
+                    'SIL' : None
                 }
 
-            self.acs[icao]['t'] = t
+            self.acs[icao]['live'] = int(t)
 
             if 1 <= tc <= 4:
-                self.acs[icao]['callsign'] = adsb.callsign(msg)
+                self.acs[icao]['callsign'] = pms.adsb.callsign(msg)
 
             if (5 <= tc <= 8) or (tc == 19):
-                vdata = adsb.velocity(msg)
+                vdata = pms.adsb.velocity(msg)
                 if vdata is None:
                     continue
 
@@ -75,7 +76,7 @@ class Stream():
                 self.acs[icao]['tv'] = t
 
             if (5 <= tc <= 18):
-                oe = adsb.oe_flag(msg)
+                oe = pms.adsb.oe_flag(msg)
                 self.acs[icao][oe] = msg
                 self.acs[icao]['t'+str(oe)] = t
 
@@ -83,21 +84,21 @@ class Stream():
                     # use single message decoding
                     rlat = self.acs[icao]['lat']
                     rlon = self.acs[icao]['lon']
-                    latlon = adsb.position_with_ref(msg, rlat, rlon)
+                    latlon = pms.adsb.position_with_ref(msg, rlat, rlon)
                 elif ('t0' in self.acs[icao]) and ('t1' in self.acs[icao]) and \
                      (abs(self.acs[icao]['t0'] - self.acs[icao]['t1']) < 10):
                     # use multi message decoding
-                    try:
-                        latlon = adsb.position(
-                            self.acs[icao][0],
-                            self.acs[icao][1],
-                            self.acs[icao]['t0'],
-                            self.acs[icao]['t1'],
-                            self.lat0, self.lon0
-                            )
-                    except:
-                        # mix of surface and airborne position message
-                        continue
+                    # try:
+                    latlon = pms.adsb.position(
+                        self.acs[icao][0],
+                        self.acs[icao][1],
+                        self.acs[icao]['t0'],
+                        self.acs[icao]['t1'],
+                        self.lat0, self.lon0
+                        )
+                    # except:
+                    #     # mix of surface and airborne position message
+                    #     continue
                 else:
                     latlon = None
 
@@ -105,71 +106,60 @@ class Stream():
                     self.acs[icao]['tpos'] = t
                     self.acs[icao]['lat'] = latlon[0]
                     self.acs[icao]['lon'] = latlon[1]
+<<<<<<< HEAD
                     self.acs[icao]['alt'] = adsb.altitude(msg)
                     # local_updated_acs_buffer.append(icao)acs[icao]['adsb_version']
                     local_updated_acs_buffer.append(acs[icao]['adsb_version'])
+=======
+                    self.acs[icao]['alt'] = pms.adsb.altitude(msg)
+                    local_updated_acs_buffer.append(icao)
+>>>>>>> upstream/master
 
             # Uncertainty & accuracy
-            if (5 <= tc <= 8):
-                if self.acs[icao]['adsb_version']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
-                elif self.acs[icao]['adsb_version']  == 2:
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.nic = adsb.nic_v2(msg,self.nic_a,self.acs[icao]['nic_b'],self.acs[icao]['nic_c'])
-            if (9 <= tc <= 18):
-                if self.acs[icao]['adsb_version']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
-                elif self.acs[icao]['adsb_version']  == 2:
-                    self.acs[icao]['nic_b'] = adsb.nic_b(msg)
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.nic = adsb.nic_v2(msg,self.acs[icao]['nic_a'],self.nic_b,self.acs[icao]['nic_c'])
+            ac = self.acs[icao]
+
+            if (5 <= tc <= 8) or (9 <= tc <= 18) or (20 <= tc <= 22):
+                if (ac['ver'] == 1) and ('nic_s' in ac.keys()):
+                    self.acs[icao]['NIC'] = pms.adsb.nic_v1(msg, ac['nic_s'])
+                elif (ac['ver'] == 2) and ('nic_a' in ac.keys()) and ('nic_b' in ac.keys()):
+                    self.acs[icao]['NIC'] = pms.adsb.nic_v2(msg, ac['nic_a'], ac['nic_b'], ac['nic_c'])
             if tc == 19:
-                self.acs[icao]['nac_v'] = adsb.nac_v(msg)
-            if (20 <= tc <= 22):
-                if self.acs[icao]['adsb_version']  == 1:
-                    if self.acs[icao]['nic_s'] != None:
-                        self.nic = adsb.nic_v1(msg,self.acs[icao]['nic_s'])
-                elif self.acs[icao]['adsb_version']  == 2:
-                    if self.acs[icao]['nic_a'] != None and self.acs[icao]['nic_b'] != None:
-                        self.nic = adsb.nic_v2(msg,self.acs[icao]['nic_a'],self.acs[icao]['nic_b'],self.acs[icao]['nic_c'])
+                if ac['ver'] in [1, 2]:
+                    self.acs[icao]['NACv'] = pms.adsb.nac_v(msg)
             if tc == 29:
-                if self.acs[icao]['adsb_version'] != None:
-                    self.acs[icao]['sil'] = adsb.sil(msg,self.acs[icao]['adsb_version'])
-                self.acs[icao]['nac_p'] = adsb.nac_p(msg)
+                if ac['ver'] != None:
+                    self.acs[icao]['SIL'], self.acs[icao]['sil_s'] = pms.adsb.sil(msg, ac['ver'])
+                self.acs[icao]['NACp'] = pms.adsb.nac_p(msg)
             if tc == 31:
-                self.acs[icao]['adsb_version']  = adsb.version(msg)
-                self.acs[icao]['sil'] = adsb.version(msg)
-                self.acs[icao]['nac_p'] = adsb.nac_p(msg)
-                if self.acs[icao]['adsb_version']  == 1:
-                    self.acs[icao]['nic_s'] = adsb.nic_s(msg)
-                elif self.acs[icao]['adsb_version']  == 2:
-                    self.acs[icao]['nic_a'] , self.acs[icao]['nic_c'] = adsb.nic_a_and_c(msg)
+                self.acs[icao]['ver']  = pms.adsb.version(msg)
+                self.acs[icao]['SIL'] = pms.adsb.version(msg)
+                self.acs[icao]['NACp'] = pms.adsb.nac_p(msg)
+                if self.acs[icao]['ver']  == 1:
+                    self.acs[icao]['nic_s'] = pms.adsb.nic_s(msg)
+                elif self.acs[icao]['ver']  == 2:
+                    self.acs[icao]['nic_a'], self.acs[icao]['nic_c'] = pms.adsb.nic_a_c(msg)
 
 
-                
-
-        # process ehs message
-        for t, msg in zip(ehs_ts, ehs_msgs):
-            icao = ehs.icao(msg)
+        # process commb message
+        for t, msg in zip(commb_ts, commb_msgs):
+            icao = pms.icao(msg)
 
             if icao not in self.acs:
                 continue
 
-            bds = ehs.BDS(msg)
+            bds = pms.bds.infer(msg)
 
             if bds == 'BDS50':
-                tas = ehs.tas50(msg)
+                tas = pms.commb.tas50(msg)
 
                 if tas:
                     self.acs[icao]['t50'] = t
                     self.acs[icao]['tas'] = tas
 
             elif bds == 'BDS60':
-                ias = ehs.ias60(msg)
-                hdg = ehs.hdg60(msg)
-                mach = ehs.mach60(msg)
+                ias = pms.commb.ias60(msg)
+                hdg = pms.commb.hdg60(msg)
+                mach = pms.commb.mach60(msg)
 
                 if ias or hdg or mach:
                     self.acs[icao]['t60'] = t
@@ -182,7 +172,7 @@ class Stream():
 
         # clear up old data
         for icao in list(self.acs.keys()):
-            if self.t - self.acs[icao]['t'] > self.cache_timeout:
+            if self.t - self.acs[icao]['live'] > self.cache_timeout:
                 del self.acs[icao]
                 continue
 

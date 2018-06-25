@@ -2,6 +2,7 @@
 Stream beast raw data from a TCP server, convert to mode-s messages
 '''
 from __future__ import print_function, division
+import os
 import sys
 import socket
 import time
@@ -13,12 +14,15 @@ else:
     PY_VERSION = 2
 
 class BaseClient(Thread):
-    def __init__(self, host, port):
+    def __init__(self, host, port, rawtype):
         Thread.__init__(self)
         self.host = host
         self.port = port
         self.buffer = []
-
+        self.rawtype = rawtype
+        if self.rawtype not in ['avr', 'beast']:
+            print("rawtype must be either avr or beast")
+            os._exit(1)
 
     def connect(self):
         while True:
@@ -32,6 +36,33 @@ class BaseClient(Thread):
             except socket.error as err:
                 print("Socket connection error: %s. reconnecting..." % err)
                 time.sleep(3)
+
+
+    def read_avr_buffer(self):
+        # -- testing --
+        # for b in self.buffer:
+        #     print(chr(b), b)
+
+        # Append message with 0-9,A-F,a-f, until stop sign
+
+        messages = []
+
+        msg_stop = False
+        for b in self.buffer:
+            if b == 59:
+                msg_stop = True
+                ts = time.time()
+                messages.append([self.current_msg, ts])
+            if b == 42:
+                msg_stop = False
+                self.current_msg = ''
+
+            if (not msg_stop) and (48<=b<=57 or 65<=b<=70 or 97<=b<=102):
+                self.current_msg = self.current_msg + chr(b)
+
+        self.buffer = []
+
+        return messages
 
     def read_beast_buffer(self):
         '''
@@ -91,6 +122,8 @@ class BaseClient(Thread):
         # extract messages
         messages = []
         for mm in messages_mlat:
+            ts = time.time()
+
             msgtype = mm[0]
             # print(''.join('%02X' % i for i in mm))
 
@@ -108,10 +141,9 @@ class BaseClient(Thread):
                 # incomplete message
                 continue
 
-            ts = time.time()
-
             messages.append([msg, ts])
         return messages
+
 
     def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
@@ -136,7 +168,10 @@ class BaseClient(Thread):
                 #     continue
                 # -- Removed!! Cause delay in low data rate scenario --
 
-                messages = self.read_beast_buffer()
+                if self.rawtype == 'beast':
+                    messages = self.read_beast_buffer()
+                elif self.rawtype == 'avr':
+                    messages = self.read_avr_buffer()
 
                 if not messages:
                     continue
