@@ -106,7 +106,8 @@ class Stream():
                     self.acs[icao]['lat'] = latlon[0]
                     self.acs[icao]['lon'] = latlon[1]
                     self.acs[icao]['alt'] = adsb.altitude(msg)
-                    local_updated_acs_buffer.append(icao)acs[icao]['adsb_version'] 
+                    # local_updated_acs_buffer.append(icao)acs[icao]['adsb_version']
+                    local_updated_acs_buffer.append(acs[icao]['adsb_version'])
 
             # Uncertainty & accuracy
             if (5 <= tc <= 8):
