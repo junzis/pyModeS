@@ -1,11 +1,11 @@
 TC,NICs,NIC,Rc,VPL
-5,0,12,"7,5",'undefined’
-6,0,11,25,'undefined’
-7,1,10,75,'undefined’
-7,0,9,185,'undefined’
+5,0,11,7.5,'undefined’
+6,0,10,25,'undefined’
+7,1,9,75,'undefined’
+7,0,8,185,'undefined’
 8,0,1,'unknown’,'undefined’
-9,0,11,"7,5",11
-10,0,10,25,"37,5"
+9,0,11,7.5,11
+10,0,10,25,37.5
 11,1,9,75,112
 11,0,8,185,'undefined’
 12,0,7,370,'undefined’
@@ -17,6 +17,6 @@ TC,NICs,NIC,Rc,VPL
 16,0,2,14008,'undefined’
 17,0,1,37000,'undefined’
 18,0,0,'unknown’,'undefined’
-20,0,11,"7,5",11
-21,0,10,25,"37,5"
+20,0,11,7.5,11
+21,0,10,25,37.5
 22,0,0,'unknown’,112

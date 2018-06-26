@@ -246,11 +246,11 @@ def nic_v2(msg, nic_a, nic_b, nic_c):
     nic_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NIC_v2.csv', sep=',')
 
     if tc in range(5,9):
-        nic_df_extract = [(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICc == nic_c)]
+        nic_df_extract = nic_df[(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICc == nic_c)]
     elif tc in range(9,19):
-        nic_df_extract = [(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICb == nic_b)]
+        nic_df_extract = nic_df[(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICb == nic_b)]
     elif tc in range(20,23):
-        nic_df_extract = [nic_df.TC == tc]
+        nic_df_extract = nic_df[nic_df.TC == tc]
 
     Rc = nic_df_extract['Rc'][0]
 
@@ -341,10 +341,10 @@ def nac_p(msg):
 
     if tc == 29:
         nac_p = common.bin2int(msgbin[71:75])
-        nacp_df_extract = nac_p[nacp_df.NACp == nac_p]
+        nacp_df_extract = nacp_df[nacp_df.NACp == nac_p]
     elif tc == 31:
         nac_p = common.bin2int(msgbin[76:80])
-        nacp_df_extract = nac_p[nacp_df.NACp == nac_p]
+        nacp_df_extract = nacp_df[nacp_df.NACp == nac_p]
 
     HFU = nacp_df_extract['HFU'][0]
     VEPU = nacp_df_extract['VEPU'][0]
