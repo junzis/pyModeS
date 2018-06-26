@@ -19,6 +19,7 @@ The wrapper for decoding ADS-B messages
 
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder import common
+import pandas as pd # JoseAndresMR: I suppose you already have pandas in a common function, just change all occurrencies
 # from pyModeS.decoder.bds import bds05, bds06, bds09
 
 from pyModeS.decoder.bds.bds05 import airborne_position, airborne_position_with_ref, altitude
@@ -197,63 +198,30 @@ def version(msg):
     return version
 
 
-def nic_v1(msg, nic_sup_b):
-    """Calculate NIC, navigation integrity category for ADS-B version 1
+def nic_v1(msg,nic_sup_b):
+    """Calculate NIC, navigation integrity category, for ADS-B version 1
 
     Args:
         msg (string): 28 bytes hexadecimal message string
         nic_sup_b (int or string): NIC supplement
 
     Returns:
-        int: NIC number (from 0 to 11), -1 if not applicable
+        int or string: Horizontal Radius of Containment 
+        int or string: Vertical Protection Limit
     """
     if typecode(msg) < 5 or typecode(msg) > 22:
         raise RuntimeError("%s: Not a surface position message (5<TC<8), \
                            airborne position message (8<TC<19), \
                            or airborne position with GNSS height (20<TC<22)" % msg)
 
-    tc = typecode(msg)
+    tc = typecode(msg)               
 
-    if nic_sup_b in ['0', '1']:
-        nic_sup_b = int(nic_sup_b)
+    nic_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NIC_v1.csv', sep=',')
+    nic_df_extract = nic_df[(nic_df.TC == tc) & (nic_df.NICs == nic_sup_b)]   
 
-    if tc in [0, 8, 18, 22]:
-        nic = 0
-    elif tc == 17:
-        nic = 1
-    elif tc == 16:
-        if nic_sup_b:
-            nic = 3
-        else:
-            nic = 2
-    elif tc == 15:
-        nic = 4
-    elif tc == 14:
-        nic = 5
-    elif tc == 13:
-        if nic_sup_b:
-            nic = 6
-        else:
-            nic = 6
-    elif tc == 12:
-        nic = 7
-    elif tc == 11:
-        if nic_sup_b:
-            nic = 9
-        else:
-            nic = 8
-    elif tc in [6, 10, 21]:
-        nic = 10
-    elif tc in [5, 9, 20]:
-        nic = 11
-    elif tc == 7:
-        if nic_sup_b:
-            nic = 9
-        else:
-            nic = 8
-    else:
-        nic = -1
-    return nic
+    Rc = nic_df_extract['Rc'][0]
+    VPL = nic_df_extract['VPL'][0]
+    return Rc, VPL
 
 
 def nic_v2(msg, nic_a, nic_b, nic_c):
@@ -264,77 +232,31 @@ def nic_v2(msg, nic_a, nic_b, nic_c):
         nic_a (int or string): NIC supplement
         nic_b (int or srting): NIC supplement
         nic_c (int or string): NIC supplement
+
     Returns:
-        int: NIC number (from 0 to 11), -1 if not applicable
+        int or string: Horizontal Radius of Containment 
     """
     if typecode(msg) < 5 or typecode(msg) > 22:
         raise RuntimeError("%s: Not a surface position message (5<TC<8) \
                            airborne position message (8<TC<19), \
                            or airborne position with GNSS height (20<TC<22)" % msg)
 
-    tc = typecode(msg)
+    tc = typecode(msg)               
 
-    if nic_a in ['0', '1']:
-        nic_a = int(nic_a)
+    nic_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NIC_v2.csv', sep=',')
 
-    if nic_b in ['0', '1']:
-        nic_b = int(nic_b)
+    if tc in range(5,9):
+        nic_df_extract = [(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICc == nic_c)]
+    elif tc in range(9,19):
+        nic_df_extract = [(nic_df.TC == tc) & (nic_df.NICa == nic_a) & (nic_df.NICb == nic_b)]
+    elif tc in range(20,23):
+        nic_df_extract = [nic_df.TC == tc]
 
-    if nic_c in ['0', '1']:
-        nic_c = int(nic_c)
+    Rc = nic_df_extract['Rc'][0]
 
-    if tc in [0, 18, 22]:
-        nic = 0
-    elif tc == 17:
-        nic = 1
-    elif tc == 16:
-        if nic_a:
-            nic = 3
-        else:
-            nic = 2
-    elif tc == 15:
-        nic = 4
-    elif tc == 14:
-        nic = 5
-    elif tc == 13:
-        if nic_a:
-            nic = 6
-        else:
-            if nic_b:
-                nic = 6
-            else:
-                nic = 6
-    elif tc == 12:
-        nic = 7
-    elif tc == 11:
-        if nic_a:
-            nic = 9
-        else:
-            nic = 8
-    elif tc in [6, 10, 21]:
-        nic = 10
-    elif tc in [5, 9, 20]:
-        nic = 11
-    elif tc == 8:
-        if nic_a:
-            if nic_c:
-                nic = 7
-            else:
-                nic = 6
-        else:
-            if nic_c:
-                nic = 6
-            else:
-                nic = 0
-    elif tc == 7:
-        if nic_a:
-            nic = 9
-        else:
-            nic = 8
-    else:
-        nic = -1
-    return nic
-
+    return Rc
+    
+    
 
 def nic_s(msg):
     """Obtain NIC supplement bit, TC=31 message
@@ -404,7 +326,8 @@ def nac_p(msg):
         msg (string): 28 bytes hexadecimal message string, TC = 29 or 31
 
     Returns:
-        int: NACp number (0 or 1)
+        int or string: 95% horizontal accuracy bounds, Estimated Position Uncertainty
+        int or string: 95% vertical accuracy bounds, Vertical Estimated Position Uncertainty
     """
     tc = typecode(msg)
 
@@ -414,13 +337,19 @@ def nac_p(msg):
 
     msgbin = common.hex2bin(msg)
 
+    nacp_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NACp.csv', sep=',')
+
     if tc == 29:
         nac_p = common.bin2int(msgbin[71:75])
+        nacp_df_extract = nac_p[nacp_df.NACp == nac_p]
     elif tc == 31:
         nac_p = common.bin2int(msgbin[76:80])
+        nacp_df_extract = nac_p[nacp_df.NACp == nac_p]
 
-    return nac_p
+    HFU = nacp_df_extract['HFU'][0]
+    VEPU = nacp_df_extract['VEPU'][0]
 
+    return HFU, VEPU
 
 def nac_v(msg):
     """Calculate NACv, Navigation Accuracy Category - Velocity
@@ -429,16 +358,23 @@ def nac_v(msg):
         msg (string): 28 bytes hexadecimal message string, TC = 19
 
     Returns:
-        int: NACv number (from 0 to 4), -1 if not applicable
+        int or string: 95% horizontal accuracy bounds for velocity, Horizontal Figure of Merit 
+        int or string: 95% vertical accuracy bounds for velocity, Vertical Figure of Merit
     """
     tc = typecode(msg)
 
     if tc != 19:
         raise RuntimeError("%s: Not an airborne velocity message, expecting TC = 19" % msg)
 
+    nacv_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NACv.csv', sep=',')
+
     msgbin = common.hex2bin(msg)
     nac_v = common.bin2int(msgbin[42:45])
-    return nac_v
+    nacv_df_extract = nacv_df[nacv_df.NACv == nac_v]
+    HFOMr = nacv_df_extract['HFOMr'][0]
+    VFOMr = nacv_df_extract['VFOMr'][0]
+
+    return HFOMr, VFOMr
 
 
 def sil(msg, version):
@@ -448,13 +384,17 @@ def sil(msg, version):
         msg (string): 28 bytes hexadecimal message string with TC = 29, 31
 
     Returns:
-        (int, int): sil number and sil supplement (only for v2)
+        int or string: Probability of exceeding Horizontal Radius of Containment RCu 
+        int or string: Probability of exceeding Vertical Integrity Containment Region VPL 
+        string: SIL supplement based on "per hour" or "per sample"
     """
     tc = typecode(msg)
 
     if tc not in [29, 31]:
         raise RuntimeError("%s: Not a target state and status messag, \
                            or operation status message, expecting TC = 29 or 31" % msg)
+
+    sil_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/SIL.csv', sep=',')
 
     msgbin = common.hex2bin(msg)
 
@@ -463,12 +403,76 @@ def sil(msg, version):
     elif tc == 31:
         sil = common.bin2int(msg[82:84])
 
-    sil_sup = None
+    sil_df_extract = sil_df[sil_df.NACv == sil]
+    PR_RCu = sil_df_extract['PR_RCu'][0]
+    PE_VPL = sil_df_extract['PE_VPL'][0]
 
+    if version == 1:
+        return PR_RCu, PE_VPL
     if version == 2:
-        if version == 29:
+        if tc == 29:
             sil_sup = common.bin2int(msgbin[39])
-        elif version == 31:
+        elif tc == 31:
             sil_sup = common.bin2int(msgbin[86])
+        
+        if sil_sup == 0:
+            base = "per hour"
+        elif sil_sup == 1:
+            base = "per sample"
 
-    return sil, sil_sup
+        return PR_RCu, PE_VPL, base
+
+def nuc_p(msg):
+    """Calculate NUCp, Navigation Uncertainty Category - Position
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string,
+
+    Returns:
+        int or string: Horizontal Protection Limit
+        int or string: 95% Containment Radius - Horizontal
+        int or string: 95% Containment Radius - Vertical (only for airborne position with GNSS height messages)
+
+    """
+    tc = typecode(msg)
+
+    if typecode(msg) < 5 or typecode(msg) > 22:
+        raise RuntimeError("%s: Not a surface position message (5<TC<8), \
+                           airborne position message (8<TC<19), \
+                           or airborne position with GNSS height (20<TC<22)" % msg)
+
+    nucp_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NUCp.csv', sep=',')
+
+    nucp_df_extract = nucp_df[nucp_df.TC == tc]
+    HPL = nucp_df_extract['HPL'][0]
+    RCu = nucp_df_extract['RCu'][0]
+
+    if tc not in range(20,23):
+        return HPL, RCu
+    else: 
+        RCv = nucp_df_extract['RCv'][0]
+        return HPL, RCu, RCv
+
+def nuc_v(msg):
+    """Calculate NUCv, Navigation Uncertainty Category - Velocity
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string,
+
+    Returns:
+        int or string: 95% Horizontal Velocity Error 
+        int or string: 95% Vertical Velocity Error
+    """
+    tc = typecode(msg)
+
+    if tc != 19:
+        raise RuntimeError("%s: Not an airborne velocity message, expecting TC = 19" % msg)
+
+    nucv_df = pd.read_csv('/home/josmilrom/Libraries/pyModeS/pyModeS/decoder/adsb_ua_parameters/NUCv.csv', sep=',')
+
+    nucv_df_extract = nucv_df[nucv_df.TC == tc]
+
+    HVE = nucv_df_extract['HVE'][0]
+    VVE = nucv_df_extract['VVE'][0]
+
+    return HVE, VVE
