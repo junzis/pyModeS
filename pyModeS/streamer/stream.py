@@ -48,10 +48,19 @@ class Stream():
                     'mach': None,
                     'hdg': None,
                     'ver' : None,
-                    'nic_s' : None,
-                    'nic_a' : None,
-                    'nic_b' : None,
-                    'nic_c' : None
+                    'HPL' : None,
+                    'RCu' : None,
+                    'RCv' : None,
+                    'HVE' : None,
+                    'VVE' : None,
+                    'Rc' : None,
+                    'VPL' : None,
+                    'EPU' : None,
+                    'VEPU' : None,
+                    'HFOMr' : None,
+                    'VFOMr' : None,
+                    'PE_RCu' : None,
+                    'PE_VPL' : None,
                 }
 
             self.acs[icao]['live'] = int(t)
@@ -112,38 +121,35 @@ class Stream():
             # Uncertainty & accuracy
             ac = self.acs[icao]
 
+            if 9 <= tc <= 18:
+                ac['nic_bc'] = pms.adsb.nic_b(msg)
+
             if (5 <= tc <= 8) or (9 <= tc <= 18) or (20 <= tc <= 22):
-                if 20 <= tc <= 22:
-                    ac['HPL'], ac['RCu'], ac['RCv'] = pms.adsb.nuc_p(msg)
-                else:
-                    ac['HPL'], ac['RCu'] = pms.adsb.nuc_p(msg)
+                ac['HPL'], ac['RCu'], ac['RCv'] = pms.adsb.nuc_p(msg)
 
                 if (ac['ver'] == 1) and ('nic_s' in ac.keys()):
                     ac['Rc'], ac['VPL'] = pms.adsb.nic_v1(msg, ac['nic_s'])
-                elif (ac['ver'] == 2) and ('nic_a' in ac.keys()) and ('nic_b' in ac.keys()):
-                    ac['Rc'], ac['VPL'] = pms.adsb.nic_v2(msg, ac['nic_a'], ac['nic_b'], ac['nic_c'])
+                elif (ac['ver'] == 2) and ('nic_a' in ac.keys()) and ('nic_bc' in ac.keys()):
+                    ac['Rc'] = pms.adsb.nic_v2(msg, ac['nic_a'], ac['nic_bc'])
 
             if tc == 19:
                 ac['HVE'], ac['VVE'] = pms.adsb.nuc_v(msg)
                 if ac['ver'] in [1, 2]:
-                    ac['HFU'], ac['VEPU'] = pms.adsb.nac_v(msg)
+                    ac['EPU'], ac['VEPU'] = pms.adsb.nac_v(msg)
 
             if tc == 29:
-                if ac['ver'] == 1:
-                    ac['PR_RCu'], ac['PE_VPL'] = pms.adsb.sil(msg, ac['ver'])  
-                elif  ac['ver'] == 2:
-                    ac['PR_RCu'], ac['PE_VPL'], ac['sil_base'] = pms.adsb.sil(msg, ac['ver'])
+                ac['PE_RCu'], ac['PE_VPL'], ac['base'] = pms.adsb.sil(msg, ac['ver'])
                 ac['HFOMr'], ac['VFOMr'] = pms.adsb.nac_p(msg)
 
             if tc == 31:
                 ac['ver']  = pms.adsb.version(msg)
                 ac['HFOMr'], ac['VFOMr'] = pms.adsb.nac_p(msg)
+                ac['PE_RCu'], ac['PE_VPL'], ac['sil_base'] = pms.adsb.sil(msg, ac['ver'])
+
                 if ac['ver']  == 1:
                     ac['nic_s'] = pms.adsb.nic_s(msg)
-                    ac['PR_RCu'], ac['PE_VPL'] = pms.adsb.sil(msg, ac['ver'])  
                 elif ac['ver']  == 2:
-                    ac['nic_a'], ac['nic_c'] = pms.adsb.nic_a_c(msg)
-                    ac['PR_RCu'], ac['PE_VPL'], ac['sil_base'] = pms.adsb.sil(msg, ac['ver'])
+                    ac['nic_a'], ac['nic_bc'] = pms.adsb.nic_a_c(msg)
 
 
         # process commb message
