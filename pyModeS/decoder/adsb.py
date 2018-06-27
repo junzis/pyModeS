@@ -18,9 +18,12 @@ The wrapper for decoding ADS-B messages
 """
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder import common
-# from pyModeS.decoder.bds import bds05, bds06, bds09
 
+import pyModeS as pms
+from pyModeS.decoder import common
+from pyModeS.decoder import uncertainty
+
+# from pyModeS.decoder.bds import bds05, bds06, bds09
 from pyModeS.decoder.bds.bds05 import airborne_position, airborne_position_with_ref, altitude
 from pyModeS.decoder.bds.bds06 import surface_position, surface_position_with_ref, surface_velocity
 from pyModeS.decoder.bds.bds08 import category, callsign
@@ -197,143 +200,126 @@ def version(msg):
     return version
 
 
-def nic_v1(msg, nic_sup_b):
-    """Calculate NIC, navigation integrity category for ADS-B version 1
+def nuc_p(msg):
+    """Calculate NUCp, Navigation Uncertainty Category - Position (ADS-B version 1)
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string,
+
+    Returns:
+        int: Horizontal Protection Limit
+        int: 95% Containment Radius - Horizontal (meters)
+        int: 95% Containment Radius - Vertical (meters)
+
+    """
+    tc = typecode(msg)
+
+    if typecode(msg) < 5 or typecode(msg) > 22:
+        raise RuntimeError(
+            "%s: Not a surface position message (5<TC<8), \
+            airborne position message (8<TC<19), \
+            or airborne position with GNSS height (20<TC<22)" % msg
+        )
+
+    NUCp = uncertainty.TC_NUCp_lookup[tc]
+
+    HPL = uncertainty.NUCp[NUCp]['HPL']
+    RCu = uncertainty.NUCp[NUCp]['RCu']
+    RCv = uncertainty.NUCp[NUCp]['RCv']
+
+    if tc in [20, 21]:
+        RCv = uncertainty.NA
+
+    return HPL, RCu, RCv
+
+
+def nuc_v(msg):
+    """Calculate NUCv, Navigation Uncertainty Category - Velocity (ADS-B version 1)
+
+    Args:
+        msg (string): 28 bytes hexadecimal message string,
+
+    Returns:
+        int or string: 95% Horizontal Velocity Error
+        int or string: 95% Vertical Velocity Error
+    """
+    tc = typecode(msg)
+
+    if tc != 19:
+        raise RuntimeError("%s: Not an airborne velocity message, expecting TC = 19" % msg)
+
+
+    msgbin = common.hex2bin(msg)
+    NUCv = common.bin2int(msgbin[42:45])
+
+    HVE = uncertainty.NUCv[NUCv]['HVE']
+    VVE = uncertainty.NUCv[NUCv]['VVE']
+
+    return HVE, VVE
+
+
+def nic_v1(msg, NICs):
+    """Calculate NIC, navigation integrity category, for ADS-B version 1
 
     Args:
         msg (string): 28 bytes hexadecimal message string
-        nic_sup_b (int or string): NIC supplement
+        NICs (int or string): NIC supplement
 
     Returns:
-        int: NIC number (from 0 to 11), -1 if not applicable
+        int or string: Horizontal Radius of Containment
+        int or string: Vertical Protection Limit
     """
     if typecode(msg) < 5 or typecode(msg) > 22:
-        raise RuntimeError("%s: Not a surface position message (5<TC<8), \
-                           airborne position message (8<TC<19), \
-                           or airborne position with GNSS height (20<TC<22)" % msg)
+        raise RuntimeError(
+            "%s: Not a surface position message (5<TC<8), \
+            airborne position message (8<TC<19), \
+            or airborne position with GNSS height (20<TC<22)" % msg
+        )
 
     tc = typecode(msg)
+    NIC = uncertainty.TC_NICv1_lookup[tc]
 
-    if nic_sup_b in ['0', '1']:
-        nic_sup_b = int(nic_sup_b)
+    if isinstance(NIC, dict):
+        NIC = NIC[NICs]
 
-    if tc in [0, 8, 18, 22]:
-        nic = 0
-    elif tc == 17:
-        nic = 1
-    elif tc == 16:
-        if nic_sup_b:
-            nic = 3
-        else:
-            nic = 2
-    elif tc == 15:
-        nic = 4
-    elif tc == 14:
-        nic = 5
-    elif tc == 13:
-        if nic_sup_b:
-            nic = 6
-        else:
-            nic = 6
-    elif tc == 12:
-        nic = 7
-    elif tc == 11:
-        if nic_sup_b:
-            nic = 9
-        else:
-            nic = 8
-    elif tc in [6, 10, 21]:
-        nic = 10
-    elif tc in [5, 9, 20]:
-        nic = 11
-    elif tc == 7:
-        if nic_sup_b:
-            nic = 9
-        else:
-            nic = 8
-    else:
-        nic = -1
-    return nic
+    Rc = uncertainty.NICv1[NIC][NICs]['Rc']
+    VPL = uncertainty.NICv1[NIC][NICs]['VPL']
+
+    return Rc, VPL
 
 
-def nic_v2(msg, nic_a, nic_b, nic_c):
+def nic_v2(msg, NICa, NICbc):
     """Calculate NIC, navigation integrity category, for ADS-B version 2
 
     Args:
         msg (string): 28 bytes hexadecimal message string
-        nic_a (int or string): NIC supplement
-        nic_b (int or srting): NIC supplement
-        nic_c (int or string): NIC supplement
+        NICa (int or string): NIC supplement - A
+        NICbc (int or srting): NIC supplement - B or C
+
     Returns:
-        int: NIC number (from 0 to 11), -1 if not applicable
+        int or string: Horizontal Radius of Containment
     """
     if typecode(msg) < 5 or typecode(msg) > 22:
-        raise RuntimeError("%s: Not a surface position message (5<TC<8) \
-                           airborne position message (8<TC<19), \
-                           or airborne position with GNSS height (20<TC<22)" % msg)
+        raise RuntimeError(
+            "%s: Not a surface position message (5<TC<8), \
+            airborne position message (8<TC<19), \
+            or airborne position with GNSS height (20<TC<22)" % msg
+        )
 
     tc = typecode(msg)
+    NIC = uncertainty.TC_NICv2_lookup[tc]
 
-    if nic_a in ['0', '1']:
-        nic_a = int(nic_a)
-
-    if nic_b in ['0', '1']:
-        nic_b = int(nic_b)
-
-    if nic_c in ['0', '1']:
-        nic_c = int(nic_c)
-
-    if tc in [0, 18, 22]:
-        nic = 0
-    elif tc == 17:
-        nic = 1
-    elif tc == 16:
-        if nic_a:
-            nic = 3
-        else:
-            nic = 2
-    elif tc == 15:
-        nic = 4
-    elif tc == 14:
-        nic = 5
-    elif tc == 13:
-        if nic_a:
-            nic = 6
-        else:
-            if nic_b:
-                nic = 6
-            else:
-                nic = 6
-    elif tc == 12:
-        nic = 7
-    elif tc == 11:
-        if nic_a:
-            nic = 9
-        else:
-            nic = 8
-    elif tc in [6, 10, 21]:
-        nic = 10
-    elif tc in [5, 9, 20]:
-        nic = 11
-    elif tc == 8:
-        if nic_a:
-            if nic_c:
-                nic = 7
-            else:
-                nic = 6
-        else:
-            if nic_c:
-                nic = 6
-            else:
-                nic = 0
-    elif tc == 7:
-        if nic_a:
-            nic = 9
-        else:
-            nic = 8
+    if 20<=tc<=22:
+        NICs = 0
     else:
-        nic = -1
-    return nic
+        NICs = NICa*2 + NICbc
+
+    if isinstance(NIC, dict):
+        NIC = NIC[NICs]
+
+    Rc = uncertainty.NICv2[NIC][NICs]['Rc']
+
+    return Rc
 
 
 def nic_s(msg):
@@ -404,7 +390,8 @@ def nac_p(msg):
         msg (string): 28 bytes hexadecimal message string, TC = 29 or 31
 
     Returns:
-        int: NACp number (0 or 1)
+        int or string: 95% horizontal accuracy bounds, Estimated Position Uncertainty
+        int or string: 95% vertical accuracy bounds, Vertical Estimated Position Uncertainty
     """
     tc = typecode(msg)
 
@@ -415,12 +402,14 @@ def nac_p(msg):
     msgbin = common.hex2bin(msg)
 
     if tc == 29:
-        nac_p = common.bin2int(msgbin[71:75])
+        NACp = common.bin2int(msgbin[71:75])
     elif tc == 31:
-        nac_p = common.bin2int(msgbin[76:80])
+        NACp = common.bin2int(msgbin[76:80])
 
-    return nac_p
+    EPU = uncertainty.NACp[NACp]['EPU']
+    VEPU = uncertainty.NACp[NACp]['VEPU']
 
+    return EPU, VEPU
 
 def nac_v(msg):
     """Calculate NACv, Navigation Accuracy Category - Velocity
@@ -429,7 +418,8 @@ def nac_v(msg):
         msg (string): 28 bytes hexadecimal message string, TC = 19
 
     Returns:
-        int: NACv number (from 0 to 4), -1 if not applicable
+        int or string: 95% horizontal accuracy bounds for velocity, Horizontal Figure of Merit
+        int or string: 95% vertical accuracy bounds for velocity, Vertical Figure of Merit
     """
     tc = typecode(msg)
 
@@ -437,8 +427,12 @@ def nac_v(msg):
         raise RuntimeError("%s: Not an airborne velocity message, expecting TC = 19" % msg)
 
     msgbin = common.hex2bin(msg)
-    nac_v = common.bin2int(msgbin[42:45])
-    return nac_v
+    NACv = common.bin2int(msgbin[42:45])
+
+    HFOMr = uncertainty.NACv[NACv]['HFOMr']
+    VFOMr = uncertainty.NACv[NACv]['VFOMr']
+
+    return HFOMr, VFOMr
 
 
 def sil(msg, version):
@@ -448,7 +442,9 @@ def sil(msg, version):
         msg (string): 28 bytes hexadecimal message string with TC = 29, 31
 
     Returns:
-        (int, int): sil number and sil supplement (only for v2)
+        int or string: Probability of exceeding Horizontal Radius of Containment RCu
+        int or string: Probability of exceeding Vertical Integrity Containment Region VPL
+        string: SIL supplement based on per "hour" or "sample", or 'unknown'
     """
     tc = typecode(msg)
 
@@ -459,16 +455,24 @@ def sil(msg, version):
     msgbin = common.hex2bin(msg)
 
     if tc == 29:
-        sil = common.bin2int(msgbin[76:78])
+        SIL = common.bin2int(msgbin[76:78])
     elif tc == 31:
-        sil = common.bin2int(msg[82:84])
+        SIL = common.bin2int(msgbin[82:84])
 
-    sil_sup = None
+    PE_RCu = uncertainty.SIL[SIL]['PE_RCu']
+    PE_VPL = uncertainty.SIL[SIL]['PE_VPL']
+
+    base = 'unknown'
 
     if version == 2:
-        if version == 29:
-            sil_sup = common.bin2int(msgbin[39])
-        elif version == 31:
-            sil_sup = common.bin2int(msgbin[86])
+        if tc == 29:
+            SIL_SUP = common.bin2int(msgbin[39])
+        elif tc == 31:
+            SIL_SUP = common.bin2int(msgbin[86])
 
-    return sil, sil_sup
+        if SIL_SUP == 0:
+            base = "hour"
+        elif SIL_SUP == 1:
+            base = "sample"
+
+    return PE_RCu, PE_VPL, base

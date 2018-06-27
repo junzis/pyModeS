@@ -64,16 +64,16 @@ def test_adsb_velocity():
     assert adsb.altitude_diff('8D485020994409940838175B284F') == 550
 
 
-def test_nic():
-    assert adsb.nic('8D3C70A390AB11F55B8C57F65FE6') == 0
-    assert adsb.nic('8DE1C9738A4A430B427D219C8225') == 1
-    assert adsb.nic('8D44058880B50006B1773DC2A7E9') == 2
-    assert adsb.nic('8D44058881B50006B1773DC2A7E9') == 3
-    assert adsb.nic('8D4AB42A78000640000000FA0D0A') == 4
-    assert adsb.nic('8D4405887099F5D9772F37F86CB6') == 5
-    assert adsb.nic('8D4841A86841528E72D9B472DAC2') == 6
-    assert adsb.nic('8D44057560B9760C0B840A51C89F') == 7
-    assert adsb.nic('8D40621D58C382D690C8AC2863A7') == 8
-    assert adsb.nic('8F48511C598D04F12CCF82451642') == 9
-    assert adsb.nic('8DA4D53A50DBF8C6330F3B35458F') == 10
-    assert adsb.nic('8D3C4ACF4859F1736F8E8ADF4D67') == 11
+# def test_nic():
+#     assert adsb.nic('8D3C70A390AB11F55B8C57F65FE6') == 0
+#     assert adsb.nic('8DE1C9738A4A430B427D219C8225') == 1
+#     assert adsb.nic('8D44058880B50006B1773DC2A7E9') == 2
+#     assert adsb.nic('8D44058881B50006B1773DC2A7E9') == 3
+#     assert adsb.nic('8D4AB42A78000640000000FA0D0A') == 4
+#     assert adsb.nic('8D4405887099F5D9772F37F86CB6') == 5
+#     assert adsb.nic('8D4841A86841528E72D9B472DAC2') == 6
+#     assert adsb.nic('8D44057560B9760C0B840A51C89F') == 7
+#     assert adsb.nic('8D40621D58C382D690C8AC2863A7') == 8
+#     assert adsb.nic('8F48511C598D04F12CCF82451642') == 9
+#     assert adsb.nic('8DA4D53A50DBF8C6330F3B35458F') == 10
+#     assert adsb.nic('8D3C4ACF4859F1736F8E8ADF4D67') == 11

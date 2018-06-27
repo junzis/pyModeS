@@ -22,6 +22,7 @@ parser.add_argument('--server', help='server address or IP', required=True)
 parser.add_argument('--port', help='raw data port', required=True)
 parser.add_argument('--rawtype', help='beast or avr', required=True)
 parser.add_argument('--latlon', help='receiver position', nargs=2, metavar=('LAT', 'LON'), required=True)
+parser.add_argument('--show-uncertainty', help='display uncertainty indicators', required=False)
 args = parser.parse_args()
 
 SERVER = args.server
