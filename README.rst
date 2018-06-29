@@ -82,6 +82,12 @@ Supports **Mode-S Beast** and **AVR** raw stream
     --latlon LAT LON   receiver position
 
 
+If you have a RTL-SDR receiver or Mode-S Beast, use modesmixer2 (http://xdeco.org/?page_id=48) to create raw beast TCP stream:
+
+::
+
+  $ modesmixer2 --inSeriel port[:speed[:flow_control]] --outServer beast:[tcp_port]
+
 Example screen shot:
 
 .. image:: https://github.com/junzis/pyModeS/raw/master/doc/pmslive-screenshot.png
