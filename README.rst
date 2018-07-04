@@ -66,13 +66,13 @@ To install latest development version (dev-2.0) from the GitHub:
 
 
 
-Live view traffic (pmslive)
+Live view traffic (modeslive)
 ----------------------------------------------------
 Supports **Mode-S Beast** and **AVR** raw stream
 
 ::
 
-  pmslive --server [server_address] --port [tcp_port] --rawtype [beast_or_avr] --latlon [lat] [lon]
+  modeslive --server [server_address] --port [tcp_port] --rawtype [beast_or_avr] --latlon [lat] [lon]
 
   Arguments:
     -h, --help         show this help message and exit
@@ -90,7 +90,7 @@ If you have a RTL-SDR receiver or Mode-S Beast, use modesmixer2 (http://xdeco.or
 
 Example screen shot:
 
-.. image:: https://github.com/junzis/pyModeS/raw/master/doc/pmslive-screenshot.png
+.. image:: https://github.com/junzis/pyModeS/raw/master/doc/modeslive-screenshot.png
    :width: 700px
 
 Use the library

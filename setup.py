@@ -118,5 +118,5 @@ setup(
     #     ],
     # },
 
-    scripts=['pyModeS/streamer/pmslive'],
+    scripts=['pyModeS/streamer/modeslive'],
 )
