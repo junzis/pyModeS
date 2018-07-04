@@ -55,7 +55,7 @@ class Screen(Thread):
 
     def draw_frame(self):
         self.screen.border(0)
-        self.screen.addstr(0, 2, "Online aircraft ('ESC' to exit, 'Enter' to lock one)")
+        self.screen.addstr(0, 2, "Online aircraft [%d] ('Ctrl+C' to exit, 'Enter' to lock one)" % len(self.acs))
 
     def update(self):
         if len(self.acs) == 0:
@@ -143,10 +143,7 @@ class Screen(Thread):
         while True:
             c = self.screen.getch()
 
-            if c == 27:
-                curses.endwin()
-                os._exit(1)
-            elif c == curses.KEY_HOME:
+            if c == curses.KEY_HOME:
                 self.x = 1
                 self.y = 1
             elif c == curses.KEY_NPAGE:
