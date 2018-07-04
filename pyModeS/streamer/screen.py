@@ -6,6 +6,7 @@ import time
 from threading import Thread
 
 COLUMNS = [
+    ('call', 10),
     ('lat', 10),
     ('lon', 10),
     ('alt', 7),
@@ -16,11 +17,12 @@ COLUMNS = [
     ('roc', 7),
     ('trk', 10),
     ('hdg', 10),
-    ('ver', 4),
     ('live', 6),
 ]
 
 UNCERTAINTY_COLUMNS = [
+    ('|', 5),
+    ('ver', 4),
     ('HPL', 5),
     ('RCu', 5),
     ('RCv', 5),
@@ -113,8 +115,10 @@ class Screen(Thread):
                 line += icao
 
                 for c, cw in self.columns:
-                    if c=='live':
-                        val = int(time.time() - ac[c])
+                    if c=='|':
+                        val = '|'
+                    elif c=='live':
+                        val = str(int(time.time() - ac[c]))+'s'
                     elif ac[c] is None:
                         val = ''
                     else:

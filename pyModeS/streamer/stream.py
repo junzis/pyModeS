@@ -37,6 +37,7 @@ class Stream():
             if icao not in self.acs:
                 self.acs[icao] = {
                     'live': None,
+                    'call': None,
                     'lat': None,
                     'lon': None,
                     'alt': None,
@@ -66,7 +67,7 @@ class Stream():
             self.acs[icao]['live'] = int(t)
 
             if 1 <= tc <= 4:
-                self.acs[icao]['callsign'] = pms.adsb.callsign(msg)
+                self.acs[icao]['call'] = pms.adsb.callsign(msg)
 
             if (5 <= tc <= 8) or (tc == 19):
                 vdata = pms.adsb.velocity(msg)
