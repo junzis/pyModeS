@@ -17,6 +17,10 @@ COLUMNS = [
     ('trk', 10),
     ('hdg', 10),
     ('ver', 4),
+    ('live', 6),
+]
+
+UNCERTAINTY_COLUMNS = [
     ('HPL', 5),
     ('RCu', 5),
     ('RCv', 5),
@@ -30,11 +34,10 @@ COLUMNS = [
     ('VFOMr', 7),
     ('PE_RCu', 8),
     ('PE_VPL', 8),
-    ('live', 6),
 ]
 
 class Screen(Thread):
-    def __init__(self):
+    def __init__(self, uncertainty=False):
         Thread.__init__(self)
         self.screen = curses.initscr()
         curses.noecho()
@@ -45,6 +48,10 @@ class Screen(Thread):
         self.offset = 0
         self.acs = {}
         self.lock_icao = None
+
+        self.columns = COLUMNS
+        if uncertainty:
+            self.columns.extend(UNCERTAINTY_COLUMNS)
 
 
     def reset_cursor_pos(self):
@@ -73,7 +80,7 @@ class Screen(Thread):
         row = 1
 
         header = '  icao'
-        for c, cw in COLUMNS:
+        for c, cw in self.columns:
             header += (cw-len(c))*' ' + c
 
         # fill end with spaces
@@ -105,7 +112,7 @@ class Screen(Thread):
 
                 line += icao
 
-                for c, cw in COLUMNS:
+                for c, cw in self.columns:
                     if c=='live':
                         val = int(time.time() - ac[c])
                     elif ac[c] is None:

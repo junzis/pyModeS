@@ -22,7 +22,7 @@ parser.add_argument('--server', help='server address or IP', required=True)
 parser.add_argument('--port', help='raw data port', required=True)
 parser.add_argument('--rawtype', help='beast or avr', required=True)
 parser.add_argument('--latlon', help='receiver position', nargs=2, metavar=('LAT', 'LON'), required=True)
-parser.add_argument('--show-uncertainty', help='display uncertainty indicators', required=False)
+parser.add_argument('--show-uncertainty', dest='uncertainty', help='display uncertaint values, default off', action='store_true', required=False, default=False)
 args = parser.parse_args()
 
 SERVER = args.server
@@ -30,6 +30,7 @@ PORT = int(args.port)
 RAWTYPE = args.rawtype
 LAT0 = float(args.latlon[0])
 LON0 = float(args.latlon[1])
+UNCERTAINTY = args.uncertainty
 
 
 class ModesClient(BaseClient):
@@ -76,7 +77,7 @@ client.start()
 stream = Stream(lat0=LAT0, lon0=LON0)
 
 try:
-    screen = Screen()
+    screen = Screen(uncertainty=UNCERTAINTY)
     screen.daemon = True
     screen.start()
 

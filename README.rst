@@ -80,6 +80,7 @@ Supports **Mode-S Beast** and **AVR** raw stream
     --port PORT        raw data port
     --rawtype RAWTYPE  beast or avr
     --latlon LAT LON   receiver position
+    --show-uncertainty  display uncertaint values, default off
 
 
 If you have a RTL-SDR receiver or Mode-S Beast, use modesmixer2 (http://xdeco.org/?page_id=48) to create raw beast TCP stream:
