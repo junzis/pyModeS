@@ -1,5 +1,5 @@
 from pyModeS import bds, commb
-from pyModeS import ehs, els    # depricated
+from pyModeS import ehs, els    # deprecated
 
 def test_bds20_callsign():
     assert bds.bds20.cs20("A000083E202CC371C31DE0AA1CCF") == 'KLM1017_'

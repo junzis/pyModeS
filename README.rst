@@ -1,9 +1,9 @@
-The Python Mode-S Decoder (2.0-dev)
+The Python ADS-B/Mode-S Decoder
 ==========================================
 
-Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
+Python library for ADS-B/Mode-S message decoding. Supported Downlink Formats (DF) are:
 
-**Automatic Dependent Surveillance - Broadcast (ADS-B) (DF 17/18)**
+**DF17 / DF18: Automatic Dependent Surveillance - Broadcast (ADS-B)**
 
 - TC=1-4  / BDS 0,8: Aircraft identification and category
 - TC=5-8  / BDS 0,6: Surface position
@@ -14,7 +14,7 @@ Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 - TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
 
 
-**Mode-S Comm-B replies (DF 20 / 21)**
+**DF20 / DF21: Mode-S Comm-B replies**
 
 - BDS 1,0: Data link capability report
 - BDS 1,7: Common usage GICB capability report
@@ -30,7 +30,7 @@ Python library for Mode-S message decoding. Support Downlink Formats (DF) are:
 
 **DF4 / DF20: Altitude code**
 
-**DF4 / DF21: Identity code (squawk)**
+**DF5 / DF21: Identity code (squawk code)**
 
 Detailed manual on Mode-S decoding is published by the author, at:
 https://mode-s.org/decode
@@ -47,7 +47,7 @@ New features in v2.0
 
 Source code
 -----------
-Checkout and contribute to this open source project at:
+Checkout and contribute to this open-source project at:
 https://github.com/junzis/pyModeS
 
 API documentation at:
@@ -58,7 +58,7 @@ http://pymodes.readthedocs.io
 Install
 -------
 
-To install latest development version (dev-2.0) from the GitHub:
+To install latest version from the GitHub:
 
 ::
 
@@ -89,7 +89,7 @@ If you have a RTL-SDR receiver or Mode-S Beast, use modesmixer2 (http://xdeco.or
 
   $ modesmixer2 --inSeriel port[:speed[:flow_control]] --outServer beast:[tcp_port]
 
-Example screen shot:
+Example screenshot:
 
 .. image:: https://github.com/junzis/pyModeS/raw/master/doc/modeslive-screenshot.png
    :width: 700px
@@ -102,7 +102,7 @@ Use the library
   import pyModeS as pms
 
 
-Common functions:
+Common functions
 *****************
 
 .. code:: python
@@ -117,18 +117,18 @@ Common functions:
   pms.gray2int(str)     # Convert grey code to interger
 
 
-Core functions for ADS-B decoding:
-**********************************
+Core functions for ADS-B decoding
+*********************************
 
 .. code:: python
 
   pms.adsb.icao(msg)
   pms.adsb.typecode(msg)
 
-  # typecode 1-4
+  # Typecode 1-4
   pms.adsb.callsign(msg)
 
-  # typecode 5-8 (surface), 9-18 (airborne, barometric height), and 9-18 (airborne, GNSS height)
+  # Typecode 5-8 (surface), 9-18 (airborne, barometric height), and 9-18 (airborne, GNSS height)
   pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
   pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
   pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
@@ -139,9 +139,9 @@ Core functions for ADS-B decoding:
 
   pms.adsb.altitude(msg)
 
-  # typecode: 19
-  pms.adsb.velocity(msg)          # handles both surface & airborne messages
-  pms.adsb.speed_heading(msg)     # handles both surface & airborne messages
+  # Typecode: 19
+  pms.adsb.velocity(msg)          # Handles both surface & airborne messages
+  pms.adsb.speed_heading(msg)     # Handles both surface & airborne messages
   pms.adsb.surface_velocity(msg)
   pms.adsb.airborne_velocity(msg)
 
@@ -174,12 +174,12 @@ Common Mode-S functions
 .. code:: python
 
   pms.icao(msg)           # Infer the ICAO address from the message
-  pms.bds.infer(msg)      # Infer the Modes-S BDS code
+  pms.bds.infer(msg)      # Infer the Modes-S BDS register
 
-  # check if BDS is 5,0 or 6,0, give reference spd, trk, alt (from ADS-B)
+  # Check if BDS is 5,0 or 6,0, give reference speed, track, altitude (from ADS-B)
   pms.bds.is50or60(msg, spd_ref, trk_ref, alt_ref)
 
-  # check each BDS explicitly
+  # Check each BDS explicitly
   pms.bds.bds10.is10(msg)
   pms.bds.bds17.is17(msg)
   pms.bds.bds20.is20(msg)
@@ -191,39 +191,39 @@ Common Mode-S functions
 
 
 
-Mode-S elementary surveillance (ELS)
+Mode-S Elementary Surveillance (ELS)
 *************************************
 
 .. code:: python
 
-  pms.commb.ovc10(msg)      # overlay capability, BDS 1,0
+  pms.commb.ovc10(msg)      # Overlay capability, BDS 1,0
   pms.commb.cap17(msg)      # GICB capability, BDS 1,7
-  pms.commb.cs20(msg)       # callsign, BDS 2,0
+  pms.commb.cs20(msg)       # Callsign, BDS 2,0
 
 
-Mode-S enhanced surveillance (EHS)
+Mode-S Enhanced Surveillance (EHS)
 ***********************************
 
 .. code:: python
 
-  # for BDS code 4,0
+  # For BDS register 4,0
   pms.commb.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
   pms.commb.alt40fms(msg)   # FMS selected altitude (ft)
   pms.commb.p40baro(msg)    # Barometric pressure (mb)
 
-  # for BDS code 5,0
-  pms.commb.roll50(msg)     # roll angle (deg)
-  pms.commb.trk50(msg)      # track angle (deg)
-  pms.commb.gs50(msg)       # ground speed (kt)
-  pms.commb.rtrk50(msg)     # track angle rate (deg/sec)
-  pms.commb.tas50(msg)      # true airspeed (kt)
+  # For BDS register 5,0
+  pms.commb.roll50(msg)     # Roll angle (deg)
+  pms.commb.trk50(msg)      # True track angle (deg)
+  pms.commb.gs50(msg)       # Ground speed (kt)
+  pms.commb.rtrk50(msg)     # Track angle rate (deg/sec)
+  pms.commb.tas50(msg)      # True airspeed (kt)
 
-  # for BDS code 6,0
-  pms.commb.hdg60(msg)      # heading (deg)
-  pms.commb.ias60(msg)      # indicated airspeed (kt)
-  pms.commb.mach60(msg)     # MACH number
-  pms.commb.vr60baro(msg)   # barometric altitude rate (ft/min)
-  pms.commb.vr60ins(msg)    # inertial vertical speed (ft/min)
+  # For BDS register 6,0
+  pms.commb.hdg60(msg)      # Magnetic heading (deg)
+  pms.commb.ias60(msg)      # Indicated airspeed (kt)
+  pms.commb.mach60(msg)     # Mach number (-)
+  pms.commb.vr60baro(msg)   # Barometric altitude rate (ft/min)
+  pms.commb.vr60ins(msg)    # Inertial vertical speed (ft/min)
 
 
 Meteorological routine air report (MRAR) [Experimental]
@@ -231,11 +231,11 @@ Meteorological routine air report (MRAR) [Experimental]
 
 .. code:: python
 
-  # for BDS code 4,4
-  pms.commb.wind44(msg, rev=False)  # wind speed (kt) and heading (deg)
-  pms.commb.temp44(msg, rev=False)  # temperature (C)
-  pms.commb.p44(msg, rev=False)     # pressure (hPa)
-  pms.commb.hum44(msg, rev=False)   # humidity (%)
+  # For BDS register 4,4
+  pms.commb.wind44(msg, rev=False)  # Wind speed (kt) and direction (true) (deg)
+  pms.commb.temp44(msg, rev=False)  # Static air temperature (C)
+  pms.commb.p44(msg, rev=False)     # Average static pressure (hPa)
+  pms.commb.hum44(msg, rev=False)   # Humidity (%)
 
 
 Developement
