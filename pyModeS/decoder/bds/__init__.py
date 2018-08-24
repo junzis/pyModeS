@@ -101,7 +101,7 @@ def infer(msg):
     df = common.df(msg)
 
     if common.allzeros(msg):
-        return None
+        return 'EMPTY'
 
     # For ADS-B / Mode-S extended squitter
     if df == 17:
