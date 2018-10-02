@@ -136,15 +136,15 @@ class Stream():
             if tc == 19:
                 ac['HVE'], ac['VVE'] = pms.adsb.nuc_v(msg)
                 if ac['ver'] in [1, 2]:
-                    ac['EPU'], ac['VEPU'] = pms.adsb.nac_v(msg)
+                    ac['HFOMr'], ac['VFOMr'] = pms.adsb.nac_v(msg)
 
             if tc == 29:
                 ac['PE_RCu'], ac['PE_VPL'], ac['base'] = pms.adsb.sil(msg, ac['ver'])
-                ac['HFOMr'], ac['VFOMr'] = pms.adsb.nac_p(msg)
+                ac['EPU'], ac['VEPU'] = pms.adsb.nac_p(msg)
 
             if tc == 31:
                 ac['ver']  = pms.adsb.version(msg)
-                ac['HFOMr'], ac['VFOMr'] = pms.adsb.nac_p(msg)
+                ac['EPU'], ac['VEPU'] = pms.adsb.nac_p(msg)
                 ac['PE_RCu'], ac['PE_VPL'], ac['sil_base'] = pms.adsb.sil(msg, ac['ver'])
 
                 if ac['ver']  == 1:
