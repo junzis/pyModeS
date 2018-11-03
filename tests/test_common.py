@@ -5,8 +5,9 @@ def test_hex2bin():
     assert common.hex2bin('6E406B') == "011011100100000001101011"
 
 def test_crc_decode():
-    checksum = common.crc("8D406B902015A678D4D220AA4BDA")
-    assert checksum == "000000000000000000000000"
+    for i in range(5000):
+        checksum = common.crc("8D406B902015A678D4D220AA4BDA")
+        assert checksum == "000000000000000000000000"
 
 def test_crc_encode():
     parity = common.crc("8D406B902015A678D4D220AA4BDA", encode=True)
