@@ -5,13 +5,24 @@ def test_hex2bin():
     assert common.hex2bin('6E406B') == "011011100100000001101011"
 
 def test_crc_decode():
-    for i in range(5000):
-        checksum = common.crc("8D406B902015A678D4D220AA4BDA")
-        assert checksum == "000000000000000000000000"
+    assert common.crc("8D406B902015A678D4D220AA4BDA") == 0
+    assert common.crc('8d8960ed58bf053cf11bc5932b7d') == 0
+    assert common.crc('8d45cab390c39509496ca9a32912') == 0
+    assert common.crc('8d49d3d4e1089d00000000744c3b') == 0
+    assert common.crc('8d74802958c904e6ef4ba0184d5c') == 0
+    assert common.crc('8d4400cd9b0000b4f87000e71a10') == 0
+    assert common.crc('8d4065de58a1054a7ef0218e226a') == 0
+
+    assert common.crc('c80b2dca34aa21dd821a04cb64d4') == 10719924
+    assert common.crc('a800089d8094e33a6004e4b8a522') == 4805588
+    assert common.crc('a8000614a50b6d32bed000bbe0ed') == 5659991
+    assert common.crc('a0000410bc900010a40000f5f477') == 11727682
+    assert common.crc('8d4ca251204994b1c36e60a5343d') == 16
+    assert common.crc('b0001718c65632b0a82040715b65') == 353333
 
 def test_crc_encode():
     parity = common.crc("8D406B902015A678D4D220AA4BDA", encode=True)
-    assert common.hex2bin("AA4BDA") == parity
+    assert int("AA4BDA", 16) == parity
 
 def test_icao():
     assert common.icao("8D406B902015A678D4D220AA4BDA") == "406B90"

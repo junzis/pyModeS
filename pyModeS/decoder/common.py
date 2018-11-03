@@ -1,6 +1,9 @@
 from __future__ import absolute_import, print_function, division
 import numpy as np
 
+from pyModeS.decoder import fastcrc
+
+
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings. """
     num_of_bits = len(hexstr) * 4
@@ -41,29 +44,15 @@ def crc(msg, encode=False):
         msg (string): 28 bytes hexadecimal message string
         encode (bool): True to encode the date only and return the checksum
     Returns:
-        string: message checksum, or partity bits (encoder)
+        int: message checksum, or partity bits (encoder)
     """
 
-    # the polynominal generattor code for CRC [1111111111111010000001001]
-    generator = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,1,0,0,1])
-    ng = len(generator)
-
-    msgnpbin = bin2np(hex2bin(msg))
-
     if encode:
-        msgnpbin[-24:] = [0] * 24
+        msg = msg[:-6] + "000000"
 
-    # loop all bits, except last 24 piraty bits
-    for i in range(len(msgnpbin)-24):
-        if msgnpbin[i] == 0:
-            continue
+    reminder_int = fastcrc.crc(msg)
 
-        # perform XOR, when 1
-        msgnpbin[i:i+ng] = np.bitwise_xor(msgnpbin[i:i+ng], generator)
-
-    # last 24 bits
-    reminder = np2bin(msgnpbin[-24:])
-    return reminder
+    return reminder_int
 
 
 def floor(x):
@@ -92,7 +81,7 @@ def icao(msg):
     if DF in (11, 17, 18):
         addr = msg[2:8]
     elif DF in (0, 4, 5, 16, 20, 21):
-        c0 = bin2int(crc(msg, encode=True))
+        c0 = crc(msg, encode=True)
         c1 = hex2int(msg[-6:])
         addr = '%06X' % (c0 ^ c1)
     else:
