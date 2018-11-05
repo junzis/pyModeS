@@ -9,7 +9,7 @@ class BytesWrapper:
 
         self._bytes = [b for b in bytes.fromhex(hex)]
 
-    def byte_count(self) -> int:
+    def byte_count(self):
         return len(self._bytes) - 3
 
     def get_bit(self, byte_index, bit_index):
@@ -30,7 +30,7 @@ class BytesWrapper:
         return (self._bytes[-3] << 16) | (self._bytes[-2] << 8) | self._bytes[-1]
 
 
-def crc(msg: str) -> int:
+def crc(msg):
     msgbin = BytesWrapper(msg)
 
     for byte_index in range(msgbin.byte_count()):
