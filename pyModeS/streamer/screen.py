@@ -101,6 +101,7 @@ class Screen(Thread):
         icaos = np.sort(icaos)
 
         for row in range(3, self.scr_h - 3):
+            icao = None
             idx = row + self.offset
 
             if idx > len(icaos) - 1:
