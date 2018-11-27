@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 import os
 import sys
+import time
 import argparse
 import curses
 from threading import Lock
@@ -95,6 +96,7 @@ try:
         try:
             screen.update_data(acs)
             screen.update()
+            time.sleep(0.02)
         except KeyboardInterrupt:
             raise
         except:
