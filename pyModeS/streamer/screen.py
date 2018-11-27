@@ -102,7 +102,7 @@ class Screen(Thread):
 
         for row in range(3, self.scr_h - 3):
             icao = None
-            idx = row + self.offset
+            idx = row + self.offset - 3
 
             if idx > len(icaos) - 1:
                 line = ' '*(self.scr_w-2)
