@@ -323,10 +323,10 @@ def nic_v2(msg, NICa, NICbc):
     else:
         NICs = NICa*2 + NICbc
 
-    if isinstance(NIC, dict):
-        NIC = NIC[NICs]
-
     try:
+        if isinstance(NIC, dict):
+            NIC = NIC[NICs]
+
         Rc = uncertainty.NICv2[NIC][NICs]['Rc']
     except KeyError:
         Rc = uncertainty.NA

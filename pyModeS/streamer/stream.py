@@ -100,17 +100,17 @@ class Stream():
                 elif ('t0' in self.acs[icao]) and ('t1' in self.acs[icao]) and \
                      (abs(self.acs[icao]['t0'] - self.acs[icao]['t1']) < 10):
                     # use multi message decoding
-                    # try:
-                    latlon = pms.adsb.position(
-                        self.acs[icao][0],
-                        self.acs[icao][1],
-                        self.acs[icao]['t0'],
-                        self.acs[icao]['t1'],
-                        self.lat0, self.lon0
-                        )
-                    # except:
-                    #     # mix of surface and airborne position message
-                    #     continue
+                    try:
+                        latlon = pms.adsb.position(
+                            self.acs[icao][0],
+                            self.acs[icao][1],
+                            self.acs[icao]['t0'],
+                            self.acs[icao]['t1'],
+                            self.lat0, self.lon0
+                            )
+                    except:
+                        # mix of surface and airborne position message
+                        continue
                 else:
                     latlon = None
 
