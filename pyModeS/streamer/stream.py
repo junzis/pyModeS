@@ -45,6 +45,7 @@ class Stream():
                     'trk': None,
                     'roc': None,
                     'tas': None,
+                    'roll': None,
                     'ias': None,
                     'mach': None,
                     'hdg': None,
@@ -64,6 +65,7 @@ class Stream():
                     'PE_VPL' : None,
                 }
 
+            self.acs[icao]['t'] = t
             self.acs[icao]['live'] = int(t)
 
             if 1 <= tc <= 4:
@@ -164,10 +166,13 @@ class Stream():
 
             if bds == 'BDS50':
                 tas = pms.commb.tas50(msg)
+                roll = pms.commb.roll50(msg)
 
+                self.acs[icao]['t50'] = t
                 if tas:
-                    self.acs[icao]['t50'] = t
                     self.acs[icao]['tas'] = tas
+                if roll:
+                    self.acs[icao]['roll'] = roll
 
             elif bds == 'BDS60':
                 ias = pms.commb.ias60(msg)
@@ -212,7 +217,8 @@ class Stream():
         """update aircraft from last iteration"""
         newacs = dict()
         for ac in self.__new_acs:
-            newacs[ac] = self.acs[ac]
+            if ac in self.acs:
+                newacs[ac] = self.acs[ac]
         return newacs
 
     def reset_new_aircraft(self):
