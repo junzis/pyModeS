@@ -221,11 +221,14 @@ def nuc_p(msg):
             or airborne position with GNSS height (20<TC<22)" % msg
         )
 
-    NUCp = uncertainty.TC_NUCp_lookup[tc]
+    try:
+        NUCp = uncertainty.TC_NUCp_lookup[tc]
+        HPL = uncertainty.NUCp[NUCp]['HPL']
+        RCu = uncertainty.NUCp[NUCp]['RCu']
+        RCv = uncertainty.NUCp[NUCp]['RCv']
+    except KeyError:
+        HPL, RCu, RCv = uncertainty.NA, uncertainty.NA, uncertainty.NA
 
-    HPL = uncertainty.NUCp[NUCp]['HPL']
-    RCu = uncertainty.NUCp[NUCp]['RCu']
-    RCv = uncertainty.NUCp[NUCp]['RCv']
 
     if tc in [20, 21]:
         RCv = uncertainty.NA
@@ -252,8 +255,11 @@ def nuc_v(msg):
     msgbin = common.hex2bin(msg)
     NUCv = common.bin2int(msgbin[42:45])
 
-    HVE = uncertainty.NUCv[NUCv]['HVE']
-    VVE = uncertainty.NUCv[NUCv]['VVE']
+    try:
+        HVE = uncertainty.NUCv[NUCv]['HVE']
+        VVE = uncertainty.NUCv[NUCv]['VVE']
+    except KeyError:
+        HVE, VVE = uncertainty.NA, uncertainty.NA
 
     return HVE, VVE
 
@@ -282,8 +288,11 @@ def nic_v1(msg, NICs):
     if isinstance(NIC, dict):
         NIC = NIC[NICs]
 
-    Rc = uncertainty.NICv1[NIC][NICs]['Rc']
-    VPL = uncertainty.NICv1[NIC][NICs]['VPL']
+    try:
+        Rc = uncertainty.NICv1[NIC][NICs]['Rc']
+        VPL = uncertainty.NICv1[NIC][NICs]['VPL']
+    except KeyError:
+        Rc, VPL = uncertainty.NA, uncertainty.NA
 
     return Rc, VPL
 
@@ -317,7 +326,10 @@ def nic_v2(msg, NICa, NICbc):
     if isinstance(NIC, dict):
         NIC = NIC[NICs]
 
-    Rc = uncertainty.NICv2[NIC][NICs]['Rc']
+    try:
+        Rc = uncertainty.NICv2[NIC][NICs]['Rc']
+    except KeyError:
+        Rc = uncertainty.NA
 
     return Rc
 
@@ -406,10 +418,14 @@ def nac_p(msg):
     elif tc == 31:
         NACp = common.bin2int(msgbin[76:80])
 
-    EPU = uncertainty.NACp[NACp]['EPU']
-    VEPU = uncertainty.NACp[NACp]['VEPU']
+    try:
+        EPU = uncertainty.NACp[NACp]['EPU']
+        VEPU = uncertainty.NACp[NACp]['VEPU']
+    except KeyError:
+        EPU, VEPU = uncertainty.NA, uncertainty.NA
 
     return EPU, VEPU
+
 
 def nac_v(msg):
     """Calculate NACv, Navigation Accuracy Category - Velocity
@@ -429,8 +445,11 @@ def nac_v(msg):
     msgbin = common.hex2bin(msg)
     NACv = common.bin2int(msgbin[42:45])
 
-    HFOMr = uncertainty.NACv[NACv]['HFOMr']
-    VFOMr = uncertainty.NACv[NACv]['VFOMr']
+    try:
+        HFOMr = uncertainty.NACv[NACv]['HFOMr']
+        VFOMr = uncertainty.NACv[NACv]['VFOMr']
+    except KeyError:
+        HFOMr, VFOMr = uncertainty.NA, uncertainty.NA
 
     return HFOMr, VFOMr
 
@@ -459,8 +478,11 @@ def sil(msg, version):
     elif tc == 31:
         SIL = common.bin2int(msgbin[82:84])
 
-    PE_RCu = uncertainty.SIL[SIL]['PE_RCu']
-    PE_VPL = uncertainty.SIL[SIL]['PE_VPL']
+    try:
+        PE_RCu = uncertainty.SIL[SIL]['PE_RCu']
+        PE_VPL = uncertainty.SIL[SIL]['PE_VPL']
+    except KeyError:
+        PE_RCu, PE_VPL = uncertainty.NA, uncertainty.NA
 
     base = 'unknown'
 
