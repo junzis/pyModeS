@@ -46,6 +46,7 @@ class Stream():
                     'roc': None,
                     'tas': None,
                     'roll': None,
+                    'rtrk': None,
                     'ias': None,
                     'mach': None,
                     'hdg': None,
@@ -167,12 +168,15 @@ class Stream():
             if bds == 'BDS50':
                 tas = pms.commb.tas50(msg)
                 roll = pms.commb.roll50(msg)
+                rtrk = pms.commb.rtrk50(msg)
 
                 self.acs[icao]['t50'] = t
                 if tas:
                     self.acs[icao]['tas'] = tas
                 if roll:
                     self.acs[icao]['roll'] = roll
+                if rtrk:
+                    self.acs[icao]['rtrk'] = rtrk
 
             elif bds == 'BDS60':
                 ias = pms.commb.ias60(msg)
