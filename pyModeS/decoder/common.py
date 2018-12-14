@@ -205,8 +205,8 @@ def altcode(msg):
         int: altitude in ft
     """
 
-    if df(msg) not in [4, 20]:
-        raise RuntimeError("Message must be Downlink Format 4 or 20.")
+    if df(msg) not in [0, 4, 16, 20]:
+        raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
     # Altitude code, bit 20-32
     mbin = hex2bin(msg)
