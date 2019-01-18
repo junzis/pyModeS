@@ -20,8 +20,8 @@ class BaseClient(Thread):
         self.port = port
         self.buffer = []
         self.rawtype = rawtype
-        if self.rawtype not in ['avr', 'beast']:
-            print("rawtype must be either avr or beast")
+        if self.rawtype not in ['avr', 'beast', 'skysense']:
+            print("rawtype must be either avr, beast or skysense")
             os._exit(1)
 
     def connect(self):
@@ -144,6 +144,71 @@ class BaseClient(Thread):
             messages.append([msg, ts])
         return messages
 
+    def read_skysense_buffer(self):
+        """
+
+----------------------------------------------------------------------------------
+Field      SS MS MS MS MS MS MS MS MS MS MS MS MS MS MS TS TS TS TS TS TS RS RS RS
+----------------------------------------------------------------------------------
+Position:   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+----------------------------------------------------------------------------------
+Example:   24 8d 4c a5 c0 20 24 22 f1 28 38 20 f3 24 04 be 8d 0d d8 e0 80 66 ed b9
+Example:   24 5d 3c 48 c8 ad 3d f9 00 00 00 00 00 00 00 be 8d 66 c4 c5 7c 4c d7 2d
+
+
+SS field - Start character
+Position 0:
+  1 byte = 8 bits
+  Start character '$'
+
+MS field - Payload
+Postion 1 through 14:
+  14 bytes = 112 bits
+  Mode-S payload
+  In case of DF types that only carry 7 bytes of information position 8 through 14 are set to 0x00.
+  Decoding of payload information is not within the scope of this document.
+
+TS field - Time stamp
+Position 15 through 20:
+  6 bytes = 48 bits
+  Time stamp with fields as:
+
+    Lock Status - Status of internal time keeping mechanism
+    Equal to 1 if operating normally
+    Bit 47 - 1 bit
+
+    Time of day in UTC seconds, between 0 and 86399
+    Bits 46 through 30 - 17 bits
+    
+    Nanoseconds into current second, between 0 and 999999999
+    Bits 29 through 0 - 30 bits
+
+
+RS field - Signal Level
+Position 21 through 23:
+ 3 bytes = 24 bits
+ RSSI (received signal strength indication) and relative noise level with fields
+
+ RNL, Q12.4 unsigned fixed point binary with 4 fractional bits and 8 integer bits.
+ This is and indication of the noise level of the message. Roughly 40 counts per 10dBm.
+ Bits 23 through 12 - 12 bits 
+
+ RSSI, Q12.4 unsigned fixed point binary with 4 fractional bits and 8 integer bits.
+ This is an indication of the signal level of the received message in ADC counts. Roughly 40 counts per 10dBm.
+ Bits 11 through 0 - 12 bits
+
+ """
+
+        messages = []
+        msg = []
+        i = 0
+        while i < len(self.buffer):
+            if self.buffer[i] == 0x24:
+
+
+            
+        return messages
+
 
     def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
@@ -172,6 +237,8 @@ class BaseClient(Thread):
                     messages = self.read_beast_buffer()
                 elif self.rawtype == 'avr':
                     messages = self.read_avr_buffer()
+                elif self.rawtype == 'skysense'
+                    messages = self.read_skysense_buffer()
 
                 if not messages:
                     continue
