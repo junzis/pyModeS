@@ -152,8 +152,11 @@ class BaseClient(Thread):
         Position:   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
         ----------------------------------------------------------------------------------
         Example:   24 8d 4c a5 c0 20 24 22 f1 28 38 20 f3 24 04 be 8d 0d d8 e0 80 66 ed b9
+                   24 8d 4a b5 68 99 10 6f 13 90 40 93 7f 9f 61 2f 1d b7 5b 46 e0 98 4a c8
+
         Example:   24 5d 3c 48 c8 ad 3d f9 00 00 00 00 00 00 00 be 8d 66 c4 c5 7c 4c d7 2d
-        
+                   24 5d 4a b5 68 88 90 db 00 00 00 00 00 00 00 2f 1b 1e eb 80 ad 9a 9a 75
+
         
         SS field - Start character
         Position 0:
@@ -197,13 +200,15 @@ class BaseClient(Thread):
          Bits 11 through 0 - 12 bits   
         """
         SS_MSGLENGTH = 24
-
         SS_STARTCHAR = 0x24
+
+        if len(self.buffer) < SS_MSGLENGTH:
+            return None
+
         messages = []
-        msg = []
-        i = 0
-        while i < len(self.buffer):
-            if self.buffer[i] == SS_STARTCHAR:
+        while len(self.buffer) > SS_MSGLENGTH + 1:
+            i = 0
+            if self.buffer[i] == SS_STARTCHAR and self.buffer[i+SS_MSGLENGTH] == SS_STARTCHAR:
                 i += 1
                 if (self.buffer[i]>>7):
                     #Long message
@@ -211,29 +216,26 @@ class BaseClient(Thread):
                 else:
                     #Short message
                     payload = self.buffer[i:i+7]
-
-                msg = ''.join('%02X' % i for i in payload)
-
+                msg = ''.join('%02X' % j for j in payload)
                 i += 14
-
                 tsbin = self.buffer[i:i+6]
-                sec = (tsbin[0] << 10) | (tsbin[1] << 2) | (tsbin[2] >> 6)
-                nano = (tsbin[2] << 24) | (tsbin[3] << 16) | (tsbin[4] << 8) | tsbin[5]
+                #print(tsbin)
+                sec   = ( (tsbin[0] & 0x7f) << 10) | (tsbin[1] << 2 ) | (tsbin[2] >> 6)
+                nano  = ( (tsbin[2] & 0x3f) << 24) | (tsbin[3] << 16) | (tsbin[4] << 8) | tsbin[5]
                 ts = sec + nano*1.0e-9
                 i += 6
                 #Signal level - Don't care
                 i += 3
+                self.buffer = self.buffer[SS_MSGLENGTH:]
                 messages.append( [msg,ts] )
-
-
-            
+            else:
+                self.buffer = self.buffer[1:]  
         return messages
-
 
     def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
         for msg, t in messages:
-            print("%f %s" % (t, msg))
+            print("%15.9f %s" % (t, msg))
 
     def run(self):
         sock = self.connect()
@@ -257,7 +259,7 @@ class BaseClient(Thread):
                     messages = self.read_beast_buffer()
                 elif self.rawtype == 'avr':
                     messages = self.read_avr_buffer()
-                elif self.rawtype == 'skysense'
+                elif self.rawtype == 'skysense':
                     messages = self.read_skysense_buffer()
 
                 if not messages:
@@ -280,6 +282,7 @@ if __name__ == '__main__':
     # for testing purpose only
     host = sys.argv[1]
     port = int(sys.argv[2])
-    client = BaseClient(host=host, port=port)
+    rawtype = sys.argv[3]
+    client = BaseClient(host=host, port=port, rawtype=rawtype)
     client.daemon = True
     client.run()
