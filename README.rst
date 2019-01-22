@@ -72,13 +72,13 @@ Supports **Mode-S Beast** and **AVR** raw stream
 
 ::
 
-  modeslive --server [server_address] --port [tcp_port] --rawtype [beast_or_avr] --latlon [lat] [lon]
+  modeslive --server [server_address] --port [tcp_port] --rawtype [beast,avr,skysense] --latlon [lat] [lon]
 
   Arguments:
     -h, --help         show this help message and exit
     --server SERVER    server address or IP
     --port PORT        raw data port
-    --rawtype RAWTYPE  beast or avr
+    --rawtype RAWTYPE  beast, avr or skysense
     --latlon LAT LON   receiver position
     --show-uncertainty  display uncertaint values, default off
 
