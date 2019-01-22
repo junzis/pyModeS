@@ -151,13 +151,7 @@ class BaseClient(Thread):
         ----------------------------------------------------------------------------------
         Position:   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
         ----------------------------------------------------------------------------------
-        Example:   24 8d 4c a5 c0 20 24 22 f1 28 38 20 f3 24 04 be 8d 0d d8 e0 80 66 ed b9
-                   24 8d 4a b5 68 99 10 6f 13 90 40 93 7f 9f 61 2f 1d b7 5b 46 e0 98 4a c8
-
-        Example:   24 5d 3c 48 c8 ad 3d f9 00 00 00 00 00 00 00 be 8d 66 c4 c5 7c 4c d7 2d
-                   24 5d 4a b5 68 88 90 db 00 00 00 00 00 00 00 2f 1b 1e eb 80 ad 9a 9a 75
-
-        
+    
         SS field - Start character
         Position 0:
           1 byte = 8 bits
@@ -168,7 +162,6 @@ class BaseClient(Thread):
           14 bytes = 112 bits
           Mode-S payload
           In case of DF types that only carry 7 bytes of information position 8 through 14 are set to 0x00.
-          Decoding of payload information is not within the scope of this document.
         
         TS field - Time stamp
         Position 15 through 20:
@@ -183,8 +176,7 @@ class BaseClient(Thread):
             Bits 46 through 30 - 17 bits
             
             Nanoseconds into current second, between 0 and 999999999
-            Bits 29 through 0 - 30 bits
-        
+            Bits 29 through 0 - 30 bits 
         
         RS field - Signal Level
         Position 21 through 23:
@@ -202,11 +194,11 @@ class BaseClient(Thread):
         SS_MSGLENGTH = 24
         SS_STARTCHAR = 0x24
 
-        if len(self.buffer) < SS_MSGLENGTH:
+        if len(self.buffer) <= SS_MSGLENGTH:
             return None
 
         messages = []
-        while len(self.buffer) > SS_MSGLENGTH + 1:
+        while len(self.buffer) > SS_MSGLENGTH:
             i = 0
             if self.buffer[i] == SS_STARTCHAR and self.buffer[i+SS_MSGLENGTH] == SS_STARTCHAR:
                 i += 1
@@ -217,14 +209,13 @@ class BaseClient(Thread):
                     #Short message
                     payload = self.buffer[i:i+7]
                 msg = ''.join('%02X' % j for j in payload)
-                i += 14
+                i += 14 #Both message types use 14 bytes
                 tsbin = self.buffer[i:i+6]
-                #print(tsbin)
                 sec   = ( (tsbin[0] & 0x7f) << 10) | (tsbin[1] << 2 ) | (tsbin[2] >> 6)
                 nano  = ( (tsbin[2] & 0x3f) << 24) | (tsbin[3] << 16) | (tsbin[4] << 8) | tsbin[5]
                 ts = sec + nano*1.0e-9
                 i += 6
-                #Signal level - Don't care
+                #Signal and noise level - Don't care for now
                 i += 3
                 self.buffer = self.buffer[SS_MSGLENGTH:]
                 messages.append( [msg,ts] )
@@ -275,7 +266,6 @@ class BaseClient(Thread):
                     sock = self.connect()
                 except Exception as e:
                     print("Unexpected Error:", e)
-
 
 
 if __name__ == '__main__':
