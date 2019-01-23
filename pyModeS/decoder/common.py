@@ -31,7 +31,7 @@ def np2bin(npbin):
 def df(msg):
     """Decode Downlink Format vaule, bits 1 to 5."""
     msgbin = hex2bin(msg)
-    return bin2int(msgbin[0:5])
+    return min( bin2int(msgbin[0:5]) , 24 )
 
 
 def crc(msg, encode=False):
