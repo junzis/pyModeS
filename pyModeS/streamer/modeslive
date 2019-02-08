@@ -24,6 +24,7 @@ parser.add_argument('--port', help='raw data port', required=True)
 parser.add_argument('--rawtype', help='beast, avr or skysense', required=True)
 parser.add_argument('--latlon', help='receiver position', nargs=2, metavar=('LAT', 'LON'), required=True)
 parser.add_argument('--show-uncertainty', dest='uncertainty', help='display uncertaint values, default off', action='store_true', required=False, default=False)
+parser.add_argument('--dumpto', help='folder to dump decoded output', required=False, default=None)
 args = parser.parse_args()
 
 SERVER = args.server
@@ -32,6 +33,11 @@ RAWTYPE = args.rawtype
 LAT0 = float(args.latlon[0])
 LON0 = float(args.latlon[1])
 UNCERTAINTY = args.uncertainty
+DUMPTO = os.getcwd() + '/' + args.dumpto
+
+if not os.path.isdir(DUMPTO):
+    print('Error: dump folder (%s) does not exist' % DUMPTO)
+    sys.exit(1)
 
 
 class ModesClient(BaseClient):
@@ -75,7 +81,7 @@ client = ModesClient(host=SERVER, port=PORT, rawtype=RAWTYPE)
 client.daemon = True
 client.start()
 
-stream = Stream(lat0=LAT0, lon0=LON0)
+stream = Stream(lat0=LAT0, lon0=LON0, dumpto=DUMPTO)
 
 try:
     screen = Screen(uncertainty=UNCERTAINTY)
