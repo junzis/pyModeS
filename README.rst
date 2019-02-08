@@ -72,15 +72,16 @@ Supports **Mode-S Beast** and **AVR** raw stream
 
 ::
 
-  modeslive --server [server_address] --port [tcp_port] --rawtype [beast,avr,skysense] --latlon [lat] [lon]
+  modeslive --server [server_address] --port [tcp_port] --rawtype [beast,avr,skysense] --latlon [lat] [lon]  --dumpto [folder]
 
   Arguments:
-    -h, --help         show this help message and exit
-    --server SERVER    server address or IP
-    --port PORT        raw data port
-    --rawtype RAWTYPE  beast, avr or skysense
-    --latlon LAT LON   receiver position
-    --show-uncertainty  display uncertaint values, default off
+    -h, --help           show this help message and exit
+    --server SERVER      server address or IP
+    --port PORT          raw data port
+    --rawtype RAWTYPE    beast, avr or skysense
+    --latlon LAT LON     receiver position
+    --show-uncertainty   display uncertaint values, default off
+    --dumpto             folder to dump decoded output
 
 
 If you have a RTL-SDR receiver or Mode-S Beast, use modesmixer2 (http://xdeco.org/?page_id=48) to create raw beast TCP stream:
