@@ -33,11 +33,13 @@ RAWTYPE = args.rawtype
 LAT0 = float(args.latlon[0])
 LON0 = float(args.latlon[1])
 UNCERTAINTY = args.uncertainty
-DUMPTO = os.getcwd() + '/' + args.dumpto
+DUMPTO = args.dumpto
 
-if not os.path.isdir(DUMPTO):
-    print('Error: dump folder (%s) does not exist' % DUMPTO)
-    sys.exit(1)
+if DUMPTO is not None:
+    DUMPTO = os.getcwd() + '/' + DUMPTO
+    if not os.path.isdir(DUMPTO):
+        print('Error: dump folder (%s) does not exist' % DUMPTO)
+        sys.exit(1)
 
 
 class ModesClient(BaseClient):
