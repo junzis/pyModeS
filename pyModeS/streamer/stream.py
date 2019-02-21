@@ -78,7 +78,7 @@ class Stream():
             if 1 <= tc <= 4:
                 cs = pms.adsb.callsign(msg)
                 self.acs[icao]['call'] = cs
-                output_buffer.append(['%.07f'%t, icao, 'cs', cs])
+                output_buffer.append([t, icao, 'cs', cs])
 
             if (5 <= tc <= 8) or (tc == 19):
                 vdata = pms.adsb.velocity(msg)
@@ -96,9 +96,9 @@ class Stream():
                 self.acs[icao]['roc'] = roc
                 self.acs[icao]['tv'] = t
 
-                output_buffer.append(['%.07f'%t, icao, 'gs', spd])
-                output_buffer.append(['%.07f'%t, icao, 'trk', trk])
-                output_buffer.append(['%.07f'%t, icao, 'roc', roc])
+                output_buffer.append([t, icao, 'gs', spd])
+                output_buffer.append([t, icao, 'trk', trk])
+                output_buffer.append([t, icao, 'roc', roc])
 
 
             if (5 <= tc <= 18):
@@ -136,9 +136,9 @@ class Stream():
                     alt = pms.adsb.altitude(msg)
                     self.acs[icao]['alt'] = alt
 
-                    output_buffer.append(['%.07f'%t, icao, 'lat', latlon[0]])
-                    output_buffer.append(['%.07f'%t, icao, 'lon', latlon[1]])
-                    output_buffer.append(['%.07f'%t, icao, 'alt', alt])
+                    output_buffer.append([t, icao, 'lat', latlon[0]])
+                    output_buffer.append([t, icao, 'lon', latlon[1]])
+                    output_buffer.append([t, icao, 'alt', alt])
 
                     local_updated_acs_buffer.append(icao)
 
@@ -195,18 +195,18 @@ class Stream():
                 self.acs[icao]['t50'] = t
                 if tas50:
                     self.acs[icao]['tas'] = tas50
-                    output_buffer.append(['%.07f'%t, icao, 'tas50', tas50])
+                    output_buffer.append([t, icao, 'tas50', tas50])
                 if roll50:
                     self.acs[icao]['roll'] = roll50
-                    output_buffer.append(['%.07f'%t, icao, 'roll50', roll50])
+                    output_buffer.append([t, icao, 'roll50', roll50])
                 if rtrk50:
                     self.acs[icao]['rtrk'] = rtrk50
-                    output_buffer.append(['%.07f'%t, icao, 'rtrk50', rtrk50])
+                    output_buffer.append([t, icao, 'rtrk50', rtrk50])
 
                 if trk50:
-                    output_buffer.append(['%.07f'%t, icao, 'trk50', trk50])
+                    output_buffer.append([t, icao, 'trk50', trk50])
                 if gs50:
-                    output_buffer.append(['%.07f'%t, icao, 'gs50', gs50])
+                    output_buffer.append([t, icao, 'gs50', gs50])
 
             elif bds == 'BDS60':
                 ias60 = pms.commb.ias60(msg)
@@ -225,9 +225,9 @@ class Stream():
                     self.acs[icao]['mach'] = mach60
 
                 if roc60baro:
-                    output_buffer.append(['%.07f'%t, icao, 'roc60baro', roc60baro])
+                    output_buffer.append([t, icao, 'roc60baro', roc60baro])
                 if roc60ins:
-                    output_buffer.append(['%.07f'%t, icao, 'roc60ins', roc60ins])
+                    output_buffer.append([t, icao, 'roc60ins', roc60ins])
 
         # clear up old data
         for icao in list(self.acs.keys()):
@@ -238,6 +238,7 @@ class Stream():
         if self.dumpto is not None:
             dh = str(datetime.datetime.now().strftime("%Y%m%d_%H"))
             fn = self.dumpto + '/pymodes_dump_%s.csv' % dh
+            output_buffer.sort(key=lambda x: x[0])
             with open(fn, "a") as f:
                 writer = csv.writer(f)
                 writer.writerows(output_buffer)
