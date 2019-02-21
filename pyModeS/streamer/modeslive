@@ -36,7 +36,10 @@ UNCERTAINTY = args.uncertainty
 DUMPTO = args.dumpto
 
 if DUMPTO is not None:
-    DUMPTO = os.getcwd() + '/' + DUMPTO
+    # append to current folder except root is given
+    if DUMPTO[0] != '/':
+        DUMPTO = os.getcwd() + '/' + DUMPTO
+
     if not os.path.isdir(DUMPTO):
         print('Error: dump folder (%s) does not exist' % DUMPTO)
         sys.exit(1)
