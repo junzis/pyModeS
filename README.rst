@@ -65,6 +65,13 @@ To install latest version from the GitHub:
   pip install git+https://github.com/junzis/pyModeS
 
 
+To install the stable version (2.0) from pip:
+
+::
+
+  pip install pyModeS
+
+
 
 Live view traffic (modeslive)
 ----------------------------------------------------
