@@ -1,3 +1,14 @@
+"""EHS Wrapper.
+
+``pyModeS.ehs`` is deprecated, please use ``pyModeS.commb`` instead.
+
+The EHS wrapper imports all functions from the following modules:
+    - pyModeS.decoder.bds.bds40
+    - pyModeS.decoder.bds.bds50
+    - pyModeS.decoder.bds.bds60
+
+"""
+
 from __future__ import absolute_import, print_function, division
 import warnings
 

@@ -14,15 +14,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+# ------------------------------------------
+#   BDS 1,7
+#   Common usage GICB capability report
+# ------------------------------------------
+
+
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
-"""
-------------------------------------------
-  BDS 1,7
-  Common usage GICB capability report
-------------------------------------------
-"""
 
 def is17(msg):
     """Check if a message is likely to be BDS code 1,7

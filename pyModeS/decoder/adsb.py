@@ -13,8 +13,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""
-The wrapper for decoding ADS-B messages
+"""ADS-B Wrapper.
+
+The ADS-B wrapper also imports functions from the following modules:
+
+- pyModeS.decoder.bds.bds05
+    Functions: ``airborne_position``, ``airborne_position_with_ref``, ``altitude``
+- pyModeS.decoder.bds.bds06
+    Functions: ``surface_position``, ``surface_position_with_ref``, ``surface_velocity``
+- pyModeS.decoder.bds.bds08
+    Functions: ``category``, ``callsign``
+- pyModeS.decoder.bds.bds09
+    Functions: ``airborne_velocity``, ``altitude_diff``
+
 """
 
 from __future__ import absolute_import, print_function, division

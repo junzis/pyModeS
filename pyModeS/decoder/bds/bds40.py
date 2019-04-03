@@ -13,14 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
-
 # ------------------------------------------
 # BDS 4,0
 # Selected vertical intention
 # ------------------------------------------
+
+
+from __future__ import absolute_import, print_function, division
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 
 def is40(msg):
     """Check if a message is likely to be BDS code 4,0
@@ -47,10 +47,10 @@ def is40(msg):
 
     if wrongstatus(d, 27, 28, 39):
         return False
-    
+
     if wrongstatus(d, 48, 49, 51):
         return False
-    
+
     if wrongstatus(d, 54, 55, 56):
         return False
 

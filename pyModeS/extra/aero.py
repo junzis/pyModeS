@@ -1,16 +1,21 @@
 """
 Functions for aeronautics in this module
-    - physical quantities always in SI units
-    - lat,lon,course and heading in degrees
+
+- physical quantities always in SI units
+- lat,lon,course and heading in degrees
 
 International Standard Atmosphere
+::
+
     p,rho,T = atmos(H)    # atmos as function of geopotential altitude H [m]
     a = vsound(H)         # speed of sound [m/s] as function of H[m]
     p = pressure(H)       # calls atmos but retruns only pressure [Pa]
     T = temperature(H)    # calculates temperature [K]
     rho = density(H)      # calls atmos but retruns only pressure [Pa]
 
-Speed conversion at altitude H[m] in ISA:
+Speed conversion at altitude H[m] in ISA
+::
+
     Mach = tas2mach(Vtas,H)    # true airspeed (Vtas) to mach number conversion
     Vtas = mach2tas(Mach,H)    # true airspeed (Vtas) to mach number conversion
     Vtas = eas2tas(Veas,H)     # equivalent airspeed to true airspeed, H in [m]
@@ -19,6 +24,7 @@ Speed conversion at altitude H[m] in ISA:
     Vcas = tas2cas(Vtas,H)     # Vtas to Vcas conversion both m/s, H in [m]
     Vcas = mach2cas(Mach,H)    # Mach to Vcas conversion Vcas in m/s, H in [m]
     Mach   = cas2mach(Vcas,H)  # Vcas to mach copnversion Vcas in m/s, H in [m]
+
 """
 
 import numpy as np

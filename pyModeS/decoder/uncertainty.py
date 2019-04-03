@@ -1,3 +1,8 @@
+"""Uncertainty parameters.
+
+See source code at: https://github.com/junzis/pyModeS/blob/master/pyModeS/decoder/uncertainty.py
+"""
+
 NA = None
 
 TC_NUCp_lookup = {

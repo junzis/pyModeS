@@ -14,13 +14,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""
-------------------------------------------
-  BDS 0,8
-  ADS-B TC=1-4
-  Aircraft identitification and category
-------------------------------------------
-"""
+# ------------------------------------------
+#   BDS 0,8
+#   ADS-B TC=1-4
+#   Aircraft identitification and category
+# ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder import common

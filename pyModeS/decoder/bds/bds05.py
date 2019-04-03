@@ -14,13 +14,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-"""
-------------------------------------------
-  BDS 0,5
-  ADS-B TC=9-18
-  Airborn position
-------------------------------------------
-"""
+# ------------------------------------------
+#   BDS 0,5
+#   ADS-B TC=9-18
+#   Airborn position
+# ------------------------------------------
+
 
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder import common

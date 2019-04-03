@@ -1,5 +1,5 @@
 The Python ADS-B/Mode-S Decoder
-==========================================
+******************************************
 
 Python library for ADS-B/Mode-S message decoding. Supported Downlink Formats (DF) are:
 

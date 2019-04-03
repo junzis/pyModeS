@@ -145,51 +145,60 @@ class BaseClient(Thread):
         return messages
 
     def read_skysense_buffer(self):
-        """
-        ----------------------------------------------------------------------------------
-        Field      SS MS MS MS MS MS MS MS MS MS MS MS MS MS MS TS TS TS TS TS TS RS RS RS
-        ----------------------------------------------------------------------------------
-        Position:   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
-        ----------------------------------------------------------------------------------
-    
-        SS field - Start character
-        Position 0:
-          1 byte = 8 bits
-          Start character '$'
-        
-        MS field - Payload
-        Postion 1 through 14:
-          14 bytes = 112 bits
-          Mode-S payload
-          In case of DF types that only carry 7 bytes of information position 8 through 14 are set to 0x00.
-        
-        TS field - Time stamp
-        Position 15 through 20:
-          6 bytes = 48 bits
-          Time stamp with fields as:
-        
-            Lock Status - Status of internal time keeping mechanism
-            Equal to 1 if operating normally
-            Bit 47 - 1 bit
-        
-            Time of day in UTC seconds, between 0 and 86399
-            Bits 46 through 30 - 17 bits
-            
-            Nanoseconds into current second, between 0 and 999999999
-            Bits 29 through 0 - 30 bits 
-        
-        RS field - Signal Level
-        Position 21 through 23:
-         3 bytes = 24 bits
-         RSSI (received signal strength indication) and relative noise level with fields
-        
-         RNL, Q12.4 unsigned fixed point binary with 4 fractional bits and 8 integer bits.
-         This is and indication of the noise level of the message. Roughly 40 counts per 10dBm.
-         Bits 23 through 12 - 12 bits 
-        
-         RSSI, Q12.4 unsigned fixed point binary with 4 fractional bits and 8 integer bits.
-         This is an indication of the signal level of the received message in ADC counts. Roughly 40 counts per 10dBm.
-         Bits 11 through 0 - 12 bits   
+        """Skysense stream format.
+
+        ::
+
+            ----------------------------------------------------------------------------------
+            Field      SS MS MS MS MS MS MS MS MS MS MS MS MS MS MS TS TS TS TS TS TS RS RS RS
+            ----------------------------------------------------------------------------------
+            Position:   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+            ----------------------------------------------------------------------------------
+
+            SS field - Start character
+            Position 0:
+              1 byte = 8 bits
+              Start character '$'
+
+            MS field - Payload
+            Postion 1 through 14:
+              14 bytes = 112 bits
+              Mode-S payload
+              In case of DF types that only carry 7 bytes of information
+                position 8 through 14 are set to 0x00.
+
+            TS field - Time stamp
+            Position 15 through 20:
+              6 bytes = 48 bits
+              Time stamp with fields as:
+
+                Lock Status - Status of internal time keeping mechanism
+                Equal to 1 if operating normally
+                Bit 47 - 1 bit
+
+                Time of day in UTC seconds, between 0 and 86399
+                Bits 46 through 30 - 17 bits
+
+                Nanoseconds into current second, between 0 and 999999999
+                Bits 29 through 0 - 30 bits
+
+            RS field - Signal Level
+            Position 21 through 23:
+              3 bytes = 24 bits
+              RSSI (received signal strength indication) and relative
+                noise level with fields
+
+              RNL, Q12.4 unsigned fixed point binary with 4 fractional
+                bits and 8 integer bits.
+              This is and indication of the noise level of the message.
+                Roughly 40 counts per 10dBm.
+              Bits 23 through 12 - 12 bits
+
+              RSSI, Q12.4 unsigned fixed point binary with 4 fractional
+                bits and 8 integer bits.
+              This is an indication of the signal level of the received
+                message in ADC counts. Roughly 40 counts per 10dBm.
+              Bits 11 through 0 - 12 bits
         """
         SS_MSGLENGTH = 24
         SS_STARTCHAR = 0x24
@@ -220,7 +229,7 @@ class BaseClient(Thread):
                 self.buffer = self.buffer[SS_MSGLENGTH:]
                 messages.append( [msg,ts] )
             else:
-                self.buffer = self.buffer[1:]  
+                self.buffer = self.buffer[1:]
         return messages
 
     def handle_messages(self, messages):

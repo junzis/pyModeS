@@ -13,13 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
-
 # ------------------------------------------
 # BDS 5,0
 # Track and turn report
 # ------------------------------------------
+
+from __future__ import absolute_import, print_function, division
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
 
 def is50(msg):
     """Check if a message is likely to be BDS code 5,0
