@@ -52,7 +52,6 @@ https://github.com/junzis/pyModeS
 
 API documentation at:
 http://pymodes.readthedocs.io
-[To be updated]
 
 
 Install
