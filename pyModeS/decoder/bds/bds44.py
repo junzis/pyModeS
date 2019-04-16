@@ -60,13 +60,9 @@ def is44(msg):
     if vw is not None and vw[0] > 250:
         return False
 
-    # CAN NOT USE TEMP HERE. THERE IS AN ERROR IN ICAO 9871 (2008)
-    # temp = temp44(msg)
-    # if temp:
-    #     if temp > 60 or temp < -80:
-    #         return False
-    # elif temp == 0:
-    #     return False
+    temp, temp2 = temp44(msg)
+    if min(temp, temp2) > 60 or max(temp, temp2) < -80:
+        return False
 
     return True
 
@@ -100,13 +96,12 @@ def temp44(msg):
         msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        float: tmeperature in Celsius degree
+        float, float: temperature and alternative temperature in Celsius degree.
+            Note: Two values returns due to what seems to be an inconsistancy
+            error in ICAO 9871 (2008) Appendix A-67.
 
     """
     d = hex2bin(data(msg))
-
-    # if d[22] == '0':
-    #     return None
 
     sign = int(d[23])
     value = bin2int(d[24:34])
@@ -114,10 +109,13 @@ def temp44(msg):
     if sign:
         value = value - 1024
 
-    temp = value * 0.125   # celsius
-    temp = round(temp, 1)
+    temp = value * 0.25   # celsius
+    temp = round(temp, 2)
 
-    return temp
+    temp_alternative = value * 0.125   # celsius
+    temp_alternative = round(temp, 3)
+
+    return temp, temp_alternative
 
 
 def p44(msg):
