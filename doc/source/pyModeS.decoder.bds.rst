@@ -21,6 +21,7 @@ Submodules
    pyModeS.decoder.bds.bds30
    pyModeS.decoder.bds.bds40
    pyModeS.decoder.bds.bds44
+   pyModeS.decoder.bds.bds45
    pyModeS.decoder.bds.bds50
    pyModeS.decoder.bds.bds53
    pyModeS.decoder.bds.bds60
