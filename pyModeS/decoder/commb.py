@@ -13,8 +13,9 @@ The Comm-B wrapper imports all functions from the following modules:
     - pyModeS.decoder.bds.bds50
     - pyModeS.decoder.bds.bds60
 
-**MRAR**
-    - pyModeS.decoder.bds.bds44 import
+**MRAR and MHR**
+    - pyModeS.decoder.bds.bds44
+    - pyModeS.decoder.bds.bds45
 
 """
 
@@ -31,5 +32,6 @@ from pyModeS.decoder.bds.bds40 import *
 from pyModeS.decoder.bds.bds50 import *
 from pyModeS.decoder.bds.bds60 import *
 
-# MRAR
+# MRAR and MHR
 from pyModeS.decoder.bds.bds44 import *
+from pyModeS.decoder.bds.bds45 import *
