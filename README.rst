@@ -213,19 +213,19 @@ Mode-S Enhanced Surveillance (EHS)
 
 .. code:: python
 
-  # For BDS register 4,0
+  # BDS 4,0
   pms.commb.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
   pms.commb.alt40fms(msg)   # FMS selected altitude (ft)
   pms.commb.p40baro(msg)    # Barometric pressure (mb)
 
-  # For BDS register 5,0
+  # BDS 5,0
   pms.commb.roll50(msg)     # Roll angle (deg)
   pms.commb.trk50(msg)      # True track angle (deg)
   pms.commb.gs50(msg)       # Ground speed (kt)
   pms.commb.rtrk50(msg)     # Track angle rate (deg/sec)
   pms.commb.tas50(msg)      # True airspeed (kt)
 
-  # For BDS register 6,0
+  # BDS 6,0
   pms.commb.hdg60(msg)      # Magnetic heading (deg)
   pms.commb.ias60(msg)      # Indicated airspeed (kt)
   pms.commb.mach60(msg)     # Mach number (-)
@@ -234,15 +234,31 @@ Mode-S Enhanced Surveillance (EHS)
 
 
 Meteorological routine air report (MRAR) [Experimental]
+********************************************************
+
+.. code:: python
+
+  # BDS 4,4
+  pms.commb.wind44(msg)     # Wind speed (kt) and direction (true) (deg)
+  pms.commb.temp44(msg)     # Static air temperature (C)
+  pms.commb.p44(msg)        # Average static pressure (hPa)
+  pms.commb.hum44(msg)      # Humidity (%)
+
+
+Meteorological hazard air report (MHR) [Experimental]
 *******************************************************
 
 .. code:: python
 
-  # For BDS register 4,4
-  pms.commb.wind44(msg, rev=False)  # Wind speed (kt) and direction (true) (deg)
-  pms.commb.temp44(msg, rev=False)  # Static air temperature (C)
-  pms.commb.p44(msg, rev=False)     # Average static pressure (hPa)
-  pms.commb.hum44(msg, rev=False)   # Humidity (%)
+  # BDS 4,5
+  pms.commb.turb45(msg)     # Turbulence level (0-3)
+  pms.commb.ws45(msg)       # Wind shear level (0-3)
+  pms.commb.mb45(msg)       # Microburst level (0-3)
+  pms.commb.ic45(msg)       # Icing level (0-3)
+  pms.commb.wv45(msg)       # Wake vortex level (0-3)
+  pms.commb.temp45(msg)     # Static air temperature (C)
+  pms.commb.p45(msg)        # Average static pressure (hPa)
+  pms.commb.rh45(msg)       # Radio height (ft)
 
 
 Developement

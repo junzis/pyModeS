@@ -25,7 +25,7 @@ from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 def is45(msg):
     """Check if a message is likely to be BDS code 4,5.
 
-    Meteorological harzard report
+    Meteorological hazard report
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -220,5 +220,5 @@ def rh45(msg):
     d = hex2bin(data(msg))
     if d[38] == '0':
         return None
-    rh = bin2int(d[39:51])
+    rh = bin2int(d[39:51]) * 16
     return rh
