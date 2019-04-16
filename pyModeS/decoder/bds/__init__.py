@@ -24,11 +24,11 @@ import numpy as np
 from pyModeS.extra import aero
 from pyModeS.decoder import common
 from pyModeS.decoder.bds import bds05, bds06, bds08, bds09, \
-    bds10, bds17, bds20, bds30, bds40, bds44, bds50, bds53, bds60
+    bds10, bds17, bds20, bds30, bds40, bds44, bds45, bds50, bds53, bds60
 
 
 def is50or60(msg, spd_ref, trk_ref, alt_ref):
-    """Use reference ground speed and trk to determine BDS50 and DBS60
+    """Use reference ground speed and trk to determine BDS50 and DBS60.
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -38,6 +38,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
 
     Returns:
         String or None: BDS version, or possible versions, or None if nothing matches.
+
     """
     def vxy(v, angle):
         vx = v * np.sin(np.radians(angle))
@@ -88,16 +89,17 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     return BDS
 
 
-def infer(msg):
-    """Estimate the most likely BDS code of an message
+def infer(msg, mrar=False):
+    """Estimate the most likely BDS code of an message.
 
     Args:
         msg (String): 28 bytes hexadecimal message string
+        mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45). Defaults to False.
 
     Returns:
         String or None: BDS version, or possible versions, or None if nothing matches.
-    """
 
+    """
     df = common.df(msg)
 
     if common.allzeros(msg):
@@ -124,7 +126,7 @@ def infer(msg):
         if tc == 31:
             return 'BDS65'  # operational status
 
-    # For Comm-B replies, ELS + EHS only
+    # For Comm-B replies
     IS10 = bds10.is10(msg)
     IS17 = bds17.is17(msg)
     IS20 = bds20.is20(msg)
@@ -132,12 +134,17 @@ def infer(msg):
     IS40 = bds40.is40(msg)
     IS50 = bds50.is50(msg)
     IS60 = bds60.is60(msg)
+    IS44 = bds44.is44(msg)
+    IS45 = bds45.is45(msg)
 
-    allbds = np.array([
-        "BDS10", "BDS17", "BDS20", "BDS30", "BDS40", "BDS50", "BDS60"
-    ])
-
-    mask = [IS10, IS17, IS20, IS30, IS40, IS50, IS60]
+    if mrar:
+        allbds = np.array(["BDS10", "BDS17", "BDS20", "BDS30", "BDS40",
+                           "BDS44", "BDS45", "BDS50", "BDS60"])
+        mask = [IS10, IS17, IS20, IS30, IS40, IS44, IS45, IS50, IS60]
+    else:
+        allbds = np.array(["BDS10", "BDS17", "BDS20", "BDS30", "BDS40",
+                           "BDS50", "BDS60"])
+        mask = [IS10, IS17, IS20, IS30, IS40, IS50, IS60]
 
     bds = ','.join(sorted(allbds[mask]))
 

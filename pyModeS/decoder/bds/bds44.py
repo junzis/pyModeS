@@ -29,7 +29,6 @@ def is44(msg):
 
     Args:
         msg (String): 28 bytes hexadecimal message string
-        rev (bool): using revised version
 
     Returns:
         bool: True or False
@@ -61,13 +60,13 @@ def is44(msg):
     if vw is not None and vw[0] > 250:
         return False
 
-    temp = temp44(msg)
-    if temp:
-        if temp > 60 or temp < -80:
-            return False
-
-    elif temp == 0:
-        return False
+    # CAN NOT USE TEMP HERE. THERE IS AN ERROR IN ICAO 9871 (2008)
+    # temp = temp44(msg)
+    # if temp:
+    #     if temp > 60 or temp < -80:
+    #         return False
+    # elif temp == 0:
+    #     return False
 
     return True
 
@@ -76,8 +75,7 @@ def wind44(msg):
     """Wind speed and direction.
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS44) string
-        rev (bool): using revised version
+        msg (String): 28 bytes hexadecimal message string
 
     Returns:
         (int, float): speed (kt), direction (degree)
@@ -99,8 +97,7 @@ def temp44(msg):
     """Static air temperature.
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS44) string
-        rev (bool): using revised version
+        msg (String): 28 bytes hexadecimal message string
 
     Returns:
         float: tmeperature in Celsius degree
@@ -127,8 +124,7 @@ def p44(msg):
     """Static pressure.
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS44) string
-        rev (bool): using revised version
+        msg (String): 28 bytes hexadecimal message string
 
     Returns:
         int: static pressure in hPa
@@ -148,8 +144,7 @@ def hum44(msg):
     """humidity
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS44) string
-        rev (bool): using revised version
+        msg (String): 28 bytes hexadecimal message string
 
     Returns:
         float: percentage of humidity, [0 - 100] %
@@ -168,11 +163,10 @@ def turb44(msg):
     """Turblence.
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS44) string
-        rev (bool): using revised version
+        msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        int: turbulence level. 0: NIL, 1: Light, 2: Moderate, 3: Severe
+        int: turbulence level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
 
     """
     d = hex2bin(data(msg))
