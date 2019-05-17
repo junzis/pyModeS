@@ -151,9 +151,16 @@ def velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, int, string): speed (kt), ground track or heading (degree),
-            rate of climb/descend (ft/min), and speed type
-            ('GS' for ground speed, 'AS' for airspeed)
+        (int, float, int, string, string, string): speed (kt),
+            ground track or heading (degree),
+            rate of climb/descent (ft/min), speed type
+            ('GS' for ground speed, 'AS' for airspeed),
+            direction source ('gnd_trk' for ground track, 'mag_hdg' for
+            magnetic heading), rate of climb/descent source ('Baro' for
+            barometer, 'GNSS' for GNSS constellation).
+            
+            In the case of surface messages, None will be put in place
+            for direction, vertical rate, and their respective sources.
     """
 
     if 5 <= typecode(msg) <= 8:
