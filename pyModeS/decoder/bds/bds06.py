@@ -147,7 +147,7 @@ def surface_velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, None, string, None, None): speed (kt),
+        (int, float, None, string, string, None): speed (kt),
             ground track (degree), None for rate of climb/descend (ft/min),
             and speed type ('GS' for ground speed), direction source
             ('gnd_trk' for ground track), None rate of climb/descent source.
@@ -183,4 +183,4 @@ def surface_velocity(msg):
         spd = kts[i-1] + (mov-movs[i-1]) * step
         spd = round(spd, 2)
 
-    return spd, trk, None, 'GS', None, None
+    return spd, trk, None, 'GS', 'gnd_trk', None
