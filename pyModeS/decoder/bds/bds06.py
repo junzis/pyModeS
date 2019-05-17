@@ -141,13 +141,17 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     return round(lat, 5), round(lon, 5)
 
 
-def surface_velocity(msg):
+def surface_velocity(msg, rtn_sources=False):
     """Decode surface velocity from from a surface position message
     Args:
         msg (string): 28 bytes hexadecimal message string
+        rtn_source (boolean): If the function will return
+            the sources for direction of travel and vertical
+            rate. This will change the return value from a four
+            element array to a six element array.
 
     Returns:
-        (int, float, None, string, string, None): speed (kt),
+        (int, float, int, string, string, None): speed (kt),
             ground track (degree), None for rate of climb/descend (ft/min),
             and speed type ('GS' for ground speed), direction source
             ('gnd_trk' for ground track), None rate of climb/descent source.
@@ -183,4 +187,7 @@ def surface_velocity(msg):
         spd = kts[i-1] + (mov-movs[i-1]) * step
         spd = round(spd, 2)
 
-    return spd, trk, None, 'GS', 'gnd_trk', None
+    if rtn_sources:
+        return spd, trk, 0, 'GS', 'gnd_trk', None
+    else:
+        return spd, trk, 0, 'GS'

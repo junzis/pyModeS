@@ -25,11 +25,15 @@ from pyModeS.decoder import common
 import math
 
 
-def airborne_velocity(msg):
+def airborne_velocity(msg, rtn_sources=False):
     """Calculate the speed, track (or heading), and vertical rate
 
     Args:
         msg (string): 28 bytes hexadecimal message string
+        rtn_source (boolean): If the function will return
+            the sources for direction of travel and vertical
+            rate. This will change the return value from a four
+            element array to a six element array.
 
     Returns:
         (int, float, int, string, string, string): speed (kt),
@@ -96,7 +100,11 @@ def airborne_velocity(msg):
     vr = common.bin2int(mb[37:46])
     rocd = None if vr==0 else int(vr_sign*(vr-1)*64)
 
-    return spd, trk_or_hdg, rocd, tag, dir_type, vr_source
+    if rtn_sources:
+        return spd, trk_or_hdg, rocd, tag, dir_type, vr_source
+    else:
+        return spd, trk_or_hdg, rocd, tag
+    
 
 def altitude_diff(msg):
     """Decode the differece between GNSS and barometric altitude
