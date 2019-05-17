@@ -32,9 +32,13 @@ def airborne_velocity(msg):
         msg (string): 28 bytes hexadecimal message string
 
     Returns:
-        (int, float, int, string): speed (kt), ground track or heading (degree),
-            rate of climb/descend (ft/min), and speed type
-            ('GS' for ground speed, 'AS' for airspeed)
+        (int, float, int, string, string, string): speed (kt),
+            ground track or heading (degree),
+            rate of climb/descent (ft/min), speed type
+            ('GS' for ground speed, 'AS' for airspeed),
+            direction source ('gnd_trk' for ground track, 'mag_hdg' for
+            magnetic heading), rate of climb/descent source ('Baro' for
+            barometer, 'GNSS' for GNSS constellation)
     """
 
     if common.typecode(msg) != 19:
@@ -66,6 +70,7 @@ def airborne_velocity(msg):
 
         tag = 'GS'
         trk_or_hdg = round(trk, 2)
+        dir_type = 'gnd_trk'
 
     else:
         if mb[13] == '0':
@@ -83,12 +88,15 @@ def airborne_velocity(msg):
             tag = 'IAS'
         else:
             tag = 'TAS'
+        
+        dir_type = 'mag_hdg'
 
+    vr_source = 'GNSS' if mb[35]=='0' else 'Baro'
     vr_sign = -1 if mb[36]=='1' else 1
     vr = common.bin2int(mb[37:46])
     rocd = None if vr==0 else int(vr_sign*(vr-1)*64)
 
-    return spd, trk_or_hdg, rocd, tag
+    return spd, trk_or_hdg, rocd, tag, dir_type, vr_source
 
 def altitude_diff(msg):
     """Decode the differece between GNSS and barometric altitude
