@@ -154,7 +154,7 @@ def surface_velocity(msg, rtn_sources=False):
         (int, float, int, string, string, None): speed (kt),
             ground track (degree), None for rate of climb/descend (ft/min),
             and speed type ('GS' for ground speed), direction source
-            ('gnd_trk' for ground track), None rate of climb/descent source.
+            ('true_north' for ground track), None rate of climb/descent source.
     """
 
     if common.typecode(msg) < 5 or common.typecode(msg) > 8:
@@ -188,6 +188,6 @@ def surface_velocity(msg, rtn_sources=False):
         spd = round(spd, 2)
 
     if rtn_sources:
-        return spd, trk, 0, 'GS', 'gnd_trk', None
+        return spd, trk, 0, 'GS', 'true_north', None
     else:
         return spd, trk, 0, 'GS'

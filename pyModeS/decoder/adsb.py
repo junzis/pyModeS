@@ -159,7 +159,7 @@ def velocity(msg, rtn_sources=False):
             ground track or heading (degree),
             rate of climb/descent (ft/min), speed type
             ('GS' for ground speed, 'AS' for airspeed),
-            direction source ('gnd_trk' for ground track, 'mag_hdg' for
+            direction source ('true_north' for ground track, 'mag_north' for
             magnetic heading), rate of climb/descent source ('Baro' for
             barometer, 'GNSS' for GNSS constellation).
             

@@ -40,7 +40,7 @@ def airborne_velocity(msg, rtn_sources=False):
             ground track or heading (degree),
             rate of climb/descent (ft/min), speed type
             ('GS' for ground speed, 'AS' for airspeed),
-            direction source ('gnd_trk' for ground track, 'mag_hdg' for
+            direction source ('true_north' for ground track, 'mag_north' for
             magnetic heading), rate of climb/descent source ('Baro' for
             barometer, 'GNSS' for GNSS constellation)
     """
@@ -74,7 +74,7 @@ def airborne_velocity(msg, rtn_sources=False):
 
         tag = 'GS'
         trk_or_hdg = round(trk, 2)
-        dir_type = 'gnd_trk'
+        dir_type = 'true_north'
 
     else:
         if mb[13] == '0':
@@ -93,7 +93,7 @@ def airborne_velocity(msg, rtn_sources=False):
         else:
             tag = 'TAS'
         
-        dir_type = 'mag_hdg'
+        dir_type = 'mag_north'
 
     vr_source = 'GNSS' if mb[35]=='0' else 'Baro'
     vr_sign = -1 if mb[36]=='1' else 1
