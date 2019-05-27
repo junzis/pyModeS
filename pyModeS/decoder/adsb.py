@@ -143,24 +143,36 @@ def altitude(msg):
         return None
 
 
-def velocity(msg):
+def velocity(msg, rtn_sources=False):
     """Calculate the speed, heading, and vertical rate
     (handles both airborne or surface message)
 
     Args:
         msg (string): 28 bytes hexadecimal message string
+        rtn_source (boolean): If the function will return
+            the sources for direction of travel and vertical
+            rate. This will change the return value from a four
+            element array to a six element array.
 
     Returns:
-        (int, float, int, string): speed (kt), ground track or heading (degree),
-            rate of climb/descend (ft/min), and speed type
-            ('GS' for ground speed, 'AS' for airspeed)
+        (int, float, int, string, string, string): speed (kt),
+            ground track or heading (degree),
+            rate of climb/descent (ft/min), speed type
+            ('GS' for ground speed, 'AS' for airspeed),
+            direction source ('true_north' for ground track / true north
+            as refrence, 'mag_north' for magnetic north as reference),
+            rate of climb/descent source ('Baro' for barometer, 'GNSS'
+            for GNSS constellation).
+            
+            In the case of surface messages, None will be put in place
+            for vertical rate and its respective sources.
     """
 
     if 5 <= typecode(msg) <= 8:
-        return surface_velocity(msg)
+        return surface_velocity(msg, rtn_sources)
 
     elif typecode(msg) == 19:
-        return airborne_velocity(msg)
+        return airborne_velocity(msg, rtn_sources)
 
     else:
         raise RuntimeError("incorrect or inconsistant message types, expecting 4<TC<9 or TC=19")
