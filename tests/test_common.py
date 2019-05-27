@@ -1,10 +1,14 @@
 from pyModeS import common
 
 
-def test_hex2bin():
+def test_conversions():
     assert common.hex2bin('6E406B') == "011011100100000001101011"
+    assert common.bin2hex('011011100100000001101011') == "6E406B"
+    assert common.int2hex(11160538) == "AA4BDA"
 
 def test_crc_decode():
+    assert common.crc_legacy("8D406B902015A678D4D220AA4BDA") == 0
+
     assert common.crc("8D406B902015A678D4D220AA4BDA") == 0
     assert common.crc('8d8960ed58bf053cf11bc5932b7d') == 0
     assert common.crc('8d45cab390c39509496ca9a32912') == 0
@@ -22,7 +26,7 @@ def test_crc_decode():
 
 def test_crc_encode():
     parity = common.crc("8D406B902015A678D4D220AA4BDA", encode=True)
-    assert int("AA4BDA", 16) == parity
+    assert common.int2hex(parity) == "AA4BDA"
 
 def test_icao():
     assert common.icao("8D406B902015A678D4D220AA4BDA") == "406B90"

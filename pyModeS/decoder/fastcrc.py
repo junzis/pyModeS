@@ -1,13 +1,15 @@
-GENERATOR = [int("11111111", 2), int("11111010", 2), int("00000100", 2), int("10000000", 2)]
+"""Compute CRC checksum of a hexadecimal string."""
+
+GENERATOR = [
+    int("11111111", 2), int("11111010", 2),
+    int("00000100", 2), int("10000000", 2)
+]
 
 
 class BytesWrapper:
 
-    def __init__(self, hex: str):
-        if len(hex) % 2 == 1:
-            hex += '0'
-
-        self._bytes = [b for b in bytes.fromhex(hex)]
+    def __init__(self, hexstr):
+        self._bytes = [int(hexstr[i:i+2], 16) for i in range(0, len(hexstr), 2)]
 
     def byte_count(self):
         return len(self._bytes) - 3
@@ -20,13 +22,13 @@ class BytesWrapper:
     def apply_matrix(self, byte_index, bit_index):
         self._bytes[byte_index] = self._bytes[byte_index] ^ (GENERATOR[0] >> bit_index)
         self._bytes[byte_index + 1] = self._bytes[byte_index + 1] ^ \
-                                      (0xFF & ((GENERATOR[0] << 8 - bit_index) | (GENERATOR[1] >> bit_index)))
+            (0xFF & ((GENERATOR[0] << 8 - bit_index) | (GENERATOR[1] >> bit_index)))
         self._bytes[byte_index + 2] = self._bytes[byte_index + 2] ^ \
-                                      (0xFF & ((GENERATOR[1] << 8 - bit_index) | (GENERATOR[2] >> bit_index)))
+            (0xFF & ((GENERATOR[1] << 8 - bit_index) | (GENERATOR[2] >> bit_index)))
         self._bytes[byte_index + 3] = self._bytes[byte_index + 3] ^ \
-                                      (0xFF & ((GENERATOR[2] << 8 - bit_index) | (GENERATOR[3] >> bit_index)))
+            (0xFF & ((GENERATOR[2] << 8 - bit_index) | (GENERATOR[3] >> bit_index)))
 
-    def get_suffix(self) -> int:
+    def get_suffix(self):
         return (self._bytes[-3] << 16) | (self._bytes[-2] << 8) | self._bytes[-1]
 
 
