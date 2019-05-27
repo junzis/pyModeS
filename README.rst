@@ -1,5 +1,5 @@
 The Python ADS-B/Mode-S Decoder
-******************************************
+===============================
 
 If you find this project useful for your research, please cite our work (bibtex format):
 
@@ -110,6 +110,7 @@ Example screenshot:
 
 .. image:: https://github.com/junzis/pyModeS/raw/master/doc/modeslive-screenshot.png
    :width: 700px
+
 
 Use the library
 ---------------
@@ -271,8 +272,51 @@ Meteorological hazard air report (MHR) [Experimental]
   pms.commb.rh45(msg)       # Radio height (ft)
 
 
-Developement
-------------
+
+Customize the streaming module
+******************************
+The TCP client module from pyModeS can be re-used to stream and process Mode-S
+data as your like. You need to re-implement the ``handle_messages()`` function from
+the ``BaseClient`` class to write your own logic to handle the messages.
+
+Here is an example:
+
+.. code:: python
+
+  from pyModeS.extra.tcpclient import BaseClient
+
+  # define your custom class by extending the BaseClient
+  #   - implement your handle_messages() methods
+  class ADSBClient(BaseClient):
+      def __init__(self, host, port, rawtype):
+          super(ModesClient, self).__init__(host, port, rawtype)
+
+      def handle_messages(self, messages):
+          for msg, ts in messages:
+              if len(msg) < 28:           # wrong data length
+                  continue
+
+              df = pms.df(msg)
+
+              if df != 17:                # not ADSB
+                  continue
+
+              if '1' in pms.crc(msg):     # CRC fail
+                  continue
+
+              icao = pms.adsb.icao(msg)
+              tc = pms.adsb.typecode(msg)
+
+              # TODO: write you magic code here
+              print ts, icao, tc, msg
+
+  # run new client, change the host, port, and rawtype if needed
+  client = ADSBClient(host='127.0.0.1', port=30334, rawtype='beast')
+  client.run()
+
+
+Unit test
+---------
 To perform unit tests. First install ``tox`` through pip, Then, run the following commands:
 
 .. code:: bash
