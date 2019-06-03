@@ -269,7 +269,16 @@ class BaseClient(Thread):
 
                 time.sleep(0.001)
             except Exception as e:
-                print("Unexpected Error:", e)
+
+                # Provides the user an option to supply the environment 
+                # variable PYMODES_DEBUG to halt the execution
+                # for debugging purposes
+                debug_intent = os.environ.get('PYMODES_DEBUG', None)
+                if debug_intent.lower() == 'true':
+                    sys.exc_info()
+                    sys.exit()
+                else:
+                    print("Unexpected Error:", e)
 
                 try:
                     sock = self.connect()
