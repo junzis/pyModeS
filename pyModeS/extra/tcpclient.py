@@ -275,7 +275,7 @@ class BaseClient(Thread):
                 # for debugging purposes
                 debug_intent = os.environ.get('PYMODES_DEBUG', None)
                 if debug_intent.lower() == 'true':
-                    sys.exc_info()
+                    print(sys.exc_info())
                     sys.exit()
                 else:
                     print("Unexpected Error:", e)
