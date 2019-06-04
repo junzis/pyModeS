@@ -7,6 +7,7 @@ import sys
 import socket
 import time
 from threading import Thread
+import traceback
 
 if (sys.version_info > (3, 0)):
     PY_VERSION = 3
@@ -275,7 +276,7 @@ class BaseClient(Thread):
                 # for debugging purposes
                 debug_intent = os.environ.get('PYMODES_DEBUG', None)
                 if debug_intent.lower() == 'true':
-                    print(sys.exc_info())
+                    traceback.print_exc()
                     sys.exit()
                 else:
                     print("Unexpected Error:", e)
