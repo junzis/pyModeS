@@ -59,9 +59,13 @@ def airborne_velocity(msg, rtn_sources=False):
     if subtype in (1, 2):
         v_ew_sign = -1 if mb[13]=='1' else 1
         v_ew = common.bin2int(mb[14:24]) - 1       # east-west velocity
+        if subtype == 2: # Supersonic
+            v_ew *= 4
 
         v_ns_sign = -1 if mb[24]=='1' else 1
         v_ns = common.bin2int(mb[25:35]) - 1       # north-south velocity
+        if subtype == 2: # Supersonic
+            v_ns *= 4
 
         v_we = v_ew_sign * v_ew
         v_sn = v_ns_sign * v_ns
@@ -88,6 +92,8 @@ def airborne_velocity(msg, rtn_sources=False):
 
         spd = common.bin2int(mb[25:35])
         spd = None if spd==0 else spd-1
+        if subtype == 4: # Supersonic
+            spd *= 4
 
         if mb[24]=='0':
             tag = 'IAS'
