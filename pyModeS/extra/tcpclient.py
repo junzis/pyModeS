@@ -6,6 +6,7 @@ import os
 import sys
 import socket
 import time
+import pyModeS as pms
 from threading import Thread
 import traceback
 
@@ -138,8 +139,12 @@ class BaseClient(Thread):
                 # Other message tupe
                 continue
 
-            if len(msg) not in [14, 28]:
-                # incomplete message
+            df = pms.df(msg)
+
+            # skip incomplete message
+            if df in [0, 4, 5, 11] and len(msg) != 14:
+                continue
+            if df in [16, 17, 18, 19, 20, 21, 24] and len(msg) != 28:
                 continue
 
             messages.append([msg, ts])
@@ -271,10 +276,10 @@ class BaseClient(Thread):
                 time.sleep(0.001)
             except Exception as e:
 
-                # Provides the user an option to supply the environment 
+                # Provides the user an option to supply the environment
                 # variable PYMODES_DEBUG to halt the execution
                 # for debugging purposes
-                debug_intent = os.environ.get('PYMODES_DEBUG', None)
+                debug_intent = os.environ.get('PYMODES_DEBUG', 'false')
                 if debug_intent.lower() == 'true':
                     traceback.print_exc()
                     sys.exit()
