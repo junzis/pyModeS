@@ -1,8 +1,6 @@
 from __future__ import absolute_import, print_function, division
 import numpy as np
-
-from pyModeS.decoder import fastcrc
-
+from textwrap import wrap
 
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings."""
@@ -60,17 +58,37 @@ def crc(msg, encode=False):
         int: message checksum, or partity bits (encoder)
 
     """
+    # the CRC generator
+    G = [
+        int("11111111", 2), int("11111010", 2),
+        int("00000100", 2), int("10000000", 2)
+    ]
+
     if encode:
         msg = msg[:-6] + "000000"
 
-    reminder_int = fastcrc.crc(msg)
+    msgbin = hex2bin(msg)
+    msgbin_split = wrap(msgbin, 8)
+    mbytes = list(map(bin2int, msgbin_split))
 
-    return reminder_int
+    for ibyte in range(len(mbytes)-3):
+        for ibit in range(8):
+            mask = 0x80 >> ibit
+            bits = mbytes[ibyte] & mask
+
+            if bits > 0:
+                mbytes[ibyte] = mbytes[ibyte] ^ (G[0] >> ibit)
+                mbytes[ibyte+1] = mbytes[ibyte+1] ^ (0xFF & ((G[0] << 8-ibit) | (G[1] >> ibit)))
+                mbytes[ibyte+2] = mbytes[ibyte+2] ^ (0xFF & ((G[1] << 8-ibit) | (G[2] >> ibit)))
+                mbytes[ibyte+3] = mbytes[ibyte+3] ^ (0xFF & ((G[2] << 8-ibit) | (G[3] >> ibit)))
+
+    result = (mbytes[-3] << 16) | (mbytes[-2] << 8) | mbytes[-1]
+
+    return result
 
 
 def crc_legacy(msg, encode=False):
-    """Mode-S Cyclic Redundancy Check. (Legacy code, slow)."""
-
+    """Mode-S Cyclic Redundancy Check. (Legacy code, 2x slow)."""
     # the polynominal generattor code for CRC [1111111111111010000001001]
     generator = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,1,0,0,1])
     ng = len(generator)
