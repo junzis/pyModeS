@@ -19,7 +19,13 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+from pyModeS.decoder.common import (
+    hex2bin,
+    bin2int,
+    data,
+    allzeros,
+    wrongstatus,
+)
 
 
 def is44(msg):
@@ -83,7 +89,7 @@ def wind44(msg):
     if not status:
         return None
 
-    speed = bin2int(d[5:14])   # knots
+    speed = bin2int(d[5:14])  # knots
     direction = bin2int(d[14:23]) * 180.0 / 256.0  # degree
 
     return round(speed, 0), round(direction, 1)
@@ -109,11 +115,11 @@ def temp44(msg):
     if sign:
         value = value - 1024
 
-    temp = value * 0.25   # celsius
+    temp = value * 0.25  # celsius
     temp = round(temp, 2)
 
-    temp_alternative = value * 0.125   # celsius
-    temp_alternative = round(temp, 3)
+    temp_alternative = value * 0.125  # celsius
+    temp_alternative = round(temp_alternative, 3)
 
     return temp, temp_alternative
 
@@ -130,10 +136,10 @@ def p44(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[34] == '0':
+    if d[34] == "0":
         return None
 
-    p = bin2int(d[35:46])    # hPa
+    p = bin2int(d[35:46])  # hPa
 
     return p
 
@@ -149,10 +155,10 @@ def hum44(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[49] == '0':
+    if d[49] == "0":
         return None
 
-    hm = bin2int(d[50:56]) * 100.0 / 64    # %
+    hm = bin2int(d[50:56]) * 100.0 / 64  # %
 
     return round(hm, 1)
 
@@ -169,7 +175,7 @@ def turb44(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[46] == '0':
+    if d[46] == "0":
         return None
 
     turb = bin2int(d[47:49])
