@@ -10,12 +10,12 @@ def test_bds20_callsign():
 
 
 def test_bds40_functions():
-    assert bds.bds40.alt40mcp("A000029C85E42F313000007047D3") == 3008
-    assert bds.bds40.alt40fms("A000029C85E42F313000007047D3") == 3008
+    assert bds.bds40.selalt40mcp("A000029C85E42F313000007047D3") == 3008
+    assert bds.bds40.selalt40fms("A000029C85E42F313000007047D3") == 3008
     assert bds.bds40.p40baro("A000029C85E42F313000007047D3") == 1020.0
 
-    assert commb.alt40mcp("A000029C85E42F313000007047D3") == 3008
-    assert commb.alt40fms("A000029C85E42F313000007047D3") == 3008
+    assert commb.selalt40mcp("A000029C85E42F313000007047D3") == 3008
+    assert commb.selalt40fms("A000029C85E42F313000007047D3") == 3008
     assert commb.p40baro("A000029C85E42F313000007047D3") == 1020.0
 
 

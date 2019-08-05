@@ -225,8 +225,8 @@ Mode-S Enhanced Surveillance (EHS)
 .. code:: python
 
   # BDS 4,0
-  pms.commb.alt40mcp(msg)   # MCP/FCU selected altitude (ft)
-  pms.commb.alt40fms(msg)   # FMS selected altitude (ft)
+  pms.commb.selalt40mcp(msg)   # MCP/FCU selected altitude (ft)
+  pms.commb.selalt40fms(msg)   # FMS selected altitude (ft)
   pms.commb.p40baro(msg)    # Barometric pressure (mb)
 
   # BDS 5,0

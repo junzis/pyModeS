@@ -18,9 +18,10 @@
 # Selected vertical intention
 # ------------------------------------------
 
-
 from __future__ import absolute_import, print_function, division
+import warnings
 from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
 
 def is40(msg):
     """Check if a message is likely to be BDS code 4,0
@@ -65,7 +66,7 @@ def is40(msg):
     return True
 
 
-def alt40mcp(msg):
+def selalt40mcp(msg):
     """Selected altitude, MCP/FCU
 
     Args:
@@ -76,14 +77,14 @@ def alt40mcp(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[0] == '0':
+    if d[0] == "0":
         return None
 
-    alt = bin2int(d[1:13]) * 16    # ft
+    alt = bin2int(d[1:13]) * 16  # ft
     return alt
 
 
-def alt40fms(msg):
+def selalt40fms(msg):
     """Selected altitude, FMS
 
     Args:
@@ -94,10 +95,10 @@ def alt40fms(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[13] == '0':
+    if d[13] == "0":
         return None
 
-    alt = bin2int(d[14:26]) * 16    # ft
+    alt = bin2int(d[14:26]) * 16  # ft
     return alt
 
 
@@ -112,8 +113,26 @@ def p40baro(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[26] == '0':
+    if d[26] == "0":
         return None
 
-    p = bin2int(d[27:39]) * 0.1 + 800    # millibar
+    p = bin2int(d[27:39]) * 0.1 + 800  # millibar
     return p
+
+
+def alt40mcp(msg):
+    warnings.simplefilter("once", DeprecationWarning)
+    warnings.warn(
+        "alt40mcp() has been renamed to selalt40mcp(). It will be removed in the future.",
+        DeprecationWarning,
+    )
+    return selalt40mcp(msg)
+
+
+def alt40fms(msg):
+    warnings.simplefilter("once", DeprecationWarning)
+    warnings.warn(
+        "alt40fms() has been renamed to selalt40fms(). It will be removed in the future.",
+        DeprecationWarning,
+    )
+    return selalt40mcp(msg)

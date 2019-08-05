@@ -14,7 +14,7 @@ def bds_info(BDS, m):
         info = [commb.cs20(m)]
 
     elif BDS == "BDS40":
-        info = (commb.alt40mcp(m), commb.alt40fms(m), commb.p40baro(m))
+        info = (commb.selalt40mcp(m), commb.selalt40fms(m), commb.p40baro(m))
 
     elif BDS == "BDS44":
         info = (commb.wind44(m), commb.temp44(m), commb.p44(m), commb.hum44(m))
