@@ -62,8 +62,8 @@ def is44(msg):
     if bin2int(d[0:4]) > 4:
         return False
 
-    vw = wind44(msg)
-    if vw is not None and vw[0] > 250:
+    vw, dw = wind44(msg)
+    if vw is not None and vw > 250:
         return False
 
     temp, temp2 = temp44(msg)
@@ -87,7 +87,7 @@ def wind44(msg):
 
     status = int(d[4])
     if not status:
-        return None
+        return None, None
 
     speed = bin2int(d[5:14])  # knots
     direction = bin2int(d[14:23]) * 180.0 / 256.0  # degree
