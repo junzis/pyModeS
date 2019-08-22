@@ -9,6 +9,7 @@ import curses
 from threading import Lock
 import pyModeS as pms
 from pyModeS.extra.tcpclient import BaseClient
+from pyModeS.extra.rtlreader import RtlReader
 from pyModeS.streamer.stream import Stream
 from pyModeS.streamer.screen import Screen
 
@@ -19,29 +20,67 @@ COMMB_MSG = []
 COMMB_TS = []
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--server', help='server address or IP', required=True)
-parser.add_argument('--port', help='raw data port', required=True)
-parser.add_argument('--rawtype', help='beast, avr or skysense', required=True)
-parser.add_argument('--latlon', help='receiver position', nargs=2, metavar=('LAT', 'LON'), required=True)
-parser.add_argument('--show-uncertainty', dest='uncertainty', help='display uncertaint values, default off', action='store_true', required=False, default=False)
-parser.add_argument('--dumpto', help='folder to dump decoded output', required=False, default=None)
+parser.add_argument(
+    "--source", help="rtlsdr or tcp", required=True, default="tcp"
+)
+parser.add_argument("--server", help="server address or IP", default=None)
+parser.add_argument("--port", help="raw data port", default=None)
+parser.add_argument("--rawtype", help="beast, avr or skysense", default=None)
+parser.add_argument(
+    "--latlon",
+    help="receiver position",
+    nargs=2,
+    metavar=("LAT", "LON"),
+    required=True,
+)
+parser.add_argument(
+    "--show-uncertainty",
+    dest="uncertainty",
+    help="display uncertaint values, default off",
+    action="store_true",
+    required=False,
+    default=False,
+)
+parser.add_argument(
+    "--dumpto",
+    help="folder to dump decoded output",
+    required=False,
+    default=None,
+)
 args = parser.parse_args()
 
+SOURCE = args.source
 SERVER = args.server
-PORT = int(args.port)
+PORT = args.port
 RAWTYPE = args.rawtype
 LAT0 = float(args.latlon[0])
 LON0 = float(args.latlon[1])
 UNCERTAINTY = args.uncertainty
 DUMPTO = args.dumpto
 
+if SOURCE == "rtlsdr":
+    pass
+elif SOURCE == "tcp":
+    if SERVER is None:
+        print("You must specify the server for TCP source.")
+        sys.exit(1)
+    if PORT is None:
+        print("You must specify the port for TCP source.")
+        sys.exit(1)
+    if RAWTYPE is None:
+        print("You must specify the rawtype for TCP source.")
+        sys.exit(1)
+else:
+    print("Source must be rtlsdr or tcp.")
+    sys.exit(1)
+
 if DUMPTO is not None:
     # append to current folder except root is given
-    if DUMPTO[0] != '/':
-        DUMPTO = os.getcwd() + '/' + DUMPTO
+    if DUMPTO[0] != "/":
+        DUMPTO = os.getcwd() + "/" + DUMPTO
 
     if not os.path.isdir(DUMPTO):
-        print('Error: dump folder (%s) does not exist' % DUMPTO)
+        print("Error: dump folder (%s) does not exist" % DUMPTO)
         sys.exit(1)
 
 
@@ -56,7 +95,7 @@ class ModesClient(BaseClient):
         local_buffer_ehs_ts = []
 
         for msg, t in messages:
-            if len(msg) < 28:           # only process long messages
+            if len(msg) < 28:  # only process long messages
                 continue
 
             df = pms.df(msg)
@@ -70,7 +109,6 @@ class ModesClient(BaseClient):
             else:
                 continue
 
-
         LOCK.acquire()
         ADSB_MSG.extend(local_buffer_adsb_msg)
         ADSB_TS.extend(local_buffer_adsb_ts)
@@ -79,12 +117,55 @@ class ModesClient(BaseClient):
         LOCK.release()
 
 
-# redirect all stdout to null, avoiding messing up with the screen
-sys.stdout = open(os.devnull, 'w')
+class ModesRtlReader(RtlReader):
+    """docstring for ModesRtlReader."""
 
-client = ModesClient(host=SERVER, port=PORT, rawtype=RAWTYPE)
-client.daemon = True
-client.start()
+    def __init__(self):
+        super(ModesRtlReader, self).__init__()
+
+    def handle_messages(self, messages):
+        local_buffer_adsb_msg = []
+        local_buffer_adsb_ts = []
+        local_buffer_ehs_msg = []
+        local_buffer_ehs_ts = []
+
+        for msg, t in messages:
+            if len(msg) < 28:  # only process long messages
+                continue
+
+            df = pms.df(msg)
+
+            if df == 17 or df == 18:
+                local_buffer_adsb_msg.append(msg)
+                local_buffer_adsb_ts.append(t)
+            elif df == 20 or df == 21:
+                local_buffer_ehs_msg.append(msg)
+                local_buffer_ehs_ts.append(t)
+            else:
+                continue
+
+        LOCK.acquire()
+        ADSB_MSG.extend(local_buffer_adsb_msg)
+        ADSB_TS.extend(local_buffer_adsb_ts)
+        COMMB_MSG.extend(local_buffer_ehs_msg)
+        COMMB_TS.extend(local_buffer_ehs_ts)
+        # print(len(ADSB_MSG))
+        # print(len(COMMB_MSG))
+        LOCK.release()
+
+
+# redirect all stdout to null, avoiding messing up with the screen
+sys.stdout = open(os.devnull, "w")
+
+if SOURCE == "tcp":
+    client = ModesClient(host=SERVER, port=PORT, rawtype=RAWTYPE)
+    client.daemon = True
+    client.start()
+elif SOURCE == "rtlsdr":
+    rtl = ModesRtlReader()
+    # rtl.debug = True
+    rtl.daemon = True
+    rtl.start()
 
 stream = Stream(lat0=LAT0, lon0=LON0, dumpto=DUMPTO)
 
@@ -94,7 +175,7 @@ try:
     screen.start()
 
     while True:
-        if len(ADSB_MSG) > 200:
+        if len(ADSB_MSG) > 1:
             LOCK.acquire()
             stream.process_raw(ADSB_TS, ADSB_MSG, COMMB_TS, COMMB_MSG)
             ADSB_MSG = []
@@ -107,7 +188,7 @@ try:
         try:
             screen.update_data(acs)
             screen.update()
-            time.sleep(0.02)
+            time.sleep(1)
         except KeyboardInterrupt:
             raise
         except:

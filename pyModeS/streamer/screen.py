@@ -6,37 +6,38 @@ import time
 from threading import Thread
 
 COLUMNS = [
-    ('call', 10),
-    ('lat', 10),
-    ('lon', 10),
-    ('alt', 7),
-    ('gs', 5),
-    ('tas', 5),
-    ('ias', 5),
-    ('mach', 7),
-    ('roc', 7),
-    ('trk', 10),
-    ('hdg', 10),
-    ('live', 6),
+    ("call", 10),
+    ("lat", 10),
+    ("lon", 10),
+    ("alt", 7),
+    ("gs", 5),
+    ("tas", 5),
+    ("ias", 5),
+    ("mach", 7),
+    ("roc", 7),
+    ("trk", 10),
+    ("hdg", 10),
+    ("live", 6),
 ]
 
 UNCERTAINTY_COLUMNS = [
-    ('|', 5),
-    ('ver', 4),
-    ('HPL', 5),
-    ('RCu', 5),
-    ('RCv', 5),
-    ('HVE', 5),
-    ('VVE', 5),
-    ('Rc', 4),
-    ('VPL', 5),
-    ('EPU', 5),
-    ('VEPU', 6),
-    ('HFOMr', 7),
-    ('VFOMr', 7),
-    ('PE_RCu', 8),
-    ('PE_VPL', 8),
+    ("|", 5),
+    ("ver", 4),
+    ("HPL", 5),
+    ("RCu", 5),
+    ("RCv", 5),
+    ("HVE", 5),
+    ("VVE", 5),
+    ("Rc", 4),
+    ("VPL", 5),
+    ("EPU", 5),
+    ("VEPU", 6),
+    ("HFOMr", 7),
+    ("VFOMr", 7),
+    ("PE_RCu", 8),
+    ("PE_VPL", 8),
 ]
+
 
 class Screen(Thread):
     def __init__(self, uncertainty=False):
@@ -55,7 +56,6 @@ class Screen(Thread):
         if uncertainty:
             self.columns.extend(UNCERTAINTY_COLUMNS)
 
-
     def reset_cursor_pos(self):
         self.screen.move(self.y, self.x)
 
@@ -64,7 +64,12 @@ class Screen(Thread):
 
     def draw_frame(self):
         self.screen.border(0)
-        self.screen.addstr(0, 2, "Online aircraft [%d] ('Ctrl+C' to exit, 'Enter' to lock one)" % len(self.acs))
+        self.screen.addstr(
+            0,
+            2,
+            "Online aircraft [%d] ('Ctrl+C' to exit, 'Enter' to lock one)"
+            % len(self.acs),
+        )
 
     def update(self):
         if len(self.acs) == 0:
@@ -81,21 +86,20 @@ class Screen(Thread):
 
         row = 1
 
-        header = '  icao'
+        header = "  icao"
         for c, cw in self.columns:
-            header += (cw-len(c))*' ' + c
+            header += (cw - len(c)) * " " + c
 
         # fill end with spaces
-        header += (self.scr_w - 2 - len(header)) * ' '
+        header += (self.scr_w - 2 - len(header)) * " "
 
         if len(header) > self.scr_w - 2:
-            header = header[:self.scr_w-3] + '>'
-
+            header = header[: self.scr_w - 3] + ">"
 
         self.screen.addstr(row, 1, header)
 
-        row +=1
-        self.screen.addstr(row, 1, '-'*(self.scr_w-2))
+        row += 1
+        self.screen.addstr(row, 1, "-" * (self.scr_w - 2))
 
         icaos = np.array(list(self.acs.keys()))
         icaos = np.sort(icaos)
@@ -105,10 +109,10 @@ class Screen(Thread):
             idx = row + self.offset - 3
 
             if idx > len(icaos) - 1:
-                line = ' '*(self.scr_w-2)
+                line = " " * (self.scr_w - 2)
 
             else:
-                line = ''
+                line = ""
 
                 icao = icaos[idx]
                 ac = self.acs[icao]
@@ -116,22 +120,22 @@ class Screen(Thread):
                 line += icao
 
                 for c, cw in self.columns:
-                    if c=='|':
-                        val = '|'
-                    elif c=='live':
-                        val = str(int(time.time() - ac[c]))+'s'
+                    if c == "|":
+                        val = "|"
+                    elif c == "live":
+                        val = str(ac[c] - int(time.time())) + "s"
                     elif ac[c] is None:
-                        val = ''
+                        val = ""
                     else:
                         val = ac[c]
                     val_str = str(val)
-                    line += (cw-len(val_str))*' ' + val_str
+                    line += (cw - len(val_str)) * " " + val_str
 
                 # fill end with spaces
-                line += (self.scr_w - 2 - len(line)) * ' '
+                line += (self.scr_w - 2 - len(line)) * " "
 
                 if len(line) > self.scr_w - 2:
-                    line = line[:self.scr_w-3] + '>'
+                    line = line[: self.scr_w - 3] + ">"
 
             if (icao is not None) and (self.lock_icao == icao):
                 self.screen.addstr(row, 1, line, curses.A_STANDOUT)
@@ -140,11 +144,13 @@ class Screen(Thread):
             else:
                 self.screen.addstr(row, 1, line)
 
-        self.screen.addstr(self.scr_h-3, 1, '-'*(self.scr_w-2))
+        self.screen.addstr(self.scr_h - 3, 1, "-" * (self.scr_w - 2))
 
         total_page = len(icaos) // (self.scr_h - 4) + 1
         current_page = self.offset // (self.scr_h - 4) + 1
-        self.screen.addstr(self.scr_h-2, 1, '(%d / %d)' % (current_page, total_page))
+        self.screen.addstr(
+            self.scr_h - 2, 1, "(%d / %d)" % (current_page, total_page)
+        )
 
         self.reset_cursor_pos()
 
@@ -168,7 +174,7 @@ class Screen(Thread):
                     self.offset = offset_intent
                 else:
                     self.offset = 0
-            elif c == curses.KEY_DOWN :
+            elif c == curses.KEY_DOWN:
                 y_intent = self.y + 1
                 if y_intent < self.scr_h - 3:
                     self.y = y_intent
