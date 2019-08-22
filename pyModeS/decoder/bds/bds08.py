@@ -37,7 +37,8 @@ def category(msg):
         raise RuntimeError("%s: Not a identification message" % msg)
 
     msgbin = common.hex2bin(msg)
-    return common.bin2int(msgbin[5:8])
+    mebin = msgbin[32:87]
+    return common.bin2int(mebin[5:8])
 
 
 def callsign(msg):
