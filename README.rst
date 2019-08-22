@@ -289,7 +289,7 @@ Here is an example:
   #   - implement your handle_messages() methods
   class ADSBClient(BaseClient):
       def __init__(self, host, port, rawtype):
-          super(ModesClient, self).__init__(host, port, rawtype)
+          super(ADSBClient, self).__init__(host, port, rawtype)
 
       def handle_messages(self, messages):
           for msg, ts in messages:
