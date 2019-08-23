@@ -2,12 +2,13 @@ from pyModeS import adsb
 
 # === TEST ADS-B package ===
 
+
 def test_adsb_icao():
     assert adsb.icao("8D406B902015A678D4D220AA4BDA") == "406B90"
 
 
 def test_adsb_category():
-    assert adsb.category("8D406B902015A678D4D220AA4BDA") == 5
+    assert adsb.category("8D406B902015A678D4D220AA4BDA") == 0
 
 
 def test_adsb_callsign():
@@ -15,9 +16,12 @@ def test_adsb_callsign():
 
 
 def test_adsb_position():
-    pos = adsb.position("8D40058B58C901375147EFD09357",
-                        "8D40058B58C904A87F402D3B8C59",
-                        1446332400, 1446332405)
+    pos = adsb.position(
+        "8D40058B58C901375147EFD09357",
+        "8D40058B58C904A87F402D3B8C59",
+        1446332400,
+        1446332405,
+    )
     assert pos == (49.81755, 6.08442)
 
 
@@ -29,26 +33,34 @@ def test_adsb_position_with_ref():
 
 
 def test_adsb_airborne_position_with_ref():
-    pos = adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357",
-                                          49.0, 6.0)
+    pos = adsb.airborne_position_with_ref(
+        "8D40058B58C901375147EFD09357", 49.0, 6.0
+    )
     assert pos == (49.82410, 6.06785)
-    pos = adsb.airborne_position_with_ref("8D40058B58C904A87F402D3B8C59",
-                                          49.0, 6.0)
+    pos = adsb.airborne_position_with_ref(
+        "8D40058B58C904A87F402D3B8C59", 49.0, 6.0
+    )
     assert pos == (49.81755, 6.08442)
 
 
 def test_adsb_surface_position_with_ref():
-    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B000000",
-                                         -43.5, 172.5)
+    pos = adsb.surface_position_with_ref(
+        "8FC8200A3AB8F5F893096B000000", -43.5, 172.5
+    )
     assert pos == (-43.48564, 172.53942)
 
 
 def test_adsb_surface_position():
-    pos = adsb.surface_position("8CC8200A3AC8F009BCDEF2000000",
-                                "8FC8200A3AB8F5F893096B000000",
-                                0, 2,
-                                -43.496, 172.558)
+    pos = adsb.surface_position(
+        "8CC8200A3AC8F009BCDEF2000000",
+        "8FC8200A3AB8F5F893096B000000",
+        0,
+        2,
+        -43.496,
+        172.558,
+    )
     assert pos == (-43.48564, 172.53942)
+
 
 def test_adsb_alt():
     assert adsb.altitude("8D40058B58C901375147EFD09357") == 39000
@@ -58,10 +70,10 @@ def test_adsb_velocity():
     vgs = adsb.velocity("8D485020994409940838175B284F")
     vas = adsb.velocity("8DA05F219B06B6AF189400CBC33F")
     vgs_surface = adsb.velocity("8FC8200A3AB8F5F893096B000000")
-    assert vgs == (159, 182.88, -832, 'GS')
-    assert vas == (375, 243.98, -2304, 'TAS')
-    assert vgs_surface == (19.0, 42.2, 0 , 'GS')
-    assert adsb.altitude_diff('8D485020994409940838175B284F') == 550
+    assert vgs == (159, 182.88, -832, "GS")
+    assert vas == (375, 243.98, -2304, "TAS")
+    assert vgs_surface == (19.0, 42.2, 0, "GS")
+    assert adsb.altitude_diff("8D485020994409940838175B284F") == 550
 
 
 # def test_nic():

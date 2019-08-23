@@ -72,12 +72,14 @@ To install the latest version development from the GitHub:
   pip install git+https://github.com/junzis/pyModeS
 
 
-To install the stable version (2.0) from pip:
+To install the latest stable version from pip:
 
 ::
 
   pip install pyModeS
 
+
+The library requires several dependencies (``numpy``, ``pyzmq``, ``pyrtlsdr``), which will be installed automatically when you install pyModeS using ``pip``.
 
 
 View live traffic (modeslive)

@@ -1,10 +1,8 @@
-"""
-Stream beast raw data from a TCP server, convert to mode-s messages
-"""
+"""Stream beast raw data from a TCP server, convert to mode-s messages."""
+
 from __future__ import print_function, division
 import os
 import sys
-import socket
 import time
 import pyModeS as pms
 from threading import Thread
@@ -32,7 +30,7 @@ class BaseClient(Thread):
     def connect(self):
         self.socket = zmq.Context().socket(zmq.STREAM)
         self.socket.setsockopt(zmq.LINGER, 0)
-        self.socket.setsockopt(zmq.RCVTIMEO, 2000)
+        self.socket.setsockopt(zmq.RCVTIMEO, 10000)
         self.socket.connect("tcp://%s:%s" % (self.host, self.port))
 
     def read_raw_buffer(self):
