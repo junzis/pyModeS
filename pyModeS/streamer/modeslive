@@ -19,59 +19,68 @@ ADSB_TS = []
 COMMB_MSG = []
 COMMB_TS = []
 
+support_rawtypes = ["raw", "beast", "skysense"]
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--source", help="rtlsdr or tcp", required=True, default="tcp"
+    "--source",
+    help='Choose data source, "rtlsdr" or "net"',
+    required=True,
+    default="net",
 )
-parser.add_argument("--server", help="server address or IP", default=None)
-parser.add_argument("--port", help="raw data port", default=None)
-parser.add_argument("--rawtype", help="beast, avr or skysense", default=None)
+parser.add_argument(
+    "--connect",
+    help="Define server, port and data type. Supported data types are: %s"
+    % support_rawtypes,
+    nargs=3,
+    metavar=("SERVER", "PORT", "DATATYPE"),
+    default=None,
+    required=False,
+)
 parser.add_argument(
     "--latlon",
-    help="receiver position",
+    help="Receiver latitude and longitude, needed for the surface position, default none",
     nargs=2,
     metavar=("LAT", "LON"),
-    required=True,
+    default=None,
+    required=False,
 )
 parser.add_argument(
     "--show-uncertainty",
     dest="uncertainty",
-    help="display uncertaint values, default off",
+    help="Display uncertainty values, default off",
     action="store_true",
     required=False,
     default=False,
 )
 parser.add_argument(
     "--dumpto",
-    help="folder to dump decoded output",
+    help="Folder to dump decoded output, default none",
     required=False,
     default=None,
 )
 args = parser.parse_args()
 
 SOURCE = args.source
-SERVER = args.server
-PORT = args.port
-RAWTYPE = args.rawtype
-LAT0 = float(args.latlon[0])
-LON0 = float(args.latlon[1])
+LATLON = args.latlon
 UNCERTAINTY = args.uncertainty
 DUMPTO = args.dumpto
 
 if SOURCE == "rtlsdr":
     pass
-elif SOURCE == "tcp":
-    if SERVER is None:
-        print("You must specify the server for TCP source.")
-        sys.exit(1)
-    if PORT is None:
-        print("You must specify the port for TCP source.")
-        sys.exit(1)
-    if RAWTYPE is None:
-        print("You must specify the rawtype for TCP source.")
-        sys.exit(1)
+elif SOURCE == "net":
+    if args.connect is None:
+        print("Error: --connect argument must not be empty.")
+    else:
+        SERVER, PORT, DATATYPE = args.connect
+        if DATATYPE not in support_rawtypes:
+            print(
+                "Data type not supported, avaiable ones are %s"
+                % support_rawtypes
+            )
+
 else:
-    print("Source must be rtlsdr or tcp.")
+    print('Source must be "rtlsdr" or "net".')
     sys.exit(1)
 
 if DUMPTO is not None:
@@ -157,8 +166,8 @@ class ModesRtlReader(RtlReader):
 # redirect all stdout to null, avoiding messing up with the screen
 sys.stdout = open(os.devnull, "w")
 
-if SOURCE == "tcp":
-    client = ModesClient(host=SERVER, port=PORT, rawtype=RAWTYPE)
+if SOURCE == "net":
+    client = ModesClient(host=SERVER, port=PORT, rawtype=DATATYPE)
     client.daemon = True
     client.start()
 elif SOURCE == "rtlsdr":
@@ -167,7 +176,7 @@ elif SOURCE == "rtlsdr":
     rtl.daemon = True
     rtl.start()
 
-stream = Stream(lat0=LAT0, lon0=LON0, dumpto=DUMPTO)
+stream = Stream(latlon=LATLON, dumpto=DUMPTO)
 
 try:
     screen = Screen(uncertainty=UNCERTAINTY)

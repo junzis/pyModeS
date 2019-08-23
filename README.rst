@@ -1,9 +1,7 @@
 The Python ADS-B/Mode-S Decoder
 ===============================
 
-If you find this project useful for your research, please cite our work (bibtex format):
-
-::
+If you find this project useful for your research, please considering cite this tool as::
 
   @article{sun2019pymodes,
       author={J. {Sun} and H. {V\^u} and J. {Ellerbroek} and J. M. {Hoekstra}},
@@ -18,11 +16,11 @@ If you find this project useful for your research, please cite our work (bibtex 
 
 Introduction
 ---------------------
-PyModeS is a Python library designed to decode Mode-S (including ADS-B) message.
-Message with following Downlink Formats (DF) are supported:
+PyModeS is a Python library designed to decode Mode-S (including ADS-B) message. It can be imported to your python project or be used as a standalone tool to view and save live traffic data.
 
+Messages with following Downlink Formats (DF) are supported:
 
-**DF17 / DF18: Automatic Dependent Surveillance - Broadcast (ADS-B)**
+**DF17 / DF18: Automatic Dependent Surveillance-Broadcast (ADS-B)**
 
 - TC=1-4  / BDS 0,8: Aircraft identification and category
 - TC=5-8  / BDS 0,6: Surface position
@@ -53,13 +51,13 @@ Message with following Downlink Formats (DF) are supported:
 
 Resources
 -----------
-Checkout and contribute to this open-source project at:
+Check out and contribute to this open-source project at:
 https://github.com/junzis/pyModeS
 
 Detailed manual on Mode-S decoding is published at:
 https://mode-s.org/decode.
 
-API documentation of pyModeS is at:
+The API documentation of pyModeS is at:
 http://pymodes.readthedocs.io
 
 
@@ -67,7 +65,7 @@ http://pymodes.readthedocs.io
 Install
 -------
 
-To install latest version from the GitHub:
+To install the latest version development from the GitHub:
 
 ::
 
@@ -82,31 +80,43 @@ To install the stable version (2.0) from pip:
 
 
 
-Live view traffic (modeslive)
+View live traffic (modeslive)
 ----------------------------------------------------
-Supports **Mode-S Beast** and **AVR** raw stream
 
-::
+General usage::
 
-  modeslive --source tcp --server [server_address] --port [tcp_port] \
-    --rawtype [beast,avr,skysense] --latlon [lat] [lon]  --dumpto [folder]
+  $ modeslive [-h] --source SOURCE [--connect SERVER PORT DATAYPE]
+              [--latlon LAT LON] [--show-uncertainty] [--dumpto DUMPTO]
 
-  Arguments:
-    -h, --help           show this help message and exit
-    --source SOURCE      data source: rtlsdr or tcp
-    --server SERVER      server address or IP
-    --port PORT          raw data port
-    --rawtype RAWTYPE    TCP data format: beast, avr or skysense
-    --latlon LAT LON     receiver position
-    --show-uncertainty   display uncertaint values, default off
-    --dumpto             folder to dump decoded output
+  arguments:
+   -h, --help            show this help message and exit
+   --source SOURCE       Choose data source, "rtlsdr" or "net"
+   --connect SERVER PORT DATATYPE
+                         Define server, port and data type. Supported data
+                         types are: ['raw', 'beast', 'skysense']
+   --latlon LAT LON      Receiver latitude and longitude, needed for the surface
+                         position, default none
+   --show-uncertainty    Display uncertainty values, default off
+   --dumpto DUMPTO       Folder to dump decoded output, default none
 
 
-[experimental] If you have a RTL-SDR receiver, you can connect it directly to pyModeS:
+Live with RTL-SDR
+*******************
 
-::
+If you have an RTL-SDR receiver plugged to the computer, you can connect it with ``rtlsdr`` source switch, shown as follows::
 
-  $ modeslive --source rtlsdr --latlon [lat] [lon]
+  $ modeslive --source rtlsdr
+
+
+Live with network data
+***************************
+
+If you want to connect to a TCP server that broadcast raw data. use can use ``net`` source switch, for example::
+
+  $ modeslive --source net --connect localhost 30002 avr
+  $ modeslive --source net --connect 127.0.0.1 30005 beast
+
+
 
 Example screenshot:
 
@@ -166,11 +176,7 @@ Core functions for ADS-B decoding
   pms.adsb.airborne_velocity(msg)
 
 
-Note: When you have a fix position of the aircraft, it is convenient to
-use `position_with_ref()` method to decode with only one position message
-(either odd or even). This works with both airborne and surface position
-messages. But the reference position shall be with in 180NM (airborne)
-or 45NM (surface) of the true position.
+Note: When you have a fix position of the aircraft, it is convenient to use `position_with_ref()` method to decode with only one position message (either odd or even). This works with both airborne and surface position messages. But the reference position shall be within 180NM (airborne) or 45NM (surface) of the true position.
 
 
 Decode altitude replies in DF4 / DF20
@@ -277,9 +283,7 @@ Meteorological hazard air report (MHR) [Experimental]
 
 Customize the streaming module
 ******************************
-The TCP client module from pyModeS can be re-used to stream and process Mode-S
-data as your like. You need to re-implement the ``handle_messages()`` function from
-the ``BaseClient`` class to write your own logic to handle the messages.
+The TCP client module from pyModeS can be re-used to stream and process Mode-S data as you like. You need to re-implement the ``handle_messages()`` function from the ``BaseClient`` class to write your own logic to handle the messages.
 
 Here is an example:
 
@@ -319,7 +323,7 @@ Here is an example:
 
 Unit test
 ---------
-To perform unit tests. First install ``tox`` through pip, Then, run the following commands:
+To perform unit tests. First, install ``tox`` through pip. Then, run the following commands:
 
 .. code:: bash
 

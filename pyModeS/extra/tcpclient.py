@@ -18,15 +18,15 @@ else:
 
 
 class BaseClient(Thread):
-    def __init__(self, host, port, rawtype):
+    def __init__(self, host, port, datatype):
         Thread.__init__(self)
         self.host = host
         self.port = port
         self.buffer = []
         self.socket = None
-        self.rawtype = rawtype
-        if self.rawtype not in ["avr", "beast", "skysense"]:
-            print("rawtype must be either avr, beast or skysense")
+        self.datatype = datatype
+        if self.datatype not in ["raw", "beast", "skysense"]:
+            print("datatype must be either raw, beast or skysense")
             os._exit(1)
 
     def connect(self):
@@ -35,16 +35,18 @@ class BaseClient(Thread):
         self.socket.setsockopt(zmq.RCVTIMEO, 2000)
         self.socket.connect("tcp://%s:%s" % (self.host, self.port))
 
-    def read_avr_buffer(self):
-        # -- testing --
-        # for b in self.buffer:
-        #     print(chr(b), b)
+    def read_raw_buffer(self):
+        """ Read raw ADS-B data type.
 
-        # Append message with 0-9,A-F,a-f, until stop sign
-
+        String strats with "*" and ends with ";". For example:
+            *5d484ba898f8c6;
+            *8d400cd5990d7e9a10043e5e6da0;
+            *a0001498be800030aa0000c7a75f;
+        """
         messages = []
 
         msg_stop = False
+        self.current_msg = ""
         for b in self.buffer:
             if b == 59:
                 msg_stop = True
@@ -54,7 +56,9 @@ class BaseClient(Thread):
                 msg_stop = False
                 self.current_msg = ""
 
-            if (not msg_stop) and (48 <= b <= 57 or 65 <= b <= 70 or 97 <= b <= 102):
+            if (not msg_stop) and (
+                48 <= b <= 57 or 65 <= b <= 70 or 97 <= b <= 102
+            ):
                 self.current_msg = self.current_msg + chr(b)
 
         self.buffer = []
@@ -62,7 +66,8 @@ class BaseClient(Thread):
         return messages
 
     def read_beast_buffer(self):
-        """
+        """Handle mode-s beast data type.
+
         <esc> "1" : 6 byte MLAT timestamp, 1 byte signal level,
             2 byte Mode-AC
         <esc> "2" : 6 byte MLAT timestamp, 1 byte signal level,
@@ -77,7 +82,6 @@ class BaseClient(Thread):
         timestamp:
         wiki.modesbeast.com/Radarcape:Firmware_Versions#The_GPS_timestamp
         """
-
         messages_mlat = []
         msg = []
         i = 0
@@ -224,7 +228,11 @@ class BaseClient(Thread):
                 msg = "".join("%02X" % j for j in payload)
                 i += 14  # Both message types use 14 bytes
                 tsbin = self.buffer[i : i + 6]
-                sec = ((tsbin[0] & 0x7F) << 10) | (tsbin[1] << 2) | (tsbin[2] >> 6)
+                sec = (
+                    ((tsbin[0] & 0x7F) << 10)
+                    | (tsbin[1] << 2)
+                    | (tsbin[2] >> 6)
+                )
                 nano = (
                     ((tsbin[2] & 0x3F) << 24)
                     | (tsbin[3] << 16)
@@ -264,11 +272,11 @@ class BaseClient(Thread):
                 #     continue
                 # -- Removed!! Cause delay in low data rate scenario --
 
-                if self.rawtype == "beast":
+                if self.datatype == "beast":
                     messages = self.read_beast_buffer()
-                elif self.rawtype == "avr":
-                    messages = self.read_avr_buffer()
-                elif self.rawtype == "skysense":
+                elif self.datatype == "raw":
+                    messages = self.read_raw_buffer()
+                elif self.datatype == "skysense":
                     messages = self.read_skysense_buffer()
 
                 if not messages:
@@ -299,7 +307,7 @@ if __name__ == "__main__":
     # for testing purpose only
     host = sys.argv[1]
     port = int(sys.argv[2])
-    rawtype = sys.argv[3]
-    client = BaseClient(host=host, port=port, rawtype=rawtype)
+    datatype = sys.argv[3]
+    client = BaseClient(host=host, port=port, datatype=datatype)
     client.daemon = True
     client.run()

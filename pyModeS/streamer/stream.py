@@ -7,12 +7,16 @@ import pyModeS as pms
 
 
 class Stream:
-    def __init__(self, lat0, lon0, dumpto=None):
+    def __init__(self, latlon=None, dumpto=None):
 
         self.acs = dict()
 
-        self.lat0 = lat0
-        self.lon0 = lon0
+        if latlon is not None:
+            self.lat0 = float(latlon[0])
+            self.lon0 = float(latlon[1])
+        else:
+            self.lat0 = None
+            self.lon0 = None
 
         self.t = 0
         self.cache_timeout = 60  # seconds
