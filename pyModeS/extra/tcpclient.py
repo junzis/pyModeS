@@ -1,6 +1,6 @@
-'''
+"""
 Stream beast raw data from a TCP server, convert to mode-s messages
-'''
+"""
 from __future__ import print_function, division
 import os
 import sys
@@ -9,47 +9,44 @@ import time
 import pyModeS as pms
 from threading import Thread
 import traceback
+import zmq
 
-if (sys.version_info > (3, 0)):
+if sys.version_info > (3, 0):
     PY_VERSION = 3
 else:
     PY_VERSION = 2
 
+
 class BaseClient(Thread):
-    def __init__(self, host, port, rawtype):
+    def __init__(self, host, port, datatype):
         Thread.__init__(self)
         self.host = host
         self.port = port
         self.buffer = []
-        self.rawtype = rawtype
-        if self.rawtype not in ['avr', 'beast', 'skysense']:
-            print("rawtype must be either avr, beast or skysense")
+        self.socket = None
+        self.datatype = datatype
+        if self.datatype not in ["raw", "beast", "skysense"]:
+            print("datatype must be either raw, beast or skysense")
             os._exit(1)
 
     def connect(self):
-        while True:
-            try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(10)    # 10 second timeout
-                s.connect((self.host, self.port))
-                print("Server connected - %s:%s" % (self.host, self.port))
-                print("collecting ADS-B messages...")
-                return s
-            except socket.error as err:
-                print("Socket connection error: %s. reconnecting..." % err)
-                time.sleep(3)
+        self.socket = zmq.Context().socket(zmq.STREAM)
+        self.socket.setsockopt(zmq.LINGER, 0)
+        self.socket.setsockopt(zmq.RCVTIMEO, 2000)
+        self.socket.connect("tcp://%s:%s" % (self.host, self.port))
 
+    def read_raw_buffer(self):
+        """ Read raw ADS-B data type.
 
-    def read_avr_buffer(self):
-        # -- testing --
-        # for b in self.buffer:
-        #     print(chr(b), b)
-
-        # Append message with 0-9,A-F,a-f, until stop sign
-
+        String strats with "*" and ends with ";". For example:
+            *5d484ba898f8c6;
+            *8d400cd5990d7e9a10043e5e6da0;
+            *a0001498be800030aa0000c7a75f;
+        """
         messages = []
 
         msg_stop = False
+        self.current_msg = ""
         for b in self.buffer:
             if b == 59:
                 msg_stop = True
@@ -57,9 +54,11 @@ class BaseClient(Thread):
                 messages.append([self.current_msg, ts])
             if b == 42:
                 msg_stop = False
-                self.current_msg = ''
+                self.current_msg = ""
 
-            if (not msg_stop) and (48<=b<=57 or 65<=b<=70 or 97<=b<=102):
+            if (not msg_stop) and (
+                48 <= b <= 57 or 65 <= b <= 70 or 97 <= b <= 102
+            ):
                 self.current_msg = self.current_msg + chr(b)
 
         self.buffer = []
@@ -67,7 +66,8 @@ class BaseClient(Thread):
         return messages
 
     def read_beast_buffer(self):
-        '''
+        """Handle mode-s beast data type.
+
         <esc> "1" : 6 byte MLAT timestamp, 1 byte signal level,
             2 byte Mode-AC
         <esc> "2" : 6 byte MLAT timestamp, 1 byte signal level,
@@ -81,8 +81,7 @@ class BaseClient(Thread):
 
         timestamp:
         wiki.modesbeast.com/Radarcape:Firmware_Versions#The_GPS_timestamp
-        '''
-
+        """
         messages_mlat = []
         msg = []
         i = 0
@@ -91,16 +90,16 @@ class BaseClient(Thread):
         # then, reset the self.buffer with the remainder
 
         while i < len(self.buffer):
-            if (self.buffer[i:i+2] == [0x1a, 0x1a]):
-                msg.append(0x1a)
+            if self.buffer[i : i + 2] == [0x1A, 0x1A]:
+                msg.append(0x1A)
                 i += 1
-            elif (i == len(self.buffer) - 1) and (self.buffer[i] == 0x1a):
+            elif (i == len(self.buffer) - 1) and (self.buffer[i] == 0x1A):
                 # special case where the last bit is 0x1a
-                msg.append(0x1a)
-            elif self.buffer[i] == 0x1a:
+                msg.append(0x1A)
+            elif self.buffer[i] == 0x1A:
                 if i == len(self.buffer) - 1:
                     # special case where the last bit is 0x1a
-                    msg.append(0x1a)
+                    msg.append(0x1A)
                 elif len(msg) > 0:
                     messages_mlat.append(msg)
                     msg = []
@@ -112,12 +111,12 @@ class BaseClient(Thread):
         if len(msg) > 0:
             reminder = []
             for i, m in enumerate(msg):
-                if (m == 0x1a) and (i < len(msg)-1):
+                if (m == 0x1A) and (i < len(msg) - 1):
                     # rewind 0x1a, except when it is at the last bit
                     reminder.extend([m, m])
                 else:
                     reminder.append(m)
-            self.buffer = [0x1a] + msg
+            self.buffer = [0x1A] + msg
         else:
             self.buffer = []
 
@@ -131,10 +130,10 @@ class BaseClient(Thread):
 
             if msgtype == 0x32:
                 # Mode-S Short Message, 7 byte, 14-len hexstr
-                msg = ''.join('%02X' % i for i in mm[8:15])
+                msg = "".join("%02X" % i for i in mm[8:15])
             elif msgtype == 0x33:
                 # Mode-S Long Message, 14 byte, 28-len hexstr
-                msg = ''.join('%02X' % i for i in mm[8:22])
+                msg = "".join("%02X" % i for i in mm[8:22])
             else:
                 # Other message tupe
                 continue
@@ -215,25 +214,37 @@ class BaseClient(Thread):
         messages = []
         while len(self.buffer) > SS_MSGLENGTH:
             i = 0
-            if self.buffer[i] == SS_STARTCHAR and self.buffer[i+SS_MSGLENGTH] == SS_STARTCHAR:
+            if (
+                self.buffer[i] == SS_STARTCHAR
+                and self.buffer[i + SS_MSGLENGTH] == SS_STARTCHAR
+            ):
                 i += 1
-                if (self.buffer[i]>>7):
-                    #Long message
-                    payload = self.buffer[i:i+14]
+                if self.buffer[i] >> 7:
+                    # Long message
+                    payload = self.buffer[i : i + 14]
                 else:
-                    #Short message
-                    payload = self.buffer[i:i+7]
-                msg = ''.join('%02X' % j for j in payload)
-                i += 14 #Both message types use 14 bytes
-                tsbin = self.buffer[i:i+6]
-                sec   = ( (tsbin[0] & 0x7f) << 10) | (tsbin[1] << 2 ) | (tsbin[2] >> 6)
-                nano  = ( (tsbin[2] & 0x3f) << 24) | (tsbin[3] << 16) | (tsbin[4] << 8) | tsbin[5]
-                ts = sec + nano*1.0e-9
+                    # Short message
+                    payload = self.buffer[i : i + 7]
+                msg = "".join("%02X" % j for j in payload)
+                i += 14  # Both message types use 14 bytes
+                tsbin = self.buffer[i : i + 6]
+                sec = (
+                    ((tsbin[0] & 0x7F) << 10)
+                    | (tsbin[1] << 2)
+                    | (tsbin[2] >> 6)
+                )
+                nano = (
+                    ((tsbin[2] & 0x3F) << 24)
+                    | (tsbin[3] << 16)
+                    | (tsbin[4] << 8)
+                    | tsbin[5]
+                )
+                ts = sec + nano * 1.0e-9
                 i += 6
-                #Signal and noise level - Don't care for now
+                # Signal and noise level - Don't care for now
                 i += 3
                 self.buffer = self.buffer[SS_MSGLENGTH:]
-                messages.append( [msg,ts] )
+                messages.append([msg, ts])
             else:
                 self.buffer = self.buffer[1:]
         return messages
@@ -244,11 +255,11 @@ class BaseClient(Thread):
             print("%15.9f %s" % (t, msg))
 
     def run(self):
-        sock = self.connect()
+        self.connect()
 
         while True:
             try:
-                received = sock.recv(1024)
+                received = [i for i in self.socket.recv(4096)]
 
                 if PY_VERSION == 2:
                     received = [ord(i) for i in received]
@@ -261,11 +272,11 @@ class BaseClient(Thread):
                 #     continue
                 # -- Removed!! Cause delay in low data rate scenario --
 
-                if self.rawtype == 'beast':
+                if self.datatype == "beast":
                     messages = self.read_beast_buffer()
-                elif self.rawtype == 'avr':
-                    messages = self.read_avr_buffer()
-                elif self.rawtype == 'skysense':
+                elif self.datatype == "raw":
+                    messages = self.read_raw_buffer()
+                elif self.datatype == "skysense":
                     messages = self.read_skysense_buffer()
 
                 if not messages:
@@ -279,8 +290,8 @@ class BaseClient(Thread):
                 # Provides the user an option to supply the environment
                 # variable PYMODES_DEBUG to halt the execution
                 # for debugging purposes
-                debug_intent = os.environ.get('PYMODES_DEBUG', 'false')
-                if debug_intent.lower() == 'true':
+                debug_intent = os.environ.get("PYMODES_DEBUG", "false")
+                if debug_intent.lower() == "true":
                     traceback.print_exc()
                     sys.exit()
                 else:
@@ -292,11 +303,11 @@ class BaseClient(Thread):
                     print("Unexpected Error:", e)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # for testing purpose only
     host = sys.argv[1]
     port = int(sys.argv[2])
-    rawtype = sys.argv[3]
-    client = BaseClient(host=host, port=port, rawtype=rawtype)
+    datatype = sys.argv[3]
+    client = BaseClient(host=host, port=port, datatype=datatype)
     client.daemon = True
     client.run()
