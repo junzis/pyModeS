@@ -1,9 +1,8 @@
 from __future__ import print_function, division
-import os
 import curses
 import numpy as np
 import time
-from threading import Thread
+import threading
 
 COLUMNS = [
     ("call", 10),
@@ -39,9 +38,9 @@ UNCERTAINTY_COLUMNS = [
 ]
 
 
-class Screen(Thread):
+class Screen(object):
     def __init__(self, uncertainty=False):
-        Thread.__init__(self)
+        super(Screen, self).__init__()
         self.screen = curses.initscr()
         curses.noecho()
         curses.mousemask(1)
@@ -59,7 +58,7 @@ class Screen(Thread):
     def reset_cursor_pos(self):
         self.screen.move(self.y, self.x)
 
-    def update_data(self, acs):
+    def update_ac(self, acs):
         self.acs = acs
 
     def draw_frame(self):
@@ -154,7 +153,7 @@ class Screen(Thread):
 
         self.reset_cursor_pos()
 
-    def run(self):
+    def kye_handling(self):
         self.draw_frame()
         self.scr_h, self.scr_w = self.screen.getmaxyx()
 
@@ -184,6 +183,27 @@ class Screen(Thread):
                     self.y = y_intent
             elif c == curses.KEY_ENTER or c == 10 or c == 13:
                 self.lock_icao = (self.screen.instr(self.y, 1, 6)).decode()
+            elif c == 27:  # escape key
+                self.lock_icao = None
             elif c == curses.KEY_F5:
                 self.screen.refresh()
                 self.draw_frame()
+
+    def run(self, ac_event, ac_queue):
+
+        key_thread = threading.Thread(target=self.kye_handling)
+        key_thread.start()
+
+        while True:
+            if ac_event.is_set():
+                while not ac_queue.empty():
+                    acs = ac_queue.get()
+                    self.update_ac(acs)
+
+                ac_event.clear()
+                try:
+                    self.update()
+                except:
+                    pass
+
+            time.sleep(0.001)

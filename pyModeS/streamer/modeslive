@@ -3,21 +3,18 @@
 from __future__ import print_function, division
 import os
 import sys
-import time
 import argparse
 import curses
-from threading import Lock
-import pyModeS as pms
-from pyModeS.extra.tcpclient import BaseClient
-from pyModeS.extra.rtlreader import RtlReader
+import signal
+import multiprocessing
 from pyModeS.streamer.stream import Stream
 from pyModeS.streamer.screen import Screen
+from pyModeS.streamer.source import NetSource, RtlSdrSource
 
-LOCK = Lock()
-ADSB_MSG = []
-ADSB_TS = []
-COMMB_MSG = []
-COMMB_TS = []
+
+# redirect all stdout to null, avoiding messing up with the screen
+sys.stdout = open(os.devnull, "w")
+
 
 support_rawtypes = ["raw", "beast", "skysense"]
 
@@ -93,118 +90,48 @@ if DUMPTO is not None:
         sys.exit(1)
 
 
-class ModesClient(BaseClient):
-    def __init__(self, host, port, rawtype):
-        super(ModesClient, self).__init__(host, port, rawtype)
+raw_event = multiprocessing.Event()
+ac_event = multiprocessing.Event()
 
-    def handle_messages(self, messages):
-        local_buffer_adsb_msg = []
-        local_buffer_adsb_ts = []
-        local_buffer_ehs_msg = []
-        local_buffer_ehs_ts = []
-
-        for msg, t in messages:
-            if len(msg) < 28:  # only process long messages
-                continue
-
-            df = pms.df(msg)
-
-            if df == 17 or df == 18:
-                local_buffer_adsb_msg.append(msg)
-                local_buffer_adsb_ts.append(t)
-            elif df == 20 or df == 21:
-                local_buffer_ehs_msg.append(msg)
-                local_buffer_ehs_ts.append(t)
-            else:
-                continue
-
-        LOCK.acquire()
-        ADSB_MSG.extend(local_buffer_adsb_msg)
-        ADSB_TS.extend(local_buffer_adsb_ts)
-        COMMB_MSG.extend(local_buffer_ehs_msg)
-        COMMB_TS.extend(local_buffer_ehs_ts)
-        LOCK.release()
-
-
-class ModesRtlReader(RtlReader):
-    """docstring for ModesRtlReader."""
-
-    def __init__(self):
-        super(ModesRtlReader, self).__init__()
-
-    def handle_messages(self, messages):
-        local_buffer_adsb_msg = []
-        local_buffer_adsb_ts = []
-        local_buffer_ehs_msg = []
-        local_buffer_ehs_ts = []
-
-        for msg, t in messages:
-            if len(msg) < 28:  # only process long messages
-                continue
-
-            df = pms.df(msg)
-
-            if df == 17 or df == 18:
-                local_buffer_adsb_msg.append(msg)
-                local_buffer_adsb_ts.append(t)
-            elif df == 20 or df == 21:
-                local_buffer_ehs_msg.append(msg)
-                local_buffer_ehs_ts.append(t)
-            else:
-                continue
-
-        LOCK.acquire()
-        ADSB_MSG.extend(local_buffer_adsb_msg)
-        ADSB_TS.extend(local_buffer_adsb_ts)
-        COMMB_MSG.extend(local_buffer_ehs_msg)
-        COMMB_TS.extend(local_buffer_ehs_ts)
-        # print(len(ADSB_MSG))
-        # print(len(COMMB_MSG))
-        LOCK.release()
-
-
-# redirect all stdout to null, avoiding messing up with the screen
-sys.stdout = open(os.devnull, "w")
+raw_queue = multiprocessing.Queue()
+aircraft_queue = multiprocessing.Queue()
 
 if SOURCE == "net":
-    client = ModesClient(host=SERVER, port=PORT, rawtype=DATATYPE)
-    client.daemon = True
-    client.start()
+    source = NetSource(host=SERVER, port=PORT, rawtype=DATATYPE)
 elif SOURCE == "rtlsdr":
-    rtl = ModesRtlReader()
-    # rtl.debug = True
-    rtl.daemon = True
-    rtl.start()
+    source = RtlSdrSource()
+
+
+recv_process = multiprocessing.Process(
+    target=source.run, args=(raw_event, raw_queue)
+)
+
 
 stream = Stream(latlon=LATLON, dumpto=DUMPTO)
+stream_process = multiprocessing.Process(
+    target=stream.run, args=(raw_event, ac_event, raw_queue, aircraft_queue)
+)
 
-try:
-    screen = Screen(uncertainty=UNCERTAINTY)
-    screen.daemon = True
-    screen.start()
+screen = Screen(uncertainty=UNCERTAINTY)
+screen_process = multiprocessing.Process(
+    target=screen.run, args=(ac_event, aircraft_queue)
+)
 
-    while True:
-        if len(ADSB_MSG) > 1:
-            LOCK.acquire()
-            stream.process_raw(ADSB_TS, ADSB_MSG, COMMB_TS, COMMB_MSG)
-            ADSB_MSG = []
-            ADSB_TS = []
-            COMMB_MSG = []
-            COMMB_TS = []
-            LOCK.release()
 
-        acs = stream.get_aircraft()
-        try:
-            screen.update_data(acs)
-            screen.update()
-            time.sleep(1)
-        except KeyboardInterrupt:
-            raise
-        except:
-            continue
-
-except KeyboardInterrupt:
-    sys.exit(0)
-
-finally:
+def closeall(signal, frame):
+    print("KeyboardInterrupt (ID: {}). Cleaning up...".format(signal))
     curses.endwin()
+    recv_process.terminate()
+    stream_process.terminate()
+    screen_process.terminate()
+    recv_process.join()
+    stream_process.join()
+    screen_process.join()
+    exit(0)
+
+
+signal.signal(signal.SIGINT, closeall)
+
+recv_process.start()
+stream_process.start()
+screen_process.start()

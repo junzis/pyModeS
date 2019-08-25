@@ -1,7 +1,6 @@
 import numpy as np
 import pyModeS as pms
 from rtlsdr import RtlSdr
-from threading import Thread
 import time
 
 modes_sample_rate = 2e6
@@ -16,16 +15,19 @@ th_amp = 0.2  # signal amplitude threshold for 0 and 1 bit
 th_amp_diff = 0.8  # signal amplitude threshold difference between 0 and 1 bit
 
 
-class RtlReader(Thread):
-    def __init__(self, debug=False):
+class RtlReader(object):
+    def __init__(self, **kwargs):
         super(RtlReader, self).__init__()
         self.signal_buffer = []
-        self.debug = debug
         self.sdr = RtlSdr()
         self.sdr.sample_rate = modes_sample_rate
         self.sdr.center_freq = modes_frequency
         self.sdr.gain = "auto"
         # sdr.freq_correction = 75
+
+        self.debug = kwargs.get("debug", False)
+        self.raw_event = None
+        self.raw_queue = None
 
     def _process_buffer(self):
         messages = []
@@ -127,7 +129,7 @@ class RtlReader(Thread):
 
         if len(self.signal_buffer) >= buffer_size:
             messages = self._process_buffer()
-            self.handle_messages(messages)
+            self.handle_messages(messages, self.raw_event, self.raw_queue)
 
     def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
@@ -138,7 +140,9 @@ class RtlReader(Thread):
     def stop(self):
         self.sdr.cancel_read_async()
 
-    def run(self):
+    def run(self, raw_event=None, raw_queue=None):
+        self.raw_event = raw_event
+        self.raw_queue = raw_queue
         self.sdr.read_samples_async(self._read_callback, read_size)
 
         # count = 1

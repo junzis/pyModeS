@@ -26,7 +26,7 @@ class Stream:
         else:
             self.dumpto = None
 
-    def process_raw(self, adsb_ts, adsb_msgs, commb_ts, commb_msgs, tnow=None):
+    def process_raw(self, adsb_ts, adsb_msg, commb_ts, commb_msg, tnow=None):
         """process a chunk of adsb and commb messages recieved in the same
         time period.
         """
@@ -39,7 +39,7 @@ class Stream:
         output_buffer = []
 
         # process adsb message
-        for t, msg in zip(adsb_ts, adsb_msgs):
+        for t, msg in zip(adsb_ts, adsb_msg):
             icao = pms.icao(msg)
             tc = pms.adsb.typecode(msg)
 
@@ -192,7 +192,7 @@ class Stream:
                     ac["nic_a"], ac["nic_bc"] = pms.adsb.nic_a_c(msg)
 
         # process commb message
-        for t, msg in zip(commb_ts, commb_msgs):
+        for t, msg in zip(commb_ts, commb_msg):
             icao = pms.icao(msg)
 
             if icao not in self.acs:
@@ -266,3 +266,19 @@ class Stream:
         """all aircraft that are stored in memeory"""
         acs = self.acs
         return acs
+
+    def run(self, raw_event, ac_event, raw_queue, aircraft_queue):
+        while True:
+            if raw_event.is_set():
+                data = raw_queue.get()
+                self.process_raw(
+                    data["adsb_ts"],
+                    data["adsb_msg"],
+                    data["commb_ts"],
+                    data["commb_msg"],
+                )
+
+                aircraft_queue.put(self.get_aircraft())
+                ac_event.set()
+                raw_event.clear()
+            time.sleep(0.001)

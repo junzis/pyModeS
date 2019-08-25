@@ -1,0 +1,77 @@
+import pyModeS as pms
+from pyModeS.extra.tcpclient import TcpClient
+from pyModeS.extra.rtlreader import RtlReader
+
+
+class NetSource(TcpClient):
+    def __init__(self, host, port, rawtype):
+        super(NetSource, self).__init__(host, port, rawtype)
+        self.local_buffer_adsb_msg = []
+        self.local_buffer_adsb_ts = []
+        self.local_buffer_commb_msg = []
+        self.local_buffer_commb_ts = []
+
+    def handle_messages(self, messages, raw_event, raw_queue):
+
+        for msg, t in messages:
+            if len(msg) < 28:  # only process long messages
+                continue
+
+            df = pms.df(msg)
+
+            if df == 17 or df == 18:
+                self.local_buffer_adsb_msg.append(msg)
+                self.local_buffer_adsb_ts.append(t)
+            elif df == 20 or df == 21:
+                self.local_buffer_commb_msg.append(msg)
+                self.local_buffer_commb_ts.append(t)
+            else:
+                continue
+
+        if len(self.local_buffer_adsb_msg) > 1:
+            raw_queue.put(
+                {
+                    "adsb_ts": self.local_buffer_adsb_ts,
+                    "adsb_msg": self.local_buffer_adsb_msg,
+                    "commb_ts": self.local_buffer_commb_ts,
+                    "commb_msg": self.local_buffer_commb_msg,
+                }
+            )
+            raw_event.set()
+
+
+class RtlSdrSource(RtlReader):
+    def __init__(self):
+        super(RtlSdrSource, self).__init__()
+        self.local_buffer_adsb_msg = []
+        self.local_buffer_adsb_ts = []
+        self.local_buffer_commb_msg = []
+        self.local_buffer_commb_ts = []
+
+    def handle_messages(self, messages, raw_event, raw_queue):
+
+        for msg, t in messages:
+            if len(msg) < 28:  # only process long messages
+                continue
+
+            df = pms.df(msg)
+
+            if df == 17 or df == 18:
+                self.local_buffer_adsb_msg.append(msg)
+                self.local_buffer_adsb_ts.append(t)
+            elif df == 20 or df == 21:
+                self.local_buffer_commb_msg.append(msg)
+                self.local_buffer_commb_ts.append(t)
+            else:
+                continue
+
+        if len(self.local_buffer_adsb_msg) > 1:
+            raw_queue.put(
+                {
+                    "adsb_ts": self.local_buffer_adsb_ts,
+                    "adsb_msg": self.local_buffer_adsb_msg,
+                    "commb_ts": self.local_buffer_commb_ts,
+                    "commb_msg": self.local_buffer_commb_msg,
+                }
+            )
+            raw_event.set()

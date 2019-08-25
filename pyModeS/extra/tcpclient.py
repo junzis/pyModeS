@@ -5,7 +5,6 @@ import os
 import sys
 import time
 import pyModeS as pms
-from threading import Thread
 import traceback
 import zmq
 
@@ -15,9 +14,9 @@ else:
     PY_VERSION = 2
 
 
-class BaseClient(Thread):
+class TcpClient(object):
     def __init__(self, host, port, datatype):
-        Thread.__init__(self)
+        super(TcpClient, self).__init__()
         self.host = host
         self.port = port
         self.buffer = []
@@ -136,6 +135,9 @@ class BaseClient(Thread):
                 # Other message tupe
                 continue
 
+            if len(msg) not in [14, 28]:
+                continue
+
             df = pms.df(msg)
 
             # skip incomplete message
@@ -247,12 +249,12 @@ class BaseClient(Thread):
                 self.buffer = self.buffer[1:]
         return messages
 
-    def handle_messages(self, messages):
+    def handle_messages(self, messages, raw_event=None, raw_queue=None):
         """re-implement this method to handle the messages"""
         for msg, t in messages:
             print("%15.9f %s" % (t, msg))
 
-    def run(self):
+    def run(self, raw_event=None, raw_queue=None):
         self.connect()
 
         while True:
@@ -280,11 +282,10 @@ class BaseClient(Thread):
                 if not messages:
                     continue
                 else:
-                    self.handle_messages(messages)
+                    self.handle_messages(messages, raw_event, raw_queue)
 
                 time.sleep(0.001)
             except Exception as e:
-
                 # Provides the user an option to supply the environment
                 # variable PYMODES_DEBUG to halt the execution
                 # for debugging purposes
@@ -306,6 +307,5 @@ if __name__ == "__main__":
     host = sys.argv[1]
     port = int(sys.argv[2])
     datatype = sys.argv[3]
-    client = BaseClient(host=host, port=port, datatype=datatype)
-    client.daemon = True
+    client = TcpClient(host=host, port=port, datatype=datatype)
     client.run()
