@@ -11,7 +11,11 @@ class NetSource(TcpClient):
         self.local_buffer_commb_msg = []
         self.local_buffer_commb_ts = []
 
-    def handle_messages(self, messages, raw_event, raw_queue):
+    def handle_messages(self, messages):
+
+        if self.stop_flag.value is True:
+            self.stop()
+            return
 
         for msg, t in messages:
             if len(msg) < 28:  # only process long messages
@@ -29,7 +33,7 @@ class NetSource(TcpClient):
                 continue
 
         if len(self.local_buffer_adsb_msg) > 1:
-            raw_queue.put(
+            self.raw_pipe_in.send(
                 {
                     "adsb_ts": self.local_buffer_adsb_ts,
                     "adsb_msg": self.local_buffer_adsb_msg,
@@ -37,7 +41,6 @@ class NetSource(TcpClient):
                     "commb_msg": self.local_buffer_commb_msg,
                 }
             )
-            raw_event.set()
 
 
 class RtlSdrSource(RtlReader):
@@ -48,7 +51,11 @@ class RtlSdrSource(RtlReader):
         self.local_buffer_commb_msg = []
         self.local_buffer_commb_ts = []
 
-    def handle_messages(self, messages, raw_event, raw_queue):
+    def handle_messages(self, messages):
+
+        if self.stop_flag.value is True:
+            self.stop()
+            return
 
         for msg, t in messages:
             if len(msg) < 28:  # only process long messages
@@ -66,7 +73,7 @@ class RtlSdrSource(RtlReader):
                 continue
 
         if len(self.local_buffer_adsb_msg) > 1:
-            raw_queue.put(
+            self.raw_pipe_in.send(
                 {
                     "adsb_ts": self.local_buffer_adsb_ts,
                     "adsb_msg": self.local_buffer_adsb_msg,
@@ -74,4 +81,3 @@ class RtlSdrSource(RtlReader):
                     "commb_msg": self.local_buffer_commb_msg,
                 }
             )
-            raw_event.set()

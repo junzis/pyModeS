@@ -189,21 +189,24 @@ class Screen(object):
                 self.screen.refresh()
                 self.draw_frame()
 
-    def run(self, ac_event, ac_queue):
-
+    def run(self, ac_pipe_out):
+        local_buffer = []
         key_thread = threading.Thread(target=self.kye_handling)
         key_thread.start()
 
         while True:
-            if ac_event.is_set():
-                while not ac_queue.empty():
-                    acs = ac_queue.get()
-                    self.update_ac(acs)
+            while ac_pipe_out.poll():
+                acs = ac_pipe_out.recv()
+                local_buffer.append(acs)
 
-                ac_event.clear()
-                try:
-                    self.update()
-                except:
-                    pass
+            for acs in local_buffer:
+                self.update_ac(acs)
+
+            local_buffer = []
+
+            try:
+                self.update()
+            except:
+                pass
 
             time.sleep(0.001)

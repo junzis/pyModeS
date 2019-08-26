@@ -26,8 +26,8 @@ class RtlReader(object):
         # sdr.freq_correction = 75
 
         self.debug = kwargs.get("debug", False)
-        self.raw_event = None
-        self.raw_queue = None
+        self.raw_pipe_in = None
+        self.stop_flag = False
 
     def _process_buffer(self):
         messages = []
@@ -129,7 +129,7 @@ class RtlReader(object):
 
         if len(self.signal_buffer) >= buffer_size:
             messages = self._process_buffer()
-            self.handle_messages(messages, self.raw_event, self.raw_queue)
+            self.handle_messages(messages)
 
     def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
@@ -137,12 +137,12 @@ class RtlReader(object):
             # print("%15.9f %s" % (t, msg))
             pass
 
-    def stop(self):
+    def stop(self, *args, **kwargs):
         self.sdr.cancel_read_async()
 
-    def run(self, raw_event=None, raw_queue=None):
-        self.raw_event = raw_event
-        self.raw_queue = raw_queue
+    def run(self, raw_pipe_in=None, stop_flag=None):
+        self.raw_pipe_in = raw_pipe_in
+        self.stop_flag = stop_flag
         self.sdr.read_samples_async(self._read_callback, read_size)
 
         # count = 1
@@ -153,7 +153,10 @@ class RtlReader(object):
 
 
 if __name__ == "__main__":
+    import signal
+
     rtl = RtlReader()
+    signal.signal(signal.SIGINT, rtl.stop)
+
     rtl.debug = True
-    rtl.start()
-    rtl.join()
+    rtl.run()

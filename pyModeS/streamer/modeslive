@@ -7,7 +7,7 @@ import argparse
 import curses
 import signal
 import multiprocessing
-from pyModeS.streamer.stream import Stream
+from pyModeS.streamer.decode import Decode
 from pyModeS.streamer.screen import Screen
 from pyModeS.streamer.source import NetSource, RtlSdrSource
 
@@ -90,11 +90,14 @@ if DUMPTO is not None:
         sys.exit(1)
 
 
-raw_event = multiprocessing.Event()
-ac_event = multiprocessing.Event()
+# raw_event = multiprocessing.Event()
+# ac_event = multiprocessing.Event()
+# raw_queue = multiprocessing.Queue()
+# ac_queue = multiprocessing.Queue()
 
-raw_queue = multiprocessing.Queue()
-aircraft_queue = multiprocessing.Queue()
+raw_pipe_in, raw_pipe_out = multiprocessing.Pipe()
+ac_pipe_in, ac_pipe_out = multiprocessing.Pipe()
+stop_flag = multiprocessing.Value("b", False)
 
 if SOURCE == "net":
     source = NetSource(host=SERVER, port=PORT, rawtype=DATATYPE)
@@ -103,29 +106,30 @@ elif SOURCE == "rtlsdr":
 
 
 recv_process = multiprocessing.Process(
-    target=source.run, args=(raw_event, raw_queue)
+    target=source.run, args=(raw_pipe_in, stop_flag)
 )
 
 
-stream = Stream(latlon=LATLON, dumpto=DUMPTO)
-stream_process = multiprocessing.Process(
-    target=stream.run, args=(raw_event, ac_event, raw_queue, aircraft_queue)
+decode = Decode(latlon=LATLON, dumpto=DUMPTO)
+decode_process = multiprocessing.Process(
+    target=decode.run, args=(raw_pipe_out, ac_pipe_in)
 )
 
 screen = Screen(uncertainty=UNCERTAINTY)
 screen_process = multiprocessing.Process(
-    target=screen.run, args=(ac_event, aircraft_queue)
+    target=screen.run, args=(ac_pipe_out,)
 )
 
 
 def closeall(signal, frame):
     print("KeyboardInterrupt (ID: {}). Cleaning up...".format(signal))
+    stop_flag.value = True
     curses.endwin()
     recv_process.terminate()
-    stream_process.terminate()
+    decode_process.terminate()
     screen_process.terminate()
     recv_process.join()
-    stream_process.join()
+    decode_process.join()
     screen_process.join()
     exit(0)
 
@@ -133,5 +137,5 @@ def closeall(signal, frame):
 signal.signal(signal.SIGINT, closeall)
 
 recv_process.start()
-stream_process.start()
+decode_process.start()
 screen_process.start()

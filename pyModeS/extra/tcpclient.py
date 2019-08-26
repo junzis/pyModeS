@@ -26,11 +26,17 @@ class TcpClient(object):
             print("datatype must be either raw, beast or skysense")
             os._exit(1)
 
+        self.raw_pipe_in = None
+        self.stop_flag = False
+
     def connect(self):
         self.socket = zmq.Context().socket(zmq.STREAM)
         self.socket.setsockopt(zmq.LINGER, 0)
         self.socket.setsockopt(zmq.RCVTIMEO, 10000)
         self.socket.connect("tcp://%s:%s" % (self.host, self.port))
+
+    def stop(self):
+        self.socket.disconnect()
 
     def read_raw_buffer(self):
         """ Read raw ADS-B data type.
@@ -249,12 +255,14 @@ class TcpClient(object):
                 self.buffer = self.buffer[1:]
         return messages
 
-    def handle_messages(self, messages, raw_event=None, raw_queue=None):
+    def handle_messages(self, messages):
         """re-implement this method to handle the messages"""
         for msg, t in messages:
             print("%15.9f %s" % (t, msg))
 
-    def run(self, raw_event=None, raw_queue=None):
+    def run(self, raw_pipe_in=None, stop_flag=None):
+        self.raw_pipe_in = raw_pipe_in
+        self.stop_flag = stop_flag
         self.connect()
 
         while True:
@@ -282,9 +290,8 @@ class TcpClient(object):
                 if not messages:
                     continue
                 else:
-                    self.handle_messages(messages, raw_event, raw_queue)
+                    self.handle_messages(messages)
 
-                time.sleep(0.001)
             except Exception as e:
                 # Provides the user an option to supply the environment
                 # variable PYMODES_DEBUG to halt the execution
@@ -298,6 +305,7 @@ class TcpClient(object):
 
                 try:
                     sock = self.connect()
+                    time.sleep(1)
                 except Exception as e:
                     print("Unexpected Error:", e)
 

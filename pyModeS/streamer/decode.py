@@ -6,7 +6,7 @@ import csv
 import pyModeS as pms
 
 
-class Stream:
+class Decode:
     def __init__(self, latlon=None, dumpto=None):
 
         self.acs = dict()
@@ -267,18 +267,22 @@ class Stream:
         acs = self.acs
         return acs
 
-    def run(self, raw_event, ac_event, raw_queue, aircraft_queue):
+    def run(self, raw_pipe_out, ac_pipe_in):
+        local_buffer = []
         while True:
-            if raw_event.is_set():
-                data = raw_queue.get()
+            while raw_pipe_out.poll():
+                data = raw_pipe_out.recv()
+                local_buffer.append(data)
+
+            for data in local_buffer:
                 self.process_raw(
                     data["adsb_ts"],
                     data["adsb_msg"],
                     data["commb_ts"],
                     data["commb_msg"],
                 )
+            local_buffer = []
 
-                aircraft_queue.put(self.get_aircraft())
-                ac_event.set()
-                raw_event.clear()
+            acs = self.get_aircraft()
+            ac_pipe_in.send(acs)
             time.sleep(0.001)
