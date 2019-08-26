@@ -6,6 +6,9 @@ from pyModeS.extra.rtlreader import RtlReader
 class NetSource(TcpClient):
     def __init__(self, host, port, rawtype):
         super(NetSource, self).__init__(host, port, rawtype)
+        self.reset_local_buffer()
+
+    def reset_local_buffer(self):
         self.local_buffer_adsb_msg = []
         self.local_buffer_adsb_ts = []
         self.local_buffer_commb_msg = []
@@ -41,11 +44,15 @@ class NetSource(TcpClient):
                     "commb_msg": self.local_buffer_commb_msg,
                 }
             )
+            self.reset_local_buffer()
 
 
 class RtlSdrSource(RtlReader):
     def __init__(self):
         super(RtlSdrSource, self).__init__()
+        self.reset_local_buffer()
+
+    def reset_local_buffer(self):
         self.local_buffer_adsb_msg = []
         self.local_buffer_adsb_ts = []
         self.local_buffer_commb_msg = []
@@ -81,3 +88,4 @@ class RtlSdrSource(RtlReader):
                     "commb_msg": self.local_buffer_commb_msg,
                 }
             )
+            self.reset_local_buffer()
