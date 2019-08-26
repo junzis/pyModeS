@@ -115,7 +115,7 @@ Live with network data
 
 If you want to connect to a TCP server that broadcast raw data. use can use ``net`` source switch, for example::
 
-  $ modeslive --source net --connect localhost 30002 avr
+  $ modeslive --source net --connect localhost 30002 raw
   $ modeslive --source net --connect 127.0.0.1 30005 beast
 
 
@@ -285,41 +285,42 @@ Meteorological hazard air report (MHR) [Experimental]
 
 Customize the streaming module
 ******************************
-The TCP client module from pyModeS can be re-used to stream and process Mode-S data as you like. You need to re-implement the ``handle_messages()`` function from the ``BaseClient`` class to write your own logic to handle the messages.
+The TCP client module from pyModeS can be re-used to stream and process Mode-S data as you like. You need to re-implement the ``handle_messages()`` function from the ``TcpClient`` class to write your own logic to handle the messages.
 
 Here is an example:
 
 .. code:: python
 
-  from pyModeS.extra.tcpclient import BaseClient
+  import pyModeS as pms
+  from pyModeS.extra.tcpclient import TcpClient
 
-  # define your custom class by extending the BaseClient
+  # define your custom class by extending the TcpClient
   #   - implement your handle_messages() methods
-  class ADSBClient(BaseClient):
+  class ADSBClient(TcpClient):
       def __init__(self, host, port, rawtype):
           super(ADSBClient, self).__init__(host, port, rawtype)
 
       def handle_messages(self, messages):
           for msg, ts in messages:
-              if len(msg) < 28:           # wrong data length
+              if len(msg) != 28:  # wrong data length
                   continue
 
               df = pms.df(msg)
 
-              if df != 17:                # not ADSB
+              if df != 17:  # not ADSB
                   continue
 
-              if '1' in pms.crc(msg):     # CRC fail
+              if pms.crc(msg) !=0:  # CRC fail
                   continue
 
               icao = pms.adsb.icao(msg)
               tc = pms.adsb.typecode(msg)
 
               # TODO: write you magic code here
-              print ts, icao, tc, msg
+              print(ts, icao, tc, msg)
 
   # run new client, change the host, port, and rawtype if needed
-  client = ADSBClient(host='127.0.0.1', port=30334, rawtype='beast')
+  client = ADSBClient(host='127.0.0.1', port=30005, rawtype='beast')
   client.run()
 
 
