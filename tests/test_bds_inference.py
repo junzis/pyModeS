@@ -18,3 +18,18 @@ def test_bds_is50or60():
     assert bds.is50or60("A0001838201584F23468207CDFA5", 0, 0, 0) == None
     assert bds.is50or60("A0000000FFDA9517000464000000", 182, 237, 1250) == 'BDS50'
     assert bds.is50or60("A0000000919A5927E23444000000", 413, 54, 18700) == 'BDS60'
+
+
+def test_surface_position():
+    msg0 = "8FE48C033A9FA184B934E744C6FD"
+    msg1 = "8FE48C033A9FA68F7C3D39B1C2F0"
+
+    t0 = 1565608663102
+    t1 = 1565608666214
+
+    lat_ref = -23.4265448
+    lon_ref = -46.4816258
+
+    lat, lon = bds.bds06.surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref)
+
+    assert abs(lon_ref - lon) < 0.05
