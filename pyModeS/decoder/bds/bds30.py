@@ -21,6 +21,7 @@
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
+
 def is30(msg):
     """Check if a message is likely to be BDS code 2,0
 
@@ -36,11 +37,11 @@ def is30(msg):
 
     d = hex2bin(data(msg))
 
-    if d[0:8] != '00110000':
+    if d[0:8] != "00110000":
         return False
 
     # threat type 3 not assigned
-    if d[28:30] == '11':
+    if d[28:30] == "11":
         return False
 
     # reserved for ACAS III, in far future

@@ -12,4 +12,5 @@ from .extra import tcpclient
 # from .decoder import ehs        # depricated
 
 import os
+
 dirpath = os.path.dirname(os.path.realpath(__file__))

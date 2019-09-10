@@ -108,9 +108,7 @@ class Decode:
                 self.acs[icao][oe] = msg
                 self.acs[icao]["t" + str(oe)] = t
 
-                if ("tpos" in self.acs[icao]) and (
-                    t - self.acs[icao]["tpos"] < 180
-                ):
+                if ("tpos" in self.acs[icao]) and (t - self.acs[icao]["tpos"] < 180):
                     # use single message decoding
                     rlat = self.acs[icao]["lat"]
                     rlon = self.acs[icao]["lon"]
@@ -174,9 +172,7 @@ class Decode:
                     ac["HFOMr"], ac["VFOMr"] = pms.adsb.nac_v(msg)
 
             if tc == 29:
-                ac["PE_RCu"], ac["PE_VPL"], ac["base"] = pms.adsb.sil(
-                    msg, ac["ver"]
-                )
+                ac["PE_RCu"], ac["PE_VPL"], ac["base"] = pms.adsb.sil(msg, ac["ver"])
                 ac["EPU"], ac["VEPU"] = pms.adsb.nac_p(msg)
 
             if tc == 31:

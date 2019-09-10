@@ -85,16 +85,16 @@ def hdg53(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[0] == '0':
+    if d[0] == "0":
         return None
 
-    sign = int(d[1])    # 1 -> west
+    sign = int(d[1])  # 1 -> west
     value = bin2int(d[2:12])
 
     if sign:
         value = value - 1024
 
-    hdg = value * 90.0 / 512.0   # degree
+    hdg = value * 90.0 / 512.0  # degree
 
     # convert from [-180, 180] to [0, 360]
     if hdg < 0:
@@ -114,10 +114,10 @@ def ias53(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[12] == '0':
+    if d[12] == "0":
         return None
 
-    ias = bin2int(d[13:23])    # knots
+    ias = bin2int(d[13:23])  # knots
     return ias
 
 
@@ -132,7 +132,7 @@ def mach53(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[23] == '0':
+    if d[23] == "0":
         return None
 
     mach = bin2int(d[24:33]) * 0.008
@@ -150,11 +150,12 @@ def tas53(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[33] == '0':
+    if d[33] == "0":
         return None
 
-    tas = bin2int(d[34:46]) * 0.5   # kts
+    tas = bin2int(d[34:46]) * 0.5  # kts
     return round(tas, 1)
+
 
 def vr53(msg):
     """Vertical rate
@@ -167,16 +168,16 @@ def vr53(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[46] == '0':
+    if d[46] == "0":
         return None
 
-    sign = int(d[47])    # 1 -> negative value, two's complement
+    sign = int(d[47])  # 1 -> negative value, two's complement
     value = bin2int(d[48:56])
 
     if value == 0 or value == 255:  # all zeros or all ones
         return 0
 
     value = value - 256 if sign else value
-    roc = value * 64     # feet/min
+    roc = value * 64  # feet/min
 
     return roc

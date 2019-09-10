@@ -61,12 +61,7 @@ def crc(msg, encode=False):
 
     """
     # the CRC generator
-    G = [
-        int("11111111", 2),
-        int("11111010", 2),
-        int("00000100", 2),
-        int("10000000", 2),
-    ]
+    G = [int("11111111", 2), int("11111010", 2), int("00000100", 2), int("10000000", 2)]
 
     if encode:
         msg = msg[:-6] + "000000"
@@ -101,33 +96,7 @@ def crc_legacy(msg, encode=False):
     """Mode-S Cyclic Redundancy Check. (Legacy code, 2x slow)."""
     # the polynominal generattor code for CRC [1111111111111010000001001]
     generator = np.array(
-        [
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            1,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1,
-            0,
-            0,
-            1,
-        ]
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1]
     )
     ng = len(generator)
 

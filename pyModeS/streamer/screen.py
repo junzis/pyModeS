@@ -147,9 +147,7 @@ class Screen(object):
 
         total_page = len(icaos) // (self.scr_h - 4) + 1
         current_page = self.offset // (self.scr_h - 4) + 1
-        self.screen.addstr(
-            self.scr_h - 2, 1, "(%d / %d)" % (current_page, total_page)
-        )
+        self.screen.addstr(self.scr_h - 2, 1, "(%d / %d)" % (current_page, total_page))
 
         self.reset_cursor_pos()
 

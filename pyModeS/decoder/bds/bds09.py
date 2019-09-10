@@ -57,32 +57,32 @@ def airborne_velocity(msg, rtn_sources=False):
         return None
 
     if subtype in (1, 2):
-        v_ew_sign = -1 if mb[13]=='1' else 1
-        v_ew = common.bin2int(mb[14:24]) - 1       # east-west velocity
-        if subtype == 2: # Supersonic
+        v_ew_sign = -1 if mb[13] == "1" else 1
+        v_ew = common.bin2int(mb[14:24]) - 1  # east-west velocity
+        if subtype == 2:  # Supersonic
             v_ew *= 4
 
-        v_ns_sign = -1 if mb[24]=='1' else 1
-        v_ns = common.bin2int(mb[25:35]) - 1       # north-south velocity
-        if subtype == 2: # Supersonic
+        v_ns_sign = -1 if mb[24] == "1" else 1
+        v_ns = common.bin2int(mb[25:35]) - 1  # north-south velocity
+        if subtype == 2:  # Supersonic
             v_ns *= 4
 
         v_we = v_ew_sign * v_ew
         v_sn = v_ns_sign * v_ns
 
-        spd = math.sqrt(v_sn*v_sn + v_we*v_we)  # unit in kts
+        spd = math.sqrt(v_sn * v_sn + v_we * v_we)  # unit in kts
         spd = int(spd)
 
         trk = math.atan2(v_we, v_sn)
-        trk = math.degrees(trk)                 # convert to degrees
-        trk = trk if trk >= 0 else trk + 360    # no negative val
+        trk = math.degrees(trk)  # convert to degrees
+        trk = trk if trk >= 0 else trk + 360  # no negative val
 
-        tag = 'GS'
+        tag = "GS"
         trk_or_hdg = round(trk, 2)
-        dir_type = 'true_north'
+        dir_type = "true_north"
 
     else:
-        if mb[13] == '0':
+        if mb[13] == "0":
             hdg = None
         else:
             hdg = common.bin2int(mb[14:24]) / 1024.0 * 360.0
@@ -91,27 +91,27 @@ def airborne_velocity(msg, rtn_sources=False):
         trk_or_hdg = hdg
 
         spd = common.bin2int(mb[25:35])
-        spd = None if spd==0 else spd-1
-        if subtype == 4: # Supersonic
+        spd = None if spd == 0 else spd - 1
+        if subtype == 4:  # Supersonic
             spd *= 4
 
-        if mb[24]=='0':
-            tag = 'IAS'
+        if mb[24] == "0":
+            tag = "IAS"
         else:
-            tag = 'TAS'
-        
-        dir_type = 'mag_north'
+            tag = "TAS"
 
-    vr_source = 'GNSS' if mb[35]=='0' else 'Baro'
-    vr_sign = -1 if mb[36]=='1' else 1
+        dir_type = "mag_north"
+
+    vr_source = "GNSS" if mb[35] == "0" else "Baro"
+    vr_sign = -1 if mb[36] == "1" else 1
     vr = common.bin2int(mb[37:46])
-    rocd = None if vr==0 else int(vr_sign*(vr-1)*64)
+    rocd = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
 
     if rtn_sources:
         return spd, trk_or_hdg, rocd, tag, dir_type, vr_source
     else:
         return spd, trk_or_hdg, rocd, tag
-    
+
 
 def altitude_diff(msg):
     """Decode the differece between GNSS and barometric altitude
@@ -135,4 +135,4 @@ def altitude_diff(msg):
     if value == 0 or value == 127:
         return None
     else:
-        return sign * (value - 1) * 25    # in ft.
+        return sign * (value - 1) * 25  # in ft.

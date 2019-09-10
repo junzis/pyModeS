@@ -87,7 +87,7 @@ def turb45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[0] == '0':
+    if d[0] == "0":
         return None
 
     turb = bin2int(d[1:3])
@@ -105,7 +105,7 @@ def ws45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[3] == '0':
+    if d[3] == "0":
         return None
 
     ws = bin2int(d[4:6])
@@ -123,7 +123,7 @@ def mb45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[6] == '0':
+    if d[6] == "0":
         return None
 
     mb = bin2int(d[7:9])
@@ -141,7 +141,7 @@ def ic45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[9] == '0':
+    if d[9] == "0":
         return None
 
     ic = bin2int(d[10:12])
@@ -159,7 +159,7 @@ def wv45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[12] == '0':
+    if d[12] == "0":
         return None
 
     ws = bin2int(d[13:15])
@@ -184,7 +184,7 @@ def temp45(msg):
     if sign:
         value = value - 512
 
-    temp = value * 0.25   # celsius
+    temp = value * 0.25  # celsius
     temp = round(temp, 1)
 
     return temp
@@ -201,9 +201,9 @@ def p45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[26] == '0':
+    if d[26] == "0":
         return None
-    p = bin2int(d[27:38])    # hPa
+    p = bin2int(d[27:38])  # hPa
     return p
 
 
@@ -218,7 +218,7 @@ def rh45(msg):
 
     """
     d = hex2bin(data(msg))
-    if d[38] == '0':
+    if d[38] == "0":
         return None
     rh = bin2int(d[39:51]) * 16
     return rh

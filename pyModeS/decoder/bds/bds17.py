@@ -50,10 +50,11 @@ def is17(msg):
     #     return False
 
     # at least you can respond who you are
-    if 'BDS20' not in caps:
+    if "BDS20" not in caps:
         return False
 
     return True
+
 
 def cap17(msg):
     """Extract capacities from BDS 1,7 message
@@ -64,12 +65,39 @@ def cap17(msg):
     Returns:
         list: list of suport BDS codes
     """
-    allbds = ['05', '06', '07', '08', '09', '0A', '20', '21', '40', '41',
-              '42', '43', '44', '45', '48', '50', '51', '52', '53', '54',
-              '55', '56', '5F', '60', 'NA', 'NA', 'E1', 'E2']
+    allbds = [
+        "05",
+        "06",
+        "07",
+        "08",
+        "09",
+        "0A",
+        "20",
+        "21",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44",
+        "45",
+        "48",
+        "50",
+        "51",
+        "52",
+        "53",
+        "54",
+        "55",
+        "56",
+        "5F",
+        "60",
+        "NA",
+        "NA",
+        "E1",
+        "E2",
+    ]
 
     d = hex2bin(data(msg))
-    idx = [i for i, v in enumerate(d[:28]) if v=='1']
-    capacity = ['BDS'+allbds[i] for i in idx if allbds[i] is not 'NA']
+    idx = [i for i, v in enumerate(d[:28]) if v == "1"]
+    capacity = ["BDS" + allbds[i] for i in idx if allbds[i] is not "NA"]
 
     return capacity

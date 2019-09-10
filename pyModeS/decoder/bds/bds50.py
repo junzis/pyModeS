@@ -85,16 +85,16 @@ def roll50(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[0] == '0':
+    if d[0] == "0":
         return None
 
-    sign = int(d[1])    # 1 -> left wing down
+    sign = int(d[1])  # 1 -> left wing down
     value = bin2int(d[2:11])
 
     if sign:
         value = value - 512
 
-    angle = value * 45.0 / 256.0    # degree
+    angle = value * 45.0 / 256.0  # degree
     return round(angle, 1)
 
 
@@ -109,10 +109,10 @@ def trk50(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[11] == '0':
+    if d[11] == "0":
         return None
 
-    sign = int(d[12])   # 1 -> west
+    sign = int(d[12])  # 1 -> west
     value = bin2int(d[13:23])
 
     if sign:
@@ -138,10 +138,10 @@ def gs50(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[23] == '0':
+    if d[23] == "0":
         return None
 
-    spd = bin2int(d[24:34]) * 2    # kts
+    spd = bin2int(d[24:34]) * 2  # kts
     return spd
 
 
@@ -156,18 +156,18 @@ def rtrk50(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[34] == '0':
+    if d[34] == "0":
         return None
 
     if d[36:45] == "111111111":
         return None
 
-    sign = int(d[35])    # 1 -> negative value, two's complement
+    sign = int(d[35])  # 1 -> negative value, two's complement
     value = bin2int(d[36:45])
     if sign:
         value = value - 512
 
-    angle = value * 8.0 / 256.0    # degree / sec
+    angle = value * 8.0 / 256.0  # degree / sec
     return round(angle, 3)
 
 
@@ -182,8 +182,8 @@ def tas50(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[45] == '0':
+    if d[45] == "0":
         return None
 
-    tas = bin2int(d[46:56]) * 2   # kts
+    tas = bin2int(d[46:56]) * 2  # kts
     return tas

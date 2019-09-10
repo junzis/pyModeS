@@ -73,17 +73,17 @@ def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
         return None
 
     # compute ni, longitude index m, and longitude
-    if (t0 > t1):
+    if t0 > t1:
         lat = lat_even
         nl = common.cprNL(lat_even)
         ni = max(common.cprNL(lat_even) - 0, 1)
-        m = common.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        m = common.floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
         lon = (90.0 / ni) * (m % ni + cprlon_even)
     else:
         lat = lat_odd
         nl = common.cprNL(lat_odd)
         ni = max(common.cprNL(lat_odd) - 1, 1)
-        m = common.floor(cprlon_even * (nl-1) - cprlon_odd * nl + 0.5)
+        m = common.floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
         lon = (90.0 / ni) * (m % ni + cprlon_odd)
 
     # four possible longitude solutions
@@ -112,17 +112,17 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
         (float, float): (latitude, longitude) of the aircraft
     """
 
-
     mb = common.hex2bin(msg)[32:]
 
     cprlat = common.bin2int(mb[22:39]) / 131072.0
     cprlon = common.bin2int(mb[39:56]) / 131072.0
 
     i = int(mb[21])
-    d_lat = 90.0/59 if i else 90.0/60
+    d_lat = 90.0 / 59 if i else 90.0 / 60
 
-    j = common.floor(lat_ref / d_lat) \
-        + common.floor(0.5 + ((lat_ref % d_lat) / d_lat) - cprlat)
+    j = common.floor(lat_ref / d_lat) + common.floor(
+        0.5 + ((lat_ref % d_lat) / d_lat) - cprlat
+    )
 
     lat = d_lat * (j + cprlat)
 
@@ -133,8 +133,9 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     else:
         d_lon = 90.0
 
-    m = common.floor(lon_ref / d_lon) \
-        + common.floor(0.5 + ((lon_ref % d_lon) / d_lon) - cprlon)
+    m = common.floor(lon_ref / d_lon) + common.floor(
+        0.5 + ((lon_ref % d_lon) / d_lon) - cprlon
+    )
 
     lon = d_lon * (m + cprlon)
 
@@ -184,11 +185,11 @@ def surface_velocity(msg, rtn_sources=False):
         movs = [2, 9, 13, 39, 94, 109, 124]
         kts = [0.125, 1, 2, 15, 70, 100, 175]
         i = next(m[0] for m in enumerate(movs) if m[1] > mov)
-        step = (kts[i] - kts[i-1]) * 1.0 / (movs[i]-movs[i-1])
-        spd = kts[i-1] + (mov-movs[i-1]) * step
+        step = (kts[i] - kts[i - 1]) * 1.0 / (movs[i] - movs[i - 1])
+        spd = kts[i - 1] + (mov - movs[i - 1]) * step
         spd = round(spd, 2)
 
     if rtn_sources:
-        return spd, trk, 0, 'GS', 'true_north', None
+        return spd, trk, 0, "GS", "true_north", None
     else:
-        return spd, trk, 0, 'GS'
+        return spd, trk, 0, "GS"

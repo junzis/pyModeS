@@ -21,6 +21,7 @@
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
 
+
 def is20(msg):
     """Check if a message is likely to be BDS code 2,0
 
@@ -36,12 +37,12 @@ def is20(msg):
 
     d = hex2bin(data(msg))
 
-    if d[0:8] != '00100000':
+    if d[0:8] != "00100000":
         return False
 
     cs = cs20(msg)
 
-    if '#' in cs:
+    if "#" in cs:
         return False
 
     return True
@@ -56,11 +57,11 @@ def cs20(msg):
     Returns:
         string: callsign, max. 8 chars
     """
-    chars = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######'
+    chars = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
 
     d = hex2bin(data(msg))
 
-    cs = ''
+    cs = ""
     cs += chars[bin2int(d[8:14])]
     cs += chars[bin2int(d[14:20])]
     cs += chars[bin2int(d[20:26])]

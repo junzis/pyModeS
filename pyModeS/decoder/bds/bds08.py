@@ -23,6 +23,7 @@
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder import common
 
+
 def category(msg):
     """Aircraft category number
 
@@ -54,11 +55,11 @@ def callsign(msg):
     if common.typecode(msg) < 1 or common.typecode(msg) > 4:
         raise RuntimeError("%s: Not a identification message" % msg)
 
-    chars = '#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######'
+    chars = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"
     msgbin = common.hex2bin(msg)
     csbin = msgbin[40:96]
 
-    cs = ''
+    cs = ""
     cs += chars[common.bin2int(csbin[0:6])]
     cs += chars[common.bin2int(csbin[6:12])]
     cs += chars[common.bin2int(csbin[12:18])]
@@ -70,5 +71,5 @@ def callsign(msg):
 
     # clean string, remove spaces and marks, if any.
     # cs = cs.replace('_', '')
-    cs = cs.replace('#', '')
+    cs = cs.replace("#", "")
     return cs

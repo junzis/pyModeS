@@ -19,13 +19,7 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import (
-    hex2bin,
-    bin2int,
-    data,
-    allzeros,
-    wrongstatus,
-)
+from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 
 
 def is44(msg):

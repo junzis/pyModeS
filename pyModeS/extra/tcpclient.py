@@ -59,9 +59,7 @@ class TcpClient(object):
                 msg_stop = False
                 self.current_msg = ""
 
-            if (not msg_stop) and (
-                48 <= b <= 57 or 65 <= b <= 70 or 97 <= b <= 102
-            ):
+            if (not msg_stop) and (48 <= b <= 57 or 65 <= b <= 70 or 97 <= b <= 102):
                 self.current_msg = self.current_msg + chr(b)
 
         self.buffer = []
@@ -234,11 +232,7 @@ class TcpClient(object):
                 msg = "".join("%02X" % j for j in payload)
                 i += 14  # Both message types use 14 bytes
                 tsbin = self.buffer[i : i + 6]
-                sec = (
-                    ((tsbin[0] & 0x7F) << 10)
-                    | (tsbin[1] << 2)
-                    | (tsbin[2] >> 6)
-                )
+                sec = ((tsbin[0] & 0x7F) << 10) | (tsbin[1] << 2) | (tsbin[2] >> 6)
                 nano = (
                     ((tsbin[2] & 0x3F) << 24)
                     | (tsbin[3] << 16)

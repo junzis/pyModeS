@@ -21,6 +21,7 @@
 from __future__ import absolute_import, print_function, division
 from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
 
+
 def is60(msg):
     """Check if a message is likely to be BDS code 6,0
 
@@ -83,10 +84,10 @@ def hdg60(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[0] == '0':
+    if d[0] == "0":
         return None
 
-    sign = int(d[1])    # 1 -> west
+    sign = int(d[1])  # 1 -> west
     value = bin2int(d[2:12])
 
     if sign:
@@ -112,10 +113,10 @@ def ias60(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[12] == '0':
+    if d[12] == "0":
         return None
 
-    ias = bin2int(d[13:23])    # kts
+    ias = bin2int(d[13:23])  # kts
     return ias
 
 
@@ -130,7 +131,7 @@ def mach60(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[23] == '0':
+    if d[23] == "0":
         return None
 
     mach = bin2int(d[24:34]) * 2.048 / 512.0
@@ -148,10 +149,10 @@ def vr60baro(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[34] == '0':
+    if d[34] == "0":
         return None
 
-    sign = int(d[35])    # 1 -> negative value, two's complement
+    sign = int(d[35])  # 1 -> negative value, two's complement
     value = bin2int(d[36:45])
 
     if value == 0 or value == 511:  # all zeros or all ones
@@ -159,7 +160,7 @@ def vr60baro(msg):
 
     value = value - 512 if sign else value
 
-    roc = value * 32   # feet/min
+    roc = value * 32  # feet/min
     return roc
 
 
@@ -174,10 +175,10 @@ def vr60ins(msg):
     """
     d = hex2bin(data(msg))
 
-    if d[45] == '0':
+    if d[45] == "0":
         return None
 
-    sign = int(d[46])    # 1 -> negative value, two's complement
+    sign = int(d[46])  # 1 -> negative value, two's complement
     value = bin2int(d[47:56])
 
     if value == 0 or value == 511:  # all zeros or all ones
@@ -185,5 +186,5 @@ def vr60ins(msg):
 
     value = value - 512 if sign else value
 
-    roc = value * 32   # feet/min
+    roc = value * 32  # feet/min
     return roc

@@ -4,10 +4,12 @@ from pyModeS import adsb, ehs
 
 # === Decode sample data file ===
 
+
 def adsb_decode_all(n=None):
     print("===== Decode ADS-B sample data=====")
     import csv
-    f = open('tests/data/sample_data_adsb.csv', 'rt')
+
+    f = open("tests/data/sample_data_adsb.csv", "rt")
 
     msg0 = None
     msg1 = None
@@ -37,5 +39,6 @@ def adsb_decode_all(n=None):
                 alt = adsb.altitude(m)
                 print(ts, m, icao, tc, pos, alt)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     adsb_decode_all(n=100)
