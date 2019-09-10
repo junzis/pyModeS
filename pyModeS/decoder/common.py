@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 from textwrap import wrap
 
+
 def hex2bin(hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings."""
     num_of_bits = len(hexstr) * 4
@@ -16,7 +17,8 @@ def hex2int(hexstr):
 
 def int2hex(n):
     """Convert a integer to hexadecimal string."""
-    return hex(n)[2:].rjust(6, '0').upper()
+    # strip 'L' for python 2
+    return hex(n)[2:].rjust(6, "0").upper().rstrip("L")
 
 
 def bin2int(binstr):
@@ -36,7 +38,7 @@ def bin2np(binstr):
 
 def np2bin(npbin):
     """Convert a binary numpy array to string."""
-    return np.array2string(npbin, separator='')[1:-1]
+    return np.array2string(npbin, separator="")[1:-1]
 
 
 def df(msg):
@@ -60,8 +62,10 @@ def crc(msg, encode=False):
     """
     # the CRC generator
     G = [
-        int("11111111", 2), int("11111010", 2),
-        int("00000100", 2), int("10000000", 2)
+        int("11111111", 2),
+        int("11111010", 2),
+        int("00000100", 2),
+        int("10000000", 2),
     ]
 
     if encode:
@@ -71,16 +75,22 @@ def crc(msg, encode=False):
     msgbin_split = wrap(msgbin, 8)
     mbytes = list(map(bin2int, msgbin_split))
 
-    for ibyte in range(len(mbytes)-3):
+    for ibyte in range(len(mbytes) - 3):
         for ibit in range(8):
             mask = 0x80 >> ibit
             bits = mbytes[ibyte] & mask
 
             if bits > 0:
                 mbytes[ibyte] = mbytes[ibyte] ^ (G[0] >> ibit)
-                mbytes[ibyte+1] = mbytes[ibyte+1] ^ (0xFF & ((G[0] << 8-ibit) | (G[1] >> ibit)))
-                mbytes[ibyte+2] = mbytes[ibyte+2] ^ (0xFF & ((G[1] << 8-ibit) | (G[2] >> ibit)))
-                mbytes[ibyte+3] = mbytes[ibyte+3] ^ (0xFF & ((G[2] << 8-ibit) | (G[3] >> ibit)))
+                mbytes[ibyte + 1] = mbytes[ibyte + 1] ^ (
+                    0xFF & ((G[0] << 8 - ibit) | (G[1] >> ibit))
+                )
+                mbytes[ibyte + 2] = mbytes[ibyte + 2] ^ (
+                    0xFF & ((G[1] << 8 - ibit) | (G[2] >> ibit))
+                )
+                mbytes[ibyte + 3] = mbytes[ibyte + 3] ^ (
+                    0xFF & ((G[2] << 8 - ibit) | (G[3] >> ibit))
+                )
 
     result = (mbytes[-3] << 16) | (mbytes[-2] << 8) | mbytes[-1]
 
@@ -90,7 +100,35 @@ def crc(msg, encode=False):
 def crc_legacy(msg, encode=False):
     """Mode-S Cyclic Redundancy Check. (Legacy code, 2x slow)."""
     # the polynominal generattor code for CRC [1111111111111010000001001]
-    generator = np.array([1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,0,0,0,0,1,0,0,1])
+    generator = np.array(
+        [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            1,
+        ]
+    )
     ng = len(generator)
 
     msgnpbin = bin2np(hex2bin(msg))
@@ -99,12 +137,12 @@ def crc_legacy(msg, encode=False):
         msgnpbin[-24:] = [0] * 24
 
     # loop all bits, except last 24 piraty bits
-    for i in range(len(msgnpbin)-24):
+    for i in range(len(msgnpbin) - 24):
         if msgnpbin[i] == 0:
             continue
 
         # perform XOR, when 1
-        msgnpbin[i:i+ng] = np.bitwise_xor(msgnpbin[i:i+ng], generator)
+        msgnpbin[i : i + ng] = np.bitwise_xor(msgnpbin[i : i + ng], generator)
 
     # last 24 bits
     reminder = bin2int(np2bin(msgnpbin[-24:]))
@@ -140,7 +178,7 @@ def icao(msg):
     elif DF in (0, 4, 5, 16, 20, 21):
         c0 = crc(msg, encode=True)
         c1 = hex2int(msg[-6:])
-        addr = '%06X' % (c0 ^ c1)
+        addr = "%06X" % (c0 ^ c1)
     else:
         addr = None
 
@@ -149,22 +187,32 @@ def icao(msg):
 
 def is_icao_assigned(icao):
     """Check whether the ICAO address is assigned (Annex 10, Vol 3)."""
-    if (icao is None) or (not isinstance(icao, str)) or (len(icao)!=6):
+    if (icao is None) or (not isinstance(icao, str)) or (len(icao) != 6):
         return False
 
     icaoint = hex2int(icao)
 
-    if 0x200000 < icaoint < 0x27FFFF: return False      # AFI
-    if 0x280000 < icaoint < 0x28FFFF: return False      # SAM
-    if 0x500000 < icaoint < 0x5FFFFF: return False      # EUR, NAT
-    if 0x600000 < icaoint < 0x67FFFF: return False      # MID
-    if 0x680000 < icaoint < 0x6F0000: return False      # ASIA
-    if 0x900000 < icaoint < 0x9FFFFF: return False      # NAM, PAC
-    if 0xB00000 < icaoint < 0xBFFFFF: return False      # CAR
-    if 0xD00000 < icaoint < 0xDFFFFF: return False      # future
-    if 0xF00000 < icaoint < 0xFFFFFF: return False      # future
+    if 0x200000 < icaoint < 0x27FFFF:
+        return False  # AFI
+    if 0x280000 < icaoint < 0x28FFFF:
+        return False  # SAM
+    if 0x500000 < icaoint < 0x5FFFFF:
+        return False  # EUR, NAT
+    if 0x600000 < icaoint < 0x67FFFF:
+        return False  # MID
+    if 0x680000 < icaoint < 0x6F0000:
+        return False  # ASIA
+    if 0x900000 < icaoint < 0x9FFFFF:
+        return False  # NAM, PAC
+    if 0xB00000 < icaoint < 0xBFFFFF:
+        return False  # CAR
+    if 0xD00000 < icaoint < 0xDFFFFF:
+        return False  # future
+    if 0xF00000 < icaoint < 0xFFFFFF:
+        return False  # future
 
     return True
+
 
 def typecode(msg):
     """Type code of ADS-B message
@@ -197,7 +245,7 @@ def cprNL(lat):
     nz = 15
     a = 1 - np.cos(np.pi / (2 * nz))
     b = np.cos(np.pi / 180.0 * abs(lat)) ** 2
-    nl = 2 * np.pi / (np.arccos(1 - a/b))
+    nl = 2 * np.pi / (np.arccos(1 - a / b))
     NL = floor(nl)
     return NL
 
@@ -234,10 +282,10 @@ def idcode(msg):
     B4 = mbin[30]
     D4 = mbin[31]
 
-    byte1 = int(A4+A2+A1, 2)
-    byte2 = int(B4+B2+B1, 2)
-    byte3 = int(C4+C2+C1, 2)
-    byte4 = int(D4+D2+D1, 2)
+    byte1 = int(A4 + A2 + A1, 2)
+    byte2 = int(B4 + B2 + B1, 2)
+    byte3 = int(C4 + C2 + C1, 2)
+    byte4 = int(D4 + D2 + D1, 2)
 
     return str(byte1) + str(byte2) + str(byte3) + str(byte4)
 
@@ -261,15 +309,14 @@ def altcode(msg):
     # Altitude code, bit 20-32
     mbin = hex2bin(msg)
 
-    mbit = mbin[25]   # M bit: 26
-    qbit = mbin[27]   # Q bit: 28
+    mbit = mbin[25]  # M bit: 26
+    qbit = mbin[27]  # Q bit: 28
 
-
-    if mbit == '0':         # unit in ft
-        if qbit == '1':     # 25ft interval
+    if mbit == "0":  # unit in ft
+        if qbit == "1":  # 25ft interval
             vbin = mbin[19:25] + mbin[26] + mbin[28:32]
             alt = bin2int(vbin) * 25 - 1000
-        if qbit == '0':     # 100ft interval, above 50175ft
+        if qbit == "0":  # 100ft interval, above 50175ft
             C1 = mbin[19]
             A1 = mbin[20]
             C2 = mbin[21]
@@ -284,10 +331,10 @@ def altcode(msg):
             B4 = mbin[30]
             D4 = mbin[31]
 
-            graystr =  D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
+            graystr = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
             alt = gray2alt(graystr)
 
-    if mbit == '1':         # unit in meter
+    if mbit == "1":  # unit in meter
         vbin = mbin[19:25] + mbin[26:31]
         alt = int(bin2int(vbin) * 3.28084)  # convert to ft
 
@@ -308,20 +355,20 @@ def gray2alt(codestr):
     if n100 == 7:
         n100 = 5
 
-    if n500%2:
+    if n500 % 2:
         n100 = 6 - n100
 
-    alt = (n500*500 + n100*100) - 1300
+    alt = (n500 * 500 + n100 * 100) - 1300
     return alt
 
 
 def gray2int(graystr):
     """Convert greycode to binary."""
     num = bin2int(graystr)
-    num ^= (num >> 8)
-    num ^= (num >> 4)
-    num ^= (num >> 2)
-    num ^= (num >> 1)
+    num ^= num >> 8
+    num ^= num >> 4
+    num ^= num >> 2
+    num ^= num >> 1
     return num
 
 
@@ -355,8 +402,8 @@ def wrongstatus(data, sb, msb, lsb):
 
     """
     # status bit, most significant bit, least significant bit
-    status = int(data[sb-1])
-    value = bin2int(data[msb-1:lsb])
+    status = int(data[sb - 1])
+    value = bin2int(data[msb - 1 : lsb])
 
     if not status:
         if value != 0:
