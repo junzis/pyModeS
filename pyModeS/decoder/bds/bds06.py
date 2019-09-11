@@ -89,6 +89,9 @@ def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
     # four possible longitude solutions
     lons = [lon, lon + 90.0, lon + 180.0, lon + 270.0]
 
+    # make sure lons are between -180 and 180
+    lons = [(l + 180) % 360 - 180 for l in lons]
+
     # the closest solution to receiver is the correct one
     dls = [abs(lon_ref - l) for l in lons]
     imin = min(range(4), key=dls.__getitem__)

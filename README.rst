@@ -165,6 +165,7 @@ Core functions for ADS-B decoding
   pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
   pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
   pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
+  pms.adsb.surface_velocity(msg)
 
   pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
   pms.adsb.airborne_position_with_ref(msg, lat_ref, lon_ref)
@@ -175,7 +176,6 @@ Core functions for ADS-B decoding
   # Typecode: 19
   pms.adsb.velocity(msg)          # Handles both surface & airborne messages
   pms.adsb.speed_heading(msg)     # Handles both surface & airborne messages
-  pms.adsb.surface_velocity(msg)
   pms.adsb.airborne_velocity(msg)
 
 
