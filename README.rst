@@ -65,21 +65,22 @@ http://pymodes.readthedocs.io
 Install
 -------
 
-To install the latest version development from the GitHub:
+The pyModeS can be installed with extra option ``[all]`` in order to install dependencies ``pyzmq`` and ``pyrtlsdr`` automatically.
 
-::
+Installation examples::
 
-  pip install git+https://github.com/junzis/pyModeS
-
-
-To install the latest stable version from pip:
-
-::
-
+  # stable version, basic
   pip install pyModeS
 
+  # stable version, including dependencies for streamer and rtlsdr
+  pip install pyModeS[all]
 
-The library requires several dependencies (``numpy``, ``pyzmq``, ``pyrtlsdr``), which will be installed automatically when you install pyModeS using ``pip``.
+  # development version, basic
+  pip install git+https://github.com/junzis/pyModeS
+
+  # development version, including dependencies for streamer and rtlsdr
+  pip install git+https://github.com/junzis/pyModeS#egg=pyModeS[all]
+
 
 
 View live traffic (modeslive)
