@@ -121,7 +121,6 @@ def p40baro(msg):
 
 
 def alt40mcp(msg):
-    warnings.simplefilter("once", DeprecationWarning)
     warnings.warn(
         "alt40mcp() has been renamed to selalt40mcp(). It will be removed in the future.",
         DeprecationWarning,
@@ -130,7 +129,6 @@ def alt40mcp(msg):
 
 
 def alt40fms(msg):
-    warnings.simplefilter("once", DeprecationWarning)
     warnings.warn(
         "alt40fms() has been renamed to selalt40fms(). It will be removed in the future.",
         DeprecationWarning,
