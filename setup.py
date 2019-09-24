@@ -6,7 +6,7 @@ https://github.com/pypa/sampleproject
 
 Steps for deploying a new verison:
 1. Increase the version number
-2. remove the old deployment under [dist] folder
+2. remove the old deployment under [dist] and [build] folder
 3. run: python setup.py sdist
    run: python setup.py bdist_wheel --universal
 4. twine upload dist/*
@@ -30,7 +30,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version="2.3",
+    version="2.4",
     description="Python Mode-S and ADS-B Decoder",
     long_description=long_description,
     # The project's main homepage.
@@ -74,7 +74,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=["numpy"],
+    install_requires=["numpy", "argparse", "pyzmq", "pyrtlsdr"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
@@ -83,7 +83,6 @@ setup(
     #     'dev': ['check-manifest'],
     #     'test': ['coverage'],
     # },
-    extras_require={"all": ["argparse", "pyzmq", "pyrtlsdr"]},
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
     # have to be included in MANIFEST.in as well.

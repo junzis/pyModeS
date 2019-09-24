@@ -71,10 +71,7 @@ elif SOURCE == "net":
     else:
         SERVER, PORT, DATATYPE = args.connect
         if DATATYPE not in support_rawtypes:
-            print(
-                "Data type not supported, avaiable ones are %s"
-                % support_rawtypes
-            )
+            print("Data type not supported, avaiable ones are %s" % support_rawtypes)
 
 else:
     print('Source must be "rtlsdr" or "net".')
@@ -105,9 +102,7 @@ elif SOURCE == "rtlsdr":
     source = RtlSdrSource()
 
 
-recv_process = multiprocessing.Process(
-    target=source.run, args=(raw_pipe_in, stop_flag)
-)
+recv_process = multiprocessing.Process(target=source.run, args=(raw_pipe_in, stop_flag))
 
 
 decode = Decode(latlon=LATLON, dumpto=DUMPTO)
@@ -116,9 +111,7 @@ decode_process = multiprocessing.Process(
 )
 
 screen = Screen(uncertainty=UNCERTAINTY)
-screen_process = multiprocessing.Process(
-    target=screen.run, args=(ac_pipe_out,)
-)
+screen_process = multiprocessing.Process(target=screen.run, args=(ac_pipe_out,))
 
 
 def closeall(signal, frame):
