@@ -65,22 +65,16 @@ http://pymodes.readthedocs.io
 Install
 -------
 
-The pyModeS can be installed with extra option ``[all]`` in order to install dependencies ``pyzmq`` and ``pyrtlsdr`` automatically.
-
 Installation examples::
 
-  # stable version, basic
+  # stable version
   pip install pyModeS
 
-  # stable version, including dependencies for streamer and rtlsdr
-  pip install pyModeS[all]
-
-  # development version, basic
+  # development version
   pip install git+https://github.com/junzis/pyModeS
 
-  # development version, including dependencies for streamer and rtlsdr
-  pip install git+https://github.com/junzis/pyModeS#egg=pyModeS[all]
 
+Dependencies ``numpy``, ``pyzmq`` and ``pyrtlsdr`` are installed automatically during previous installations processes.
 
 
 View live traffic (modeslive)
