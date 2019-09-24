@@ -14,6 +14,7 @@ messages = [
     "A00004128F39F91A7E27C46ADC21",
 ]
 
+print("-" * 70)
 for m in messages:
     tell(m)
-    print("-" * 50)
+    print("-" * 70)

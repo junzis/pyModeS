@@ -13,12 +13,15 @@ def tell(msg):
             print()
 
     df = common.df(msg)
+    icao = common.icao(msg)
 
     _print("Message", msg)
+    _print("ICAO address", icao)
     _print("Downlink Format", df)
 
     if df == 17:
         _print("Protocal", "Mode-S Extended Squitter (ADS-B)")
+
         tc = common.typecode(msg)
         if 1 <= tc <= 4:  # callsign
             callsign = adsb.callsign(msg)
@@ -26,14 +29,17 @@ def tell(msg):
             _print("Callsign:", callsign)
 
         if 5 <= tc <= 8:  # surface position
-            _print("Type", "Surface movment")
+            _print("Type", "Surface postition")
             oe = adsb.oe_flag(msg)
             msgbin = common.hex2bin(msg)
             cprlat = common.bin2int(msgbin[54:71]) / 131072.0
             cprlon = common.bin2int(msgbin[71:88]) / 131072.0
+            v = adsb.surface_velocity(msg)
             _print("CPR format", "Odd" if oe else "Even")
             _print("CPR Latitude", cprlat)
             _print("CPR Longitude", cprlon)
+            _print("Speed", v[0], "knots")
+            _print("Track", v[1], "degrees")
 
         if 9 <= tc <= 18:  # airborne position
             _print("Type", "Airborne position (with barometric altitude)")
