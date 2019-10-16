@@ -43,8 +43,8 @@ def np2bin(npbin):
 
 def df(msg):
     """Decode Downlink Format vaule, bits 1 to 5."""
-    msgbin = hex2bin(msg)
-    return min(bin2int(msgbin[0:5]), 24)
+    dfbin = hex2bin(msg[:2])
+    return min(bin2int(dfbin[0:5]), 24)
 
 
 def crc(msg, encode=False):
@@ -195,8 +195,8 @@ def typecode(msg):
     if df(msg) not in (17, 18):
         return None
 
-    msgbin = hex2bin(msg)
-    return bin2int(msgbin[32:37])
+    tcbin = hex2bin(msg[8:10])
+    return bin2int(tcbin[0:5])
 
 
 def cprNL(lat):
