@@ -3,8 +3,6 @@ from pyModeS import common
 
 def test_conversions():
     assert common.hex2bin("6E406B") == "011011100100000001101011"
-    assert common.bin2hex("011011100100000001101011") == "6E406B"
-    assert common.int2hex(11160538) == "AA4BDA"
 
 
 def test_crc_decode():
@@ -28,7 +26,7 @@ def test_crc_decode():
 
 def test_crc_encode():
     parity = common.crc("8D406B902015A678D4D220AA4BDA", encode=True)
-    assert common.int2hex(parity) == "AA4BDA"
+    assert parity == 11160538
 
 
 def test_icao():
