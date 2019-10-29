@@ -20,7 +20,8 @@ from setuptools.extension import Extension
 from Cython.Build import cythonize
 
 extensions = [
-    Extension("pyModeS.c_decoder.common", ["pyModeS/c_decoder/common.pyx"])
+    Extension("pyModeS.c_decoder.common", ["pyModeS/c_decoder/common.pyx"]),
+    Extension("pyModeS.c_decoder.bds.bds05", ["pyModeS/c_decoder/bds/bds05.pyx"]),
 ]
 
 

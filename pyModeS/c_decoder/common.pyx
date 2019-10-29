@@ -1,4 +1,3 @@
-
 # cython: language_level=3
 
 cimport cython
@@ -143,14 +142,14 @@ cpdef long crc(bytes msg, bint encode=False):
 
 
 
-cpdef int floor(float x):
+cpdef long floor(double x):
     """Mode-S floor function.
 
     Defined as the greatest integer value k, such that k <= x
     For example: floor(3.6) = 3 and floor(-3.6) = -4
 
     """
-    return <int> c_floor(x)
+    return <long> c_floor(x)
 
 cpdef str icao(bytes msg):
     """Calculate the ICAO address from an Mode-S message.
@@ -228,7 +227,7 @@ cpdef int typecode(bytes msg):
     return bin2int(tcbin[0:5])
 
 @cython.cdivision(True)
-cpdef int cprNL(int lat):
+cpdef int cprNL(double lat):
     """NL() function in CPR decoding."""
 
     if lat == 0:
@@ -241,9 +240,9 @@ cpdef int cprNL(int lat):
         return 1
 
     cdef int nz = 15
-    cdef float a = 1 - cos(pi / (2 * nz))
-    cdef float b = cos(pi / 180.0 * fabs(lat)) ** 2
-    cdef float nl = 2 * pi / (acos(1 - a / b))
+    cdef double a = 1 - cos(pi / (2 * nz))
+    cdef double b = cos(pi / 180.0 * fabs(lat)) ** 2
+    cdef double nl = 2 * pi / (acos(1 - a / b))
     NL = floor(nl)
     return NL
 
@@ -359,7 +358,7 @@ cpdef int altcode(bytes msg):
 
 
 
-cdef int gray2alt(bytearray codestr):
+cpdef int gray2alt(bytearray codestr):
     cdef bytearray gc500 = codestr[:8]
     cdef int n500 = gray2int(gc500)
 
