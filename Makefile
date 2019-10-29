@@ -13,6 +13,7 @@ test:
 clean:
 	find pyModeS/c_decoder -type f -name '*.c' -delete
 	find pyModeS/c_decoder -type f -name '*.so' -delete
-	find . -name "__pycache__" -type d -exec rm -r "{}" \;
+	find . | grep -E "(__pycache__|\.pyc|\.pyo$$)" | xargs rm -rf
 	rm -rf *.egg-info
+	rm -rf .pytest_cache
 	rm -rf build/*
