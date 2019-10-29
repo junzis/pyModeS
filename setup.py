@@ -25,6 +25,7 @@ extensions = [
     Extension("pyModeS.c_decoder.bds.bds05", ["pyModeS/c_decoder/bds/bds05.pyx"]),
     Extension("pyModeS.c_decoder.bds.bds06", ["pyModeS/c_decoder/bds/bds06.pyx"]),
     Extension("pyModeS.c_decoder.bds.bds08", ["pyModeS/c_decoder/bds/bds08.pyx"]),
+    Extension("pyModeS.c_decoder.bds.bds09", ["pyModeS/c_decoder/bds/bds09.pyx"]),
 ]
 
 

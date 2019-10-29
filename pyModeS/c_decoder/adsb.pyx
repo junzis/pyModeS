@@ -46,7 +46,7 @@ from .bds.bds06 import (
     surface_velocity,
 )
 from .bds.bds08 import category, callsign
-from pyModeS.decoder.bds.bds09 import airborne_velocity, altitude_diff
+from .bds.bds09 import airborne_velocity, altitude_diff
 
 def icao(bytes msg):
     return c_icao(msg)
