@@ -16,15 +16,15 @@ import math
 
 
 @cython.cdivision(True)
-def surface_position(bytes msg0 not None, bytes msg1 not None, long t0, long t1, double lat_ref, double lon_ref):
+def surface_position(bytes msg0 not None, bytes msg1 not None, double t0, double t1, double lat_ref, double lon_ref):
     """Decode surface position from a pair of even and odd position message,
     the lat/lon of receiver must be provided to yield the correct solution.
 
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
         msg1 (string): odd message (28 bytes hexadecimal string)
-        t0 (int): timestamps for the even message
-        t1 (int): timestamps for the odd message
+        t0 (double): timestamps for the even message
+        t1 (double): timestamps for the odd message
         lat_ref (float): latitude of the receiver
         lon_ref (float): longitude of the receiver
 

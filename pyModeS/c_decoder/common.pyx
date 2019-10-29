@@ -96,16 +96,16 @@ cpdef long crc(bytes msg, bint encode=False):
     # G = [int("11111111", 2), int("11111010", 2), int("00000100", 2), int("10000000", 2)]
     # cdef array.array _G = array.array('l', [0b11111111, 0b11111010, 0b00000100, 0b10000000])
     cdef long[4] G = _G
-    
+
     # msgbin_split = wrap(msgbin, 8)
     # mbytes = list(map(bin2int, msgbin_split))
     cdef bytearray _msgbin = hex2bin(msg)
     cdef unsigned char[:] msgbin = _msgbin
-    
+
     cdef Py_ssize_t len_msgbin = PyByteArray_GET_SIZE(_msgbin)
     cdef Py_ssize_t len_mbytes = len_msgbin // 8
     cdef Py_ssize_t i
-    
+
     if encode:
         for i in range(len_msgbin - 24, len_msgbin):
             msgbin[i] = 0
@@ -165,7 +165,7 @@ cpdef str icao(bytes msg):
     """
     cdef unsigned char DF = df(msg)
     cdef long c0, c1
-    
+
     cdef bytearray bmsg = bytearray(msg)
 
     if DF in (11, 17, 18):
@@ -207,7 +207,7 @@ cpdef bint is_icao_assigned(bytes icao):
         return False  # future
 
     return True
-    
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef int typecode(bytes msg):
@@ -266,7 +266,7 @@ cpdef str idcode(bytes msg):
 
     cdef bytearray _mbin = hex2bin(msg)
     cdef unsigned char[:] mbin = _mbin
-    
+
     cdef bytearray _idcode = bytearray(4)
     cdef unsigned char[:] idcode = _idcode
 
@@ -283,17 +283,17 @@ cpdef str idcode(bytes msg):
     cdef unsigned char D2 = mbin[29]
     cdef unsigned char B4 = mbin[30]
     cdef unsigned char D4 = mbin[31]
-    
+
     # byte1 = int(A4 + A2 + A1, 2)
     # byte2 = int(B4 + B2 + B1, 2)
     # byte3 = int(C4 + C2 + C1, 2)
     # byte4 = int(D4 + D2 + D1, 2)
-    
+
     idcode[0] = int_to_char((char_to_int(A4)*2 + char_to_int(A2))*2 + char_to_int(A1))
     idcode[1] = int_to_char((char_to_int(B4)*2 + char_to_int(B2))*2 + char_to_int(B1))
     idcode[2] = int_to_char((char_to_int(C4)*2 + char_to_int(C2))*2 + char_to_int(C1))
     idcode[3] = int_to_char((char_to_int(D4)*2 + char_to_int(D2))*2 + char_to_int(D1))
-    
+
     return _idcode.decode()
 
     #return str(byte1) + str(byte2) + str(byte3) + str(byte4)

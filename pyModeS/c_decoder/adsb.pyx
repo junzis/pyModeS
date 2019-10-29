@@ -17,8 +17,7 @@ The ADS-B wrapper also imports functions from the following modules:
 
 from libc.math cimport NAN as nan
 
-# from pyModeS.decoder.bds import bds05, bds06, bds09
-from .common cimport typecode, icao as c_icao, df, hex2bin, bin2int, char_to_int
+from . cimport common
 
 from .bds.bds05 import (
     airborne_position,
@@ -34,17 +33,20 @@ from .bds.bds08 import category, callsign
 from .bds.bds09 import airborne_velocity, altitude_diff
 
 def icao(bytes msg):
-    return c_icao(msg)
+    return common.icao(msg)
 
-def position(bytes msg0 not None, bytes msg1 not None, int t0, int t1, double lat_ref=nan, double lon_ref=nan):
+def typecode(bytes msg):
+    return common.typecode(msg)
+
+def position(bytes msg0 not None, bytes msg1 not None, double t0, double t1, double lat_ref=nan, double lon_ref=nan):
     """Decode position from a pair of even and odd position message
     (works with both airborne and surface position messages)
 
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
         msg1 (string): odd message (28 bytes hexadecimal string)
-        t0 (int): timestamps for the even message
-        t1 (int): timestamps for the odd message
+        t0 (double): timestamps for the even message
+        t1 (double): timestamps for the odd message
 
     Returns:
         (float, float): (latitude, longitude) of the aircraft
@@ -122,12 +124,12 @@ def altitude(bytes msg):
         # surface position, altitude 0
         return 0
 
-    cdef bytearray msgbin = hex2bin(msg)
-    cdef int q = char_to_int(msgbin[47])
+    cdef bytearray msgbin = common.hex2bin(msg)
+    cdef int q = common.char_to_int(msgbin[47])
     cdef int n
     cdef double alt
     if q:
-        n = bin2int(msgbin[40:47] + msgbin[48:52])
+        n = common.bin2int(msgbin[40:47] + msgbin[48:52])
         alt = n * 25 - 1000
         return alt
     else:
@@ -194,8 +196,8 @@ def oe_flag(bytes msg):
     Returns:
         int: 0 or 1, for even or odd frame
     """
-    cdef bytearray msgbin = hex2bin(msg.encode())
-    return char_to_int(msgbin[53])
+    cdef bytearray msgbin = common.hex2bin(msg)
+    return common.char_to_int(msgbin[53])
 
 
 def version(bytes msg):
@@ -214,7 +216,7 @@ def version(bytes msg):
             "%s: Not a status operation message, expecting TC = 31" % msg
         )
 
-    cdef bytearray msgbin = hex2bin(msg)
-    cdef int version = bin2int(msgbin[72:75])
+    cdef bytearray msgbin = common.hex2bin(msg)
+    cdef int version = common.bin2int(msgbin[72:75])
 
     return version
