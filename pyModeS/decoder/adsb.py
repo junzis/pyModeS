@@ -23,7 +23,7 @@ from pyModeS.decoder import uncertainty
 from pyModeS.decoder.bds.bds05 import (
     airborne_position,
     airborne_position_with_ref,
-    altitude,
+    altitude as altitude05,
 )
 from pyModeS.decoder.bds.bds06 import (
     surface_position,
@@ -128,18 +128,13 @@ def altitude(msg):
     if tc < 5 or tc == 19 or tc > 22:
         raise RuntimeError("%s: Not a position message" % msg)
 
-    if tc >= 5 and tc <= 8:
+    elif tc >= 5 and tc <= 8:
         # surface position, altitude 0
         return 0
 
-    msgbin = common.hex2bin(msg)
-    q = msgbin[47]
-    if q:
-        n = common.bin2int(msgbin[40:47] + msgbin[48:52])
-        alt = n * 25 - 1000
-        return alt
     else:
-        return None
+        # airborn position
+        return altitude05(msg)
 
 
 def velocity(msg, rtn_sources=False):
