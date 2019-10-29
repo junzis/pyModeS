@@ -321,8 +321,19 @@ Here is an example:
 
 Unit test
 ---------
-To perform unit tests. First, install ``tox`` through pip. Then, run the following commands:
+To perform unit tests, ``pytest`` must be install first.
 
-.. code:: bash
+Build Cython extensions
+::
 
-  $ tox
+  $ make ext
+
+Run unit tests
+::
+
+  $ make test
+
+Clean build files
+::
+
+  $ make clean
