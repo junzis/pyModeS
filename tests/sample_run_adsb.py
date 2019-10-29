@@ -1,26 +1,32 @@
+import sys
+import time
 import csv
-from pyModeS import adsb
-import logging
 
-# logging.basicConfig(level=logging.INFO)
+if len(sys.argv) > 1 and sys.argv[1] == "cython":
+    from pyModeS.c_decoder import adsb
+else:
+    from pyModeS.decoder import adsb
 
-logging.info("===== Decode ADS-B sample data=====")
+print("===== Decode ADS-B sample data=====")
 
 f = open("tests/data/sample_data_adsb.csv", "rt")
 
 msg0 = None
 msg1 = None
 
+tstart = time.time()
 for i, r in enumerate(csv.reader(f)):
 
-    ts = r[0]
-    m = r[1]
+    ts = int(r[0])
+    m = r[1].encode()
+
     icao = adsb.icao(m)
     tc = adsb.typecode(m)
+
     if 1 <= tc <= 4:
-        logging.info([ts, m, icao, tc, adsb.category(m), adsb.callsign(m)])
+        print(ts, m, icao, tc, adsb.category(m), adsb.callsign(m))
     if tc == 19:
-        logging.info([ts, m, icao, tc, adsb.velocity(m)])
+        print(ts, m, icao, tc, adsb.velocity(m))
     if 5 <= tc <= 18:
         if adsb.oe_flag(m):
             msg1 = m
@@ -32,4 +38,9 @@ for i, r in enumerate(csv.reader(f)):
         if msg0 and msg1:
             pos = adsb.position(msg0, msg1, t0, t1)
             alt = adsb.altitude(m)
-            logging.info([ts, m, icao, tc, pos, alt])
+            print(ts, m, icao, tc, pos, alt)
+
+
+dt = time.time() - tstart
+
+print("Execution time: {} seconds".format(dt))
