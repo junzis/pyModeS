@@ -5,6 +5,7 @@ cimport cython
 from ..common cimport char_to_int, typecode, hex2bin, bin2int
 from libc.math cimport atan2, sqrt, pi, NAN as nan
 
+@cython.cdivision(True)
 def airborne_velocity(bytes msg, bint rtn_sources=False):
     """Calculate the speed, track (or heading), and vertical rate
 
@@ -36,7 +37,7 @@ def airborne_velocity(bytes msg, bint rtn_sources=False):
     if bin2int(mb[14:24]) == 0 or bin2int(mb[25:35]) == 0:
         return None
 
-    cdef int v_ew_sign, v_ew, v_ns_sign, v_ns
+    cdef int v_ew_sign, v_ew, v_ns_sign, v_ns, v_we, v_sn
     cdef double spd, trk, trk_or_hdg, hdg
 
     if subtype in (1, 2):
@@ -87,15 +88,14 @@ def airborne_velocity(bytes msg, bint rtn_sources=False):
         dir_type = "mag_north"
 
     vr_source = "GNSS" if mb[35] == 48 else "Baro"  # "0"
-    vr_sign = -1 if mb[36] == 49 else 1  # "1"
-    vr = bin2int(mb[37:46])
+    cdef int vr_sign = -1 if mb[36] == 49 else 1  # "1"
+    cdef int vr = bin2int(mb[37:46])
     rocd = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
 
     if rtn_sources:
         return int(spd), trk_or_hdg, rocd, tag, dir_type, vr_source
     else:
         return int(spd), trk_or_hdg, rocd, tag
-
 
 def altitude_diff(bytes msg):
     """Decode the differece between GNSS and barometric altitude
