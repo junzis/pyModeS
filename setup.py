@@ -15,6 +15,15 @@ Steps for deploying a new verison:
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
+# Compile some parts
+from setuptools.extension import Extension
+from Cython.Build import cythonize
+
+extensions = [
+    Extension("pyModeS.c_decoder.common", ["pyModeS/c_decoder/common.pyx"])
+]
+
+
 # To use a consistent encoding
 from codecs import open
 from os import path
@@ -57,6 +66,7 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
     ],
+    ext_modules=cythonize(extensions),
     # What does your project relate to?
     keywords="Mode-S ADS-B EHS ELS Comm-B",
     # You can just specify the packages manually here if your project is
