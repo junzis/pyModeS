@@ -25,7 +25,7 @@
 cimport cython
 
 from .. cimport common
-from libc.math cimport NAN as nan, remainder
+from libc.math cimport NAN as nan
 
 
 @cython.cdivision(True)

@@ -26,7 +26,7 @@ cimport cython
 
 from .. cimport common
 from cpython cimport array
-from libc.math cimport NAN as nan, remainder
+from libc.math cimport NAN as nan
 
 import math
 
