@@ -1,6 +1,6 @@
-import csv
-from pyModeS import adsb
+from pyModeS.c_decoder import adsb
 import logging
+import csv
 
 # logging.basicConfig(level=logging.INFO)
 
@@ -13,8 +13,8 @@ msg1 = None
 
 for i, r in enumerate(csv.reader(f)):
 
-    ts = r[0]
-    m = r[1]
+    ts = int(r[0])
+    m = str.encode(r[1])
     icao = adsb.icao(m)
     tc = adsb.typecode(m)
     if 1 <= tc <= 4:
