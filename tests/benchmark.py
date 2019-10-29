@@ -16,8 +16,13 @@ def native():
     from pyModeS.decoder import adsb
     from pyModeS.decoder import common
 
-    msg0 = None
-    msg1 = None
+    # airborne position
+    m_air_0 = None
+    m_air_1 = None
+
+    # surface position
+    m_surf_0 = None
+    m_surf_1 = None
 
     for i, r in tqdm(df_adsb.iterrows(), total=total):
         ts = r.ts
@@ -33,19 +38,31 @@ def native():
             callsign = adsb.callsign(m)
         if tc == 19:
             velocity = adsb.velocity(m)
-        if 5 <= tc <= 18:
+
+        if 5 <= tc <= 8:
             if adsb.oe_flag(m):
-                msg1 = m
+                m_surf_1 = m
                 t1 = ts
             else:
-                msg0 = m
+                m_surf_0 = m
                 t0 = ts
 
-            if msg0 and msg1:
-                try:
-                    position = adsb.position(msg0, msg1, t0, t1)
-                except:
-                    continue
+            if m_surf_0 and m_surf_1:
+                position = adsb.surface_position(
+                    m_surf_0, m_surf_1, t0, t1, 50.01, 4.35
+                )
+                altitude = adsb.altitude(m)
+
+        if 9 <= tc <= 18:
+            if adsb.oe_flag(m):
+                m_air_1 = m
+                t1 = ts
+            else:
+                m_air_0 = m
+                t0 = ts
+
+            if m_air_0 and m_air_1:
+                position = adsb.position(m_air_0, m_air_1, t0, t1)
                 altitude = adsb.altitude(m)
 
 
@@ -54,8 +71,13 @@ def cython():
     from pyModeS.c_decoder import adsb
     from pyModeS.c_decoder import common
 
-    msg0 = None
-    msg1 = None
+    # airborne position
+    m_air_0 = None
+    m_air_1 = None
+
+    # surface position
+    m_surf_0 = None
+    m_surf_1 = None
 
     for i, r in tqdm(df_adsb.iterrows(), total=total):
         ts = r.ts
@@ -71,19 +93,31 @@ def cython():
             callsign = adsb.callsign(m)
         if tc == 19:
             velocity = adsb.velocity(m)
-        if 5 <= tc <= 18:
+
+        if 5 <= tc <= 8:
             if adsb.oe_flag(m):
-                msg1 = m
+                m_surf_1 = m
                 t1 = ts
             else:
-                msg0 = m
+                m_surf_0 = m
                 t0 = ts
 
-            if msg0 and msg1:
-                try:
-                    position = adsb.position(msg0, msg1, t0, t1)
-                except:
-                    continue
+            if m_surf_0 and m_surf_1:
+                position = adsb.surface_position(
+                    m_surf_0, m_surf_1, t0, t1, 50.01, 4.35
+                )
+                altitude = adsb.altitude(m)
+
+        if 9 <= tc <= 18:
+            if adsb.oe_flag(m):
+                m_air_1 = m
+                t1 = ts
+            else:
+                m_air_0 = m
+                t0 = ts
+
+            if m_air_0 and m_air_1:
+                position = adsb.position(m_air_0, m_air_1, t0, t1)
                 altitude = adsb.altitude(m)
 
 
