@@ -25,7 +25,7 @@
 cimport cython
 
 from .. cimport common
-from libc.math cimport NAN as nan, round as c_round
+from libc.math cimport NAN as nan, remainder
 
 
 @cython.cdivision(True)
@@ -134,8 +134,10 @@ def airborne_position_with_ref(bytes msg not None, double lat_ref, double lon_re
     cdef unsigned char i = common.char_to_int(mb[21])
     cdef double d_lat = 360.0 / 59 if i else 360.0 / 60
 
+    # https://docs.python.org/3/library/math.html#math.fmod
+    cdef double mod_lat = lat_ref % d_lat if lat_ref >= 0 else (lat_ref % d_lat + d_lat)
     cdef long j = common.floor(lat_ref / d_lat) + common.floor(
-        0.5 + ((lat_ref % d_lat) / d_lat) - cprlat
+        0.5 + (mod_lat / d_lat) - cprlat
     )
 
     cdef double lat = d_lat * (j + cprlat)
@@ -148,8 +150,10 @@ def airborne_position_with_ref(bytes msg not None, double lat_ref, double lon_re
     else:
         d_lon = 360.0
 
+    # https://docs.python.org/3/library/math.html#math.fmod
+    cdef double mod_lon = lon_ref % d_lon if lon_ref >= 0 else (lon_ref % d_lon + d_lon)
     cdef int m = common.floor(lon_ref / d_lon) + common.floor(
-        0.5 + ((lon_ref % d_lon) / d_lon) - cprlon
+        0.5 + (mod_lon / d_lon) - cprlon
     )
 
     lon = d_lon * (m + cprlon)
