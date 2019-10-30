@@ -155,7 +155,7 @@ Core functions for ADS-B decoding
   # Typecode 1-4
   pms.adsb.callsign(msg)
 
-  # Typecode 5-8 (surface), 9-18 (airborne, barometric height), and 9-18 (airborne, GNSS height)
+  # Typecode 5-8 (surface), 9-18 (airborne, barometric height), and 20-22 (airborne, GNSS height)
   pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
   pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
   pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
