@@ -63,7 +63,7 @@ def cap17(msg):
         msg (String): 28 bytes hexadecimal message string
 
     Returns:
-        list: list of suport BDS codes
+        list: list of support BDS codes
     """
     allbds = [
         "05",

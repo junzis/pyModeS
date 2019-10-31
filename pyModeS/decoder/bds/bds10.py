@@ -45,7 +45,7 @@ def is10(msg):
     if bin2int(d[9:14]) != 0:
         return False
 
-    # overlay capabilty conflict
+    # overlay capability conflict
     if d[14] == "1" and bin2int(d[16:23]) < 5:
         return False
     if d[14] == "0" and bin2int(d[16:23]) > 4:

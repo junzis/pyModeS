@@ -125,7 +125,7 @@ def infer(msg, mrar=False):
         tc = common.typecode(msg)
 
         if 1 <= tc <= 4:
-            return "BDS08"  # indentification and category
+            return "BDS08"  # identification and category
         if 5 <= tc <= 8:
             return "BDS06"  # surface movement
         if 9 <= tc <= 18:

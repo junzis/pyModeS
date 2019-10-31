@@ -41,7 +41,7 @@ def airborne_velocity(msg, rtn_sources=False):
             rate of climb/descent (ft/min), speed type
             ('GS' for ground speed, 'AS' for airspeed),
             direction source ('true_north' for ground track / true north
-            as refrence, 'mag_north' for magnetic north as reference),
+            as reference, 'mag_north' for magnetic north as reference),
             rate of climb/descent source ('Baro' for barometer, 'GNSS'
             for GNSS constellation).
     """

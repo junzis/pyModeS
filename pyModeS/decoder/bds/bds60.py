@@ -165,7 +165,7 @@ def vr60baro(msg):
 
 
 def vr60ins(msg):
-    """Vertical rate messured by onbard equiments (IRS, AHRS)
+    """Vertical rate measurd by onbard equiments (IRS, AHRS)
 
     Args:
         msg (String): 28 bytes hexadecimal message (BDS60) string

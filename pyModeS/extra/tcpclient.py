@@ -170,7 +170,7 @@ class TcpClient(object):
               Start character '$'
 
             MS field - Payload
-            Postion 1 through 14:
+            Position 1 through 14:
               14 bytes = 112 bits
               Mode-S payload
               In case of DF types that only carry 7 bytes of information

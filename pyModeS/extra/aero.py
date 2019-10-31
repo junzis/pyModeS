@@ -9,9 +9,9 @@ International Standard Atmosphere
 
     p,rho,T = atmos(H)    # atmos as function of geopotential altitude H [m]
     a = vsound(H)         # speed of sound [m/s] as function of H[m]
-    p = pressure(H)       # calls atmos but retruns only pressure [Pa]
+    p = pressure(H)       # calls atmos but returns only pressure [Pa]
     T = temperature(H)    # calculates temperature [K]
-    rho = density(H)      # calls atmos but retruns only pressure [Pa]
+    rho = density(H)      # calls atmos but returns only pressure [Pa]
 
 Speed conversion at altitude H[m] in ISA
 ::

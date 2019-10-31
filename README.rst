@@ -141,7 +141,7 @@ Common functions
   pms.hex2bin(str)      # Convert hexadecimal string to binary string
   pms.bin2int(str)      # Convert binary string to integer
   pms.hex2int(str)      # Convert hexadecimal string to integer
-  pms.gray2int(str)     # Convert grey code to interger
+  pms.gray2int(str)     # Convert grey code to integer
 
 
 Core functions for ADS-B decoding

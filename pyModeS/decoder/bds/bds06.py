@@ -175,7 +175,7 @@ def surface_velocity(msg, rtn_sources=False):
     else:
         trk = None
 
-    # ground movment / speed
+    # ground movement / speed
     mov = common.bin2int(mb[5:12])
 
     if mov == 0 or mov > 124:

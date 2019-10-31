@@ -4,7 +4,7 @@ See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
 
-Steps for deploying a new verison:
+Steps for deploying a new version:
 1. Increase the version number
 2. remove the old deployment under [dist] and [build] folder
 3. run: python setup.py sdist

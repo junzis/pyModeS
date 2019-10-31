@@ -96,7 +96,7 @@ def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
         return airborne_position(msg0, msg1, t0, t1)
 
     else:
-        raise RuntimeError("incorrect or inconsistant message types")
+        raise RuntimeError("incorrect or inconsistent message types")
 
 
 def position_with_ref(msg, lat_ref, lon_ref):
@@ -125,7 +125,7 @@ def position_with_ref(msg, lat_ref, lon_ref):
         return airborne_position_with_ref(msg, lat_ref, lon_ref)
 
     else:
-        raise RuntimeError("incorrect or inconsistant message types")
+        raise RuntimeError("incorrect or inconsistent message types")
 
 
 def altitude(msg):
@@ -174,7 +174,7 @@ def velocity(msg, rtn_sources=False):
             rate of climb/descent (ft/min), speed type
             ('GS' for ground speed, 'AS' for airspeed),
             direction source ('true_north' for ground track / true north
-            as refrence, 'mag_north' for magnetic north as reference),
+            as reference, 'mag_north' for magnetic north as reference),
             rate of climb/descent source ('Baro' for barometer, 'GNSS'
             for GNSS constellation).
             
@@ -190,7 +190,7 @@ def velocity(msg, rtn_sources=False):
 
     else:
         raise RuntimeError(
-            "incorrect or inconsistant message types, expecting 4<TC<9 or TC=19"
+            "incorrect or inconsistent message types, expecting 4<TC<9 or TC=19"
         )
 
 
@@ -524,7 +524,7 @@ def sil(msg, version):
 
     if tc not in [29, 31]:
         raise RuntimeError(
-            "%s: Not a target state and status messag, \
+            "%s: Not a target state and status message, \
                            or operation status message, expecting TC = 29 or 31"
             % msg
         )

@@ -42,7 +42,7 @@ def np2bin(npbin):
 
 
 def df(msg):
-    """Decode Downlink Format vaule, bits 1 to 5."""
+    """Decode Downlink Format value, bits 1 to 5."""
     dfbin = hex2bin(msg[:2])
     return min(bin2int(dfbin[0:5]), 24)
 
