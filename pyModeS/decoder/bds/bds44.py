@@ -97,7 +97,7 @@ def temp44(msg):
 
     Returns:
         float, float: temperature and alternative temperature in Celsius degree.
-            Note: Two values returns due to what seems to be an inconsistancy
+            Note: Two values returns due to what seems to be an inconsistency
             error in ICAO 9871 (2008) Appendix A-67.
 
     """

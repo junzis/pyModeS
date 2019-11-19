@@ -71,7 +71,7 @@ elif SOURCE == "net":
     else:
         SERVER, PORT, DATATYPE = args.connect
         if DATATYPE not in support_rawtypes:
-            print("Data type not supported, avaiable ones are %s" % support_rawtypes)
+            print("Data type not supported, available ones are %s" % support_rawtypes)
 
 else:
     print('Source must be "rtlsdr" or "net".')

@@ -20,7 +20,7 @@ def tell(msg):
     _print("Downlink Format", df)
 
     if df == 17:
-        _print("Protocal", "Mode-S Extended Squitter (ADS-B)")
+        _print("Protocol", "Mode-S Extended Squitter (ADS-B)")
 
         tc = common.typecode(msg)
         if 1 <= tc <= 4:  # callsign
@@ -29,7 +29,7 @@ def tell(msg):
             _print("Callsign:", callsign)
 
         if 5 <= tc <= 8:  # surface position
-            _print("Type", "Surface postition")
+            _print("Type", "Surface position")
             oe = adsb.oe_flag(msg)
             msgbin = common.hex2bin(msg)
             cprlat = common.bin2int(msgbin[54:71]) / 131072.0
@@ -75,11 +75,11 @@ def tell(msg):
             _print("Altitude", alt, "feet")
 
     if df == 20:
-        _print("Protocal", "Mode-S Comm-B altitude reply")
+        _print("Protocol", "Mode-S Comm-B altitude reply")
         _print("Altitude", common.altcode(msg), "feet")
 
     if df == 21:
-        _print("Protocal", "Mode-S Comm-B identity reply")
+        _print("Protocol", "Mode-S Comm-B identity reply")
         _print("Squawk code", common.idcode(msg))
 
     if df == 20 or df == 21:

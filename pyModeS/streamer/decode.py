@@ -27,7 +27,7 @@ class Decode:
             self.dumpto = None
 
     def process_raw(self, adsb_ts, adsb_msg, commb_ts, commb_msg, tnow=None):
-        """process a chunk of adsb and commb messages recieved in the same
+        """process a chunk of adsb and commb messages received in the same
         time period.
         """
         if tnow is None:
@@ -259,7 +259,7 @@ class Decode:
         return
 
     def get_aircraft(self):
-        """all aircraft that are stored in memeory"""
+        """all aircraft that are stored in memory"""
         acs = self.acs
         return acs
 
