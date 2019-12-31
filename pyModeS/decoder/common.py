@@ -63,8 +63,10 @@ def crc(msg, encode=False):
     # the CRC generator
     G = [int("11111111", 2), int("11111010", 2), int("00000100", 2), int("10000000", 2)]
 
-    if encode:
+    if encode and isinstance(msg, str):
         msg = msg[:-6] + "000000"
+    elif encode:
+        msg = msg[:-6] + b"000000"
 
     msgbin = hex2bin(msg)
     msgbin_split = wrap(msgbin, 8)
