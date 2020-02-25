@@ -62,8 +62,8 @@ http://pymodes.readthedocs.io
 
 
 
-Install
--------
+Basic installation
+-------------------
 
 Installation examples::
 
@@ -75,6 +75,16 @@ Installation examples::
 
 
 Dependencies ``numpy``, ``pyzmq`` and ``pyrtlsdr`` are installed automatically during previous installations processes.
+
+Advanced installation (using c modules)
+------------------------------------------
+
+If you want to make use of the (faster) c module, install ``pyModeS`` as follows::
+
+  git clone https://github.com/junzis/pyModeS
+  cd pyModeS
+  make ext
+  make install
 
 
 View live traffic (modeslive)
