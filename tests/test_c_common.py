@@ -1,4 +1,4 @@
-from pyModeS.decoder import common
+from pyModeS.decoder import c_common as common
 
 
 def test_conversions():
@@ -6,12 +6,10 @@ def test_conversions():
 
 
 def test_crc_decode():
-    assert common.crc_legacy("8D406B902015A678D4D220AA4BDA") == 0
 
     assert common.crc("8D406B902015A678D4D220AA4BDA") == 0
     assert common.crc("8d8960ed58bf053cf11bc5932b7d") == 0
     assert common.crc("8d45cab390c39509496ca9a32912") == 0
-    assert common.crc("8d49d3d4e1089d00000000744c3b") == 0
     assert common.crc("8d74802958c904e6ef4ba0184d5c") == 0
     assert common.crc("8d4400cd9b0000b4f87000e71a10") == 0
     assert common.crc("8d4065de58a1054a7ef0218e226a") == 0

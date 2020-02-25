@@ -15,30 +15,9 @@ def hex2int(hexstr):
     return int(hexstr, 16)
 
 
-def int2hex(n):
-    """Convert a integer to hexadecimal string."""
-    # strip 'L' for python 2
-    return hex(n)[2:].rjust(6, "0").upper().rstrip("L")
-
-
 def bin2int(binstr):
     """Convert a binary string to integer."""
     return int(binstr, 2)
-
-
-def bin2hex(hexstr):
-    """Convert a hexdecimal string to integer."""
-    return int2hex(bin2int(hexstr))
-
-
-def bin2np(binstr):
-    """Convert a binary string to numpy array."""
-    return np.array([int(i) for i in binstr])
-
-
-def np2bin(npbin):
-    """Convert a binary numpy array to string."""
-    return np.array2string(npbin, separator="")[1:-1]
 
 
 def df(msg):
@@ -102,7 +81,7 @@ def crc_legacy(msg, encode=False):
     )
     ng = len(generator)
 
-    msgnpbin = bin2np(hex2bin(msg))
+    msgnpbin = np.array([int(i) for i in hex2bin(msg)])
 
     if encode:
         msgnpbin[-24:] = [0] * 24
@@ -116,7 +95,9 @@ def crc_legacy(msg, encode=False):
         msgnpbin[i : i + ng] = np.bitwise_xor(msgnpbin[i : i + ng], generator)
 
     # last 24 bits
-    reminder = bin2int(np2bin(msgnpbin[-24:]))
+    msgbin = np.array2string(msgnpbin[-24:], separator="")[1:-1]
+    reminder = bin2int(msgbin)
+
     return reminder
 
 
@@ -148,7 +129,7 @@ def icao(msg):
         addr = msg[2:8]
     elif DF in (0, 4, 5, 16, 20, 21):
         c0 = crc(msg, encode=True)
-        c1 = hex2int(msg[-6:])
+        c1 = int(msg[-6:], 16)
         addr = "%06X" % (c0 ^ c1)
     else:
         addr = None
@@ -161,7 +142,7 @@ def is_icao_assigned(icao):
     if (icao is None) or (not isinstance(icao, str)) or (len(icao) != 6):
         return False
 
-    icaoint = hex2int(icao)
+    icaoint = int(icao, 16)
 
     if 0x200000 < icaoint < 0x27FFFF:
         return False  # AFI
