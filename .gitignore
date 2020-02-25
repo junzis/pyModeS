@@ -6,7 +6,7 @@ __pycache__/
 .pytest_cache/
 
 #cython
-.c
+*.c
 
 # C extensions
 *.so
