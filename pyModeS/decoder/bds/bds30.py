@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
+
+from pyModeS import common
 
 
 def is30(msg):
@@ -17,10 +18,10 @@ def is30(msg):
         bool: True or False
     """
 
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[0:8] != "00110000":
         return False
@@ -30,7 +31,7 @@ def is30(msg):
         return False
 
     # reserved for ACAS III, in far future
-    if bin2int(d[15:22]) >= 48:
+    if common.bin2int(d[15:22]) >= 48:
         return False
 
     return True

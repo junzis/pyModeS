@@ -391,7 +391,7 @@ cdef int gray2int(str graystr):
     return num
 
 
-cdef str data(str msg):
+cpdef str data(str msg):
     """Return the data frame in the message, bytes 9 to 22."""
     return msg[8:-6]
 

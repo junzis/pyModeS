@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
+from pyModeS import common
 
 
 def is60(msg):
@@ -17,26 +18,26 @@ def is60(msg):
         bool: True or False
     """
 
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     # status bit 1, 13, 24, 35, 46
 
-    if wrongstatus(d, 1, 2, 12):
+    if common.wrongstatus(d, 1, 2, 12):
         return False
 
-    if wrongstatus(d, 13, 14, 23):
+    if common.wrongstatus(d, 13, 14, 23):
         return False
 
-    if wrongstatus(d, 24, 25, 34):
+    if common.wrongstatus(d, 24, 25, 34):
         return False
 
-    if wrongstatus(d, 35, 36, 45):
+    if common.wrongstatus(d, 35, 36, 45):
         return False
 
-    if wrongstatus(d, 46, 47, 56):
+    if common.wrongstatus(d, 46, 47, 56):
         return False
 
     ias = ias60(msg)
@@ -67,13 +68,13 @@ def hdg60(msg):
     Returns:
         float: heading in degrees to megnetic north (from 0 to 360)
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[0] == "0":
         return None
 
     sign = int(d[1])  # 1 -> west
-    value = bin2int(d[2:12])
+    value = common.bin2int(d[2:12])
 
     if sign:
         value = value - 1024
@@ -96,12 +97,12 @@ def ias60(msg):
     Returns:
         int: indicated airspeed in knots
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[12] == "0":
         return None
 
-    ias = bin2int(d[13:23])  # kts
+    ias = common.bin2int(d[13:23])  # kts
     return ias
 
 
@@ -114,12 +115,12 @@ def mach60(msg):
     Returns:
         float: MACH number
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[23] == "0":
         return None
 
-    mach = bin2int(d[24:34]) * 2.048 / 512.0
+    mach = common.bin2int(d[24:34]) * 2.048 / 512.0
     return round(mach, 3)
 
 
@@ -132,13 +133,13 @@ def vr60baro(msg):
     Returns:
         int: vertical rate in feet/minutes
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[34] == "0":
         return None
 
     sign = int(d[35])  # 1 -> negative value, two's complement
-    value = bin2int(d[36:45])
+    value = common.bin2int(d[36:45])
 
     if value == 0 or value == 511:  # all zeros or all ones
         return 0
@@ -158,13 +159,13 @@ def vr60ins(msg):
     Returns:
         int: vertical rate in feet/minutes
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[45] == "0":
         return None
 
     sign = int(d[46])  # 1 -> negative value, two's complement
-    value = bin2int(d[47:56])
+    value = common.bin2int(d[47:56])
 
     if value == 0 or value == 511:  # all zeros or all ones
         return 0

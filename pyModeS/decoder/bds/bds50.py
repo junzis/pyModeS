@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
+from pyModeS import common
 
 
 def is50(msg):
@@ -18,26 +19,26 @@ def is50(msg):
         bool: True or False
     """
 
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     # status bit 1, 12, 24, 35, 46
 
-    if wrongstatus(d, 1, 3, 11):
+    if common.wrongstatus(d, 1, 3, 11):
         return False
 
-    if wrongstatus(d, 12, 13, 23):
+    if common.wrongstatus(d, 12, 13, 23):
         return False
 
-    if wrongstatus(d, 24, 25, 34):
+    if common.wrongstatus(d, 24, 25, 34):
         return False
 
-    if wrongstatus(d, 35, 36, 45):
+    if common.wrongstatus(d, 35, 36, 45):
         return False
 
-    if wrongstatus(d, 46, 47, 56):
+    if common.wrongstatus(d, 46, 47, 56):
         return False
 
     roll = roll50(msg)
@@ -68,13 +69,13 @@ def roll50(msg):
         float: angle in degrees,
                negative->left wing down, positive->right wing down
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[0] == "0":
         return None
 
     sign = int(d[1])  # 1 -> left wing down
-    value = bin2int(d[2:11])
+    value = common.bin2int(d[2:11])
 
     if sign:
         value = value - 512
@@ -92,13 +93,13 @@ def trk50(msg):
     Returns:
         float: angle in degrees to true north (from 0 to 360)
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[11] == "0":
         return None
 
     sign = int(d[12])  # 1 -> west
-    value = bin2int(d[13:23])
+    value = common.bin2int(d[13:23])
 
     if sign:
         value = value - 1024
@@ -121,12 +122,12 @@ def gs50(msg):
     Returns:
         int: ground speed in knots
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[23] == "0":
         return None
 
-    spd = bin2int(d[24:34]) * 2  # kts
+    spd = common.bin2int(d[24:34]) * 2  # kts
     return spd
 
 
@@ -139,7 +140,7 @@ def rtrk50(msg):
     Returns:
         float: angle rate in degrees/second
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[34] == "0":
         return None
@@ -148,7 +149,7 @@ def rtrk50(msg):
         return None
 
     sign = int(d[35])  # 1 -> negative value, two's complement
-    value = bin2int(d[36:45])
+    value = common.bin2int(d[36:45])
     if sign:
         value = value - 512
 
@@ -165,10 +166,10 @@ def tas50(msg):
     Returns:
         int: true airspeed in knots
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[45] == "0":
         return None
 
-    tas = bin2int(d[46:56]) * 2  # kts
+    tas = common.bin2int(d[46:56]) * 2  # kts
     return tas

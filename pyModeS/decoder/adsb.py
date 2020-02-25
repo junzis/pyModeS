@@ -16,7 +16,9 @@ The ADS-B wrapper also imports functions from the following modules:
 from __future__ import absolute_import, print_function, division
 
 import pyModeS as pms
-from pyModeS.decoder import common
+
+from pyModeS import common
+
 from pyModeS.decoder import uncertainty
 
 # from pyModeS.decoder.bds import bds05, bds06, bds09

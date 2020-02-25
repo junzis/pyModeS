@@ -19,5 +19,5 @@ cpdef int cprNL(double lat)
 cpdef str idcode(str msg)
 cpdef int altcode(str msg)
 
-cdef str data(str msg)
+cpdef str data(str msg)
 cpdef bint allzeros(str msg)

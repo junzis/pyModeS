@@ -22,7 +22,13 @@ from __future__ import absolute_import, print_function, division
 import numpy as np
 
 from pyModeS.extra import aero
-from pyModeS.decoder import common
+
+try:
+    from pyModeS.decoder import c_common as common
+except:
+    from pyModeS.decoder import common
+
+
 from pyModeS.decoder.bds import (
     bds05,
     bds06,

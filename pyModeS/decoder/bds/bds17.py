@@ -5,7 +5,8 @@
 
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros
+
+from pyModeS import common
 
 
 def is17(msg):
@@ -18,12 +19,12 @@ def is17(msg):
         bool: True or False
     """
 
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
-    if bin2int(d[28:56]) != 0:
+    if common.bin2int(d[28:56]) != 0:
         return False
 
     caps = cap17(msg)
@@ -80,7 +81,7 @@ def cap17(msg):
         "E2",
     ]
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
     idx = [i for i, v in enumerate(d[:28]) if v == "1"]
     capacity = ["BDS" + allbds[i] for i in idx if allbds[i] is not "NA"]
 

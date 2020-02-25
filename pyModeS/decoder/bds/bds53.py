@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
+from pyModeS import common
 
 
 def is53(msg):
@@ -18,26 +19,26 @@ def is53(msg):
         bool: True or False
     """
 
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     # status bit 1, 13, 24, 34, 47
 
-    if wrongstatus(d, 1, 3, 12):
+    if common.wrongstatus(d, 1, 3, 12):
         return False
 
-    if wrongstatus(d, 13, 14, 23):
+    if common.wrongstatus(d, 13, 14, 23):
         return False
 
-    if wrongstatus(d, 24, 25, 33):
+    if common.wrongstatus(d, 24, 25, 33):
         return False
 
-    if wrongstatus(d, 34, 35, 46):
+    if common.wrongstatus(d, 34, 35, 46):
         return False
 
-    if wrongstatus(d, 47, 49, 56):
+    if common.wrongstatus(d, 47, 49, 56):
         return False
 
     ias = ias53(msg)
@@ -68,13 +69,13 @@ def hdg53(msg):
     Returns:
         float: angle in degrees to true north (from 0 to 360)
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[0] == "0":
         return None
 
     sign = int(d[1])  # 1 -> west
-    value = bin2int(d[2:12])
+    value = common.bin2int(d[2:12])
 
     if sign:
         value = value - 1024
@@ -97,12 +98,12 @@ def ias53(msg):
     Returns:
         int: indicated arispeed in knots
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[12] == "0":
         return None
 
-    ias = bin2int(d[13:23])  # knots
+    ias = common.bin2int(d[13:23])  # knots
     return ias
 
 
@@ -115,12 +116,12 @@ def mach53(msg):
     Returns:
         float: MACH number
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[23] == "0":
         return None
 
-    mach = bin2int(d[24:33]) * 0.008
+    mach = common.bin2int(d[24:33]) * 0.008
     return round(mach, 3)
 
 
@@ -133,12 +134,12 @@ def tas53(msg):
     Returns:
         float: true airspeed in knots
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[33] == "0":
         return None
 
-    tas = bin2int(d[34:46]) * 0.5  # kts
+    tas = common.bin2int(d[34:46]) * 0.5  # kts
     return round(tas, 1)
 
 
@@ -151,13 +152,13 @@ def vr53(msg):
     Returns:
         int: vertical rate in feet/minutes
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[46] == "0":
         return None
 
     sign = int(d[47])  # 1 -> negative value, two's complement
-    value = bin2int(d[48:56])
+    value = common.bin2int(d[48:56])
 
     if value == 0 or value == 255:  # all zeros or all ones
         return 0

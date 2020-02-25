@@ -4,7 +4,8 @@
 # ------------------------------------------
 
 from __future__ import absolute_import, print_function, division
-from pyModeS.decoder.common import hex2bin, bin2int, data, allzeros, wrongstatus
+
+from pyModeS import common
 
 
 def is44(msg):
@@ -19,26 +20,26 @@ def is44(msg):
         bool: True or False
 
     """
-    if allzeros(msg):
+    if common.allzeros(msg):
         return False
 
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     # status bit 5, 35, 47, 50
-    if wrongstatus(d, 5, 6, 23):
+    if common.wrongstatus(d, 5, 6, 23):
         return False
 
-    if wrongstatus(d, 35, 36, 46):
+    if common.wrongstatus(d, 35, 36, 46):
         return False
 
-    if wrongstatus(d, 47, 48, 49):
+    if common.wrongstatus(d, 47, 48, 49):
         return False
 
-    if wrongstatus(d, 50, 51, 56):
+    if common.wrongstatus(d, 50, 51, 56):
         return False
 
     # Bits 1-4 indicate source, values > 4 reserved and should not occur
-    if bin2int(d[0:4]) > 4:
+    if common.bin2int(d[0:4]) > 4:
         return False
 
     vw, dw = wind44(msg)
@@ -62,14 +63,14 @@ def wind44(msg):
         (int, float): speed (kt), direction (degree)
 
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     status = int(d[4])
     if not status:
         return None, None
 
-    speed = bin2int(d[5:14])  # knots
-    direction = bin2int(d[14:23]) * 180.0 / 256.0  # degree
+    speed = common.bin2int(d[5:14])  # knots
+    direction = common.bin2int(d[14:23]) * 180.0 / 256.0  # degree
 
     return round(speed, 0), round(direction, 1)
 
@@ -86,10 +87,10 @@ def temp44(msg):
             error in ICAO 9871 (2008) Appendix A-67.
 
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     sign = int(d[23])
-    value = bin2int(d[24:34])
+    value = common.bin2int(d[24:34])
 
     if sign:
         value = value - 1024
@@ -113,12 +114,12 @@ def p44(msg):
         int: static pressure in hPa
 
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[34] == "0":
         return None
 
-    p = bin2int(d[35:46])  # hPa
+    p = common.bin2int(d[35:46])  # hPa
 
     return p
 
@@ -132,12 +133,12 @@ def hum44(msg):
     Returns:
         float: percentage of humidity, [0 - 100] %
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[49] == "0":
         return None
 
-    hm = bin2int(d[50:56]) * 100.0 / 64  # %
+    hm = common.bin2int(d[50:56]) * 100.0 / 64  # %
 
     return round(hm, 1)
 
@@ -152,11 +153,11 @@ def turb44(msg):
         int: turbulence level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
 
     """
-    d = hex2bin(data(msg))
+    d = common.hex2bin(common.data(msg))
 
     if d[46] == "0":
         return None
 
-    turb = bin2int(d[47:49])
+    turb = common.bin2int(d[47:49])
 
     return turb

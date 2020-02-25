@@ -1,9 +1,9 @@
 from __future__ import absolute_import, print_function, division
 
-from pyModeS.decoder import adsb, commb, common, bds
-
 
 def tell(msg):
+    from pyModeS import common, adsb, commb, bds
+
     def _print(label, value, unit=None):
         print("%20s: " % label, end="")
         print("%s " % value, end="")
