@@ -2,6 +2,7 @@ import sys
 import time
 import pandas as pd
 from tqdm import tqdm
+from pyModeS.decoder import adsb
 
 fin = sys.argv[1]
 
@@ -13,7 +14,6 @@ total = df_adsb.shape[0]
 
 def native():
 
-    from pyModeS.decoder import adsb
     from pyModeS.decoder import common
 
     # airborne position
@@ -26,7 +26,7 @@ def native():
 
     for i, r in tqdm(df_adsb.iterrows(), total=total):
         ts = r.ts
-        m = r.msg.encode()
+        m = r.msg
 
         downlink_format = common.df(m)
         crc = common.crc(m)
@@ -68,8 +68,7 @@ def native():
 
 def cython():
 
-    from pyModeS.c_decoder import adsb
-    from pyModeS.c_decoder import common
+    from pyModeS.decoder import c_common as common
 
     # airborne position
     m_air_0 = None
@@ -81,7 +80,7 @@ def cython():
 
     for i, r in tqdm(df_adsb.iterrows(), total=total):
         ts = r.ts
-        m = r.msg.encode()
+        m = r.msg
 
         downlink_format = common.df(m)
         crc = common.crc(m)

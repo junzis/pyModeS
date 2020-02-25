@@ -24,49 +24,52 @@ cdef unsigned char int_to_char(unsigned char i):
 
 @cython.boundscheck(False)
 @cython.overflowcheck(False)
-cpdef bytearray hex2bin(bytes hexstr):
+cpdef str hex2bin(str hexstr):
     """Convert a hexdecimal string to binary string, with zero fillings."""
     # num_of_bits = len(hexstr) * 4
-    cdef Py_ssize_t len_hexstr = PyBytes_GET_SIZE(hexstr)
-    # binstr = bin(int(hexstr, 16))[2:].zfill(int(num_of_bits))
+    cdef hexbytes = bytes(hexstr.encode())
+    cdef Py_ssize_t len_hexstr = PyBytes_GET_SIZE(hexbytes)
+    # binstr = bin(int(hexbytes, 16))[2:].zfill(int(num_of_bits))
     cdef bytearray _binstr = bytearray(4 * len_hexstr)
     cdef unsigned char[:] binstr = _binstr
     cdef unsigned char int_
     cdef Py_ssize_t i
     for i in range(len_hexstr):
-        int_ = char_to_int(hexstr[i])
+        int_ = char_to_int(hexbytes[i])
         binstr[4*i] = int_to_char((int_  >> 3) & 1)
         binstr[4*i+1] = int_to_char((int_ >> 2) & 1)
         binstr[4*i+2] = int_to_char((int_ >> 1) & 1)
         binstr[4*i+3] = int_to_char((int_) & 1)
-    return _binstr
+    return _binstr.decode()
 
 @cython.boundscheck(False)
-cpdef long bin2int(bytearray binstr):
+cpdef long bin2int(str binstr):
     """Convert a binary string to integer."""
     # return int(binstr, 2)
-    cdef Py_ssize_t len_ = PyByteArray_GET_SIZE(binstr)
+    cdef bytearray binbytes = bytearray(binstr.encode())
+    cdef Py_ssize_t len_ = PyByteArray_GET_SIZE(binbytes)
     cdef long cumul = 0
-    cdef unsigned char[:] v_binstr = binstr
+    cdef unsigned char[:] v_binstr = binbytes
     for i in range(len_):
         cumul = 2*cumul + char_to_int(v_binstr[i])
     return cumul
 
 @cython.boundscheck(False)
-cpdef long hex2int(bytearray binstr):
+cpdef long hex2int(str hexstr):
     """Convert a binary string to integer."""
-    # return int(binstr, 2)
-    cdef Py_ssize_t len_ = PyByteArray_GET_SIZE(binstr)
+    # return int(hexstr, 2)
+    cdef bytearray binbytes = bytearray(hexstr.encode())
+    cdef Py_ssize_t len_ = PyByteArray_GET_SIZE(binbytes)
     cdef long cumul = 0
-    cdef unsigned char[:] v_binstr = binstr
+    cdef unsigned char[:] v_hexstr = binbytes
     for i in range(len_):
-        cumul = 16*cumul + char_to_int(v_binstr[i])
+        cumul = 16*cumul + char_to_int(v_hexstr[i])
     return cumul
 
 @cython.boundscheck(False)
-cpdef unsigned char df(bytes msg):
+cpdef unsigned char df(str msg):
     """Decode Downlink Format vaule, bits 1 to 5."""
-    cdef bytearray dfbin = hex2bin(msg[:2])
+    cdef str dfbin = hex2bin(msg[:2])
     # return min(bin2int(dfbin[0:5]), 24)
     cdef long df = bin2int(dfbin[0:5])
     if df > 24:
@@ -79,7 +82,7 @@ cdef array.array _G = array.array('l', [0b11111111, 0b11111010, 0b00000100, 0b10
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef long crc(bytes msg, bint encode=False):
+cpdef long crc(str msg, bint encode=False):
     """Mode-S Cyclic Redundancy Check.
 
     Detect if bit error occurs in the Mode-S message. When encode option is on,
@@ -99,7 +102,7 @@ cpdef long crc(bytes msg, bint encode=False):
 
     # msgbin_split = wrap(msgbin, 8)
     # mbytes = list(map(bin2int, msgbin_split))
-    cdef bytearray _msgbin = hex2bin(msg)
+    cdef bytearray _msgbin = bytearray(hex2bin(msg).encode())
     cdef unsigned char[:] msgbin = _msgbin
 
     cdef Py_ssize_t len_msgbin = PyByteArray_GET_SIZE(_msgbin)
@@ -111,7 +114,7 @@ cpdef long crc(bytes msg, bint encode=False):
             msgbin[i] = 0
 
     cdef array.array _mbytes = array.array(
-        'l', [bin2int(_msgbin[8*i:8*i+8]) for i in range(len_mbytes)]
+        'l', [bin2int(_msgbin[8*i:8*i+8].decode()) for i in range(len_mbytes)]
     )
 
     cdef long[:] mbytes = _mbytes
@@ -151,7 +154,7 @@ cpdef long floor(double x):
     """
     return <long> c_floor(x)
 
-cpdef str icao(bytes msg):
+cpdef str icao(str msg):
     """Calculate the ICAO address from an Mode-S message.
 
     Applicable only with DF4, DF5, DF20, DF21 messages.
@@ -166,13 +169,11 @@ cpdef str icao(bytes msg):
     cdef unsigned char DF = df(msg)
     cdef long c0, c1
 
-    cdef bytearray bmsg = bytearray(msg)
-
     if DF in (11, 17, 18):
-        addr = bmsg[2:8].decode()
+        addr = msg[2:8]
     elif DF in (0, 4, 5, 16, 20, 21):
         c0 = crc(msg, encode=True)
-        c1 = hex2int(bmsg[-6:])
+        c1 = hex2int(msg[-6:])
         addr = "%06X" % (c0 ^ c1)
     else:
         addr = None
@@ -180,7 +181,7 @@ cpdef str icao(bytes msg):
     return addr
 
 
-cpdef bint is_icao_assigned(bytes icao):
+cpdef bint is_icao_assigned(str icao):
     """Check whether the ICAO address is assigned (Annex 10, Vol 3)."""
     if (icao is None) or (not isinstance(icao, str)) or (len(icao) != 6):
         return False
@@ -210,7 +211,7 @@ cpdef bint is_icao_assigned(bytes icao):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef int typecode(bytes msg):
+cpdef int typecode(str msg):
     """Type code of ADS-B message
 
     Args:
@@ -223,7 +224,7 @@ cpdef int typecode(bytes msg):
         return -1
         # return None
 
-    cdef bytearray tcbin = hex2bin(msg[8:10])
+    cdef str tcbin = hex2bin(msg[8:10])
     return bin2int(tcbin[0:5])
 
 @cython.cdivision(True)
@@ -248,7 +249,7 @@ cpdef int cprNL(double lat):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef str idcode(bytes msg):
+cpdef str idcode(str msg):
     """Compute identity (squawk code).
 
     Applicable only for DF5 or DF21 messages, bit 20-32.
@@ -264,7 +265,7 @@ cpdef str idcode(bytes msg):
     if df(msg) not in [5, 21]:
         raise RuntimeError("Message must be Downlink Format 5 or 21.")
 
-    cdef bytearray _mbin = hex2bin(msg)
+    cdef bytearray _mbin = bytearray(hex2bin(msg).encode())
     cdef unsigned char[:] mbin = _mbin
 
     cdef bytearray _idcode = bytearray(4)
@@ -301,7 +302,7 @@ cpdef str idcode(bytes msg):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef int altcode(bytes msg):
+cpdef int altcode(str msg):
     """Compute the altitude.
 
     Applicable only for DF4 or DF20 message, bit 20-32.
@@ -318,52 +319,52 @@ cpdef int altcode(bytes msg):
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
     # Altitude code, bit 20-32
-    cdef bytearray _mbin = hex2bin(msg)
+    cdef bytearray _mbin = bytearray(hex2bin(msg).encode())
     cdef unsigned char[:] mbin = _mbin
 
     cdef char mbit = mbin[25]  # M bit: 26
     cdef char qbit = mbin[27]  # Q bit: 28
     cdef int alt = 0
     cdef bytearray vbin
-    cdef bytearray _graystr = bytearray(11)
-    cdef unsigned char[:] graystr = _graystr
+    cdef bytearray _graybytes = bytearray(11)
+    cdef unsigned char[:] graybytes = _graybytes
 
     if mbit == 48:  # unit in ft, "0" -> 48
         if qbit == 49:  # 25ft interval, "1" -> 49
             vbin = _mbin[19:25] + _mbin[26:27] + _mbin[28:32]
-            alt = bin2int(vbin) * 25 - 1000
+            alt = bin2int(vbin.decode()) * 25 - 1000
         if qbit == 48:  # 100ft interval, above 50175ft, "0" -> 48
-            graystr[8] = mbin[19]
-            graystr[2] = mbin[20]
-            graystr[9] = mbin[21]
-            graystr[3] = mbin[22]
-            graystr[10] = mbin[23]
-            graystr[4] = mbin[24]
+            graybytes[8] = mbin[19]
+            graybytes[2] = mbin[20]
+            graybytes[9] = mbin[21]
+            graybytes[3] = mbin[22]
+            graybytes[10] = mbin[23]
+            graybytes[4] = mbin[24]
             # _ = mbin[25]
-            graystr[5] = mbin[26]
+            graybytes[5] = mbin[26]
             # cdef char D1 = mbin[27]  # always zero
-            graystr[6] = mbin[28]
-            graystr[0] = mbin[29]
-            graystr[7] = mbin[30]
-            graystr[1] = mbin[31]
-            # graystr = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
+            graybytes[6] = mbin[28]
+            graybytes[0] = mbin[29]
+            graybytes[7] = mbin[30]
+            graybytes[1] = mbin[31]
+            # graybytes = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
 
-            alt = gray2alt(_graystr)
+            alt = gray2alt(_graybytes.decode())
 
     if mbit == 49:  # unit in meter, "1" -> 49
         vbin = _mbin[19:25] + _mbin[26:31]
-        alt = int(bin2int(vbin) * 3.28084)  # convert to ft
+        alt = int(bin2int(vbin.decode()) * 3.28084)  # convert to ft
 
     return alt
 
 
 
-cpdef int gray2alt(bytearray codestr):
-    cdef bytearray gc500 = codestr[:8]
+cpdef int gray2alt(str codestr):
+    cdef str gc500 = codestr[:8]
     cdef int n500 = gray2int(gc500)
 
     # in 100-ft step must be converted first
-    cdef bytearray gc100 = codestr[8:]
+    cdef str gc100 = codestr[8:]
     cdef int n100 = gray2int(gc100)
 
     if n100 in [0, 5, 6]:
@@ -380,7 +381,7 @@ cpdef int gray2alt(bytearray codestr):
     return alt
 
 
-cdef int gray2int(bytearray graystr):
+cdef int gray2int(str graystr):
     """Convert greycode to binary."""
     cdef int num = bin2int(graystr)
     num ^= num >> 8
@@ -390,12 +391,12 @@ cdef int gray2int(bytearray graystr):
     return num
 
 
-cdef bytes data(bytes msg):
+cdef str data(str msg):
     """Return the data frame in the message, bytes 9 to 22."""
     return msg[8:-6]
 
 
-cpdef bint allzeros(bytes msg):
+cpdef bint allzeros(str msg):
     """Check if the data bits are all zeros.
 
     Args:
