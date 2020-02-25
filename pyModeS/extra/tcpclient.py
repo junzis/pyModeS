@@ -254,7 +254,7 @@ class TcpClient(object):
         for msg, t in messages:
             print("%15.9f %s" % (t, msg))
 
-    def run(self, raw_pipe_in=None, stop_flag=None):
+    def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
         self.raw_pipe_in = raw_pipe_in
         self.stop_flag = stop_flag
         self.connect()
@@ -269,11 +269,6 @@ class TcpClient(object):
                 self.buffer.extend(received)
                 # print(''.join(x.encode('hex') for x in self.buffer))
 
-                # process self.buffer when it is longer enough
-                # if len(self.buffer) < 2048:
-                #     continue
-                # -- Removed!! Cause delay in low data rate scenario --
-
                 if self.datatype == "beast":
                     messages = self.read_beast_buffer()
                 elif self.datatype == "raw":
@@ -286,22 +281,12 @@ class TcpClient(object):
                 else:
                     self.handle_messages(messages)
 
-            except Exception as e:
-                # Provides the user an option to supply the environment
-                # variable PYMODES_DEBUG to halt the execution
-                # for debugging purposes
-                debug_intent = os.environ.get("PYMODES_DEBUG", "false")
-                if debug_intent.lower() == "true":
-                    traceback.print_exc()
-                    sys.exit()
-                else:
-                    print("Unexpected Error:", e)
+                # raise RuntimeError("test exception")
 
-                try:
-                    sock = self.connect()
-                    time.sleep(1)
-                except Exception as e:
-                    print("Unexpected Error:", e)
+            except Exception as e:
+                tb = traceback.format_exc()
+                exception_queue.put(tb)
+                raise e
 
 
 if __name__ == "__main__":

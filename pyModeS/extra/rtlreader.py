@@ -1,3 +1,4 @@
+import traceback
 import numpy as np
 import pyModeS as pms
 from rtlsdr import RtlSdr
@@ -7,13 +8,12 @@ sampling_rate = 2e6
 smaples_per_microsec = 2
 
 modes_frequency = 1090e6
-buffer_size = 1024 * 100
-read_size = 1024 * 10
+buffer_size = 1024 * 200
+read_size = 1024 * 100
 
 pbits = 8
 fbits = 112
 preamble = [1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0]
-# th_amp = 0.2  # signal amplitude threshold for 0 and 1 bit
 th_amp_diff = 0.8  # signal amplitude threshold difference between 0 and 1 bit
 
 
@@ -34,7 +34,12 @@ class RtlReader(object):
     def _calc_noise(self):
         """Calculate noise floor"""
         window = smaples_per_microsec * 100
-        means = np.array(self.signal_buffer).reshape(-1, window).mean(axis=1)
+        total_len = len(self.signal_buffer)
+        means = (
+            np.array(self.signal_buffer[: total_len // window * window])
+            .reshape(-1, window)
+            .mean(axis=1)
+        )
         return min(means)
 
     def _process_buffer(self):
@@ -153,18 +158,24 @@ class RtlReader(object):
             pass
 
     def stop(self, *args, **kwargs):
-        self.sdr.cancel_read_async()
+        self.sdr.close()
 
-    def run(self, raw_pipe_in=None, stop_flag=None):
+    def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
         self.raw_pipe_in = raw_pipe_in
         self.stop_flag = stop_flag
-        self.sdr.read_samples_async(self._read_callback, read_size)
 
-        # count = 1
-        # while count < 1000:
-        #     count += 1
-        #     data = self.sdr.read_samples(read_size)
-        #     self._read_callback(data, None)
+        try:
+            # raise RuntimeError("test exception")
+
+            while True:
+                data = self.sdr.read_samples(read_size)
+                self._read_callback(data, None)
+
+        except Exception as e:
+            tb = traceback.format_exc()
+            if exception_queue is not None:
+                exception_queue.put(tb)
+            raise e
 
 
 if __name__ == "__main__":

@@ -263,22 +263,27 @@ class Decode:
         acs = self.acs
         return acs
 
-    def run(self, raw_pipe_out, ac_pipe_in):
+    def run(self, raw_pipe_out, ac_pipe_in, exception_queue):
         local_buffer = []
         while True:
-            while raw_pipe_out.poll():
-                data = raw_pipe_out.recv()
-                local_buffer.append(data)
+            try:
+                while raw_pipe_out.poll():
+                    data = raw_pipe_out.recv()
+                    local_buffer.append(data)
 
-            for data in local_buffer:
-                self.process_raw(
-                    data["adsb_ts"],
-                    data["adsb_msg"],
-                    data["commb_ts"],
-                    data["commb_msg"],
-                )
-            local_buffer = []
+                for data in local_buffer:
+                    self.process_raw(
+                        data["adsb_ts"],
+                        data["adsb_msg"],
+                        data["commb_ts"],
+                        data["commb_msg"],
+                    )
+                local_buffer = []
 
-            acs = self.get_aircraft()
-            ac_pipe_in.send(acs)
-            time.sleep(0.001)
+                acs = self.get_aircraft()
+                ac_pipe_in.send(acs)
+                time.sleep(0.001)
+
+            except Exception as e:
+                tb = traceback.format_exc()
+                exception_queue.put((e, tb))

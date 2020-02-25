@@ -3,6 +3,7 @@ import curses
 import numpy as np
 import time
 import threading
+import traceback
 
 COLUMNS = [
     ("call", 10),
@@ -187,24 +188,32 @@ class Screen(object):
                 self.screen.refresh()
                 self.draw_frame()
 
-    def run(self, ac_pipe_out):
+    def run(self, ac_pipe_out, exception_queue):
         local_buffer = []
         key_thread = threading.Thread(target=self.kye_handling)
+        key_thread.daemon = True
         key_thread.start()
 
         while True:
-            while ac_pipe_out.poll():
-                acs = ac_pipe_out.recv()
-                local_buffer.append(acs)
-
-            for acs in local_buffer:
-                self.update_ac(acs)
-
-            local_buffer = []
-
             try:
+                # raise RuntimeError("test exception")
+
+                while ac_pipe_out.poll():
+                    acs = ac_pipe_out.recv()
+                    local_buffer.append(acs)
+
+                for acs in local_buffer:
+                    self.update_ac(acs)
+
+                local_buffer = []
+
                 self.update()
-            except:
+            except curses.error:
                 pass
+            except Exception as e:
+                tb = traceback.format_exc()
+                exception_queue.put(tb)
+                time.sleep(0.1)
+                raise e
 
             time.sleep(0.001)

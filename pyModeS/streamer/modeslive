@@ -3,6 +3,7 @@
 from __future__ import print_function, division
 import os
 import sys
+import time
 import argparse
 import curses
 import signal
@@ -14,7 +15,6 @@ from pyModeS.streamer.source import NetSource, RtlSdrSource
 
 # redirect all stdout to null, avoiding messing up with the screen
 sys.stdout = open(os.devnull, "w")
-
 
 support_rawtypes = ["raw", "beast", "skysense"]
 
@@ -87,13 +87,9 @@ if DUMPTO is not None:
         sys.exit(1)
 
 
-# raw_event = multiprocessing.Event()
-# ac_event = multiprocessing.Event()
-# raw_queue = multiprocessing.Queue()
-# ac_queue = multiprocessing.Queue()
-
 raw_pipe_in, raw_pipe_out = multiprocessing.Pipe()
 ac_pipe_in, ac_pipe_out = multiprocessing.Pipe()
+exception_queue = multiprocessing.Queue()
 stop_flag = multiprocessing.Value("b", False)
 
 if SOURCE == "net":
@@ -102,29 +98,38 @@ elif SOURCE == "rtlsdr":
     source = RtlSdrSource()
 
 
-recv_process = multiprocessing.Process(target=source.run, args=(raw_pipe_in, stop_flag))
+recv_process = multiprocessing.Process(
+    target=source.run, args=(raw_pipe_in, stop_flag, exception_queue)
+)
 
 
 decode = Decode(latlon=LATLON, dumpto=DUMPTO)
 decode_process = multiprocessing.Process(
-    target=decode.run, args=(raw_pipe_out, ac_pipe_in)
+    target=decode.run, args=(raw_pipe_out, ac_pipe_in, exception_queue)
 )
 
 screen = Screen(uncertainty=UNCERTAINTY)
-screen_process = multiprocessing.Process(target=screen.run, args=(ac_pipe_out,))
+screen_process = multiprocessing.Process(
+    target=screen.run, args=(ac_pipe_out, exception_queue)
+)
 
 
-def closeall(signal, frame):
-    print("KeyboardInterrupt (ID: {}). Cleaning up...".format(signal))
+def shutdown():
     stop_flag.value = True
     curses.endwin()
+    sys.stdout = sys.__stdout__
     recv_process.terminate()
     decode_process.terminate()
     screen_process.terminate()
     recv_process.join()
     decode_process.join()
     screen_process.join()
-    exit(0)
+
+
+def closeall(signal, frame):
+    print("KeyboardInterrupt (ID: {}). Cleaning up...".format(signal))
+    shutdown()
+    sys.exit(0)
 
 
 signal.signal(signal.SIGINT, closeall)
@@ -132,3 +137,19 @@ signal.signal(signal.SIGINT, closeall)
 recv_process.start()
 decode_process.start()
 screen_process.start()
+
+
+while True:
+    if (
+        (not recv_process.is_alive())
+        or (not decode_process.is_alive())
+        or (not screen_process.is_alive())
+    ):
+        shutdown()
+        while not exception_queue.empty():
+            trackback = exception_queue.get()
+            print(trackback)
+
+        sys.exit(1)
+
+    time.sleep(0.01)
