@@ -185,13 +185,11 @@ def typecode(msg):
 def cprNL(lat):
     """NL() function in CPR decoding."""
 
-    if lat == 0:
+    if np.isclose(lat, 0):
         return 59
-
-    if lat == 87 or lat == -87:
+    elif np.isclose(abs(lat), 87):
         return 2
-
-    if lat > 87 or lat < -87:
+    elif lat > 87 or lat < -87:
         return 1
 
     nz = 15

@@ -5,7 +5,7 @@ from cpython cimport array
 from cpython.bytes cimport PyBytes_GET_SIZE
 from cpython.bytearray cimport PyByteArray_GET_SIZE
 
-from libc.math cimport cos, acos, fabs, M_PI as pi, floor as c_floor
+from libc.math cimport abs, cos, acos, fabs, M_PI as pi, floor as c_floor
 
 
 cdef int char_to_int(unsigned char binstr):
@@ -231,13 +231,11 @@ cpdef int typecode(str msg):
 cpdef int cprNL(double lat):
     """NL() function in CPR decoding."""
 
-    if lat == 0:
+    if abs(lat) <= 1e-08:
         return 59
-
-    if lat == 87 or lat == -87:
+    elif abs(abs(lat) - 87) <= 1e-08 + 1e-05 * 87:
         return 2
-
-    if lat > 87 or lat < -87:
+    elif lat > 87 or lat < -87:
         return 1
 
     cdef int nz = 15
