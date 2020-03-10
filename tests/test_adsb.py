@@ -1,3 +1,4 @@
+from binascii import unhexlify
 from pyModeS import adsb
 
 # === TEST ADS-B package ===
@@ -11,8 +12,13 @@ def test_adsb_category():
     assert adsb.category("8D406B902015A678D4D220AA4BDA") == 0
 
 
-def test_adsb_callsign():
+def test_adsb_callsign_str():
     assert adsb.callsign("8D406B902015A678D4D220AA4BDA") == "EZY85MH_"
+
+
+def test_adsb_callsign_bytes():
+    msg = unhexlify("8D406B902015A678D4D220AA4BDA")
+    assert adsb.callsign(msg) == "EZY85MH_"
 
 
 def test_adsb_position():

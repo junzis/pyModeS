@@ -6,6 +6,9 @@
 
 from __future__ import absolute_import, print_function, division
 
+from binascii import hexlify
+from functools import singledispatch
+
 from pyModeS import common
 
 
@@ -27,16 +30,24 @@ def category(msg):
     return common.bin2int(mebin[5:8])
 
 
+@singledispatch
 def callsign(msg):
     """Aircraft callsign
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (string or bytes): 28 bytes hexadecimal message string or 14 bytes
 
     Returns:
         string: callsign
     """
+    raise ValueError('Unknown message type: {}'.format(type(msg)))
 
+@callsign.register
+def _callsign_str(msg: bytes):
+    return _callsign_str(hexlify(msg))
+
+@callsign.register
+def _callsign_str(msg: str):
     if common.typecode(msg) < 1 or common.typecode(msg) > 4:
         raise RuntimeError("%s: Not a identification message" % msg)
 
