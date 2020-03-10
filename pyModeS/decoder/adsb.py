@@ -50,7 +50,7 @@ def typecode(msg):
 
 def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
     """Decode surface or airborne position from a pair of even and odd
-    position message.
+    position messages.
 
     Note, that to decode surface position using the position message pair,
     the reference position has to be provided.
