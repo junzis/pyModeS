@@ -49,14 +49,19 @@ def typecode(msg):
 
 
 def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
-    """Decode position from a pair of even and odd position message
-    (works with both airborne and surface position messages)
+    """Decode surface or airborne position from a pair of even and odd
+    position messages.
+
+    Note, that to decode surface position using the position message pair,
+    the reference position has to be provided.
 
     Args:
         msg0 (string): even message (28 bytes hexadecimal string)
         msg1 (string): odd message (28 bytes hexadecimal string)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
+        lat_ref (float): latitude of reference position
+        lon_ref (float): longitude of reference position
 
     Returns:
         (float, float): (latitude, longitude) of the aircraft
@@ -65,11 +70,10 @@ def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
     tc1 = typecode(msg1)
 
     if 5 <= tc0 <= 8 and 5 <= tc1 <= 8:
-        if (not lat_ref) or (not lon_ref):
+        if lat_ref is None or lon_ref is None:
             raise RuntimeError(
-                "Surface position encountered, a reference \
-                               position lat/lon required. Location of \
-                               receiver can be used."
+                "Surface position encountered, a reference position"
+                " lat/lon required. Location of receiver can be used."
             )
         else:
             return surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref)
@@ -83,7 +87,7 @@ def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
         return airborne_position(msg0, msg1, t0, t1)
 
     else:
-        raise RuntimeError("incorrect or inconsistent message types")
+        raise RuntimeError("Incorrect or inconsistent message types")
 
 
 def position_with_ref(msg, lat_ref, lon_ref):
