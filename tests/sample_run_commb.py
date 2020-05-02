@@ -1,4 +1,3 @@
-from __future__ import print_function
 from pyModeS import commb, common, bds
 
 # === Decode sample data file ===

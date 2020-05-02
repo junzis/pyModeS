@@ -10,8 +10,6 @@ The ELS wrapper imports all functions from the following modules:
 
 """
 
-from __future__ import absolute_import, print_function, division
-
 from pyModeS.decoder.bds.bds10 import *
 from pyModeS.decoder.bds.bds17 import *
 from pyModeS.decoder.bds.bds20 import *

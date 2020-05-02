@@ -19,8 +19,6 @@ The Comm-B wrapper imports all functions from the following modules:
 
 """
 
-from __future__ import absolute_import, print_function, division
-
 # ELS - elementary surveillance
 from pyModeS.decoder.bds.bds10 import *
 from pyModeS.decoder.bds.bds17 import *

@@ -61,7 +61,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        "Programming Language :: Python :: 2",
+        # "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
     ],
     ext_modules=cythonize(extensions),
@@ -77,7 +77,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=["numpy", "argparse", "pyzmq", "pyrtlsdr"],
+    install_requires=["numpy", "pyzmq", "pyrtlsdr"],
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:

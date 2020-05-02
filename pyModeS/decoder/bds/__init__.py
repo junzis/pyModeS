@@ -18,7 +18,6 @@
 Common functions for Mode-S decoding
 """
 
-from __future__ import absolute_import, print_function, division
 import numpy as np
 
 from pyModeS.extra import aero

@@ -13,8 +13,6 @@ The ADS-B wrapper also imports functions from the following modules:
 
 """
 
-from __future__ import absolute_import, print_function, division
-
 import pyModeS as pms
 
 from pyModeS import common

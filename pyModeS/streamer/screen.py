@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 import curses
 import numpy as np
 import time

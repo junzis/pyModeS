@@ -9,7 +9,6 @@ The EHS wrapper imports all functions from the following modules:
 
 """
 
-from __future__ import absolute_import, print_function, division
 import warnings
 
 from pyModeS.decoder.bds.bds40 import *
