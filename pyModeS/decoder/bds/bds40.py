@@ -54,7 +54,7 @@ def selalt40mcp(msg):
     """Selected altitude, MCP/FCU
 
     Args:
-        msg (str): 28 hexdigits (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet
@@ -72,7 +72,7 @@ def selalt40fms(msg):
     """Selected altitude, FMS
 
     Args:
-        msg (str): 28 hexdigits (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet
@@ -90,7 +90,7 @@ def p40baro(msg):
     """Barometric pressure setting
 
     Args:
-        msg (str): 28 hexdigits (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: pressure in millibar

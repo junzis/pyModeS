@@ -1,15 +1,11 @@
-"""ADS-B Wrapper.
+"""ADS-B module.
 
-The ADS-B wrapper also imports functions from the following modules:
+The ADS-B module also imports functions from the following modules:
 
-- pyModeS.decoder.bds.bds05
-    Functions: ``airborne_position``, ``airborne_position_with_ref``, ``altitude``
-- pyModeS.decoder.bds.bds06
-    Functions: ``surface_position``, ``surface_position_with_ref``, ``surface_velocity``
-- pyModeS.decoder.bds.bds08
-    Functions: ``category``, ``callsign``
-- pyModeS.decoder.bds.bds09
-    Functions: ``airborne_velocity``, ``altitude_diff``
+- pyModeS.decoder.bds.bds05: ``airborne_position()``, ``airborne_position_with_ref()``, ``altitude()``
+- pyModeS.decoder.bds.bds06: ``surface_position()``, ``surface_position_with_ref()``, ``surface_velocity()``
+- pyModeS.decoder.bds.bds08: ``category()``, ``callsign()``
+- pyModeS.decoder.bds.bds09: ``airborne_velocity()``, ``altitude_diff()``
 
 """
 

@@ -62,7 +62,7 @@ def hdg53(msg):
     """Magnetic heading, BDS 5,3 message
 
     Args:
-        msg (str): 28 hexdigits (BDS53) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: angle in degrees to true north (from 0 to 360)

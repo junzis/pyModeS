@@ -36,7 +36,7 @@ def cs20(msg):
     """Aircraft callsign
 
     Args:
-        msg (str): 28 hexdigits (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         string: callsign, max. 8 chars
