@@ -45,7 +45,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     """Use reference ground speed and trk to determine BDS50 and DBS60.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
         spd_ref (float): reference speed (ADS-B ground speed), kts
         trk_ref (float): reference track (ADS-B track angle), deg
         alt_ref (float): reference altitude (ADS-B altitude), ft
@@ -108,7 +108,7 @@ def infer(msg, mrar=False):
     """Estimate the most likely BDS code of an message.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
         mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45). Defaults to False.
 
     Returns:

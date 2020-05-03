@@ -1,7 +1,7 @@
 # ------------------------------------------
 #   BDS 0,6
 #   ADS-B TC=5-8
-#   Surface position
+#   Surface movment
 # ------------------------------------------
 
 from pyModeS import common
@@ -89,7 +89,7 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     be with in 45NM of the true position.
 
     Args:
-        msg (string): even message (28 hexdigits)
+        msg (str): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 
@@ -127,23 +127,24 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     return round(lat, 5), round(lon, 5)
 
 
-def surface_velocity(msg, rtn_sources=False):
-    """Decode surface velocity from from a surface position message
+def surface_velocity(msg, source=False):
+    """Decode surface velocity from a surface position message
+
     Args:
-        msg (string): 28 bytes hexadecimal message string
-        rtn_source (boolean): If the function will return
-            the sources for direction of travel and vertical
-            rate. This will change the return value from a four
-            element array to a six element array.
+        msg (str): 28 hexdigits string
+        source (boolean): Include direction and vertical rate sources in return. Default to False.
+            If set to True, the function will return six value instead of four.
 
     Returns:
-        (int, float, int, string, string, None): speed (kt),
-            ground track (degree), None for rate of climb/descend (ft/min),
-            and speed type ('GS' for ground speed), direction source
-            ('true_north' for ground track / true north as reference),
-            None rate of climb/descent source.
-    """
+        int, float, int, string, [string], [string]: Four or six parameters, including:
+            - Speed (kt)
+            - Angle (degree), ground track
+            - Vertical rate, always 0
+            - Speed type ('GS' for ground speed, 'AS' for airspeed)
+            - [Optional] Direction source ('TRUE_NORTH')
+            - [Optional] Vertical rate source (None)
 
+    """
     if common.typecode(msg) < 5 or common.typecode(msg) > 8:
         raise RuntimeError("%s: Not a surface message, expecting 5<TC<8" % msg)
 
@@ -174,7 +175,7 @@ def surface_velocity(msg, rtn_sources=False):
         spd = kts[i - 1] + (mov - movs[i - 1]) * step
         spd = round(spd, 2)
 
-    if rtn_sources:
-        return spd, trk, 0, "GS", "true_north", None
+    if source:
+        return spd, trk, 0, "GS", "TRUE_NORTH", None
     else:
         return spd, trk, 0, "GS"

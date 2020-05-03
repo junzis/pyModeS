@@ -10,7 +10,7 @@ def is17(msg):
     """Check if a message is likely to be BDS code 1,7
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -42,7 +42,7 @@ def cap17(msg):
     """Extract capacities from BDS 1,7 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         list: list of support BDS codes

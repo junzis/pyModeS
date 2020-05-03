@@ -10,27 +10,24 @@ from pyModeS import common
 import math
 
 
-def airborne_velocity(msg, rtn_sources=False):
-    """Calculate the speed, track (or heading), and vertical rate
+def airborne_velocity(msg, source=False):
+    """Decode airborne velocity.
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
-        rtn_source (boolean): If the function will return
-            the sources for direction of travel and vertical
-            rate. This will change the return value from a four
-            element array to a six element array.
+        msg (str): 28 hexdigits string
+        source (boolean): Include direction and vertical rate sources in return. Default to False.
+            If set to True, the function will return six value instead of four.
 
     Returns:
-        (int, float, int, string, string, string): speed (kt),
-            ground track or heading (degree),
-            rate of climb/descent (ft/min), speed type
-            ('GS' for ground speed, 'AS' for airspeed),
-            direction source ('true_north' for ground track / true north
-            as reference, 'mag_north' for magnetic north as reference),
-            rate of climb/descent source ('Baro' for barometer, 'GNSS'
-            for GNSS constellation).
-    """
+        int, float, int, string, [string], [string]: Four or six parameters, including:
+            - Speed (kt)
+            - Angle (degree), either ground track or heading
+            - Vertical rate (ft/min)
+            - Speed type ('GS' for ground speed, 'AS' for airspeed)
+            - [Optional] Direction source ('TRUE_NORTH' or 'MAGENTIC_NORTH')
+            - [Optional] Vertical rate source ('BARO' or 'GNSS')
 
+    """
     if common.typecode(msg) != 19:
         raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
 
@@ -62,9 +59,9 @@ def airborne_velocity(msg, rtn_sources=False):
         trk = math.degrees(trk)  # convert to degrees
         trk = trk if trk >= 0 else trk + 360  # no negative val
 
-        tag = "GS"
+        spd_type = "GS"
         trk_or_hdg = round(trk, 2)
-        dir_type = "true_north"
+        dir_type = "TRUE_NORTH"
 
     else:
         if mb[13] == "0":
@@ -81,32 +78,33 @@ def airborne_velocity(msg, rtn_sources=False):
             spd *= 4
 
         if mb[24] == "0":
-            tag = "IAS"
+            spd_type = "IAS"
         else:
-            tag = "TAS"
+            spd_type = "TAS"
 
-        dir_type = "mag_north"
+        dir_type = "MAGENTIC_NORTH"
 
-    vr_source = "GNSS" if mb[35] == "0" else "Baro"
+    vr_source = "GNSS" if mb[35] == "0" else "BARO"
     vr_sign = -1 if mb[36] == "1" else 1
     vr = common.bin2int(mb[37:46])
-    rocd = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
+    vs = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
 
-    if rtn_sources:
-        return spd, trk_or_hdg, rocd, tag, dir_type, vr_source
+    if source:
+        return spd, trk_or_hdg, vs, spd_type, dir_type, vr_source
     else:
-        return spd, trk_or_hdg, rocd, tag
+        return spd, trk_or_hdg, vs, spd_type
 
 
 def altitude_diff(msg):
-    """Decode the differece between GNSS and barometric altitude
+    """Decode the differece between GNSS and barometric altitude.
 
     Args:
-        msg (string): 28 bytes hexadecimal message string, TC=19
+        msg (str): 28 hexdigits string, TC=19
 
     Returns:
-        int: Altitude difference in ft. Negative value indicates GNSS altitude
-            below barometric altitude.
+        int: Altitude difference in feet. Negative value indicates GNSS altitude
+        below barometric altitude.
+
     """
     tc = common.typecode(msg)
 

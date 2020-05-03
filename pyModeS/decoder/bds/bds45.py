@@ -12,7 +12,7 @@ def is45(msg):
     Meteorological hazard report
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -64,7 +64,7 @@ def turb45(msg):
     """Turbulence.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Turbulence level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
@@ -82,7 +82,7 @@ def ws45(msg):
     """Wind shear.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Wind shear level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
@@ -100,7 +100,7 @@ def mb45(msg):
     """Microburst.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Microburst level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
@@ -118,7 +118,7 @@ def ic45(msg):
     """Icing.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Icing level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
@@ -136,7 +136,7 @@ def wv45(msg):
     """Wake vortex.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Wake vortex level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
@@ -154,7 +154,7 @@ def temp45(msg):
     """Static air temperature.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: tmeperature in Celsius degree
@@ -178,7 +178,7 @@ def p45(msg):
     """Average static pressure.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: static pressure in hPa
@@ -195,7 +195,7 @@ def rh45(msg):
     """Radio height.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: radio height in ft

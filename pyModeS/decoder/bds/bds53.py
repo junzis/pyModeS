@@ -11,7 +11,7 @@ def is53(msg):
     (Air-referenced state vector)
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -62,7 +62,7 @@ def hdg53(msg):
     """Magnetic heading, BDS 5,3 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS53) string
+        msg (str): 28 hexdigits (BDS53) string
 
     Returns:
         float: angle in degrees to true north (from 0 to 360)
@@ -91,7 +91,7 @@ def ias53(msg):
     """Indicated airspeed, DBS 5,3 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message
+        msg (str): 28 hexdigits
 
     Returns:
         int: indicated arispeed in knots
@@ -109,7 +109,7 @@ def mach53(msg):
     """MACH number, DBS 5,3 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message
+        msg (str): 28 hexdigits
 
     Returns:
         float: MACH number
@@ -127,7 +127,7 @@ def tas53(msg):
     """Aircraft true airspeed, BDS 5,3 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message
+        msg (str): 28 hexdigits
 
     Returns:
         float: true airspeed in knots
@@ -145,7 +145,7 @@ def vr53(msg):
     """Vertical rate
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits (BDS60) string
 
     Returns:
         int: vertical rate in feet/minutes

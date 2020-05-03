@@ -12,7 +12,7 @@ def is44(msg):
     Meteorological routine air report
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -55,7 +55,7 @@ def wind44(msg):
     """Wind speed and direction.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         (int, float): speed (kt), direction (degree)
@@ -77,7 +77,7 @@ def temp44(msg):
     """Static air temperature.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         float, float: temperature and alternative temperature in Celsius degree.
@@ -106,7 +106,7 @@ def p44(msg):
     """Static pressure.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: static pressure in hPa
@@ -126,7 +126,7 @@ def hum44(msg):
     """humidity
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: percentage of humidity, [0 - 100] %
@@ -145,7 +145,7 @@ def turb44(msg):
     """Turblence.
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: turbulence level. 0=NIL, 1=Light, 2=Moderate, 3=Severe
