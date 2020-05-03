@@ -51,8 +51,8 @@ def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
     (works with both airborne and surface position messages)
 
     Args:
-        msg0 (string): even message (28 bytes hexadecimal string)
-        msg1 (string): odd message (28 bytes hexadecimal string)
+        msg0 (string): even message (28 hexdigits)
+        msg1 (string): odd message (28 hexdigits)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
 
@@ -93,7 +93,7 @@ def position_with_ref(msg, lat_ref, lon_ref):
     of the true position.
 
     Args:
-        msg (string): even message (28 bytes hexadecimal string)
+        msg (string): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 

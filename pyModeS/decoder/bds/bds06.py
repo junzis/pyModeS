@@ -12,8 +12,8 @@ def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
     the lat/lon of receiver must be provided to yield the correct solution.
 
     Args:
-        msg0 (string): even message (28 bytes hexadecimal string)
-        msg1 (string): odd message (28 bytes hexadecimal string)
+        msg0 (string): even message (28 hexdigits)
+        msg1 (string): odd message (28 hexdigits)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
         lat_ref (float): latitude of the receiver
@@ -89,7 +89,7 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     be with in 45NM of the true position.
 
     Args:
-        msg (string): even message (28 bytes hexadecimal string)
+        msg (string): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 

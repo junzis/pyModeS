@@ -11,8 +11,8 @@ def airborne_position(msg0, msg1, t0, t1):
     """Decode airborn position from a pair of even and odd position message
 
     Args:
-        msg0 (string): even message (28 bytes hexadecimal string)
-        msg1 (string): odd message (28 bytes hexadecimal string)
+        msg0 (string): even message (28 hexdigits)
+        msg1 (string): odd message (28 hexdigits)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
 
@@ -85,7 +85,7 @@ def airborne_position_with_ref(msg, lat_ref, lon_ref):
     be with in 180NM of the true position.
 
     Args:
-        msg (string): even message (28 bytes hexadecimal string)
+        msg (string): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 
