@@ -57,10 +57,10 @@ Check out and contribute to this open-source project at:
 https://github.com/junzis/pyModeS
 
 Detailed manual on Mode-S decoding is published at:
-https://mode-s.org/decode.
+https://mode-s.org/decode
 
 The API documentation of pyModeS is at:
-http://pymodes.readthedocs.io
+https://mode-s.org/api
 
 
 
