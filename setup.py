@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 from setuptools.extension import Extension
 from Cython.Build import cythonize
 
-extensions = [Extension("pyModeS.decoder.c_common", ["pyModeS/decoder/c_common.pyx"])]
+extensions = [Extension("pyModeS.c_common", ["pyModeS/c_common.pyx"])]
 
 
 # To use a consistent encoding

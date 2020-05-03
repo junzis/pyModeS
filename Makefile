@@ -8,7 +8,7 @@ ext:
 	python setup.py build_ext --inplace
 
 test:
-	python -m pytest
+	python -m pytest tests
 
 clean:
 	find pyModeS/decoder -type f -name '*.c' -delete

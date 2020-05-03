@@ -21,12 +21,7 @@ Common functions for Mode-S decoding
 import numpy as np
 
 from pyModeS.extra import aero
-
-try:
-    from pyModeS.decoder import c_common as common
-except:
-    from pyModeS.decoder import common
-
+from pyModeS import common
 
 from pyModeS.decoder.bds import (
     bds05,

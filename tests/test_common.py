@@ -1,4 +1,4 @@
-from pyModeS.decoder import common
+from pyModeS import common
 
 
 def test_conversions():
