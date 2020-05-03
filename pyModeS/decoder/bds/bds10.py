@@ -10,7 +10,7 @@ def is10(msg):
     """Check if a message is likely to be BDS code 1,0
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -42,7 +42,7 @@ def ovc10(msg):
     """Return the overlay control capability
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: Whether the transponder is OVC capable

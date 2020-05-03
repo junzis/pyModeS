@@ -10,7 +10,7 @@ def is60(msg):
     """Check if a message is likely to be BDS code 6,0
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -61,7 +61,7 @@ def hdg60(msg):
     """Megnetic heading of aircraft
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: heading in degrees to megnetic north (from 0 to 360)
@@ -90,7 +90,7 @@ def ias60(msg):
     """Indicated airspeed
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: indicated airspeed in knots
@@ -108,7 +108,7 @@ def mach60(msg):
     """Aircraft MACH number
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: MACH number
@@ -126,7 +126,7 @@ def vr60baro(msg):
     """Vertical rate from barometric measurement, this value may be very noisy.
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: vertical rate in feet/minutes
@@ -152,7 +152,7 @@ def vr60ins(msg):
     """Vertical rate measurd by onbard equiments (IRS, AHRS)
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS60) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: vertical rate in feet/minutes

@@ -1,15 +1,11 @@
-"""ADS-B Wrapper.
+"""ADS-B module.
 
-The ADS-B wrapper also imports functions from the following modules:
+The ADS-B module also imports functions from the following modules:
 
-- pyModeS.decoder.bds.bds05
-    Functions: ``airborne_position``, ``airborne_position_with_ref``, ``altitude``
-- pyModeS.decoder.bds.bds06
-    Functions: ``surface_position``, ``surface_position_with_ref``, ``surface_velocity``
-- pyModeS.decoder.bds.bds08
-    Functions: ``category``, ``callsign``
-- pyModeS.decoder.bds.bds09
-    Functions: ``airborne_velocity``, ``altitude_diff``
+- pyModeS.decoder.bds.bds05: ``airborne_position()``, ``airborne_position_with_ref()``, ``altitude()``
+- pyModeS.decoder.bds.bds06: ``surface_position()``, ``surface_position_with_ref()``, ``surface_velocity()``
+- pyModeS.decoder.bds.bds08: ``category()``, ``callsign()``
+- pyModeS.decoder.bds.bds09: ``airborne_velocity()``, ``altitude_diff()``
 
 """
 
@@ -47,27 +43,32 @@ def typecode(msg):
 
 
 def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
-    """Decode position from a pair of even and odd position message
-    (works with both airborne and surface position messages)
+    """Decode surface or airborne position from a pair of even and odd
+    position messages.
+
+    Note, that to decode surface position using the position message pair,
+    the reference position has to be provided.
 
     Args:
         msg0 (string): even message (28 hexdigits)
         msg1 (string): odd message (28 hexdigits)
         t0 (int): timestamps for the even message
         t1 (int): timestamps for the odd message
+        lat_ref (float): latitude of reference position
+        lon_ref (float): longitude of reference position
 
     Returns:
         (float, float): (latitude, longitude) of the aircraft
+
     """
     tc0 = typecode(msg0)
     tc1 = typecode(msg1)
 
     if 5 <= tc0 <= 8 and 5 <= tc1 <= 8:
-        if (not lat_ref) or (not lon_ref):
+        if lat_ref is None or lon_ref is None:
             raise RuntimeError(
-                "Surface position encountered, a reference \
-                               position lat/lon required. Location of \
-                               receiver can be used."
+                "Surface position encountered, a reference position"
+                " lat/lon required. Location of receiver can be used."
             )
         else:
             return surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref)
@@ -81,19 +82,20 @@ def position(msg0, msg1, t0, t1, lat_ref=None, lon_ref=None):
         return airborne_position(msg0, msg1, t0, t1)
 
     else:
-        raise RuntimeError("incorrect or inconsistent message types")
+        raise RuntimeError("Incorrect or inconsistent message types")
 
 
 def position_with_ref(msg, lat_ref, lon_ref):
-    """Decode position with only one message,
-    knowing reference nearby location, such as previously
-    calculated location, ground station, or airport location, etc.
-    Works with both airborne and surface position messages.
+    """Decode position with only one message.
+
+    A reference position is required, which can be previously
+    calculated location, ground station, or airport location.
+    The function works with both airborne and surface position messages.
     The reference position shall be with in 180NM (airborne) or 45NM (surface)
     of the true position.
 
     Args:
-        msg (string): even message (28 hexdigits)
+        msg (str): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 
@@ -114,15 +116,15 @@ def position_with_ref(msg, lat_ref, lon_ref):
 
 
 def altitude(msg):
-    """Decode aircraft altitude
+    """Decode aircraft altitude.
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet
-    """
 
+    """
     tc = typecode(msg)
 
     if tc < 5 or tc == 19 or tc > 22:
@@ -137,36 +139,31 @@ def altitude(msg):
         return altitude05(msg)
 
 
-def velocity(msg, rtn_sources=False):
-    """Calculate the speed, heading, and vertical rate
-    (handles both airborne or surface message)
+def velocity(msg, source=False):
+    """Calculate the speed, heading, and vertical rate (handles both airborne or surface message).
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
-        rtn_source (boolean): If the function will return
-            the sources for direction of travel and vertical
-            rate. This will change the return value from a four
-            element array to a six element array.
+        msg (str): 28 hexdigits string
+        source (boolean): Include direction and vertical rate sources in return. Default to False.
+            If set to True, the function will return six value instead of four.
 
     Returns:
-        (int, float, int, string, string, string): speed (kt),
-            ground track or heading (degree),
-            rate of climb/descent (ft/min), speed type
-            ('GS' for ground speed, 'AS' for airspeed),
-            direction source ('true_north' for ground track / true north
-            as reference, 'mag_north' for magnetic north as reference),
-            rate of climb/descent source ('Baro' for barometer, 'GNSS'
-            for GNSS constellation).
+        int, float, int, string, [string], [string]: Four or six parameters, including:
+            - Speed (kt)
+            - Angle (degree), either ground track or heading
+            - Vertical rate (ft/min)
+            - Speed type ('GS' for ground speed, 'AS' for airspeed)
+            - [Optional] Direction source ('TRUE_NORTH' or 'MAGENTIC_NORTH')
+            - [Optional] Vertical rate source ('BARO' or 'GNSS')
 
-            In the case of surface messages, None will be put in place
-            for vertical rate and its respective sources.
+        For surface messages, vertical rate and its respective sources are set to None.
+
     """
-
     if 5 <= typecode(msg) <= 8:
-        return surface_velocity(msg, rtn_sources)
+        return surface_velocity(msg, source)
 
     elif typecode(msg) == 19:
-        return airborne_velocity(msg, rtn_sources)
+        return airborne_velocity(msg, source)
 
     else:
         raise RuntimeError(
@@ -179,7 +176,7 @@ def speed_heading(msg):
     (handles both airborne or surface message)
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         (int, float): speed (kt), ground track or heading (degree)
@@ -191,7 +188,7 @@ def speed_heading(msg):
 def oe_flag(msg):
     """Check the odd/even flag. Bit 54, 0 for even, 1 for odd.
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
     Returns:
         int: 0 or 1, for even or odd frame
     """
@@ -203,7 +200,7 @@ def version(msg):
     """ADS-B Version
 
     Args:
-        msg (string): 28 bytes hexadecimal message string, TC = 31
+        msg (str): 28 hexdigits string, TC = 31
 
     Returns:
         int: version number
@@ -225,7 +222,7 @@ def nuc_p(msg):
     """Calculate NUCp, Navigation Uncertainty Category - Position (ADS-B version 1)
 
     Args:
-        msg (string): 28 bytes hexadecimal message string,
+        msg (str): 28 hexdigits string,
 
     Returns:
         int: Horizontal Protection Limit
@@ -261,7 +258,7 @@ def nuc_v(msg):
     """Calculate NUCv, Navigation Uncertainty Category - Velocity (ADS-B version 1)
 
     Args:
-        msg (string): 28 bytes hexadecimal message string,
+        msg (str): 28 hexdigits string,
 
     Returns:
         int or string: 95% Horizontal Velocity Error
@@ -290,7 +287,7 @@ def nic_v1(msg, NICs):
     """Calculate NIC, navigation integrity category, for ADS-B version 1
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
         NICs (int or string): NIC supplement
 
     Returns:
@@ -324,7 +321,7 @@ def nic_v2(msg, NICa, NICbc):
     """Calculate NIC, navigation integrity category, for ADS-B version 2
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
         NICa (int or string): NIC supplement - A
         NICbc (int or srting): NIC supplement - B or C
 
@@ -362,7 +359,7 @@ def nic_s(msg):
     """Obtain NIC supplement bit, TC=31 message
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: NICs number (0 or 1)
@@ -384,7 +381,7 @@ def nic_a_c(msg):
     """Obtain NICa/c, navigation integrity category supplements a and c
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         (int, int): NICa and NICc number (0 or 1)
@@ -407,7 +404,7 @@ def nic_b(msg):
     """Obtain NICb, navigation integrity category supplement-b
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: NICb number (0 or 1)
@@ -429,7 +426,7 @@ def nac_p(msg):
     """Calculate NACp, Navigation Accuracy Category - Position
 
     Args:
-        msg (string): 28 bytes hexadecimal message string, TC = 29 or 31
+        msg (str): 28 hexdigits string, TC = 29 or 31
 
     Returns:
         int or string: 95% horizontal accuracy bounds, Estimated Position Uncertainty
@@ -464,7 +461,7 @@ def nac_v(msg):
     """Calculate NACv, Navigation Accuracy Category - Velocity
 
     Args:
-        msg (string): 28 bytes hexadecimal message string, TC = 19
+        msg (str): 28 hexdigits string, TC = 19
 
     Returns:
         int or string: 95% horizontal accuracy bounds for velocity, Horizontal Figure of Merit
@@ -493,7 +490,7 @@ def sil(msg, version):
     """Calculate SIL, Surveillance Integrity Level
 
     Args:
-        msg (string): 28 bytes hexadecimal message string with TC = 29, 31
+        msg (str): 28 hexdigits string with TC = 29, 31
 
     Returns:
         int or string: Probability of exceeding Horizontal Radius of Containment RCu

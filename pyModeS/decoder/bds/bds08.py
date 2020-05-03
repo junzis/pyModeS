@@ -11,7 +11,7 @@ def category(msg):
     """Aircraft category number
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: category number
@@ -29,7 +29,7 @@ def callsign(msg):
     """Aircraft callsign
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         string: callsign

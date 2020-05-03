@@ -17,5 +17,5 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	rm -f source/pyModeS*.rst source/modules.rst
-	sphinx-apidoc -f -e -M -o source/ ../pyModeS
+	sphinx-apidoc -f -e -M -o source/ ../pyModeS  ../pyModeS/decoder/ehs.py ../pyModeS/decoder/els.py  ../pyModeS/streamer ../pyModeS/extra
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

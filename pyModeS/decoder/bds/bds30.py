@@ -10,7 +10,7 @@ def is30(msg):
     """Check if a message is likely to be BDS code 2,0
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False

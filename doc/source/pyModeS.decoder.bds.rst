@@ -2,14 +2,15 @@ pyModeS.decoder.bds package
 ===========================
 
 .. automodule:: pyModeS.decoder.bds
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    pyModeS.decoder.bds.bds05
    pyModeS.decoder.bds.bds06
@@ -25,4 +26,3 @@ Submodules
    pyModeS.decoder.bds.bds50
    pyModeS.decoder.bds.bds53
    pyModeS.decoder.bds.bds60
-

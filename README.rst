@@ -1,6 +1,42 @@
 The Python ADS-B/Mode-S Decoder
 ===============================
 
+PyModeS is a Python library designed to decode Mode-S (including ADS-B) message. It can be imported to your python project or used as a standalone tool to view and save live traffic data.
+
+This is a project created by Junzi Sun, who works at `TU Delft <https://www.tudelft.nl/en/>`_, `Aerospace Engineering Faculty <https://www.tudelft.nl/en/ae/>`_, `CNS/ATM research group <http://cs.lr.tudelft.nl/atm/>`_. It is supported by many `contributors <https://github.com/junzis/pyModeS/graphs/contributors>`_ from different institutions.
+
+Introduction
+------------
+
+pyModeS supports the decoding of following types of messages:
+
+- DF4 / DF20: Altitude code
+- DF5 / DF21: Identity code (squawk code)
+
+- DF17 / DF18: Automatic Dependent Surveillance-Broadcast (ADS-B)
+
+  - TC=1-4  / BDS 0,8: Aircraft identification and category
+  - TC=5-8  / BDS 0,6: Surface position
+  - TC=9-18 / BDS 0,5: Airborne position
+  - TC=19   / BDS 0,9: Airborne velocity
+  - TC=28   / BDS 6,1: Airborne status [to be implemented]
+  - TC=29   / BDS 6,2: Target state and status information [to be implemented]
+  - TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
+
+- DF20 / DF21: Mode-S Comm-B messages
+
+  - BDS 1,0: Data link capability report
+  - BDS 1,7: Common usage GICB capability report
+  - BDS 2,0: Aircraft identification
+  - BDS 3,0: ACAS active resolution advisory
+  - BDS 4,0: Selected vertical intention
+  - BDS 4,4: Meteorological routine air report (experimental)
+  - BDS 4,5: Meteorological hazard report (experimental)
+  - BDS 5,0: Track and turn report
+  - BDS 6,0: Heading and speed report
+
+
+
 If you find this project useful for your research, please considering cite this tool as::
 
   @article{sun2019pymodes,
@@ -14,40 +50,6 @@ If you find this project useful for your research, please considering cite this 
 
 
 
-Introduction
----------------------
-PyModeS is a Python library designed to decode Mode-S (including ADS-B) message. It can be imported to your python project or be used as a standalone tool to view and save live traffic data.
-
-Messages with following Downlink Formats (DF) are supported:
-
-**DF17 / DF18: Automatic Dependent Surveillance-Broadcast (ADS-B)**
-
-- TC=1-4  / BDS 0,8: Aircraft identification and category
-- TC=5-8  / BDS 0,6: Surface position
-- TC=9-18 / BDS 0,5: Airborne position
-- TC=19   / BDS 0,9: Airborne velocity
-- TC=28   / BDS 6,1: Airborne status [to be implemented]
-- TC=29   / BDS 6,2: Target state and status information [to be implemented]
-- TC=31   / BDS 6,5: Aircraft operational status [to be implemented]
-
-
-**DF20 / DF21: Mode-S Comm-B replies**
-
-- BDS 1,0: Data link capability report
-- BDS 1,7: Common usage GICB capability report
-- BDS 2,0: Aircraft identification
-- BDS 3,0: ACAS active resolution advisory
-- BDS 4,0: Selected vertical intention
-- BDS 4,4: Meteorological routine air report (experimental)
-- BDS 4,5: Meteorological hazard report (experimental)
-- BDS 5,0: Track and turn report
-- BDS 6,0: Heading and speed report
-
-
-**DF4 / DF20: Altitude code**
-
-**DF5 / DF21: Identity code (squawk code)**
-
 
 Resources
 -----------
@@ -55,10 +57,10 @@ Check out and contribute to this open-source project at:
 https://github.com/junzis/pyModeS
 
 Detailed manual on Mode-S decoding is published at:
-https://mode-s.org/decode.
+https://mode-s.org/decode
 
 The API documentation of pyModeS is at:
-http://pymodes.readthedocs.io
+https://mode-s.org/api
 
 
 

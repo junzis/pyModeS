@@ -15,8 +15,6 @@ from .decoder import bds
 from .extra import aero
 from .extra import tcpclient
 
-from .encoder import encode_adsb
-
 
 warnings.simplefilter("once", DeprecationWarning)
 

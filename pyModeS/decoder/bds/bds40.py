@@ -11,7 +11,7 @@ def is40(msg):
     """Check if a message is likely to be BDS code 4,0
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -54,7 +54,7 @@ def selalt40mcp(msg):
     """Selected altitude, MCP/FCU
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet
@@ -72,7 +72,7 @@ def selalt40fms(msg):
     """Selected altitude, FMS
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet
@@ -90,7 +90,7 @@ def p40baro(msg):
     """Barometric pressure setting
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: pressure in millibar

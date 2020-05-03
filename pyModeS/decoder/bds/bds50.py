@@ -11,7 +11,7 @@ def is50(msg):
     (Track and turn report)
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -61,7 +61,7 @@ def roll50(msg):
     """Roll angle, BDS 5,0 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS50) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: angle in degrees,
@@ -86,7 +86,7 @@ def trk50(msg):
     """True track angle, BDS 5,0 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS50) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: angle in degrees to true north (from 0 to 360)
@@ -115,7 +115,7 @@ def gs50(msg):
     """Ground speed, BDS 5,0 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS50) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: ground speed in knots
@@ -133,7 +133,7 @@ def rtrk50(msg):
     """Track angle rate, BDS 5,0 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS50) string
+        msg (str): 28 hexdigits string
 
     Returns:
         float: angle rate in degrees/second
@@ -159,7 +159,7 @@ def tas50(msg):
     """Aircraft true airspeed, BDS 5,0 message
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS50) string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: true airspeed in knots

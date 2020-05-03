@@ -85,7 +85,7 @@ def airborne_position_with_ref(msg, lat_ref, lon_ref):
     be with in 180NM of the true position.
 
     Args:
-        msg (string): even message (28 hexdigits)
+        msg (str): even message (28 hexdigits)
         lat_ref: previous known latitude
         lon_ref: previous known longitude
 
@@ -127,7 +127,7 @@ def altitude(msg):
     """Decode aircraft altitude
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         int: altitude in feet

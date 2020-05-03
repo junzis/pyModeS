@@ -10,7 +10,7 @@ def is20(msg):
     """Check if a message is likely to be BDS code 2,0
 
     Args:
-        msg (String): 28 bytes hexadecimal message string
+        msg (str): 28 hexdigits string
 
     Returns:
         bool: True or False
@@ -36,7 +36,7 @@ def cs20(msg):
     """Aircraft callsign
 
     Args:
-        msg (String): 28 bytes hexadecimal message (BDS40) string
+        msg (str): 28 hexdigits string
 
     Returns:
         string: callsign, max. 8 chars
