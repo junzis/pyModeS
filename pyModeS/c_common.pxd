@@ -5,7 +5,8 @@ cdef unsigned char int_to_char(unsigned char i)
 
 cpdef str hex2bin(str hexstr)
 cpdef long bin2int(str binstr)
-cpdef long hex2int(str binstr)
+cpdef long hex2int(str hexstr)
+cpdef str bin2hex(str binstr)
 
 cpdef unsigned char df(str msg)
 cpdef long crc(str msg, bint encode=*)

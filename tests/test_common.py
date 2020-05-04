@@ -2,7 +2,9 @@ from pyModeS import common
 
 
 def test_conversions():
-    assert common.hex2bin("6E406B") == "011011100100000001101011"
+    assert common.hex2bin("6E") == "01101110"
+    assert common.bin2hex("01101110") == "6E"
+    assert common.bin2hex("1101110") == "6E"
 
 
 def test_crc_decode():

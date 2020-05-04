@@ -19,6 +19,11 @@ def bin2int(binstr):
     return int(binstr, 2)
 
 
+def bin2hex(binstr):
+    """Convert a binary string to hexdecimal string."""
+    return "{0:X}".format(int(binstr, 2))
+
+
 def df(msg):
     """Decode Downlink Format value, bits 1 to 5."""
     dfbin = hex2bin(msg[:2])

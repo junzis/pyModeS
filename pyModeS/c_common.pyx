@@ -67,6 +67,11 @@ cpdef long hex2int(str hexstr):
     return cumul
 
 @cython.boundscheck(False)
+cpdef str bin2hex(str binstr):
+    return "{0:X}".format(int(binstr, 2))
+
+
+@cython.boundscheck(False)
 cpdef unsigned char df(str msg):
     """Decode Downlink Format vaule, bits 1 to 5."""
     cdef str dfbin = hex2bin(msg[:2])
