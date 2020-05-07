@@ -1,4 +1,4 @@
-def tell(msg):
+def tell(msg: str) -> None:
     from pyModeS import common, adsb, commb, bds
 
     def _print(label, value, unit=None):

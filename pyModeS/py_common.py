@@ -1,44 +1,46 @@
+from typing import Optional
+
 import numpy as np
 from textwrap import wrap
 
 
-def hex2bin(hexstr):
+def hex2bin(hexstr: str) -> str:
     """Convert a hexdecimal string to binary string, with zero fillings."""
     num_of_bits = len(hexstr) * 4
     binstr = bin(int(hexstr, 16))[2:].zfill(int(num_of_bits))
     return binstr
 
 
-def hex2int(hexstr):
+def hex2int(hexstr: str) -> int:
     """Convert a hexdecimal string to integer."""
     return int(hexstr, 16)
 
 
-def bin2int(binstr):
+def bin2int(binstr: str) -> int:
     """Convert a binary string to integer."""
     return int(binstr, 2)
 
 
-def bin2hex(binstr):
+def bin2hex(binstr: str) -> str:
     """Convert a binary string to hexdecimal string."""
     return "{0:X}".format(int(binstr, 2))
 
 
-def df(msg):
+def df(msg: str) -> int:
     """Decode Downlink Format value, bits 1 to 5."""
     dfbin = hex2bin(msg[:2])
     return min(bin2int(dfbin[0:5]), 24)
 
 
-def crc(msg, encode=False):
+def crc(msg: str, encode: bool = False) -> int:
     """Mode-S Cyclic Redundancy Check.
 
     Detect if bit error occurs in the Mode-S message. When encode option is on,
     the checksum is generated.
 
     Args:
-        msg (string): 28 bytes hexadecimal message string
-        encode (bool): True to encode the date only and return the checksum
+        msg: 28 bytes hexadecimal message string
+        encode: True to encode the date only and return the checksum
     Returns:
         int: message checksum, or partity bits (encoder)
 
@@ -75,7 +77,7 @@ def crc(msg, encode=False):
     return result
 
 
-def crc_legacy(msg, encode=False):
+def crc_legacy(msg: str, encode: bool = False) -> int:
     """Mode-S Cyclic Redundancy Check. (Legacy code, 2x slow)."""
     # the polynominal generattor code for CRC [1111111111111010000001001]
     generator = np.array(
@@ -94,7 +96,7 @@ def crc_legacy(msg, encode=False):
             continue
 
         # perform XOR, when 1
-        msgnpbin[i : i + ng] = np.bitwise_xor(msgnpbin[i : i + ng], generator)
+        msgnpbin[i: i + ng] = np.bitwise_xor(msgnpbin[i: i + ng], generator)
 
     # last 24 bits
     msgbin = np.array2string(msgnpbin[-24:], separator="")[1:-1]
@@ -103,7 +105,7 @@ def crc_legacy(msg, encode=False):
     return reminder
 
 
-def floor(x):
+def floor(x: float) -> int:
     """Mode-S floor function.
 
     Defined as the greatest integer value k, such that k <= x
@@ -113,7 +115,7 @@ def floor(x):
     return int(np.floor(x))
 
 
-def icao(msg):
+def icao(msg: str) -> Optional[str]:
     """Calculate the ICAO address from an Mode-S message.
 
     Applicable only with DF4, DF5, DF20, DF21 messages.
@@ -125,6 +127,7 @@ def icao(msg):
         String: ICAO address in 6 bytes hexadecimal string
 
     """
+    addr: Optional[str]
     DF = df(msg)
 
     if DF in (11, 17, 18):
@@ -139,7 +142,7 @@ def icao(msg):
     return addr
 
 
-def is_icao_assigned(icao):
+def is_icao_assigned(icao: str) -> bool:
     """Check whether the ICAO address is assigned (Annex 10, Vol 3)."""
     if (icao is None) or (not isinstance(icao, str)) or (len(icao) != 6):
         return False
@@ -168,7 +171,7 @@ def is_icao_assigned(icao):
     return True
 
 
-def typecode(msg):
+def typecode(msg: str) -> Optional[int]:
     """Type code of ADS-B message
 
     Args:
@@ -184,7 +187,7 @@ def typecode(msg):
     return bin2int(tcbin[0:5])
 
 
-def cprNL(lat):
+def cprNL(lat: float) -> int:
     """NL() function in CPR decoding."""
 
     if np.isclose(lat, 0):
@@ -202,7 +205,7 @@ def cprNL(lat):
     return NL
 
 
-def idcode(msg):
+def idcode(msg: str) -> str:
     """Compute identity (squawk code).
 
     Applicable only for DF5 or DF21 messages, bit 20-32.
@@ -242,7 +245,7 @@ def idcode(msg):
     return str(byte1) + str(byte2) + str(byte3) + str(byte4)
 
 
-def altcode(msg):
+def altcode(msg: str) -> Optional[int]:
     """Compute the altitude.
 
     Applicable only for DF4 or DF20 message, bit 20-32.
@@ -255,6 +258,9 @@ def altcode(msg):
         int: altitude in ft
 
     """
+
+    alt: Optional[int]
+
     if df(msg) not in [0, 4, 16, 20]:
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
@@ -293,7 +299,7 @@ def altcode(msg):
     return alt
 
 
-def gray2alt(codestr):
+def gray2alt(codestr: str) -> Optional[int]:
     gc500 = codestr[:8]
     n500 = gray2int(gc500)
 
@@ -314,7 +320,7 @@ def gray2alt(codestr):
     return alt
 
 
-def gray2int(graystr):
+def gray2int(graystr: str) -> int:
     """Convert greycode to binary."""
     num = bin2int(graystr)
     num ^= num >> 8
@@ -324,12 +330,12 @@ def gray2int(graystr):
     return num
 
 
-def data(msg):
+def data(msg: str) -> str:
     """Return the data frame in the message, bytes 9 to 22."""
     return msg[8:-6]
 
 
-def allzeros(msg):
+def allzeros(msg: str) -> bool:
     """Check if the data bits are all zeros.
 
     Args:
@@ -347,7 +353,7 @@ def allzeros(msg):
         return True
 
 
-def wrongstatus(data, sb, msb, lsb):
+def wrongstatus(data: str, sb: int, msb: int, lsb: int) -> bool:
     """Check if the status bit and field bits are consistency.
 
     This Function is used for checking BDS code versions.
@@ -355,7 +361,7 @@ def wrongstatus(data, sb, msb, lsb):
     """
     # status bit, most significant bit, least significant bit
     status = int(data[sb - 1])
-    value = bin2int(data[msb - 1 : lsb])
+    value = bin2int(data[msb - 1: lsb])
 
     if not status:
         if value != 0:
