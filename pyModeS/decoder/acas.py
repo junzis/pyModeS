@@ -50,7 +50,9 @@ def threat_location(msg):
     
     # Altitude, range, and bearing of threat
     if tti == 2:
-        grey = mb[31] + mb[32] + mb[33] + mb[34] + mb[35] + mb[36] + mb[38] + mb[38] + mb[39] + mb[40] + mb[41] + mb[42] + mb[43]
+        grey = mb[31] + mb[32] + mb[33] + mb[34] + mb[35] + mb[36] \
+               + mb[38] + mb[38] + mb[39] + mb[40] + mb[41] + mb[42] \
+               + mb[43]
         mode_c_alt = common.gray2alt(grey)
         _range = common.bin2int(mb[44:51])
         bearing = common.bin2int(mb[51:57])
@@ -84,6 +86,70 @@ def has_multiple_threats(msg):
 
 def active_resolution_advisories(msg):
     mb = common.bin2int(msg)[32:]
+
+    mte = mb[27]
+
     ara_b1 = mb[8]
     ara_b2 = mb[9]
-    ara_b1 = mb[8]
+    ara_b3 = mb[10]
+    ara_b4 = mb[11]
+    ara_b5 = mb[12]
+    ara_b6 = mb[14]
+    # ACAS III are bits 15-22
+
+    # blah, now what? just return the byte string and leave it up to the user?
+    # There are several indicators depending on if the ara_b1 and mte are set
+
+    return mb[8:15]
+
+
+def is_ra_terminated(msg):
+    """
+    Indicate if the threat is still being generated. If not, this can be due to
+    the threat no longer existing or the aircraft generating the indicator is
+    no longer broadcasting an altitude while the threat is still a threat
+    :param msg:
+    :return: if the threat is terminated
+    """
+    mb = common.bin2int(msg)[32:]
+    return mb[26] == 1
+
+
+def no_pass_below(msg):
+    """
+    Indication to aircraft to pass below or not
+    :param msg:
+    :return: boolean
+    """
+    mb = common.bin2int(msg)[32:]
+    return mb[22] == 1
+
+
+def no_pass_above(msg):
+    """
+    Indication to aircraft to pass above or not
+    :param msg:
+    :return: boolean
+    """
+    mb = common.bin2int(msg)[32:]
+    return mb[23] == 1
+
+
+def no_pass_left(msg):
+    """
+    Indication to aircraft to pass on the left or not
+    :param msg:
+    :return: boolean
+    """
+    mb = common.bin2int(msg)[32:]
+    return mb[24] == 1
+
+
+def no_pass_right(msg):
+    """
+    Indication to aircraft to pass on the right or not
+    :param msg:
+    :return: boolean
+    """
+    mb = common.bin2int(msg)[32:]
+    return mb[25] == 1
