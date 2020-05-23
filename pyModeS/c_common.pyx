@@ -160,17 +160,7 @@ cpdef long floor(double x):
     return <long> c_floor(x)
 
 cpdef str icao(str msg):
-    """Calculate the ICAO address from an Mode-S message.
-
-    Applicable only with DF4, DF5, DF20, DF21 messages.
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        String: ICAO address in 6 bytes hexadecimal string
-
-    """
+    """Calculate the ICAO address from an Mode-S message."""
     cdef unsigned char DF = df(msg)
     cdef long c0, c1
 
@@ -217,14 +207,7 @@ cpdef bint is_icao_assigned(str icao):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef int typecode(str msg):
-    """Type code of ADS-B message
-
-    Args:
-        msg (string): 28 bytes hexadecimal message string
-
-    Returns:
-        int: type code number
-    """
+    """Type code of ADS-B message"""
     if df(msg) not in (17, 18):
         return -1
         # return None
@@ -253,39 +236,41 @@ cpdef int cprNL(double lat):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef str idcode(str msg):
-    """Compute identity (squawk code).
-
-    Applicable only for DF5 or DF21 messages, bit 20-32.
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        string: squawk code
-
-    """
+    """Compute identity (squawk code)."""
     if df(msg) not in [5, 21]:
         raise RuntimeError("Message must be Downlink Format 5 or 21.")
 
-    cdef bytearray _mbin = bytearray(hex2bin(msg).encode())
+    squawk_code = squawk(hex2bin(msg)[19:32])
+    return squawk_code
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef str squawk(str binstr):
+    """Compute identity (squawk code)."""
+
+    if len(binstr) != 13 or set(binstr) != set('01'):
+        raise RuntimeError("Input must be 13 bits binary string")
+
+    cdef bytearray _mbin = bytearray(binstr.encode())
     cdef unsigned char[:] mbin = _mbin
 
     cdef bytearray _idcode = bytearray(4)
     cdef unsigned char[:] idcode = _idcode
 
-    cdef unsigned char C1 = mbin[19]
-    cdef unsigned char A1 = mbin[20]
-    cdef unsigned char C2 = mbin[21]
-    cdef unsigned char A2 = mbin[22]
-    cdef unsigned char C4 = mbin[23]
-    cdef unsigned char A4 = mbin[24]
-    # X = mbin[25]
-    cdef unsigned char B1 = mbin[26]
-    cdef unsigned char D1 = mbin[27]
-    cdef unsigned char B2 = mbin[28]
-    cdef unsigned char D2 = mbin[29]
-    cdef unsigned char B4 = mbin[30]
-    cdef unsigned char D4 = mbin[31]
+    cdef unsigned char C1 = mbin[0]
+    cdef unsigned char A1 = mbin[1]
+    cdef unsigned char C2 = mbin[2]
+    cdef unsigned char A2 = mbin[3]
+    cdef unsigned char C4 = mbin[4]
+    cdef unsigned char A4 = mbin[5]
+    # X = mbin[6]
+    cdef unsigned char B1 = mbin[7]
+    cdef unsigned char D1 = mbin[8]
+    cdef unsigned char B2 = mbin[9]
+    cdef unsigned char D2 = mbin[10]
+    cdef unsigned char B4 = mbin[11]
+    cdef unsigned char D4 = mbin[12]
 
     idcode[0] = int_to_char((char_to_int(A4)*2 + char_to_int(A2))*2 + char_to_int(A1))
     idcode[1] = int_to_char((char_to_int(B4)*2 + char_to_int(B2))*2 + char_to_int(B1))
@@ -294,29 +279,15 @@ cpdef str idcode(str msg):
 
     return _idcode.decode()
 
-    #return str(byte1) + str(byte2) + str(byte3) + str(byte4)
-
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef int altcode(str msg):
-    """Compute the altitude.
-
-    Applicable only for DF4 or DF20 message, bit 20-32.
-    credit: @fbyrkjeland
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        int: altitude in ft
-
-    """
+    """Compute the altitude."""
     if df(msg) not in [0, 4, 16, 20]:
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
     alt = altitude(hex2bin(msg)[19:32])
-
     return alt
 
 
@@ -360,7 +331,6 @@ cpdef int altitude(str binstr):
             graybytes[0] = mbin[10]
             graybytes[7] = mbin[11]
             graybytes[1] = mbin[12]
-            # graybytes = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
 
             alt = gray2alt(_graybytes.decode())
 
@@ -409,15 +379,7 @@ cpdef str data(str msg):
 
 
 cpdef bint allzeros(str msg):
-    """Check if the data bits are all zeros.
-
-    Args:
-        msg (String): 28 bytes hexadecimal message string
-
-    Returns:
-        bool: True or False
-
-    """
+    """Check if the data bits are all zeros."""
     d = hex2bin(data(msg))
 
     if bin2int(d) > 0:
