@@ -206,7 +206,6 @@ def idcode(msg):
     """Compute identity (squawk code).
 
     Applicable only for DF5 or DF21 messages, bit 20-32.
-    credit: @fbyrkjeland
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -226,7 +225,7 @@ def idcode(msg):
     A2 = mbin[22]
     C4 = mbin[23]
     A4 = mbin[24]
-    # _ = mbin[25]
+    # X = mbin[25]
     B1 = mbin[26]
     D1 = mbin[27]
     B2 = mbin[28]
@@ -243,10 +242,9 @@ def idcode(msg):
 
 
 def altcode(msg):
-    """Compute the altitude.
+    """Compute the altitude in DF 4 and 20.
 
     Applicable only for DF4 or DF20 message, bit 20-32.
-    credit: @fbyrkjeland
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -261,44 +259,69 @@ def altcode(msg):
     # Altitude code, bit 20-32
     mbin = hex2bin(msg)
 
-    mbit = mbin[25]  # M bit: 26
-    qbit = mbin[27]  # Q bit: 28
+    altitude_code = mbin[19:32]
 
-    if mbit == "0":  # unit in ft
-        if qbit == "1":  # 25ft interval
-            vbin = mbin[19:25] + mbin[26] + mbin[28:32]
+    alt = altitude(altitude_code)
+
+    return alt
+
+
+def altitude(binstr):
+    """Decode 13 bits altitude code.
+
+    Args:
+        binstr (String): 13 bits binary string
+
+    Returns:
+        int: altitude in ft
+
+    """
+
+    if len(binstr) != 13 or set(binstr) != set("01"):
+        raise RuntimeError("Input must be 13 bits binary string")
+
+    Mbit = binstr[6]
+    Qbit = binstr[8]
+
+    if bin2int(binstr) == 0:
+        # altitude unknown or invalid
+        alt = None
+
+    elif Mbit == "0":  # unit in ft
+        if Qbit == "1":  # 25ft interval
+            vbin = binstr[:6] + binstr[7] + binstr[9:]
             alt = bin2int(vbin) * 25 - 1000
-        if qbit == "0":  # 100ft interval, above 50175ft
-            C1 = mbin[19]
-            A1 = mbin[20]
-            C2 = mbin[21]
-            A2 = mbin[22]
-            C4 = mbin[23]
-            A4 = mbin[24]
-            # _ = mbin[25]
-            B1 = mbin[26]
-            # D1 = mbin[27]     # always zero
-            B2 = mbin[28]
-            D2 = mbin[29]
-            B4 = mbin[30]
-            D4 = mbin[31]
+        if Qbit == "0":  # 100ft interval, above 50187.5ft
+            C1 = binstr[0]
+            A1 = binstr[1]
+            C2 = binstr[2]
+            A2 = binstr[3]
+            C4 = binstr[4]
+            A4 = binstr[5]
+            # M = binstr[6]
+            B1 = binstr[7]
+            # Q = binstr[8]
+            B2 = binstr[9]
+            D2 = binstr[10]
+            B4 = binstr[11]
+            D4 = binstr[12]
 
             graystr = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
             alt = gray2alt(graystr)
 
-    if mbit == "1":  # unit in meter
-        vbin = mbin[19:25] + mbin[26:31]
+    if Mbit == "1":  # unit in meter
+        vbin = binstr[:6] + binstr[7:]
         alt = int(bin2int(vbin) * 3.28084)  # convert to ft
 
     return alt
 
 
-def gray2alt(codestr):
-    gc500 = codestr[:8]
+def gray2alt(binstr):
+    gc500 = binstr[:8]
     n500 = gray2int(gc500)
 
     # in 100-ft step must be converted first
-    gc100 = codestr[8:]
+    gc100 = binstr[8:]
     n100 = gray2int(gc100)
 
     if n100 in [0, 5, 6]:
@@ -314,9 +337,9 @@ def gray2alt(codestr):
     return alt
 
 
-def gray2int(graystr):
+def gray2int(binstr):
     """Convert greycode to binary."""
-    num = bin2int(graystr)
+    num = bin2int(binstr)
     num ^= num >> 8
     num ^= num >> 4
     num ^= num >> 2

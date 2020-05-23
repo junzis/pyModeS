@@ -256,7 +256,6 @@ cpdef str idcode(str msg):
     """Compute identity (squawk code).
 
     Applicable only for DF5 or DF21 messages, bit 20-32.
-    credit: @fbyrkjeland
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -280,18 +279,13 @@ cpdef str idcode(str msg):
     cdef unsigned char A2 = mbin[22]
     cdef unsigned char C4 = mbin[23]
     cdef unsigned char A4 = mbin[24]
-    # _ = mbin[25]
+    # X = mbin[25]
     cdef unsigned char B1 = mbin[26]
     cdef unsigned char D1 = mbin[27]
     cdef unsigned char B2 = mbin[28]
     cdef unsigned char D2 = mbin[29]
     cdef unsigned char B4 = mbin[30]
     cdef unsigned char D4 = mbin[31]
-
-    # byte1 = int(A4 + A2 + A1, 2)
-    # byte2 = int(B4 + B2 + B1, 2)
-    # byte3 = int(C4 + C2 + C1, 2)
-    # byte4 = int(D4 + D2 + D1, 2)
 
     idcode[0] = int_to_char((char_to_int(A4)*2 + char_to_int(A2))*2 + char_to_int(A1))
     idcode[1] = int_to_char((char_to_int(B4)*2 + char_to_int(B2))*2 + char_to_int(B1))
@@ -321,45 +315,60 @@ cpdef int altcode(str msg):
     if df(msg) not in [0, 4, 16, 20]:
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
-    # Altitude code, bit 20-32
-    cdef bytearray _mbin = bytearray(hex2bin(msg).encode())
+    alt = altitude(hex2bin(msg)[19:32])
+
+    return alt
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef int altitude(str binstr):
+
+    if len(binstr) != 13 or set(binstr) != set('01'):
+        raise RuntimeError("Input must be 13 bits binary string")
+
+    cdef bytearray _mbin = bytearray(binstr.encode())
     cdef unsigned char[:] mbin = _mbin
 
-    cdef char mbit = mbin[25]  # M bit: 26
-    cdef char qbit = mbin[27]  # Q bit: 28
+    cdef char Mbit = binstr[6]
+    cdef char Qbit = binstr[8]
+
     cdef int alt = 0
     cdef bytearray vbin
     cdef bytearray _graybytes = bytearray(11)
     cdef unsigned char[:] graybytes = _graybytes
 
-    if mbit == 48:  # unit in ft, "0" -> 48
-        if qbit == 49:  # 25ft interval, "1" -> 49
-            vbin = _mbin[19:25] + _mbin[26:27] + _mbin[28:32]
+    if bin2int(binstr) == 0:
+        # altitude unknown or invalid
+        alt = -9999
+
+    elif Mbit == 48:  # unit in ft, "0" -> 48
+        if Qbit == 49:  # 25ft interval, "1" -> 49
+            vbin = _mbin[:6] + _mbin[7:8] + _mbin[9:]
             alt = bin2int(vbin.decode()) * 25 - 1000
-        if qbit == 48:  # 100ft interval, above 50175ft, "0" -> 48
-            graybytes[8] = mbin[19]
-            graybytes[2] = mbin[20]
-            graybytes[9] = mbin[21]
-            graybytes[3] = mbin[22]
-            graybytes[10] = mbin[23]
-            graybytes[4] = mbin[24]
-            # _ = mbin[25]
-            graybytes[5] = mbin[26]
-            # cdef char D1 = mbin[27]  # always zero
-            graybytes[6] = mbin[28]
-            graybytes[0] = mbin[29]
-            graybytes[7] = mbin[30]
-            graybytes[1] = mbin[31]
+        if Qbit == 48:  # 100ft interval, above 50175ft, "0" -> 48
+            graybytes[8] = mbin[0]
+            graybytes[2] = mbin[1]
+            graybytes[9] = mbin[2]
+            graybytes[3] = mbin[3]
+            graybytes[10] = mbin[4]
+            graybytes[4] = mbin[5]
+            # M = mbin[6]
+            graybytes[5] = mbin[7]
+            # Q = mbin[8]
+            graybytes[6] = mbin[9]
+            graybytes[0] = mbin[10]
+            graybytes[7] = mbin[11]
+            graybytes[1] = mbin[12]
             # graybytes = D2 + D4 + A1 + A2 + A4 + B1 + B2 + B4 + C1 + C2 + C4
 
             alt = gray2alt(_graybytes.decode())
 
-    if mbit == 49:  # unit in meter, "1" -> 49
-        vbin = _mbin[19:25] + _mbin[26:31]
+    elif Mbit == 49:  # unit in meter, "1" -> 49
+        vbin = _mbin[:6] + _mbin[7:]
         alt = int(bin2int(vbin.decode()) * 3.28084)  # convert to ft
 
     return alt
-
 
 
 cpdef int gray2alt(str codestr):
