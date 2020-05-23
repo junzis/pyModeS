@@ -28,7 +28,7 @@ from pyModeS.decoder.bds.bds06 import (
 )
 from pyModeS.decoder.bds.bds08 import category, callsign
 from pyModeS.decoder.bds.bds09 import airborne_velocity, altitude_diff
-from pyModeS.decoder.bds.bds61 import is_emergency, emergency, emergency_squawk
+from pyModeS.decoder.bds.bds61 import is_emergency, emergency_state, emergency_squawk
 
 
 def df(msg):

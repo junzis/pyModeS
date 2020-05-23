@@ -81,8 +81,9 @@ def test_adsb_velocity():
 
 
 def test_adsb_emergency():
-    assert not adsb.is_emergency('8DA2C1B6E112B600000000760759')
-    assert adsb.emergency_squawk('8DA2C1B6E112B600000000760759') == '6615'
+    assert not adsb.is_emergency("8DA2C1B6E112B600000000760759")
+    assert adsb.emergency_state("8DA2C1B6E112B600000000760759") == 0
+    assert adsb.emergency_squawk("8DA2C1B6E112B600000000760759") == "6615"
 
 
 # def test_nic():
