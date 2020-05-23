@@ -2,6 +2,7 @@
 #   BDS 6,1
 #   ADS-B TC=28
 #   Aircraft Airborne status
+#   (Subtype 1)
 # ------------------------------------------
 
 from pyModeS import common

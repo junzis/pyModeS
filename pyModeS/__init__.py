@@ -10,6 +10,7 @@ except:
 
 from .decoder import tell
 from .decoder import adsb
+from .decoder import acas
 from .decoder import commb
 from .decoder import bds
 from .extra import aero
