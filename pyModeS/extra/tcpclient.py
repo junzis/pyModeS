@@ -282,6 +282,8 @@ class TcpClient(object):
 
                 # raise RuntimeError("test exception")
 
+            except zmq.error.Again:
+                continue
             except Exception as e:
                 tb = traceback.format_exc()
                 exception_queue.put(tb)
