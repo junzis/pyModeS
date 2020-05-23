@@ -17,8 +17,12 @@ cpdef bint is_icao_assigned(str icao)
 
 cpdef int typecode(str msg)
 cpdef int cprNL(double lat)
+
 cpdef str idcode(str msg)
+cpdef str squawk(str binstr)
+
 cpdef int altcode(str msg)
+cpdef int altitude(str binstr)
 
 cpdef str data(str msg)
 cpdef bint allzeros(str msg)

@@ -80,6 +80,12 @@ def test_adsb_velocity():
     assert adsb.altitude_diff("8D485020994409940838175B284F") == 550
 
 
+def test_adsb_emergency():
+    assert not adsb.is_emergency("8DA2C1B6E112B600000000760759")
+    assert adsb.emergency_state("8DA2C1B6E112B600000000760759") == 0
+    assert adsb.emergency_squawk("8DA2C1B6E112B600000000760759") == "6615"
+
+
 # def test_nic():
 #     assert adsb.nic('8D3C70A390AB11F55B8C57F65FE6') == 0
 #     assert adsb.nic('8DE1C9738A4A430B427D219C8225') == 1

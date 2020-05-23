@@ -139,17 +139,13 @@ def altitude(msg):
         raise RuntimeError("%s: Not a airborn position message" % msg)
 
     mb = common.hex2bin(msg)[32:]
+    altbin = mb[8:20]
 
     if tc < 19:
-        # barometric altitude
-        q = mb[15]
-        if q:
-            n = common.bin2int(mb[8:15] + mb[16:20])
-            alt = n * 25 - 1000
-        else:
-            alt = None
+        altcode = altbin[0:6] + "0" + altbin[6:]
     else:
-        # GNSS altitude, meters -> feet
-        alt = common.bin2int(mb[8:20]) * 3.28084
+        altcode = altbin[0:6] + "0" + altbin[6:]
+
+    alt = common.altitude(altcode)
 
     return alt

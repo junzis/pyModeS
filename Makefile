@@ -8,6 +8,12 @@ ext:
 	python setup.py build_ext --inplace
 
 test:
+	make clean
+	@echo ""
+	@echo "[Test with py_common]"
+	python -m pytest tests
+	@echo ""
+	@echo "[Test with c_common]"
 	python setup.py build_ext --inplace
 	python -m pytest tests
 
