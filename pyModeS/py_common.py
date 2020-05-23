@@ -206,9 +206,7 @@ def cprNL(lat: float) -> int:
 
 
 def idcode(msg: str) -> str:
-    """Compute identity (squawk code).
-
-    Applicable only for DF5 or DF21 messages, bit 20-32.
+    """Compute identity code (squawk) encoded in DF5 or DF21 message.
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -221,20 +219,37 @@ def idcode(msg: str) -> str:
         raise RuntimeError("Message must be Downlink Format 5 or 21.")
 
     mbin = hex2bin(msg)
+    idcodebin = mbin[19:32]
 
-    C1 = mbin[19]
-    A1 = mbin[20]
-    C2 = mbin[21]
-    A2 = mbin[22]
-    C4 = mbin[23]
-    A4 = mbin[24]
-    # X = mbin[25]
-    B1 = mbin[26]
-    D1 = mbin[27]
-    B2 = mbin[28]
-    D2 = mbin[29]
-    B4 = mbin[30]
-    D4 = mbin[31]
+    return squawk(idcodebin)
+
+
+def squawk(binstr: str) -> str:
+    """Decode 13 bits identity (squawk) code.
+
+    Args:
+        binstr (String): 13 bits binary string
+
+    Returns:
+        int: altitude in ft
+
+    """
+    if len(binstr) != 13 or set(binstr) != set("01"):
+        raise RuntimeError("Input must be 13 bits binary string")
+
+    C1 = binstr[0]
+    A1 = binstr[1]
+    C2 = binstr[2]
+    A2 = binstr[3]
+    C4 = binstr[4]
+    A4 = binstr[5]
+    # X = binstr[6]
+    B1 = binstr[7]
+    D1 = binstr[8]
+    B2 = binstr[9]
+    D2 = binstr[10]
+    B4 = binstr[11]
+    D4 = binstr[12]
 
     byte1 = int(A4 + A2 + A1, 2)
     byte2 = int(B4 + B2 + B1, 2)
@@ -245,9 +260,7 @@ def idcode(msg: str) -> str:
 
 
 def altcode(msg: str) -> Optional[int]:
-    """Compute the altitude of DF4 or DF20.
-
-    Applicable only for DF4 or DF20 message, bit 20-32.
+    """Compute altitude encoded in DF4 or DF20 message.
 
     Args:
         msg (String): 28 bytes hexadecimal message string
@@ -256,7 +269,6 @@ def altcode(msg: str) -> Optional[int]:
         int: altitude in ft
 
     """
-
     alt: Optional[int]
 
     if df(msg) not in [0, 4, 16, 20]:
@@ -272,7 +284,7 @@ def altcode(msg: str) -> Optional[int]:
     return alt
 
 
-def altitude(binstr):
+def altitude(binstr: str) -> Optional[int]:
     """Decode 13 bits altitude code.
 
     Args:
@@ -282,6 +294,7 @@ def altitude(binstr):
         int: altitude in ft
 
     """
+    alt: Optional[int]
 
     if len(binstr) != 13 or set(binstr) != set("01"):
         raise RuntimeError("Input must be 13 bits binary string")
