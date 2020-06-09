@@ -234,7 +234,7 @@ def squawk(binstr: str) -> str:
         int: altitude in ft
 
     """
-    if len(binstr) != 13 or set(binstr) != set("01"):
+    if len(binstr) != 13 or not set(binstr).issubset(set("01")):
         raise RuntimeError("Input must be 13 bits binary string")
 
     C1 = binstr[0]
@@ -296,7 +296,7 @@ def altitude(binstr: str) -> Optional[int]:
     """
     alt: Optional[int]
 
-    if len(binstr) != 13 or set(binstr) != set("01"):
+    if len(binstr) != 13 or not set(binstr).issubset(set("01")):
         raise RuntimeError("Input must be 13 bits binary string")
 
     Mbit = binstr[6]

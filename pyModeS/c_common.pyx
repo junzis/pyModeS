@@ -295,7 +295,7 @@ cpdef int altcode(str msg):
 @cython.wraparound(False)
 cpdef int altitude(str binstr):
 
-    if len(binstr) != 13 or set(binstr) != set('01'):
+    if len(binstr) != 13 or not set(binstr).issubset(set("01")):
         raise RuntimeError("Input must be 13 bits binary string")
 
     cdef bytearray _mbin = bytearray(binstr.encode())
