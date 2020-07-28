@@ -76,7 +76,7 @@ def test_adsb_velocity():
     vgs_surface = adsb.velocity("8FC8200A3AB8F5F893096B000000")
     assert vgs == (159, 182.88, -832, "GS")
     assert vas == (375, 243.98, -2304, "TAS")
-    assert vgs_surface == (19.0, 42.2, 0, "GS")
+    assert vgs_surface == (19, 42.2, 0, "GS")
     assert adsb.altitude_diff("8D485020994409940838175B284F") == 550
 
 

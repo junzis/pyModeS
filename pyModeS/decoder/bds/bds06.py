@@ -168,13 +168,11 @@ def surface_velocity(msg, source=False):
     elif mov == 124:
         spd = 175
     else:
-        movs = [2, 9, 13, 39, 94, 109, 124]
-        kts = [0.125, 1, 2, 15, 70, 100, 175]
-        i = next(m[0] for m in enumerate(movs) if m[1] > mov)
-        step = (kts[i] - kts[i - 1]) * 1.0 / (movs[i] - movs[i - 1])
-        spd = kts[i - 1] + (mov - movs[i - 1]) * step
-        spd = round(spd, 2)
-
+        mov_lb = [2, 9, 13, 39, 94, 109, 124]
+        kts_lb = [0.125, 1, 2, 15, 70, 100, 175]
+        step = [0.125, 0.25, 0.5, 1, 2, 5]
+        i = next(m[0] for m in enumerate(mov_lb) if m[1] > mov)
+        spd = kts_lb[i - 1] + (mov - mov_lb[i - 1]) * step[i - 1]
     if source:
         return spd, trk, 0, "GS", "TRUE_NORTH", None
     else:
