@@ -40,7 +40,7 @@ def is50(msg):
         return False
 
     roll = roll50(msg)
-    if (roll is not None) and abs(roll) > 60:
+    if (roll is not None) and abs(roll) > 50:
         return False
 
     gs = gs50(msg)

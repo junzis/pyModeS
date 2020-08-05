@@ -60,24 +60,33 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         vy = v * np.cos(np.radians(angle))
         return vx, vy
 
+    # message must be both BDS 50 and 60 before processing
     if not (bds50.is50(msg) and bds60.is60(msg)):
         return None
 
-    h50 = bds50.trk50(msg)
-    v50 = bds50.gs50(msg)
-
-    if h50 is None or v50 is None:
-        return "BDS50,BDS60"
-
+    # --- assuming BDS60 ---
     h60 = bds60.hdg60(msg)
     m60 = bds60.mach60(msg)
     i60 = bds60.ias60(msg)
+
+    # additional check now knowing the altitude
+    if (m60 is not None) and (i60 is not None):
+        ias_ = aero.mach2cas(m60, alt_ref * aero.ft) / aero.kts
+        if abs(i60 - ias_) > 20:
+            return "BDS50"
 
     if h60 is None or (m60 is None and i60 is None):
         return "BDS50,BDS60"
 
     m60 = np.nan if m60 is None else m60
     i60 = np.nan if i60 is None else i60
+
+    # --- assuming BDS50 ---
+    h50 = bds50.trk50(msg)
+    v50 = bds50.gs50(msg)
+
+    if h50 is None or v50 is None:
+        return "BDS50,BDS60"
 
     XY5 = vxy(v50 * aero.kts, h50)
     XY6m = vxy(aero.mach2tas(m60, alt_ref * aero.ft), h60)
@@ -98,6 +107,7 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     try:
         dist = np.linalg.norm(X - Mu, axis=1)
         BDS = allbds[np.nanargmin(dist)]
+        print(dist, BDS)
     except ValueError:
         return "BDS50,BDS60"
 
