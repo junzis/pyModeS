@@ -58,9 +58,10 @@ def is60(msg):
     # additional check knowing altitude
     if (mach is not None) and (ias is not None) and (common.df(msg) == 20):
         alt = common.altcode(msg)
-        ias_ = aero.mach2cas(mach, alt * aero.ft) / aero.kts
-        if abs(ias - ias_) > 20:
-            return False
+        if alt is not None:
+            ias_ = aero.mach2cas(mach, alt * aero.ft) / aero.kts
+            if abs(ias - ias_) > 20:
+                return False
 
     return True
 
