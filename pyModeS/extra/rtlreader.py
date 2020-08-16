@@ -31,6 +31,8 @@ class RtlReader(object):
         self.stop_flag = False
         self.noise_floor = 1e6
 
+        self.exception_queue = None
+
     def _calc_noise(self):
         """Calculate noise floor"""
         window = smaples_per_microsec * 100
@@ -162,6 +164,7 @@ class RtlReader(object):
 
     def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
         self.raw_pipe_in = raw_pipe_in
+        self.exception_queue = exception_queue
         self.stop_flag = stop_flag
 
         try:
@@ -173,8 +176,8 @@ class RtlReader(object):
 
         except Exception as e:
             tb = traceback.format_exc()
-            if exception_queue is not None:
-                exception_queue.put(tb)
+            if self.exception_queue is not None:
+                self.exception_queue.put(tb)
             raise e
 
 
