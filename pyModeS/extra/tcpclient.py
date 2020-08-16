@@ -7,11 +7,6 @@ import pyModeS as pms
 import traceback
 import zmq
 
-if sys.version_info > (3, 0):
-    PY_VERSION = 3
-else:
-    PY_VERSION = 2
-
 
 class TcpClient(object):
     def __init__(self, host, port, datatype):
@@ -264,9 +259,6 @@ class TcpClient(object):
         while True:
             try:
                 received = [i for i in self.socket.recv(4096)]
-
-                if PY_VERSION == 2:
-                    received = [ord(i) for i in received]
 
                 self.buffer.extend(received)
                 # print(''.join(x.encode('hex') for x in self.buffer))

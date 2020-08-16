@@ -1,8 +1,14 @@
+import time
 import traceback
 import numpy as np
 import pyModeS as pms
-from rtlsdr import RtlSdr
-import time
+
+try:
+    import rtlsdr
+except:
+    print("------------------------------------------------------------------------")
+    print("! Warining: pyrtlsdr not installed (required for using RTL-SDR devices) ")
+    print("------------------------------------------------------------------------")
 
 sampling_rate = 2e6
 smaples_per_microsec = 2
@@ -21,7 +27,7 @@ class RtlReader(object):
     def __init__(self, **kwargs):
         super(RtlReader, self).__init__()
         self.signal_buffer = []  # amplitude of the sample only
-        self.sdr = RtlSdr()
+        self.sdr = rtlsdr.RtlSdr()
         self.sdr.sample_rate = sampling_rate
         self.sdr.center_freq = modes_frequency
         self.sdr.gain = "auto"
