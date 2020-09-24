@@ -261,8 +261,20 @@ Mode-S Enhanced Surveillance (EHS)
   pms.commb.vr60ins(msg)    # Inertial vertical speed (ft/min)
 
 
-Meteorological routine air report (MRAR) [Experimental]
-********************************************************
+Meteorological reports [Experimental]
+**************************************
+
+To infer the BDS 4,4 and BDS 4,5 codes, you must set `mrar` argumetn to true in the inference function:
+
+.. code:: python
+
+  pms.bds.infer(msg. mrar=True) 
+
+Once the correct MRAR or MHR messages are identified, use the following decoding functions.
+
+
+Meteorological routine air report (MRAR)
++++++++++++++++++++++++++++++++++++++++++
 
 .. code:: python
 
@@ -273,8 +285,8 @@ Meteorological routine air report (MRAR) [Experimental]
   pms.commb.hum44(msg)      # Humidity (%)
 
 
-Meteorological hazard air report (MHR) [Experimental]
-*******************************************************
+Meteorological hazard air report (MHR)
++++++++++++++++++++++++++++++++++++++++++
 
 .. code:: python
 
