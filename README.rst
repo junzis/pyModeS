@@ -264,13 +264,13 @@ Mode-S Enhanced Surveillance (EHS)
 Meteorological reports [Experimental]
 **************************************
 
-To infer the BDS 4,4 and BDS 4,5 codes, you must set `mrar` argumetn to true in the inference function:
+To identify BDS 4,4 and 4,5 codes, you must set ``mrar`` argument to ``True`` in the ``infer()`` function:
 
 .. code:: python
 
   pms.bds.infer(msg. mrar=True) 
 
-Once the correct MRAR or MHR messages are identified, use the following decoding functions.
+Once the correct MRAR and MHR messages are identified, decode them as follows:
 
 
 Meteorological routine air report (MRAR)
