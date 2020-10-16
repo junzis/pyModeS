@@ -21,7 +21,7 @@ def is17(msg):
 
     d = common.hex2bin(common.data(msg))
 
-    if common.bin2int(d[28:56]) != 0:
+    if common.bin2int(d[24:56]) != 0:
         return False
 
     caps = cap17(msg)
@@ -72,14 +72,10 @@ def cap17(msg):
         "56",
         "5F",
         "60",
-        "NA",
-        "NA",
-        "E1",
-        "E2",
     ]
 
     d = common.hex2bin(common.data(msg))
-    idx = [i for i, v in enumerate(d[:28]) if v == "1"]
-    capacity = ["BDS" + allbds[i] for i in idx if allbds[i] is not "NA"]
+    idx = [i for i, v in enumerate(d[:24]) if v == "1"]
+    capacity = ["BDS" + allbds[i] for i in idx]
 
     return capacity

@@ -117,4 +117,4 @@ def alt40fms(msg):
         "alt40fms() has been renamed to selalt40fms(). It will be removed in the future.",
         DeprecationWarning,
     )
-    return selalt40mcp(msg)
+    return selalt40fms(msg)
