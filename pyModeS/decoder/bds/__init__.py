@@ -107,7 +107,6 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     try:
         dist = np.linalg.norm(X - Mu, axis=1)
         BDS = allbds[np.nanargmin(dist)]
-        print(dist, BDS)
     except ValueError:
         return "BDS50,BDS60"
 
