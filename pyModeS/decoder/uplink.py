@@ -22,8 +22,8 @@ def uplink_icao(msg):
 
 def uf(msg):
     """Decode Uplink Format value, bits 1 to 5."""
-    dfbin = common.hex2bin(msg[:2])
-    return min(common.bin2int(dfbin[0:5]), 24)
+    ufbin = common.hex2bin(msg[:2])
+    return min(common.bin2int(ufbin[0:5]), 24)
 
 
 def bds(msg):
