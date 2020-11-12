@@ -3,7 +3,7 @@ from pyModeS import common
 Decoding all call replies DF=11
 """
 
-def ipcode(msg):
+def interrogator_code(msg):
     if common.df(msg) == 11:  # check that the msg is DF11
         '''Returns the IP code of the Mode S all-call reply (DF11)'''
         binaryraw=common.hex2bin(msg)
