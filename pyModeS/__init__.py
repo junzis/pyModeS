@@ -11,6 +11,8 @@ except:
 from .decoder import tell
 from .decoder import adsb
 from .decoder import commb
+from .decoder import allcall
+from .decoder import surv
 from .decoder import bds
 from .extra import aero
 from .extra import tcpclient
