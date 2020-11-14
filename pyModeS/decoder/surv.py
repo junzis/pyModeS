@@ -1,120 +1,132 @@
 """
-Warpper for short roll call surveillance replies DF=4/5
-
+Decode short roll call surveillance replies, with downlink format 4 or 5
 """
 
 from pyModeS import common
 
+
+def _checkdf(func):
+    """Ensure downlink format is 4 or 5."""
+
+    def wrapper(msg):
+        df = common.df(msg)
+        if df not in [4, 5]:
+            raise RuntimeError(
+                "Incorrect downlink format, expect 4 or 5, got {}".format(df)
+            )
+        return func(msg)
+
+    return wrapper
+
+
+@_checkdf
 def fs(msg):
-    '''tell the flight status of the aircraft, returns airborne, ground or None'''
-    if common.df(msg) in [4,5]:
-        binaryraw=common.hex2bin(msg)
-        fs=int(binaryraw[5:8],2)
-        if fs in [0,2]:
-            return "airborne"
-        if fs in [1,3]:
-            return "ground"
-        else:
-            return None
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
+    """Decode flight status.
 
-def alert(msg):
-    '''returns True if there is an alert, False otherwise '''
-    #The alert indicates that the TXPPR Mode A code is changed manually by the pilot. Icao Annex10, Vol IV, 3.1.2.6.10.1.1
-    if common.df(msg) in [4,5]:
-        binaryraw = common.hex2bin(msg)
-        fs = int(binaryraw[5:8], 2)
-        if fs in [2,3,4]:
-            return True
-        if fs in [0,1,5]:
-            return False
-        else:
-            return None
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
-
-
-def SPI(msg):
-    '''returns True if there there is Special Pulse Indicator, False otherwise '''
-    if common.df(msg) in [4, 5]:
-        binaryraw = common.hex2bin(msg)
-        fs = int(binaryraw[5:8], 2)
-        if fs in [4, 5]:
-            return True
-        if fs in [0, 1, 2, 3]:
-            return False
-        else:
-            return None
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
-
-def dr(msg):
-    '''Returns Downlink Request Status.
-     Args:
-        msg (str): 14 hexdigits string,
-    Returns:
-        str: Downlink Request Status
-    '''
-    if common.df(msg) in [4,5]:
-        binaryraw = common.hex2bin(msg)
-        dr = int(binaryraw[8:13], 2)
-        if dr in [2,3,6,7]:
-            return "ACAS"
-        if dr == 0:
-            return "no downlink request"
-        if dr == 1:
-            return "request to send Comm-B message"
-        if dr in 4:
-            return "Comm-B broadcast 1 available"
-        if dr in 5:
-            return "Comm-B broadcast 2 available"
-        if dr > 7 and dr < 16:
-            return None
-        else:
-            return str(15-dr)+" downlink ELM segments available"
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
-
-def um(msg):
-    '''returns the Interrogator Identifier and the type of reservation
     Args:
-        msg (str): 14 hexdigits string,
+        msg (str): 14 hexdigits string
     Returns:
-        int: II code of the identifier that triggered the reply
-        str: type of reservation made by the interrogator
-    '''
-    if common.df(msg) in [4,5]:
-        binaryraw = common.hex2bin(msg)
-        iis = int(binaryraw[13:17], 2)
-        ds = int(binaryraw[17:19], 2)
-        if ds == 0:
-            ds=None
-        if ds == 1:
-            ds='Comm-B'
-        if ds == 2:
-            ds='Comm-C'
-        if ds == 3:
-            ds='Comm-D'
-        return iis, ds
+        int, str: flight status, description
 
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
+    """
+    msgbin = common.hex2bin(msg)
+    fs = common.bin2int(msgbin[5:8])
+    text = None
 
-def ac(msg):
-    '''return the altitude in ft'''
-    if common.df(msg) == 4:
-        binaryraw = common.hex2bin(msg)
-        altcode = binaryraw[19:32] # Here we could also put the common.altcode(msg).
-        return common.altitude(altcode)
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
+    if fs == 0:
+        text = "no alert, no SPI, aircraft is airborne"
+    elif fs == 1:
+        text = "no alert, no SPI, aircraft is on-ground"
+    elif fs == 2:
+        text = "alert, no SPI, aircraft is airborne"
+    elif fs == 3:
+        text = "alert, no SPI, aircraft is on-ground"
+    elif fs == 4:
+        text = "alert, SPI, aircraft is airborne or on-ground"
+    elif fs == 5:
+        text = "no alert, SPI, aircraft is airborne or on-ground"
 
-def id(msg):
-    '''return the squawk code (identifier)'''
-    if common.df(msg) == 5:
-        binaryraw = common.hex2bin(msg)
-        altcode = binaryraw[19:32]  # Here we could also put the common.idcode(msg).
-        return common.squawk(altcode)
-    else:
-        raise RuntimeError("Incorrect or inconsistent message types")
+    return fs, text
+
+
+@_checkdf
+def dr(msg):
+    """Decode downlink request.
+
+    Args:
+        msg (str): 14 hexdigits string
+    Returns:
+        int, str: downlink request, description
+
+    """
+    msgbin = common.hex2bin(msg)
+    dr = common.bin2int(msgbin[8:13])
+
+    text = None
+
+    if dr == 0:
+        text = "no downlink request"
+    elif dr == 1:
+        text = "request to send Comm-B message"
+    elif dr == 4:
+        text = "Comm-B broadcast 1 available"
+    elif dr == 5:
+        text = "Comm-B broadcast 2 available"
+    elif dr >= 16:
+        text = "ELM downlink segments available: {}".format(dr - 15)
+
+    return dr, text
+
+
+@_checkdf
+def um(msg):
+    """Decode utility message.
+
+    Utility message contains interrogator identifier and reservation type.
+
+    Args:
+        msg (str): 14 hexdigits string
+    Returns:
+        int, str: interrogator identifier code that triggered the reply, and
+        reservation type made by the interrogator
+    """
+    msgbin = common.hex2bin(msg)
+    iis = common.bin2int(msgbin[13:17])
+    ids = common.bin2int(msgbin[17:19])
+    if ids == 0:
+        ids_text = None
+    if ids == 1:
+        ids_text = "Comm-B interrogator identifier code"
+    if ids == 2:
+        ids_text = "Comm-C interrogator identifier code"
+    if ids == 3:
+        ids_text = "Comm-D interrogator identifier code"
+    return iis, ids, ids_text
+
+
+@_checkdf
+def altitude(msg):
+    """Decode altitude.
+
+    Args:
+        msg (String): 14 hexdigits string
+
+    Returns:
+        int: altitude in ft
+
+    """
+    return common.altcode(msg)
+
+
+@_checkdf
+def identity(msg):
+    """Decode squawk code.
+
+    Args:
+        msg (String): 14 hexdigits string
+
+    Returns:
+        string: squawk code
+
+    """
+    return common.idcode(msg)
