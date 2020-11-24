@@ -42,8 +42,13 @@ def interrogator(msg):
         int: interrogator identifier code
 
     """
-    # simply the CRC reminder
-    return common.crc(msg)
+    # the CRC remainder contains the CL and IC field. top three bits are CL field and last four bits are IC field.
+    remainder = common.crc(msg)
+    if remainder<16:
+            IC="II"+str(remainder)
+        else:
+            IC="SI"+str(remainder-16)
+    return IC
 
 
 @_checkdf
