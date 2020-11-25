@@ -46,7 +46,7 @@ def interrogator(msg):
     remainder = common.crc(msg)
     if remainder > 79: 
         IC = "corrupt IC"
-    if remainder < 16:
+    elif remainder < 16:
         IC="II"+str(remainder)
     else:
         IC="SI"+str(remainder-16)
