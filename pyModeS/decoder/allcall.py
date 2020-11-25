@@ -44,10 +44,12 @@ def interrogator(msg):
     """
     # the CRC remainder contains the CL and IC field. top three bits are CL field and last four bits are IC field.
     remainder = common.crc(msg)
-    if remainder<16:
-            IC="II"+str(remainder)
-        else:
-            IC="SI"+str(remainder-16)
+    if remainder > 79: 
+        IC = "corrupt IC"
+    if remainder < 16:
+        IC="II"+str(remainder)
+    else:
+        IC="SI"+str(remainder-16)
     return IC
 
 
