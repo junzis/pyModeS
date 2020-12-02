@@ -60,7 +60,7 @@ def threat_location(msg: str) -> Tuple:
 
 
 def has_multiple_threats(msg: str) -> bool:
-    """ Indicate if the ACAS is processing multiple threats simultaneously.
+    """Indicate if the ACAS is processing multiple threats simultaneously.
 
     :param msg: 28 hexdigits string
     :return: if there are multiple threats
@@ -76,7 +76,7 @@ def active_resolution_advisories(msg: str) -> str:
     :param msg: 28 bytes hexadecimal message string
     :return: RA charactristics
     """
-    return acars.ara(msg)
+    return acas.ara(msg)
 
 
 def is_ra_terminated(msg: str) -> bool:

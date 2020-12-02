@@ -3,6 +3,24 @@ Decoding Air-Air Surveillance (ACAS) DF=0/16
 """
 
 from pyModeS import common
+import warnings
+
+warnings.simplefilter("always", UserWarning)
+
+
+def isACAS(msg: str) -> bool:
+    """Check if the message is an ACAS coordination message.
+
+    :param msg: 28 hexdigits string
+    :return: if VDS is 3,1
+    """
+    mv = common.hex2bin(common.data(msg))
+
+    vds = mv[0:8]
+    if vds == "00110000":
+        return True
+    else:
+        return False
 
 
 def rac(msg: str) -> str:
@@ -11,9 +29,13 @@ def rac(msg: str) -> str:
     :param msg: 28 hexdigits string
     :return: RACs
     """
-    mv = common.hex2bin(common.data(msg))
+    if not isACAS(msg):
+        warnings.warn("Not an ACAS coordination message.")
+        return None
 
     RAC = []
+
+    mv = common.hex2bin(common.data(msg))
 
     if mv[22] == "1":
         RAC.append("do not pass below")
@@ -39,6 +61,10 @@ def rat(msg: str) -> bool:
     :param msg: 28 hexdigits string
     :return: if RA has been terminated
     """
+    if not isACAS(msg):
+        warnings.warn("Not an ACAS coordination message.")
+        return None
+
     mv = common.hex2bin(common.data(msg))
     mte = int(mv[26])
     return mte
@@ -50,6 +76,10 @@ def mte(msg: str) -> bool:
     :param msg: 28 hexdigits string
     :return: if there are multiple threats
     """
+    if not isACAS(msg):
+        warnings.warn("Not an ACAS coordination message.")
+        return None
+
     mv = common.hex2bin(common.data(msg))
     mte = int(mv[27])
     return mte
@@ -61,6 +91,9 @@ def ara(msg: str) -> str:
     :param msg: 28 bytes hexadecimal message string
     :return: RA charactristics
     """
+    if not isACAS(msg):
+        warnings.warn("Not an ACAS coordination message.")
+        return None
     mv = common.hex2bin(common.data(msg))
 
     mte = int(mv[27])
