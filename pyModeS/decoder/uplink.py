@@ -34,12 +34,8 @@ def bds(msg):
     mbytes = list(map(common.bin2int, msgbin_split))
 
     if uf(msg) in {4, 5, 20, 21}:
-        # Decode the SI or II interrogator code
-        # Decode the DI and get the lockout information
-        # conveniently (LSS or LOS)
-
-        # DI - Designator Identification
-        di = mbytes[1] & 0x7
+        
+        di = mbytes[1] & 0x7 # DI - Designator Identification
         RR = mbytes[1] >> 3 & 0x1F
         if RR > 15:
             BDS1 = RR - 16
@@ -50,7 +46,7 @@ def bds(msg):
                 RRS = ((mbytes[2] & 0x1) << 4) | ((mbytes[3] & 0xE0) >> 5)
                 BDS2 = RRS
             else:
-                BDS2 = 0
+                BDS2 = 0 # for other values of DI, the BDS2 is assumed 0 (as per ICAO Annex 10 Vol IV)
 
             return str(BDS1) + str(BDS2)
         else:
@@ -161,13 +157,15 @@ def uplink_fields(msg):
     BDS1 = ""
     BDS2 = ""
     if uf(msg) == 11:
-        #  Decode the SI or II interrogator code
-        #  Get cl and ic bit fields from the data
+        
+       
 
         # Probability of Reply decoding
 
         PR = ((mbytes[0] & 0x7) << 1) | ((mbytes[1] & 0x80) >> 7)
-
+        
+        #  Get cl and ic bit fields from the data
+        #  Decode the SI or II interrogator code
         codeLabel = mbytes[1] & 0x7
         icField = (mbytes[1] >> 3) & 0xF
 
@@ -182,9 +180,7 @@ def uplink_fields(msg):
         IC = ic_switcher.get(codeLabel, "")
 
     if uf(msg) in {4, 5, 20, 21}:
-        # Decode the SI or II interrogator code
-        # Decode the DI and get the lockout information
-        # conveniently (LSS or LOS)
+        # Decode the DI and get the lockout information conveniently (LSS or LOS)
 
         # DI - Designator Identification
         di = mbytes[1] & 0x7
