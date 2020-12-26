@@ -43,7 +43,7 @@ details = dict(
     ],
     keywords="Mode-S ADS-B EHS ELS Comm-B",
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
-    install_requires=["numpy", "pyzmq"],
+    install_requires=["numpy", "pyrtlsdr", "pyzmq"],
     extras_require={"fast": ["Cython"]},
     package_data={"pyModeS": ["*.pyx", "*.pxd"]},
     scripts=["pyModeS/streamer/modeslive"],
