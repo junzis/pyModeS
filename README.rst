@@ -76,7 +76,12 @@ Installation examples::
   pip install git+https://github.com/junzis/pyModeS
 
 
-Dependencies ``numpy``, ``pyzmq`` and ``pyrtlsdr`` are installed automatically during previous installations processes.
+Dependencies ``numpy``, and ``pyzmq`` are installed automatically during previous installations processes. 
+
+If you need to connect pyModeS to a RTL-SDR receiver, ``pyrtlsdr`` need to be installed manually::
+
+  pip install pyrtlsdr
+
 
 Advanced installation (using c modules)
 ------------------------------------------
@@ -112,7 +117,7 @@ General usage::
 Live with RTL-SDR
 *******************
 
-If you have an RTL-SDR receiver plugged to the computer, you can connect it with ``rtlsdr`` source switch, shown as follows::
+If you have an RTL-SDR receiver connected to your computer, you can use the ``rtlsdr`` source switch (require ``pyrtlsdr`` package), with command::
 
   $ modeslive --source rtlsdr
 
