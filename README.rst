@@ -72,6 +72,9 @@ Installation examples::
   # stable version
   pip install pyModeS
 
+  # conda (compiled) version
+  conda install -c conda-forge pymodes
+
   # development version
   pip install git+https://github.com/junzis/pyModeS
 
@@ -88,10 +91,16 @@ Advanced installation (using c modules)
 
 If you want to make use of the (faster) c module, install ``pyModeS`` as follows::
 
+  # conda (compiled) version
+  conda install -c conda-forge pymodes
+
+  # stable version (to be compiled on your side)
+  pip install pyModeS[fast]
+
+  # development version
   git clone https://github.com/junzis/pyModeS
   cd pyModeS
-  make ext
-  make install
+  pip install .[fast]
 
 
 View live traffic (modeslive)
