@@ -45,7 +45,7 @@ details = dict(
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
     install_requires=["numpy", "pyzmq"],
     extras_require={"fast": ["Cython"]},
-    package_data={"pyModeS": ["*.pyx", "*.pxd"]},
+    package_data={"pyModeS": ["*.pyx", "*.pxd", "py.typed"]},
     scripts=["pyModeS/streamer/modeslive"],
 )
 
