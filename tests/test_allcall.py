@@ -6,7 +6,7 @@ def test_icao():
 
 
 def test_interrogator():
-    assert allcall.interrogator("5D484FDEA248F5") == 22
+    assert allcall.interrogator("5D484FDEA248F5") == "SI6"
 
 
 def test_capability():

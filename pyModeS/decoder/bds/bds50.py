@@ -78,7 +78,7 @@ def roll50(msg):
     if sign:
         value = value - 512
 
-    angle = value * 45.0 / 256.0  # degree
+    angle = value * 45 / 256  # degree
     return round(angle, 1)
 
 
@@ -102,7 +102,7 @@ def trk50(msg):
     if sign:
         value = value - 1024
 
-    trk = value * 90.0 / 512.0
+    trk = value * 90 / 512.0
 
     # convert from [-180, 180] to [0, 360]
     if trk < 0:
@@ -151,7 +151,7 @@ def rtrk50(msg):
     if sign:
         value = value - 512
 
-    angle = value * 8.0 / 256.0  # degree / sec
+    angle = value * 8 / 256  # degree / sec
     return round(angle, 3)
 
 

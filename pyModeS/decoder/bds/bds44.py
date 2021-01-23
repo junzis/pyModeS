@@ -68,7 +68,7 @@ def wind44(msg):
         return None, None
 
     speed = common.bin2int(d[5:14])  # knots
-    direction = common.bin2int(d[14:23]) * 180.0 / 256.0  # degree
+    direction = common.bin2int(d[14:23]) * 180 / 256  # degree
 
     return round(speed, 0), round(direction, 1)
 
@@ -136,7 +136,7 @@ def hum44(msg):
     if d[49] == "0":
         return None
 
-    hm = common.bin2int(d[50:56]) * 100.0 / 64  # %
+    hm = common.bin2int(d[50:56]) * 100 / 64  # %
 
     return round(hm, 1)
 

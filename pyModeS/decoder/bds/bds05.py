@@ -34,13 +34,13 @@ def airborne_position(msg0, msg1, t0, t1):
         raise RuntimeError("Both even and odd CPR frames are required.")
 
     # 131072 is 2^17, since CPR lat and lon are 17 bits each.
-    cprlat_even = common.bin2int(mb0[22:39]) / 131072.0
-    cprlon_even = common.bin2int(mb0[39:56]) / 131072.0
-    cprlat_odd = common.bin2int(mb1[22:39]) / 131072.0
-    cprlon_odd = common.bin2int(mb1[39:56]) / 131072.0
+    cprlat_even = common.bin2int(mb0[22:39]) / 131072
+    cprlon_even = common.bin2int(mb0[39:56]) / 131072
+    cprlat_odd = common.bin2int(mb1[22:39]) / 131072
+    cprlon_odd = common.bin2int(mb1[39:56]) / 131072
 
-    air_d_lat_even = 360.0 / 60
-    air_d_lat_odd = 360.0 / 59
+    air_d_lat_even = 360 / 60
+    air_d_lat_odd = 360 / 59
 
     # compute latitude index 'j'
     j = common.floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
@@ -64,13 +64,13 @@ def airborne_position(msg0, msg1, t0, t1):
         nl = common.cprNL(lat)
         ni = max(common.cprNL(lat) - 0, 1)
         m = common.floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
-        lon = (360.0 / ni) * (m % ni + cprlon_even)
+        lon = (360 / ni) * (m % ni + cprlon_even)
     else:
         lat = lat_odd
         nl = common.cprNL(lat)
         ni = max(common.cprNL(lat) - 1, 1)
         m = common.floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
-        lon = (360.0 / ni) * (m % ni + cprlon_odd)
+        lon = (360 / ni) * (m % ni + cprlon_odd)
 
     if lon > 180:
         lon = lon - 360
@@ -95,11 +95,11 @@ def airborne_position_with_ref(msg, lat_ref, lon_ref):
 
     mb = common.hex2bin(msg)[32:]
 
-    cprlat = common.bin2int(mb[22:39]) / 131072.0
-    cprlon = common.bin2int(mb[39:56]) / 131072.0
+    cprlat = common.bin2int(mb[22:39]) / 131072
+    cprlon = common.bin2int(mb[39:56]) / 131072
 
     i = int(mb[21])
-    d_lat = 360.0 / 59 if i else 360.0 / 60
+    d_lat = 360 / 59 if i else 360 / 60
 
     j = common.floor(lat_ref / d_lat) + common.floor(
         0.5 + ((lat_ref % d_lat) / d_lat) - cprlat
@@ -110,9 +110,9 @@ def airborne_position_with_ref(msg, lat_ref, lon_ref):
     ni = common.cprNL(lat) - i
 
     if ni > 0:
-        d_lon = 360.0 / ni
+        d_lon = 360 / ni
     else:
-        d_lon = 360.0
+        d_lon = 360
 
     m = common.floor(lon_ref / d_lon) + common.floor(
         0.5 + ((lon_ref % d_lon) / d_lon) - cprlon
@@ -143,9 +143,8 @@ def altitude(msg):
 
     if tc < 19:
         altcode = altbin[0:6] + "0" + altbin[6:]
+        alt = common.altitude(altcode)
     else:
-        altcode = altbin[0:6] + "0" + altbin[6:]
-
-    alt = common.altitude(altcode)
+        alt = common.bin2int(altbin) * 3.28084
 
     return alt
