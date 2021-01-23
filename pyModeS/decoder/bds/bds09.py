@@ -24,7 +24,7 @@ def airborne_velocity(msg, source=False):
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
             - Speed type ('GS' for ground speed, 'AS' for airspeed)
-            - [Optional] Direction source ('TRUE_NORTH' or 'MAGENTIC_NORTH')
+            - [Optional] Direction source ('TRUE_NORTH' or 'MAGNETIC_NORTH')
             - [Optional] Vertical rate source ('BARO' or 'GNSS')
 
     """
@@ -35,29 +35,35 @@ def airborne_velocity(msg, source=False):
 
     subtype = common.bin2int(mb[5:8])
 
-    if common.bin2int(mb[14:24]) == 0 or common.bin2int(mb[25:35]) == 0:
-        return None
-
     if subtype in (1, 2):
-        v_ew_sign = -1 if mb[13] == "1" else 1
-        v_ew = common.bin2int(mb[14:24]) - 1  # east-west velocity
-        if subtype == 2:  # Supersonic
-            v_ew *= 4
 
-        v_ns_sign = -1 if mb[24] == "1" else 1
-        v_ns = common.bin2int(mb[25:35]) - 1  # north-south velocity
-        if subtype == 2:  # Supersonic
-            v_ns *= 4
+        v_ew = common.bin2int(mb[14:24])
+        v_ns = common.bin2int(mb[25:35])
 
-        v_we = v_ew_sign * v_ew
-        v_sn = v_ns_sign * v_ns
+        if v_ew == 0 or v_ns == 0:
+            spd = None
+            trk_or_hdg = None
+            vs = None
+        else:
+            v_ew_sign = -1 if mb[13] == "1" else 1
+            v_ew = v_ew - 1  # east-west velocity
+            if subtype == 2:  # Supersonic
+                v_ew *= 4
 
-        spd = math.sqrt(v_sn * v_sn + v_we * v_we)  # unit in kts
-        spd = int(spd)
+            v_ns_sign = -1 if mb[24] == "1" else 1
+            v_ns = v_ns - 1  # north-south velocity
+            if subtype == 2:  # Supersonic
+                v_ns *= 4
 
-        trk = math.atan2(v_we, v_sn)
-        trk = math.degrees(trk)  # convert to degrees
-        trk = trk if trk >= 0 else trk + 360  # no negative val
+            v_we = v_ew_sign * v_ew
+            v_sn = v_ns_sign * v_ns
+
+            spd = math.sqrt(v_sn * v_sn + v_we * v_we)  # unit in kts
+            spd = int(spd)
+
+            trk = math.atan2(v_we, v_sn)
+            trk = math.degrees(trk)  # convert to degrees
+            trk = trk if trk >= 0 else trk + 360  # no negative val
 
         spd_type = "GS"
         trk_or_hdg = round(trk, 2)
@@ -67,13 +73,15 @@ def airborne_velocity(msg, source=False):
         if mb[13] == "0":
             hdg = None
         else:
-            hdg = common.bin2int(mb[14:24]) / 1024.0 * 360.0
+            hdg = common.bin2int(mb[14:24]) / 1024 * 360.0
             hdg = round(hdg, 2)
 
         trk_or_hdg = hdg
 
         spd = common.bin2int(mb[25:35])
+
         spd = None if spd == 0 else spd - 1
+
         if subtype == 4:  # Supersonic
             spd *= 4
 
@@ -82,7 +90,7 @@ def airborne_velocity(msg, source=False):
         else:
             spd_type = "TAS"
 
-        dir_type = "MAGENTIC_NORTH"
+        dir_type = "MAGNETIC_NORTH"
 
     vr_source = "GNSS" if mb[35] == "0" else "BARO"
     vr_sign = -1 if mb[36] == "1" else 1
@@ -96,7 +104,7 @@ def airborne_velocity(msg, source=False):
 
 
 def altitude_diff(msg):
-    """Decode the differece between GNSS and barometric altitude.
+    """Decode the difference between GNSS and barometric altitude.
 
     Args:
         msg (str): 28 hexdigits string, TC=19
