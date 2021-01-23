@@ -86,7 +86,7 @@ def hdg60(msg):
     if sign:
         value = value - 1024
 
-    hdg = value * 90 / 512.0  # degree
+    hdg = value * 90 / 512  # degree
 
     # convert from [-180, 180] to [0, 360]
     if hdg < 0:

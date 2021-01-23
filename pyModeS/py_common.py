@@ -199,7 +199,7 @@ def cprNL(lat: float) -> int:
 
     nz = 15
     a = 1 - np.cos(np.pi / (2 * nz))
-    b = np.cos(np.pi / 180.0 * abs(lat)) ** 2
+    b = np.cos(np.pi / 180 * abs(lat)) ** 2
     nl = 2 * np.pi / (np.arccos(1 - a / b))
     NL = floor(nl)
     return NL

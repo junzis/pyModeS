@@ -228,7 +228,7 @@ cpdef int cprNL(double lat):
 
     cdef int nz = 15
     cdef double a = 1 - cos(pi / (2 * nz))
-    cdef double b = cos(pi / 180.0 * fabs(lat)) ** 2
+    cdef double b = cos(pi / 180 * fabs(lat)) ** 2
     cdef double nl = 2 * pi / (acos(1 - a / b))
     NL = floor(nl)
     return NL
