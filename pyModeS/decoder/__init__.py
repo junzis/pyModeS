@@ -71,6 +71,68 @@ def tell(msg: str) -> None:
             _print("CPR Longitude", cprlon)
             _print("Altitude", alt, "feet")
 
+        if tc == 29: # target state and status
+            _print("Type", "Target State and Status")
+            subtype = common.bin2int((common.hex2bin(msg)[32:])[5:7])
+            _print("Subtype", subtype)
+            tcas_operational = adsb.tcas_operational(msg)
+            types = {0: "Not Engaged", 1: "Engaged"}
+            tcas_operational_types = {0: "Not Operational", 1: "Operational"}
+            if subtype == 0:
+                emergency_types = {
+                    0: "No emergency",
+                    1: "General emergency",
+                    2: "Lifeguard/medical emergency",
+                    3: "Minimum fuel",
+                    4: "No communications",
+                    5: "Unlawful interference",
+                    6: "Downed aircraft",
+                    7: "Reserved"
+                }
+                vertical_horizontal_types = {
+                    1: "Acquiring mode",
+                    2: "Capturing/Maintaining mode"
+                }
+                tcas_ra_types = {0: "Not active", 1: "Active"}
+                alt, alt_source, alt_ref = adsb.target_altitude(msg)
+                angle, angle_type, angle_source = adsb.target_angle(msg)
+                vertical_mode = adsb.vertical_mode(msg)
+                horizontal_mode = adsb.horizontal_mode(msg)
+                tcas_ra = adsb.tcas_ra(msg)
+                emergency_status = adsb.emergency_status(msg)
+                _print("Target altitude", alt, "feet")
+                _print("Altitude source", alt_source)
+                _print("Altitude reference", alt_ref)
+                _print("Angle", angle, "°")
+                _print("Angle Type", angle_type)
+                _print("Angle Source", angle_source)
+                _print("Vertical mode", vertical_horizontal_types[vertical_mode])
+                _print("Horizontal mode", vertical_horizontal_types[horizontal_mode])
+                _print("TCAS/ACAS", tcas_operational_types[tcas_operational])
+                _print("TCAS/ACAS RA", tcas_ra_types[tcas_ra])
+                _print("Emergency status", emergency_types[emergency_status])
+            else:
+                alt, alt_source = adsb.selected_altitude(msg)
+                baro = adsb.baro_pressure_setting(msg)
+                hdg = adsb.selected_heading(msg)
+                autopilot = adsb.autopilot(msg)
+                vnav = adsb.vnav_mode(msg)
+                alt_hold = adsb.altitude_hold_mode(msg)
+                app = adsb.approach_mode(msg)
+                lnav = adsb.lnav_mode(msg)
+                _print("Selected altitude", alt, "feet")
+                _print("Altitude source", alt_source)
+                _print("Barometric pressure setting", baro, "millibars")
+                _print("Selected Heading", hdg, "°")
+                if not(common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
+                    _print("Autopilot", types[autopilot])
+                    _print("VNAV mode", types[vnav])
+                    _print("Altitude hold mode", types[alt_hold])
+                    _print("Approach mode", types[app])
+                    _print("TCAS/ACAS", tcas_operational_types[tcas_operational])
+                    _print("LNAV mode", types[lnav])
+
+
     if df == 20:
         _print("Protocol", "Mode-S Comm-B altitude reply")
         _print("Altitude", common.altcode(msg), "feet")
