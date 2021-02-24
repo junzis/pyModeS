@@ -43,12 +43,12 @@ def bds(msg):
                 RRS = mbytes[2] & 0x0F
                 BDS2 = RRS
             elif di == 3:
-                RRS = ((mbytes[2] & 0x1) << 4) | ((mbytes[3] & 0xE0) >> 5)
+                RRS = ((mbytes[2] & 0x1) << 3) | ((mbytes[3] & 0xE0) >> 5)
                 BDS2 = RRS
             else:
                 BDS2 = 0 # for other values of DI, the BDS2 is assumed 0 (as per ICAO Annex 10 Vol IV)
 
-            return str(BDS1) + str(BDS2)
+            return str(format(BDS1,"X")) + str(format(BDS2,"X"))
         else:
             return None
     else:
@@ -154,8 +154,7 @@ def uplink_fields(msg):
     di = ""
     RR = ""
     RRS = ""
-    BDS1 = ""
-    BDS2 = ""
+    BDS = ""
     if uf(msg) == 11:
         
        
@@ -208,8 +207,11 @@ def uplink_fields(msg):
             # SI
             SI = (mbytes[2] >> 2) & 0x3F
             IC = "SI" + str(SI)
-            RRS = ((mbytes[2] & 0x1) << 4) | ((mbytes[3] & 0xE0) >> 5)
+            RRS = ((mbytes[2] & 0x1) << 3) | ((mbytes[3] & 0xE0) >> 5)
             BDS2 = RRS
+        if RR > 15:
+            BDS = str(format(BDS1,"X")) + str(format(BDS2,"X"))
+            
     return {
         "DI": di,
         "IC": IC,
@@ -217,5 +219,5 @@ def uplink_fields(msg):
         "PR": PR,
         "RR": RR,
         "RRS": RRS,
-        "BDS": str(BDS1) + str(BDS2),
+        "BDS": BDS,
     }
