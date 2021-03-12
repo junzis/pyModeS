@@ -29,6 +29,23 @@ from pyModeS.decoder.bds.bds06 import (
 from pyModeS.decoder.bds.bds08 import category, callsign
 from pyModeS.decoder.bds.bds09 import airborne_velocity, altitude_diff
 from pyModeS.decoder.bds.bds61 import is_emergency, emergency_state, emergency_squawk
+from pyModeS.decoder.bds.bds62 import (
+    selected_altitude,
+    selected_heading,
+    target_altitude,
+    target_angle,
+    tcas_operational,
+    tcas_ra,
+    baro_pressure_setting,
+    vertical_mode,
+    horizontal_mode,
+    vnav_mode,
+    lnav_mode,
+    autopilot,
+    altitude_hold_mode,
+    approach_mode,
+    emergency_status
+)
 
 
 def df(msg):

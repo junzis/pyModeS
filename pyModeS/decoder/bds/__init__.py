@@ -38,6 +38,7 @@ from pyModeS.decoder.bds import (
     bds50,
     bds53,
     bds60,
+    bds62
 )
 
 

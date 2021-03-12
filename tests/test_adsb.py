@@ -86,6 +86,20 @@ def test_adsb_emergency():
     assert adsb.emergency_squawk("8DA2C1B6E112B600000000760759") == "6615"
 
 
+def test_adsb_target_state_status():
+    sel_alt = adsb.selected_altitude("8DA05629EA21485CBF3F8CADAEEB")
+    assert sel_alt == (16992, "MCP/FCU")
+    assert adsb.baro_pressure_setting("8DA05629EA21485CBF3F8CADAEEB") == 1012.8
+    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB")== 66.8
+    assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") == True
+    assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") == True
+    assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") == False
+    assert adsb.approach_mode("8DA05629EA21485CBF3F8CADAEEB") == False
+    assert adsb.tcas_operational("8DA05629EA21485CBF3F8CADAEEB") == True
+    assert adsb.lnav_mode("8DA05629EA21485CBF3F8CADAEEB") == True
+    
+
+
 # def test_nic():
 #     assert adsb.nic('8D3C70A390AB11F55B8C57F65FE6') == 0
 #     assert adsb.nic('8DE1C9738A4A430B427D219C8225') == 1
