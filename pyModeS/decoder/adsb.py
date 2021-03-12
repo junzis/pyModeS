@@ -154,7 +154,7 @@ def velocity(msg, source=False):
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
             - Speed type ('GS' for ground speed, 'AS' for airspeed)
-            - [Optional] Direction source ('TRUE_NORTH' or 'MAGENTIC_NORTH')
+            - [Optional] Direction source ('TRUE_NORTH' or 'MAGNETIC_NORTH')
             - [Optional] Vertical rate source ('BARO' or 'GNSS')
 
         For surface messages, vertical rate and its respective sources are set to None.
