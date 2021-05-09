@@ -73,7 +73,7 @@ cpdef str bin2hex(str binstr):
 
 @cython.boundscheck(False)
 cpdef unsigned char df(str msg):
-    """Decode Downlink Format vaule, bits 1 to 5."""
+    """Decode Downlink Format value, bits 1 to 5."""
     cdef str dfbin = hex2bin(msg[:2])
     # return min(bin2int(dfbin[0:5]), 24)
     cdef long df = bin2int(dfbin[0:5])

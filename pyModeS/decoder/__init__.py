@@ -22,7 +22,7 @@ def tell(msg: str) -> None:
         tc = common.typecode(msg)
         if 1 <= tc <= 4:  # callsign
             callsign = adsb.callsign(msg)
-            _print("Type", "Identitification and category")
+            _print("Type", "Identification and category")
             _print("Callsign:", callsign)
 
         if 5 <= tc <= 8:  # surface position
