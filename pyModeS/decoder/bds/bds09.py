@@ -65,8 +65,9 @@ def airborne_velocity(msg, source=False):
             trk = math.degrees(trk)  # convert to degrees
             trk = trk if trk >= 0 else trk + 360  # no negative val
 
+            trk_or_hdg = round(trk, 2)
+
         spd_type = "GS"
-        trk_or_hdg = round(trk, 2)
         dir_type = "TRUE_NORTH"
 
     else:
