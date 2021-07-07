@@ -1,7 +1,7 @@
 # ------------------------------------------
 #   BDS 0,6
 #   ADS-B TC=5-8
-#   Surface movment
+#   Surface movement
 # ------------------------------------------
 
 from pyModeS import common
