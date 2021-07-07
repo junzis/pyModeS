@@ -32,7 +32,7 @@ class TcpClient(object):
         self.socket.connect("tcp://%s:%s" % (self.host, self.port))
 
     def stop(self):
-        self.socket.disconnect()
+        self.socket.close()
 
     def read_raw_buffer(self):
         """ Read raw ADS-B data type.
@@ -292,4 +292,7 @@ if __name__ == "__main__":
     port = int(sys.argv[2])
     datatype = sys.argv[3]
     client = TcpClient(host=host, port=port, datatype=datatype)
-    client.run()
+    try:
+        client.run()
+    finally:
+        client.stop()
