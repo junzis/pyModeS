@@ -36,3 +36,5 @@ from pyModeS.decoder.bds.bds60 import *
 # MRAR and MHR
 from pyModeS.decoder.bds.bds44 import *
 from pyModeS.decoder.bds.bds45 import *
+
+from pyModeS.py_common import fs, dr, um
