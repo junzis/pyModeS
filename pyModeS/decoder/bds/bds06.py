@@ -1,7 +1,7 @@
 # ------------------------------------------
 #   BDS 0,6
 #   ADS-B TC=5-8
-#   Surface movment
+#   Surface movement
 # ------------------------------------------
 
 from pyModeS import common
@@ -86,7 +86,7 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     """Decode surface position with only one message,
     knowing reference nearby location, such as previously calculated location,
     ground station, or airport location, etc. The reference position shall
-    be with in 45NM of the true position.
+    be within 45NM of the true position.
 
     Args:
         msg (str): even message (28 hexdigits)
@@ -133,7 +133,7 @@ def surface_velocity(msg, source=False):
     Args:
         msg (str): 28 hexdigits string
         source (boolean): Include direction and vertical rate sources in return. Default to False.
-            If set to True, the function will return six value instead of four.
+            If set to True, the function will return six values instead of four.
 
     Returns:
         int, float, int, string, [string], [string]: Four or six parameters, including:

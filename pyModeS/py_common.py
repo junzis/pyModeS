@@ -5,14 +5,14 @@ from textwrap import wrap
 
 
 def hex2bin(hexstr: str) -> str:
-    """Convert a hexdecimal string to binary string, with zero fillings."""
+    """Convert a hexadecimal string to binary string, with zero fillings."""
     num_of_bits = len(hexstr) * 4
     binstr = bin(int(hexstr, 16))[2:].zfill(int(num_of_bits))
     return binstr
 
 
 def hex2int(hexstr: str) -> int:
-    """Convert a hexdecimal string to integer."""
+    """Convert a hexadecimal string to integer."""
     return int(hexstr, 16)
 
 
@@ -22,7 +22,7 @@ def bin2int(binstr: str) -> int:
 
 
 def bin2hex(binstr: str) -> str:
-    """Convert a binary string to hexdecimal string."""
+    """Convert a binary string to hexadecimal string."""
     return "{0:X}".format(int(binstr, 2))
 
 

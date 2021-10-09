@@ -16,7 +16,7 @@ def airborne_velocity(msg, source=False):
     Args:
         msg (str): 28 hexdigits string
         source (boolean): Include direction and vertical rate sources in return. Default to False.
-            If set to True, the function will return six value instead of four.
+            If set to True, the function will return six values instead of four.
 
     Returns:
         int, float, int, string, [string], [string]: Four or six parameters, including:

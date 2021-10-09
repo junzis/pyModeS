@@ -25,7 +25,7 @@ cdef unsigned char int_to_char(unsigned char i):
 @cython.boundscheck(False)
 @cython.overflowcheck(False)
 cpdef str hex2bin(str hexstr):
-    """Convert a hexdecimal string to binary string, with zero fillings."""
+    """Convert a hexadecimal string to binary string, with zero fillings."""
     # num_of_bits = len(hexstr) * 4
     cdef hexbytes = bytes(hexstr.encode())
     cdef Py_ssize_t len_hexstr = PyBytes_GET_SIZE(hexbytes)
@@ -73,7 +73,7 @@ cpdef str bin2hex(str binstr):
 
 @cython.boundscheck(False)
 cpdef unsigned char df(str msg):
-    """Decode Downlink Format vaule, bits 1 to 5."""
+    """Decode Downlink Format value, bits 1 to 5."""
     cdef str dfbin = hex2bin(msg[:2])
     # return min(bin2int(dfbin[0:5]), 24)
     cdef long df = bin2int(dfbin[0:5])

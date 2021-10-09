@@ -1,7 +1,7 @@
 # ------------------------------------------
 #   BDS 0,8
 #   ADS-B TC=1-4
-#   Aircraft identitification and category
+#   Aircraft identification and category
 # ------------------------------------------
 
 from pyModeS import common

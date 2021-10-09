@@ -1,7 +1,7 @@
 The Python ADS-B/Mode-S Decoder
 ===============================
 
-PyModeS is a Python library designed to decode Mode-S (including ADS-B) message. It can be imported to your python project or used as a standalone tool to view and save live traffic data.
+PyModeS is a Python library designed to decode Mode-S (including ADS-B) messages. It can be imported to your python project or used as a standalone tool to view and save live traffic data.
 
 This is a project created by Junzi Sun, who works at `TU Delft <https://www.tudelft.nl/en/>`_, `Aerospace Engineering Faculty <https://www.tudelft.nl/en/ae/>`_, `CNS/ATM research group <http://cs.lr.tudelft.nl/atm/>`_. It is supported by many `contributors <https://github.com/junzis/pyModeS/graphs/contributors>`_ from different institutions.
 

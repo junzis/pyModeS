@@ -109,7 +109,7 @@ def position_with_ref(msg, lat_ref, lon_ref):
     A reference position is required, which can be previously
     calculated location, ground station, or airport location.
     The function works with both airborne and surface position messages.
-    The reference position shall be with in 180NM (airborne) or 45NM (surface)
+    The reference position shall be within 180NM (airborne) or 45NM (surface)
     of the true position.
 
     Args:
@@ -163,10 +163,10 @@ def velocity(msg, source=False):
     Args:
         msg (str): 28 hexdigits string
         source (boolean): Include direction and vertical rate sources in return. Default to False.
-            If set to True, the function will return six value instead of four.
+            If set to True, the function will return six values instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]: Four or six parameters, including:
+        (int, float, int, string, [string], [string]): Four or six parameters, including:
             - Speed (kt)
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
@@ -341,7 +341,7 @@ def nic_v2(msg, NICa, NICbc):
     Args:
         msg (str): 28 hexdigits string
         NICa (int or string): NIC supplement - A
-        NICbc (int or srting): NIC supplement - B or C
+        NICbc (int or string): NIC supplement - B or C
 
     Returns:
         int or string: Horizontal Radius of Containment

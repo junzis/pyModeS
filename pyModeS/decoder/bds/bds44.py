@@ -142,7 +142,7 @@ def hum44(msg):
 
 
 def turb44(msg):
-    """Turblence.
+    """Turbulence.
 
     Args:
         msg (str): 28 hexdigits string
