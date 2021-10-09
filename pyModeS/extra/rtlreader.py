@@ -7,7 +7,7 @@ try:
     import rtlsdr
 except:
     print("------------------------------------------------------------------------")
-    print("! Warining: pyrtlsdr not installed (required for using RTL-SDR devices) ")
+    print("! Warning: pyrtlsdr not installed (required for using RTL-SDR devices) !")
     print("------------------------------------------------------------------------")
 
 sampling_rate = 2e6
