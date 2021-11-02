@@ -25,7 +25,7 @@ cdef unsigned char int_to_char(unsigned char i):
 @cython.boundscheck(False)
 @cython.overflowcheck(False)
 cpdef str hex2bin(str hexstr):
-    """Convert a hexdecimal string to binary string, with zero fillings."""
+    """Convert a hexadecimal string to binary string, with zero fillings."""
     # num_of_bits = len(hexstr) * 4
     cdef hexbytes = bytes(hexstr.encode())
     cdef Py_ssize_t len_hexstr = PyBytes_GET_SIZE(hexbytes)

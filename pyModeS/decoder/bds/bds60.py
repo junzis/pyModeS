@@ -158,7 +158,7 @@ def vr60baro(msg):
 
 
 def vr60ins(msg):
-    """Vertical rate measurd by onbard equiments (IRS, AHRS)
+    """Vertical rate measured by onboard equipment (IRS, AHRS)
 
     Args:
         msg (str): 28 hexdigits string

@@ -1,5 +1,5 @@
 """
-Decode all-call reply messages, with dowlink format 11
+Decode all-call reply messages, with downlink format 11
 """
 
 from pyModeS import common
