@@ -77,7 +77,7 @@ def emergency_squawk(msg: str) -> str:
     msgbin = common.hex2bin(msg)
 
     # construct the 13 bits Mode A ID code
-    idcode = msgbin[43:49] + "0" + msgbin[49:55]
+    idcode = msgbin[43:56]
 
     squawk = common.squawk(idcode)
     return squawk
