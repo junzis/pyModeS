@@ -1,13 +1,7 @@
 import os
 import warnings
 
-try:
-    from . import c_common as common
-    from .c_common import *
-except:
-    from . import py_common as common
-    from .py_common import *
-
+from .common import *
 from .decoder import tell
 from .decoder import adsb
 from .decoder import commb
