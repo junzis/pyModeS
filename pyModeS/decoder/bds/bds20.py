@@ -26,7 +26,7 @@ def is20(msg):
 
     cs = cs20(msg)
 
-    if "#" in cs:
+    if "#" in cs and common.bin2int(d[8:56])>0: #message with empty callsign can still be BDS2,0
         return False
 
     return True
