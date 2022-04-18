@@ -1,0 +1,12 @@
+[run]
+branch = True
+include = */pyModeS/*
+omit = *tests*
+
+[report]
+exclude_lines =
+    coverage: ignore
+    raise NotImplementedError
+    if TYPE_CHECKING:
+
+ignore_errors = True
