@@ -4,7 +4,7 @@ import numpy as np
 import pyModeS as pms
 
 try:
-    import rtlsdr
+    import rtlsdr  # type: ignore
 except:
     print("------------------------------------------------------------------------")
     print("! Warning: pyrtlsdr not installed (required for using RTL-SDR devices) !")

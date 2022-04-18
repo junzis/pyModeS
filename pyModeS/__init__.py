@@ -5,8 +5,8 @@ try:
     from . import c_common as common
     from .c_common import *
 except:
-    from . import py_common as common
-    from .py_common import *
+    from . import py_common as common  # type: ignore
+    from .py_common import *  # type: ignore
 
 from .decoder import tell
 from .decoder import adsb

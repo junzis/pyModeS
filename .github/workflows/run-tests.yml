@@ -30,9 +30,9 @@ jobs:
           pip install -U pytest codecov pytest-cov
           pip install .
 
-      # - name: Type checking
-      #   run: |
-      #     mypy pyModeS tests
+      - name: Type checking
+        run: |
+          mypy pyModeS
 
       - name: Run tests (without Cython)
         run: |

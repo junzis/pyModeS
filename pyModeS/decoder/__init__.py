@@ -71,12 +71,12 @@ def tell(msg: str) -> None:
             _print("CPR Longitude", cprlon)
             _print("Altitude", alt, "feet")
 
-        if tc == 29: # target state and status
+        if tc == 29:  # target state and status
             _print("Type", "Target State and Status")
             subtype = common.bin2int((common.hex2bin(msg)[32:])[5:7])
             _print("Subtype", subtype)
             tcas_operational = adsb.tcas_operational(msg)
-            types = {0: "Not Engaged", 1: "Engaged"}
+            types_29 = {0: "Not Engaged", 1: "Engaged"}
             tcas_operational_types = {0: "Not Operational", 1: "Operational"}
             if subtype == 0:
                 emergency_types = {
@@ -87,11 +87,11 @@ def tell(msg: str) -> None:
                     4: "No communications",
                     5: "Unlawful interference",
                     6: "Downed aircraft",
-                    7: "Reserved"
+                    7: "Reserved",
                 }
                 vertical_horizontal_types = {
                     1: "Acquiring mode",
-                    2: "Capturing/Maintaining mode"
+                    2: "Capturing/Maintaining mode",
                 }
                 tcas_ra_types = {0: "Not active", 1: "Active"}
                 alt, alt_source, alt_ref = adsb.target_altitude(msg)
@@ -108,7 +108,12 @@ def tell(msg: str) -> None:
                 _print("Angle Source", angle_source)
                 _print("Vertical mode", vertical_horizontal_types[vertical_mode])
                 _print("Horizontal mode", vertical_horizontal_types[horizontal_mode])
-                _print("TCAS/ACAS", tcas_operational_types[tcas_operational])
+                _print(
+                    "TCAS/ACAS",
+                    tcas_operational_types[tcas_operational]
+                    if tcas_operational
+                    else None,
+                )
                 _print("TCAS/ACAS RA", tcas_ra_types[tcas_ra])
                 _print("Emergency status", emergency_types[emergency_status])
             else:
@@ -124,14 +129,20 @@ def tell(msg: str) -> None:
                 _print("Altitude source", alt_source)
                 _print("Barometric pressure setting", baro, "millibars")
                 _print("Selected Heading", hdg, "°")
-                if not(common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
-                    _print("Autopilot", types[autopilot])
-                    _print("VNAV mode", types[vnav])
-                    _print("Altitude hold mode", types[alt_hold])
-                    _print("Approach mode", types[app])
-                    _print("TCAS/ACAS", tcas_operational_types[tcas_operational])
-                    _print("LNAV mode", types[lnav])
-
+                if not (common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
+                    _print("Autopilot", types_29[autopilot] if autopilot else None)
+                    _print("VNAV mode", types_29[vnav] if vnav else None)
+                    _print(
+                        "Altitude hold mode", types_29[alt_hold] if alt_hold else None
+                    )
+                    _print("Approach mode", types_29[app] if app else None)
+                    _print(
+                        "TCAS/ACAS",
+                        tcas_operational_types[tcas_operational]
+                        if tcas_operational
+                        else None,
+                    )
+                    _print("LNAV mode", types_29[lnav] if lnav else None)
 
     if df == 20:
         _print("Protocol", "Mode-S Comm-B altitude reply")

@@ -30,6 +30,6 @@ def BDS(msg):
 
 
 def icao(msg):
-    from pyModeS.decoder.common import icao
+    from . import common
 
-    return icao(msg)
+    return common.icao(msg)
