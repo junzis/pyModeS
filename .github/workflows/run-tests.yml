@@ -41,7 +41,8 @@ jobs:
       - name: Install with Cython
         run: |
           pip install -U cython
-          pip install --force-reinstall .
+          pip uninstall -y pymodes
+          pip install .
 
       - name: Run tests (with Cython)
         run: |

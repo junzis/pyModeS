@@ -57,5 +57,5 @@ try:
 
     setup(**dict(details, ext_modules=cythonize(extensions)))
 
-except:
+except ImportError:
     setup(**details)
