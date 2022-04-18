@@ -1,3 +1,5 @@
+# noqa
+
 """ADS-B module.
 
 The ADS-B module also imports functions from the following modules:

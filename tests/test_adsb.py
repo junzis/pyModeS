@@ -90,7 +90,7 @@ def test_adsb_target_state_status():
     sel_alt = adsb.selected_altitude("8DA05629EA21485CBF3F8CADAEEB")
     assert sel_alt == (16992, "MCP/FCU")
     assert adsb.baro_pressure_setting("8DA05629EA21485CBF3F8CADAEEB") == 1012.8
-    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB")== 66.8
+    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == 66.8
     assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") == True
     assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") == True
     assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") == False

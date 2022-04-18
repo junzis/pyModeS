@@ -1,0 +1,54 @@
+name: tests
+
+on:
+  push:
+  pull_request_target:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest # ${{ matrix.os }}
+    strategy:
+      matrix:
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -U pip numpy cython mypy
+          pip install -U pytest codecov pytest-cov
+          pip install .
+
+      # - name: Type checking
+      #   run: |
+      #     mypy pyModeS tests
+
+      - name: Run tests (without Cython)
+        run: |
+          pytest tests --cov --cov-report term-missing
+
+      - name: Install with Cython
+        run: |
+          pip install -U cython
+          pip install --force-reinstall .
+
+      - name: Run tests (with Cython)
+        run: |
+          pytest tests
+
+      - name: Upload coverage to Codecov
+        if: ${{ github.event_name != 'pull_request_target' && env.PYTHON_VERSION == '3.10' }}
+        uses: codecov/codecov-action@v2
+        with:
+          env_vars: PYTHON_VERSION

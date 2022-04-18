@@ -25,7 +25,7 @@ def is20(msg):
         return False
 
     # allow empty callsign
-    if common.bin2int(d[8:56]) == 0
+    if common.bin2int(d[8:56]) == 0:
         return True
 
     if "#" in cs20(msg):
