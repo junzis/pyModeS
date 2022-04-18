@@ -27,7 +27,7 @@ with open(path.join(here, "README.rst"), encoding="utf-8") as f:
 
 details = dict(
     name="pyModeS",
-    version="2.10.1",
+    version="2.11",
     description="Python Mode-S and ADS-B Decoder",
     long_description=long_description,
     url="https://github.com/junzis/pyModeS",
