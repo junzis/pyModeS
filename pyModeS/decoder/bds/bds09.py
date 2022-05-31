@@ -81,10 +81,10 @@ def airborne_velocity(msg, source=False):
 
         spd = common.bin2int(mb[25:35])
 
-        spd = None if spd == 0 else spd - 1
-
         if subtype == 4:  # Supersonic
             spd *= 4
+            
+        spd = None if spd == 0 else spd - 1
 
         if mb[24] == "0":
             spd_type = "IAS"
