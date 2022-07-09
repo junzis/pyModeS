@@ -68,16 +68,16 @@ TC_NICv2_lookup = {
 
 
 NUCp = {
-    9: {"HPL": 7.5, "RCu": 3, "RCv": 4},
-    8: {"HPL": 25, "RCu": 10, "RCv": 15},
-    7: {"HPL": 185, "RCu": 93, "RCv": NA},
-    6: {"HPL": 370, "RCu": 185, "RCv": NA},
-    5: {"HPL": 926, "RCu": 463, "RCv": NA},
-    4: {"HPL": 1852, "RCu": 926, "RCv": NA},
-    3: {"HPL": 3704, "RCu": 1852, "RCv": NA},
-    2: {"HPL": 18520, "RCu": 9260, "RCv": NA},
-    1: {"HPL": 37040, "RCu": 18520, "RCv": NA},
-    0: {"HPL": NA, "RCu": NA, "RCv": NA},
+    9: {"HPL": 7.5, "RCu": 3},
+    8: {"HPL": 25, "RCu": 10},
+    7: {"HPL": 185, "RCu": 93},
+    6: {"HPL": 370, "RCu": 185},
+    5: {"HPL": 926, "RCu": 463},
+    4: {"HPL": 1852, "RCu": 926},
+    3: {"HPL": 3704, "RCu": 1852},
+    2: {"HPL": 18520, "RCu": 9260},
+    1: {"HPL": 37040, "RCu": 18520},
+    0: {"HPL": NA, "RCu": NA},
 }
 
 NUCv = {

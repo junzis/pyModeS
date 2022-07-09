@@ -44,7 +44,7 @@ from pyModeS.decoder.bds.bds62 import (
     autopilot,
     altitude_hold_mode,
     approach_mode,
-    emergency_status
+    emergency_status,
 )
 
 
@@ -262,12 +262,16 @@ def nuc_p(msg):
         NUCp = uncertainty.TC_NUCp_lookup[tc]
         HPL = uncertainty.NUCp[NUCp]["HPL"]
         RCu = uncertainty.NUCp[NUCp]["RCu"]
-        RCv = uncertainty.NUCp[NUCp]["RCv"]
     except KeyError:
-        HPL, RCu, RCv = uncertainty.NA, uncertainty.NA, uncertainty.NA
+        HPL, RCu = uncertainty.NA, uncertainty.NA
 
-    if tc in [20, 21]:
-        RCv = uncertainty.NA
+    RCv = uncertainty.NA
+
+    # RCv only available for GNSS height
+    if tc == 20:
+        RCv = 4
+    elif tc == 21:
+        RCv = 15
 
     return HPL, RCu, RCv
 
