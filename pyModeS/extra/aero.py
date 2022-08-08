@@ -17,7 +17,7 @@ Speed conversion at altitude H[m] in ISA
 ::
 
     Mach = tas2mach(Vtas,H)    # true airspeed (Vtas) to mach number conversion
-    Vtas = mach2tas(Mach,H)    # true airspeed (Vtas) to mach number conversion
+    Vtas = mach2tas(Mach,H)    # mach number to true airspeed (Vtas) conversion
     Vtas = eas2tas(Veas,H)     # equivalent airspeed to true airspeed, H in [m]
     Veas = tas2eas(Vtas,H)     # true airspeed to equivent airspeed, H in [m]
     Vtas = cas2tas(Vcas,H)     # Vcas  to Vtas conversion both m/s, H in [m]
