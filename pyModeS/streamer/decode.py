@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 import datetime
 import csv
 import pyModeS as pms
