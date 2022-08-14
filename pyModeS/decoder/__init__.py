@@ -2,7 +2,7 @@ def tell(msg: str) -> None:
     from pyModeS import common, adsb, commb, bds
 
     def _print(label, value, unit=None):
-        print("%20s: " % label, end="")
+        print("%28s: " % label, end="")
         print("%s " % value, end="")
         if unit:
             print(unit)
