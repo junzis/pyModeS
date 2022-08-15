@@ -2,7 +2,7 @@ def tell(msg: str) -> None:
     from pyModeS import common, adsb, commb, bds
 
     def _print(label, value, unit=None):
-        print("%20s: " % label, end="")
+        print("%28s: " % label, end="")
         print("%s " % value, end="")
         if unit:
             print(unit)
@@ -127,7 +127,7 @@ def tell(msg: str) -> None:
                 lnav = adsb.lnav_mode(msg)
                 _print("Selected altitude", alt, "feet")
                 _print("Altitude source", alt_source)
-                _print("Barometric pressure setting", baro, "millibars")
+                _print("Barometric pressure setting", baro, "" if baro == None else "millibars")
                 _print("Selected Heading", hdg, "°")
                 if not (common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
                     _print("Autopilot", types_29[autopilot] if autopilot else None)

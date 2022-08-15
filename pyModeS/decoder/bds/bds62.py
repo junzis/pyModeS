@@ -274,8 +274,7 @@ def baro_pressure_setting(msg):
         )
 
     baro = common.bin2int(mb[20:29])
-    baro = None if baro == 0 else 800 + (baro - 1) * 0.8
-    baro = round(baro, 1)
+    baro = None if baro == 0 else round(800 + (baro - 1) * 0.8, 1)
 
     return baro
 
