@@ -43,7 +43,8 @@ details = dict(
     ],
     keywords="Mode-S ADS-B EHS ELS Comm-B",
     packages=find_packages(exclude=["contrib", "docs", "tests"]),
-    install_requires=["numpy", "pyzmq"],
+    # typing_extensions are no longer necessary after Python 3.8 (TypedDict)
+    install_requires=["numpy", "pyzmq", "typing_extensions"],
     extras_require={"fast": ["Cython"]},
     package_data={"pyModeS": ["*.pyx", "*.pxd", "py.typed"]},
     scripts=["pyModeS/streamer/modeslive"],
