@@ -3,10 +3,12 @@
 #   Common usage GICB capability report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import List
+
+from ... import common
 
 
-def is17(msg):
+def is17(msg: str) -> bool:
     """Check if a message is likely to be BDS code 1,7
 
     Args:
@@ -38,7 +40,7 @@ def is17(msg):
     return True
 
 
-def cap17(msg):
+def cap17(msg: str) -> List[str]:
     """Extract capacities from BDS 1,7 message
 
     Args:

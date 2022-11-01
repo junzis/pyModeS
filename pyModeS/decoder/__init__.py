@@ -1,5 +1,5 @@
 def tell(msg: str) -> None:
-    from pyModeS import common, adsb, commb, bds
+    from .. import common, adsb, commb, bds
 
     def _print(label, value, unit=None):
         print("%28s: " % label, end="")
@@ -20,6 +20,11 @@ def tell(msg: str) -> None:
         _print("Protocol", "Mode-S Extended Squitter (ADS-B)")
 
         tc = common.typecode(msg)
+
+        if tc is None:
+            _print("ERROR", "Unknown typecode")
+            return
+
         if 1 <= tc <= 4:  # callsign
             callsign = adsb.callsign(msg)
             _print("Type", "Identification and category")
@@ -52,12 +57,14 @@ def tell(msg: str) -> None:
 
         if tc == 19:
             _print("Type", "Airborne velocity")
-            spd, trk, vr, t = adsb.velocity(msg)
-            types = {"GS": "Ground speed", "TAS": "True airspeed"}
-            _print("Speed", spd, "knots")
-            _print("Track", trk, "degrees")
-            _print("Vertical rate", vr, "feet/minute")
-            _print("Type", types[t])
+            velocity = adsb.velocity(msg)
+            if velocity is not None:
+                spd, trk, vr, t = velocity
+                types = {"GS": "Ground speed", "TAS": "True airspeed"}
+                _print("Speed", spd, "knots")
+                _print("Track", trk, "degrees")
+                _print("Vertical rate", vr, "feet/minute")
+                _print("Type", types[t])
 
         if 20 <= tc <= 22:  # airborne position
             _print("Type", "Airborne position (with GNSS altitude)")
@@ -106,8 +113,16 @@ def tell(msg: str) -> None:
                 _print("Angle", angle, "°")
                 _print("Angle Type", angle_type)
                 _print("Angle Source", angle_source)
-                _print("Vertical mode", vertical_horizontal_types[vertical_mode])
-                _print("Horizontal mode", vertical_horizontal_types[horizontal_mode])
+                if vertical_mode is not None:
+                    _print(
+                        "Vertical mode",
+                        vertical_horizontal_types[vertical_mode],
+                    )
+                if horizontal_mode is not None:
+                    _print(
+                        "Horizontal mode",
+                        vertical_horizontal_types[horizontal_mode],
+                    )
                 _print(
                     "TCAS/ACAS",
                     tcas_operational_types[tcas_operational]
@@ -117,7 +132,7 @@ def tell(msg: str) -> None:
                 _print("TCAS/ACAS RA", tcas_ra_types[tcas_ra])
                 _print("Emergency status", emergency_types[emergency_status])
             else:
-                alt, alt_source = adsb.selected_altitude(msg)
+                alt, alt_source = adsb.selected_altitude(msg)  # type: ignore
                 baro = adsb.baro_pressure_setting(msg)
                 hdg = adsb.selected_heading(msg)
                 autopilot = adsb.autopilot(msg)
@@ -127,13 +142,20 @@ def tell(msg: str) -> None:
                 lnav = adsb.lnav_mode(msg)
                 _print("Selected altitude", alt, "feet")
                 _print("Altitude source", alt_source)
-                _print("Barometric pressure setting", baro, "" if baro == None else "millibars")
+                _print(
+                    "Barometric pressure setting",
+                    baro,
+                    "" if baro is None else "millibars",
+                )
                 _print("Selected Heading", hdg, "°")
                 if not (common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
-                    _print("Autopilot", types_29[autopilot] if autopilot else None)
+                    _print(
+                        "Autopilot", types_29[autopilot] if autopilot else None
+                    )
                     _print("VNAV mode", types_29[vnav] if vnav else None)
                     _print(
-                        "Altitude hold mode", types_29[alt_hold] if alt_hold else None
+                        "Altitude hold mode",
+                        types_29[alt_hold] if alt_hold else None,
                     )
                     _print("Approach mode", types_29[app] if app else None)
                     _print(
@@ -167,7 +189,7 @@ def tell(msg: str) -> None:
         }
 
         BDS = bds.infer(msg, mrar=True)
-        if BDS in labels.keys():
+        if BDS is not None and BDS in labels.keys():
             _print("BDS", "%s (%s)" % (BDS, labels[BDS]))
         else:
             _print("BDS", BDS)

@@ -4,10 +4,12 @@
 # ------------------------------------------
 
 import warnings
-from pyModeS import common
+from typing import Optional
+
+from ... import common
 
 
-def is40(msg):
+def is40(msg: str) -> bool:
     """Check if a message is likely to be BDS code 4,0
 
     Args:
@@ -50,7 +52,7 @@ def is40(msg):
     return True
 
 
-def selalt40mcp(msg):
+def selalt40mcp(msg: str) -> Optional[int]:
     """Selected altitude, MCP/FCU
 
     Args:
@@ -68,7 +70,7 @@ def selalt40mcp(msg):
     return alt
 
 
-def selalt40fms(msg):
+def selalt40fms(msg: str) -> Optional[int]:
     """Selected altitude, FMS
 
     Args:
@@ -86,7 +88,7 @@ def selalt40fms(msg):
     return alt
 
 
-def p40baro(msg):
+def p40baro(msg: str) -> Optional[float]:
     """Barometric pressure setting
 
     Args:
@@ -104,17 +106,19 @@ def p40baro(msg):
     return p
 
 
-def alt40mcp(msg):
+def alt40mcp(msg: str) -> Optional[int]:
     warnings.warn(
-        "alt40mcp() has been renamed to selalt40mcp(). It will be removed in the future.",
+        """alt40mcp() has been renamed to selalt40mcp().
+        It will be removed in the future.""",
         DeprecationWarning,
     )
     return selalt40mcp(msg)
 
 
-def alt40fms(msg):
+def alt40fms(msg: str) -> Optional[int]:
     warnings.warn(
-        "alt40fms() has been renamed to selalt40fms(). It will be removed in the future.",
+        """alt40fms() has been renamed to selalt40fms().
+        It will be removed in the future.""",
         DeprecationWarning,
     )
     return selalt40fms(msg)

@@ -4,10 +4,10 @@
 #   Aircraft identification and category
 # ------------------------------------------
 
-from pyModeS import common
+from ... import common
 
 
-def category(msg):
+def category(msg: str) -> int:
     """Aircraft category number
 
     Args:
@@ -17,7 +17,8 @@ def category(msg):
         int: category number
     """
 
-    if common.typecode(msg) < 1 or common.typecode(msg) > 4:
+    tc = common.typecode(msg)
+    if tc is None or tc < 1 or tc > 4:
         raise RuntimeError("%s: Not a identification message" % msg)
 
     msgbin = common.hex2bin(msg)
@@ -25,7 +26,7 @@ def category(msg):
     return common.bin2int(mebin[5:8])
 
 
-def callsign(msg):
+def callsign(msg: str) -> str:
     """Aircraft callsign
 
     Args:
@@ -34,8 +35,9 @@ def callsign(msg):
     Returns:
         string: callsign
     """
+    tc = common.typecode(msg)
 
-    if common.typecode(msg) < 1 or common.typecode(msg) > 4:
+    if tc is None or tc < 1 or tc > 4:
         raise RuntimeError("%s: Not a identification message" % msg)
 
     chars = "#ABCDEFGHIJKLMNOPQRSTUVWXYZ#####_###############0123456789######"

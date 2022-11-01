@@ -43,14 +43,20 @@ def test_adsb_position_with_ref():
 
 
 def test_adsb_airborne_position_with_ref():
-    pos = adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357", 49.0, 6.0)
+    pos = adsb.airborne_position_with_ref(
+        "8D40058B58C901375147EFD09357", 49.0, 6.0
+    )
     assert pos == (49.82410, 6.06785)
-    pos = adsb.airborne_position_with_ref("8D40058B58C904A87F402D3B8C59", 49.0, 6.0)
+    pos = adsb.airborne_position_with_ref(
+        "8D40058B58C904A87F402D3B8C59", 49.0, 6.0
+    )
     assert pos == (49.81755, 6.08442)
 
 
 def test_adsb_surface_position_with_ref():
-    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B000000", -43.5, 172.5)
+    pos = adsb.surface_position_with_ref(
+        "8FC8200A3AB8F5F893096B000000", -43.5, 172.5
+    )
     assert pos == (-43.48564, 172.53942)
 
 
@@ -91,13 +97,12 @@ def test_adsb_target_state_status():
     assert sel_alt == (16992, "MCP/FCU")
     assert adsb.baro_pressure_setting("8DA05629EA21485CBF3F8CADAEEB") == 1012.8
     assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == 66.8
-    assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") == True
-    assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") == True
-    assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") == False
-    assert adsb.approach_mode("8DA05629EA21485CBF3F8CADAEEB") == False
-    assert adsb.tcas_operational("8DA05629EA21485CBF3F8CADAEEB") == True
-    assert adsb.lnav_mode("8DA05629EA21485CBF3F8CADAEEB") == True
-    
+    assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") is True
+    assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") is True
+    assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") is False
+    assert adsb.approach_mode("8DA05629EA21485CBF3F8CADAEEB") is False
+    assert adsb.tcas_operational("8DA05629EA21485CBF3F8CADAEEB") is True
+    assert adsb.lnav_mode("8DA05629EA21485CBF3F8CADAEEB") is True
 
 
 # def test_nic():

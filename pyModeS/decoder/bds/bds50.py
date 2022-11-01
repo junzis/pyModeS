@@ -3,10 +3,12 @@
 # Track and turn report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import Optional
+
+from ... import common
 
 
-def is50(msg):
+def is50(msg: str) -> bool:
     """Check if a message is likely to be BDS code 5,0
     (Track and turn report)
 
@@ -57,7 +59,7 @@ def is50(msg):
     return True
 
 
-def roll50(msg):
+def roll50(msg: str) -> Optional[float]:
     """Roll angle, BDS 5,0 message
 
     Args:
@@ -82,7 +84,7 @@ def roll50(msg):
     return round(angle, 1)
 
 
-def trk50(msg):
+def trk50(msg: str) -> Optional[float]:
     """True track angle, BDS 5,0 message
 
     Args:
@@ -111,7 +113,7 @@ def trk50(msg):
     return round(trk, 3)
 
 
-def gs50(msg):
+def gs50(msg: str) -> Optional[float]:
     """Ground speed, BDS 5,0 message
 
     Args:
@@ -129,7 +131,7 @@ def gs50(msg):
     return spd
 
 
-def rtrk50(msg):
+def rtrk50(msg: str) -> Optional[float]:
     """Track angle rate, BDS 5,0 message
 
     Args:
@@ -155,7 +157,7 @@ def rtrk50(msg):
     return round(angle, 3)
 
 
-def tas50(msg):
+def tas50(msg: str) -> Optional[float]:
     """Aircraft true airspeed, BDS 5,0 message
 
     Args:

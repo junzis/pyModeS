@@ -3,11 +3,13 @@
 # Heading and speed report
 # ------------------------------------------
 
-from pyModeS import common
-from pyModeS.extra import aero
+from typing import Optional
+
+from ... import common
+from ...extra import aero
 
 
-def is60(msg):
+def is60(msg: str) -> bool:
     """Check if a message is likely to be BDS code 6,0
 
     Args:
@@ -66,7 +68,7 @@ def is60(msg):
     return True
 
 
-def hdg60(msg):
+def hdg60(msg: str) -> Optional[float]:
     """Megnetic heading of aircraft
 
     Args:
@@ -92,10 +94,10 @@ def hdg60(msg):
     if hdg < 0:
         hdg = 360 + hdg
 
-    return round(hdg, 3)
+    return hdg
 
 
-def ias60(msg):
+def ias60(msg: str) -> Optional[float]:
     """Indicated airspeed
 
     Args:
@@ -113,7 +115,7 @@ def ias60(msg):
     return ias
 
 
-def mach60(msg):
+def mach60(msg: str) -> Optional[float]:
     """Aircraft MACH number
 
     Args:
@@ -128,10 +130,10 @@ def mach60(msg):
         return None
 
     mach = common.bin2int(d[24:34]) * 2.048 / 512.0
-    return round(mach, 3)
+    return mach
 
 
-def vr60baro(msg):
+def vr60baro(msg: str) -> Optional[int]:
     """Vertical rate from barometric measurement, this value may be very noisy.
 
     Args:
@@ -157,8 +159,8 @@ def vr60baro(msg):
     return roc
 
 
-def vr60ins(msg):
-    """Vertical rate measured by onboard equipment (IRS, AHRS)
+def vr60ins(msg: str) -> Optional[int]:
+    """Vertical rate measurd by onbard equiments (IRS, AHRS)
 
     Args:
         msg (str): 28 hexdigits string

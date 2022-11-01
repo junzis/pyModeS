@@ -4,10 +4,22 @@
 #   Surface movement
 # ------------------------------------------
 
-from pyModeS import common
+from __future__ import annotations
+
+from datetime import datetime
+
+from ... import common
 
 
-def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
+def surface_position(
+    msg0: str,
+    msg1: str,
+    t0: int | datetime,
+    t1: int | datetime,
+    lat_ref: float,
+    lon_ref: float,
+) -> None | tuple[float, float]:
+
     """Decode surface position from a pair of even and odd position message,
     the lat/lon of receiver must be provided to yield the correct solution.
 
@@ -55,7 +67,8 @@ def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
         return None
 
     # compute ni, longitude index m, and longitude
-    if t0 > t1:
+    # (people pass int+int or datetime+datetime)
+    if t0 > t1:  # type: ignore
         lat = lat_even
         nl = common.cprNL(lat_even)
         ni = max(common.cprNL(lat_even) - 0, 1)
@@ -72,17 +85,19 @@ def surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref):
     lons = [lon, lon + 90, lon + 180, lon + 270]
 
     # make sure lons are between -180 and 180
-    lons = [(l + 180) % 360 - 180 for l in lons]
+    lons = [(lon + 180) % 360 - 180 for lon in lons]
 
     # the closest solution to receiver is the correct one
-    dls = [abs(lon_ref - l) for l in lons]
+    dls = [abs(lon_ref - lon) for lon in lons]
     imin = min(range(4), key=dls.__getitem__)
     lon = lons[imin]
 
     return round(lat, 5), round(lon, 5)
 
 
-def surface_position_with_ref(msg, lat_ref, lon_ref):
+def surface_position_with_ref(
+    msg: str, lat_ref: float, lon_ref: float
+) -> tuple[float, float]:
     """Decode surface position with only one message,
     knowing reference nearby location, such as previously calculated location,
     ground station, or airport location, etc. The reference position shall
@@ -127,16 +142,19 @@ def surface_position_with_ref(msg, lat_ref, lon_ref):
     return round(lat, 5), round(lon, 5)
 
 
-def surface_velocity(msg, source=False):
+def surface_velocity(
+    msg: str, source: bool = False
+) -> tuple[None | float, float, int, str]:
     """Decode surface velocity from a surface position message
 
     Args:
         msg (str): 28 hexdigits string
-        source (boolean): Include direction and vertical rate sources in return. Default to False.
-            If set to True, the function will return six values instead of four.
+        source (boolean): Include direction and vertical rate sources in return.
+            Default to False.
+            If set to True, the function will return six value instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]: Four or six parameters, including:
+        int, float, int, string, [string], [string]:
             - Speed (kt)
             - Angle (degree), ground track
             - Vertical rate, always 0
@@ -145,7 +163,8 @@ def surface_velocity(msg, source=False):
             - [Optional] Vertical rate source (None)
 
     """
-    if common.typecode(msg) < 5 or common.typecode(msg) > 8:
+    tc = common.typecode(msg)
+    if tc is None or tc < 5 or tc > 8:
         raise RuntimeError("%s: Not a surface message, expecting 5<TC<8" % msg)
 
     mb = common.hex2bin(msg)[32:]
@@ -164,16 +183,17 @@ def surface_velocity(msg, source=False):
     if mov == 0 or mov > 124:
         spd = None
     elif mov == 1:
-        spd = 0
+        spd = 0.0
     elif mov == 124:
-        spd = 175
+        spd = 175.0
     else:
         mov_lb = [2, 9, 13, 39, 94, 109, 124]
-        kts_lb = [0.125, 1, 2, 15, 70, 100, 175]
-        step = [0.125, 0.25, 0.5, 1, 2, 5]
+        kts_lb: list[float] = [0.125, 1, 2, 15, 70, 100, 175]
+        step: list[float] = [0.125, 0.25, 0.5, 1, 2, 5]
         i = next(m[0] for m in enumerate(mov_lb) if m[1] > mov)
         spd = kts_lb[i - 1] + (mov - mov_lb[i - 1]) * step[i - 1]
+
     if source:
-        return spd, trk, 0, "GS", "TRUE_NORTH", None
+        return spd, trk, 0, "GS", "TRUE_NORTH", None  # type: ignore
     else:
         return spd, trk, 0, "GS"

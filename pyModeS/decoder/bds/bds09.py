@@ -1,25 +1,29 @@
 # ------------------------------------------
 #   BDS 0,9
 #   ADS-B TC=19
-#   Aircraft Airborn velocity
+#   Aircraft Airborne velocity
 # ------------------------------------------
 
-from pyModeS import common
-
+from __future__ import annotations
 
 import math
 
+from ... import common
 
-def airborne_velocity(msg, source=False):
+
+def airborne_velocity(
+    msg: str, source: bool = False
+) -> None | tuple[None | int, None | float, None | int, str]:
     """Decode airborne velocity.
 
     Args:
         msg (str): 28 hexdigits string
-        source (boolean): Include direction and vertical rate sources in return. Default to False.
-            If set to True, the function will return six values instead of four.
+        source (boolean): Include direction and vertical rate sources in return.
+            Default to False.
+            If set to True, the function will return six value instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]: Four or six parameters, including:
+        int, float, int, string, [string], [string]:
             - Speed (kt)
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
@@ -29,11 +33,19 @@ def airborne_velocity(msg, source=False):
 
     """
     if common.typecode(msg) != 19:
-        raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
+        raise RuntimeError(
+            "%s: Not a airborne velocity message, expecting TC=19" % msg
+        )
 
     mb = common.hex2bin(msg)[32:]
 
     subtype = common.bin2int(mb[5:8])
+
+    if common.bin2int(mb[14:24]) == 0 or common.bin2int(mb[25:35]) == 0:
+        return None
+
+    trk_or_hdg: None | float
+    spd: None | float
 
     if subtype in (1, 2):
 
@@ -80,11 +92,9 @@ def airborne_velocity(msg, source=False):
         trk_or_hdg = hdg
 
         spd = common.bin2int(mb[25:35])
-
-        if subtype == 4:  # Supersonic
-            spd *= 4
-            
         spd = None if spd == 0 else spd - 1
+        if subtype == 4 and spd is not None:  # Supersonic
+            spd *= 4
 
         if mb[24] == "0":
             spd_type = "IAS"
@@ -99,13 +109,20 @@ def airborne_velocity(msg, source=False):
     vs = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
 
     if source:
-        return spd, trk_or_hdg, vs, spd_type, dir_type, vr_source
+        return (  # type: ignore
+            spd,
+            trk_or_hdg,
+            vs,
+            spd_type,
+            dir_type,
+            vr_source,
+        )
     else:
         return spd, trk_or_hdg, vs, spd_type
 
 
-def altitude_diff(msg):
-    """Decode the difference between GNSS and barometric altitude.
+def altitude_diff(msg: str) -> None | float:
+    """Decode the differece between GNSS and barometric altitude.
 
     Args:
         msg (str): 28 hexdigits string, TC=19
@@ -117,8 +134,10 @@ def altitude_diff(msg):
     """
     tc = common.typecode(msg)
 
-    if tc != 19:
-        raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
+    if tc is None or tc != 19:
+        raise RuntimeError(
+            "%s: Not a airborne velocity message, expecting TC=19" % msg
+        )
 
     msgbin = common.hex2bin(msg)
     sign = -1 if int(msgbin[80]) else 1

@@ -18,16 +18,13 @@
 Common functions for Mode-S decoding
 """
 
+from typing import Optional
+
 import numpy as np
 
-from pyModeS.extra import aero
-from pyModeS import common
-
-from pyModeS.decoder.bds import (
-    bds05,
-    bds06,
-    bds08,
-    bds09,
+from ... import common
+from ...extra import aero
+from . import (  # noqa: F401
     bds10,
     bds17,
     bds20,
@@ -36,13 +33,15 @@ from pyModeS.decoder.bds import (
     bds44,
     bds45,
     bds50,
-    bds53,
     bds60,
-    bds62
+    bds61,
+    bds62,
 )
 
 
-def is50or60(msg, spd_ref, trk_ref, alt_ref):
+def is50or60(
+    msg: str, spd_ref: float, trk_ref: float, alt_ref: float
+) -> Optional[str]:
     """Use reference ground speed and trk to determine BDS50 and DBS60.
 
     Args:
@@ -52,7 +51,8 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         alt_ref (float): reference altitude (ADS-B altitude), ft
 
     Returns:
-        String or None: BDS version, or possible versions, or None if nothing matches.
+        String or None: BDS version, or possible versions,
+          or None if nothing matches.
 
     """
 
@@ -114,15 +114,17 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     return BDS
 
 
-def infer(msg, mrar=False):
+def infer(msg: str, mrar: bool = False) -> Optional[str]:
     """Estimate the most likely BDS code of an message.
 
     Args:
         msg (str): 28 hexdigits string
-        mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45). Defaults to False.
+        mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45).
+          Defaults to False.
 
     Returns:
-        String or None: BDS version, or possible versions, or None if nothing matches.
+        String or None: BDS version, or possible versions,
+          or None if nothing matches.
 
     """
     df = common.df(msg)
@@ -133,6 +135,8 @@ def infer(msg, mrar=False):
     # For ADS-B / Mode-S extended squitter
     if df == 17:
         tc = common.typecode(msg)
+        if tc is None:
+            return None
 
         if 1 <= tc <= 4:
             return "BDS08"  # identification and category

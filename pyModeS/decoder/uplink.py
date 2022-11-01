@@ -1,9 +1,10 @@
-from pyModeS import common
+from typing import Optional
+from .. import common
 from textwrap import wrap
 
 
-def uplink_icao(msg):
-    """Calculate the ICAO address from a Mode-S interrogation (uplink message)"""
+def uplink_icao(msg: str) -> str:
+    "Calculate the ICAO address from a Mode-S interrogation (uplink message)"
     p_gen = 0xFFFA0480 << ((len(msg) - 14) * 4)
     data = int(msg[:-6], 16)
     PA = int(msg[-6:], 16)
@@ -20,22 +21,22 @@ def uplink_icao(msg):
     return "%06X" % (ad >> 2)
 
 
-def uf(msg):
+def uf(msg: str) -> int:
     """Decode Uplink Format value, bits 1 to 5."""
     ufbin = common.hex2bin(msg[:2])
     return min(common.bin2int(ufbin[0:5]), 24)
 
 
-def bds(msg):
-    """Decode requested BDS register from selective (Roll Call) interrogation."""
+def bds(msg: str) -> Optional[str]:
+    "Decode requested BDS register from selective (Roll Call) interrogation."
     UF = uf(msg)
     msgbin = common.hex2bin(msg)
     msgbin_split = wrap(msgbin, 8)
     mbytes = list(map(common.bin2int, msgbin_split))
 
-    if uf(msg) in {4, 5, 20, 21}:
-        
-        di = mbytes[1] & 0x7 # DI - Designator Identification
+    if UF in {4, 5, 20, 21}:
+
+        di = mbytes[1] & 0x7  # DI - Designator Identification
         RR = mbytes[1] >> 3 & 0x1F
         if RR > 15:
             BDS1 = RR - 16
@@ -46,7 +47,9 @@ def bds(msg):
                 RRS = ((mbytes[2] & 0x1) << 3) | ((mbytes[3] & 0xE0) >> 5)
                 BDS2 = RRS
             else:
-                BDS2 = 0 # for other values of DI, the BDS2 is assumed 0 (as per ICAO Annex 10 Vol IV)
+                # for other values of DI, the BDS2 is assumed 0
+                # (as per ICAO Annex 10 Vol IV)
+                BDS2 = 0
 
             return str(format(BDS1,"X")) + str(format(BDS2,"X"))
         else:
@@ -55,7 +58,7 @@ def bds(msg):
         return None
 
 
-def pr(msg):
+def pr(msg: str) -> Optional[int]:
     """Decode PR (probability of reply) field from All Call interrogation.
     Interpretation:
     0 signifies reply with probability of 1
@@ -80,7 +83,7 @@ def pr(msg):
         return None
 
 
-def ic(msg):
+def ic(msg: str) -> Optional[str]:
     """Decode IC (interrogator code) from a ground-based interrogation."""
 
     UF = uf(msg)
@@ -88,8 +91,7 @@ def ic(msg):
     msgbin_split = wrap(msgbin, 8)
     mbytes = list(map(common.bin2int, msgbin_split))
     IC = None
-    BDS2 = ""
-    if uf(msg) == 11:
+    if UF == 11:
 
         codeLabel = mbytes[1] & 0x7
         icField = (mbytes[1] >> 3) & 0xF
@@ -104,11 +106,11 @@ def ic(msg):
         }
         IC = ic_switcher.get(codeLabel, "")
 
-    if uf(msg) in {4, 5, 20, 21}:
+    if UF in {4, 5, 20, 21}:
         di = mbytes[1] & 0x7
         RR = mbytes[1] >> 3 & 0x1F
         if RR > 15:
-            BDS1 = RR - 16
+            BDS1 = RR - 16  # noqa: F841
         if di == 0 or di == 1 or di == 7:
             # II
             II = (mbytes[2] >> 4) & 0xF
@@ -148,7 +150,6 @@ def uplink_fields(msg):
     msgbin_split = wrap(msgbin, 8)
     mbytes = list(map(common.bin2int, msgbin_split))
     PR = ""
-    LOS = ""
     IC = ""
     lockout = False
     di = ""
@@ -156,13 +157,11 @@ def uplink_fields(msg):
     RRS = ""
     BDS = ""
     if uf(msg) == 11:
-        
-       
 
         # Probability of Reply decoding
 
         PR = ((mbytes[0] & 0x7) << 1) | ((mbytes[1] & 0x80) >> 7)
-        
+
         #  Get cl and ic bit fields from the data
         #  Decode the SI or II interrogator code
         codeLabel = mbytes[1] & 0x7
@@ -179,7 +178,8 @@ def uplink_fields(msg):
         IC = ic_switcher.get(codeLabel, "")
 
     if uf(msg) in {4, 5, 20, 21}:
-        # Decode the DI and get the lockout information conveniently (LSS or LOS)
+        # Decode the DI and get the lockout information conveniently
+        # (LSS or LOS)
 
         # DI - Designator Identification
         di = mbytes[1] & 0x7

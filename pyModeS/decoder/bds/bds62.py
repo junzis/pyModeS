@@ -5,10 +5,11 @@
 # ------------------------------------------
 
 from __future__ import annotations
-from pyModeS import common
+
+from ... import common
 
 
-def selected_altitude(msg):
+def selected_altitude(msg: str) -> tuple[None | float, str]:
     """Decode selected altitude.
 
     Args:
@@ -31,18 +32,20 @@ def selected_altitude(msg):
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain selected altitude, use target altitude instead"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not"
+            " contain selected altitude, use target altitude instead" % msg
         )
 
     alt = common.bin2int(mb[9:20])
-    alt = None if alt == 0 else (alt - 1) * 32
+    if alt == 0:
+        return None, "N/A"
+    alt = (alt - 1) * 32
     alt_source = "MCP/FCU" if int(mb[8]) == 0 else "FMS"
 
     return alt, alt_source
 
 
-def target_altitude(msg):
+def target_altitude(msg: str) -> tuple[None | int, str, str]:
     """Decode target altitude.
 
     Args:
@@ -51,7 +54,8 @@ def target_altitude(msg):
     Returns:
         int: Target altitude (ft)
         string: Source ('MCP/FCU', 'Holding mode' or 'FMS/RNAV')
-        string: Altitude reference, either pressure altitude or barometric corrected altitude ('FL' or 'MSL')
+        string: Altitude reference, either pressure altitude or barometric
+           corrected altitude ('FL' or 'MSL')
 
     """
 
@@ -66,13 +70,13 @@ def target_altitude(msg):
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain target altitude, use selected altitude instead"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not"
+            " contain target altitude, use selected altitude instead" % msg
         )
 
     alt_avail = common.bin2int(mb[7:9])
     if alt_avail == 0:
-        return None
+        return None, "N/A", ""
     elif alt_avail == 1:
         alt_source = "MCP/FCU"
     elif alt_avail == 2:
@@ -87,7 +91,7 @@ def target_altitude(msg):
     return alt, alt_source, alt_ref
 
 
-def vertical_mode(msg):
+def vertical_mode(msg: str) -> None | int:
     """Decode vertical mode.
 
     Value   Meaning
@@ -115,8 +119,8 @@ def vertical_mode(msg):
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain vertical mode, use vnav mode instead"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not"
+            " contain vertical mode, use vnav mode instead" % msg
         )
 
     vertical_mode = common.bin2int(mb[13:15])
@@ -126,7 +130,7 @@ def vertical_mode(msg):
     return vertical_mode
 
 
-def horizontal_mode(msg):
+def horizontal_mode(msg: str) -> None | int:
     """Decode horizontal mode.
 
     Value   Meaning
@@ -154,8 +158,8 @@ def horizontal_mode(msg):
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain horizontal mode, use lnav mode instead"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not "
+            "contain horizontal mode, use lnav mode instead" % msg
         )
 
     horizontal_mode = common.bin2int(mb[25:27])
@@ -165,7 +169,7 @@ def horizontal_mode(msg):
     return horizontal_mode
 
 
-def selected_heading(msg):
+def selected_heading(msg: str) -> None | float:
     """Decode selected heading.
 
     Args:
@@ -187,12 +191,12 @@ def selected_heading(msg):
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain selected heading, use target angle instead"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain selected heading, use target angle instead" % msg
         )
 
     if int(mb[29]) == 0:
-        hdg = None
+        return None
     else:
         hdg_sign = int(mb[30])
         hdg = (hdg_sign + 1) * common.bin2int(mb[31:39]) * (180 / 256)
@@ -201,7 +205,7 @@ def selected_heading(msg):
     return hdg
 
 
-def target_angle(msg):
+def target_angle(msg: str) -> tuple[None | int, str, str]:
     """Decode target heading/track angle.
 
     Args:
@@ -225,13 +229,13 @@ def target_angle(msg):
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain target angle, use selected heading instead"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not "
+            "contain target angle, use selected heading instead" % msg
         )
 
     angle_avail = common.bin2int(mb[25:27])
     if angle_avail == 0:
-        angle = None
+        return None, "", "N/A"
     else:
         angle = common.bin2int(mb[27:36])
 
@@ -247,7 +251,7 @@ def target_angle(msg):
     return angle, angle_type, angle_source
 
 
-def baro_pressure_setting(msg):
+def baro_pressure_setting(msg: str) -> None | float:
     """Decode barometric pressure setting.
 
     Args:
@@ -269,14 +273,15 @@ def baro_pressure_setting(msg):
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain barometric pressure setting"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain barometric pressure setting" % msg
         )
 
     baro = common.bin2int(mb[20:29])
-    baro = None if baro == 0 else round(800 + (baro - 1) * 0.8, 1)
+    if baro == 0:
+        return None
 
-    return baro
+    return 800 + (baro - 1) * 0.8
 
 
 def autopilot(msg) -> None | bool:
@@ -301,8 +306,8 @@ def autopilot(msg) -> None | bool:
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain autopilot engagement"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain autopilot engagement" % msg
         )
 
     if int(mb[46]) == 0:
@@ -335,8 +340,8 @@ def vnav_mode(msg) -> None | bool:
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain vnav mode, use vertical mode instead"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain vnav mode, use vertical mode instead" % msg
         )
 
     if int(mb[46]) == 0:
@@ -369,8 +374,8 @@ def altitude_hold_mode(msg) -> None | bool:
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain altitude hold mode"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain altitude hold mode" % msg
         )
 
     if int(mb[46]) == 0:
@@ -403,8 +408,8 @@ def approach_mode(msg) -> None | bool:
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain approach mode"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain approach mode" % msg
         )
 
     if int(mb[46]) == 0:
@@ -437,8 +442,8 @@ def lnav_mode(msg) -> None | bool:
 
     if subtype == 0:
         raise RuntimeError(
-            "%s: ADS-B version 1 target state and status message does not contain lnav mode, use horizontal mode instead"
-            % msg
+            "%s: ADS-B version 1 target state and status message does not "
+            "contain lnav mode, use horizontal mode instead" % msg
         )
 
     if int(mb[46]) == 0:
@@ -499,8 +504,8 @@ def tcas_ra(msg) -> bool:
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain TCAS/ACAS RA"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not "
+            "contain TCAS/ACAS RA" % msg
         )
 
     tcas_ra = True if int(mb[52]) == 1 else False
@@ -541,8 +546,8 @@ def emergency_status(msg) -> int:
 
     if subtype == 1:
         raise RuntimeError(
-            "%s: ADS-B version 2 target state and status message does not contain emergency status"
-            % msg
+            "%s: ADS-B version 2 target state and status message does not "
+            "contain emergency status" % msg
         )
 
     return common.bin2int(mb[53:56])
