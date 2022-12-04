@@ -11,6 +11,8 @@ Steps for deploying a new version:
 4. twine upload dist/*
 """
 
+import sys
+
 # Always prefer setuptools over distutils
 from setuptools import setup, find_packages
 
@@ -46,17 +48,54 @@ details = dict(
     # typing_extensions are no longer necessary after Python 3.8 (TypedDict)
     install_requires=["numpy", "pyzmq", "typing_extensions"],
     extras_require={"fast": ["Cython"]},
-    package_data={"pyModeS": ["*.pyx", "*.pxd", "py.typed"]},
+    package_data={
+        "pyModeS": ["*.pyx", "*.pxd", "py.typed"],
+        "pyModeS.decoder.flarm": ["*.pyx", "*.pxd", "*.pyi"],
+    },
     scripts=["pyModeS/streamer/modeslive"],
 )
 
 try:
-    from setuptools.extension import Extension
+    from distutils.core import Extension
     from Cython.Build import cythonize
 
-    extensions = [Extension("pyModeS.c_common", ["pyModeS/c_common.pyx"])]
+    compile_args = []
+    include_dirs = ["pyModeS/decoder/flarm"]
 
-    setup(**dict(details, ext_modules=cythonize(extensions)))
+    if sys.platform == "linux":
+        compile_args += [
+            "-march=native",
+            "-O3",
+            "-msse",
+            "-msse2",
+            "-mfma",
+            "-mfpmath=sse",
+            "-Wno-pointer-sign",
+        ]
+
+    extensions = [
+        Extension("pyModeS.c_common", ["pyModeS/c_common.pyx"]),
+        Extension(
+            "pyModeS.decoder.flarm.decode",
+            [
+                "pyModeS/decoder/flarm/decode.pyx",
+                "pyModeS/decoder/flarm/core.c",
+            ],
+            extra_compile_args=compile_args,
+            include_dirs=include_dirs,
+        ),
+    ]
+
+    setup(
+        **dict(
+            details,
+            ext_modules=cythonize(
+                extensions,
+                include_path=include_dirs,
+                compiler_directives={"binding": True, "language_level": 3},
+            ),
+        )
+    )
 
 except ImportError:
     setup(**details)
