@@ -1,4 +1,5 @@
 from pyModeS import bds, commb
+import pytest
 
 # from pyModeS import ehs, els    # deprecated
 
@@ -23,7 +24,7 @@ def test_bds40_functions():
 
 def test_bds50_functions():
     assert bds.bds50.roll50("A000139381951536E024D4CCF6B5") == 2.1
-    assert bds.bds50.roll50("A0001691FFD263377FFCE02B2BF9") == -0.4  # signed value
+    assert bds.bds50.roll50("A0001691FFD263377FFCE02B2BF9") == -0.4
     assert bds.bds50.trk50("A000139381951536E024D4CCF6B5") == 114.258
     assert bds.bds50.gs50("A000139381951536E024D4CCF6B5") == 438
     assert bds.bds50.rtrk50("A000139381951536E024D4CCF6B5") == 0.125
@@ -38,14 +39,16 @@ def test_bds50_functions():
 
 
 def test_bds60_functions():
-    assert bds.bds60.hdg60("A00004128F39F91A7E27C46ADC21") == 42.715
-    assert bds.bds60.ias60("A00004128F39F91A7E27C46ADC21") == 252
-    assert bds.bds60.mach60("A00004128F39F91A7E27C46ADC21") == 0.42
-    assert bds.bds60.vr60baro("A00004128F39F91A7E27C46ADC21") == -1920
-    assert bds.bds60.vr60ins("A00004128F39F91A7E27C46ADC21") == -1920
+    msg = "A00004128F39F91A7E27C46ADC21"
 
-    assert commb.hdg60("A00004128F39F91A7E27C46ADC21") == 42.715
-    assert commb.ias60("A00004128F39F91A7E27C46ADC21") == 252
-    assert commb.mach60("A00004128F39F91A7E27C46ADC21") == 0.42
-    assert commb.vr60baro("A00004128F39F91A7E27C46ADC21") == -1920
-    assert commb.vr60ins("A00004128F39F91A7E27C46ADC21") == -1920
+    assert bds.bds60.hdg60(msg) == pytest.approx(42.71484)
+    assert bds.bds60.ias60(msg) == 252
+    assert bds.bds60.mach60(msg) == 0.42
+    assert bds.bds60.vr60baro(msg) == -1920
+    assert bds.bds60.vr60ins(msg) == -1920
+
+    assert commb.hdg60(msg) == pytest.approx(42.71484)
+    assert commb.ias60(msg) == 252
+    assert commb.mach60(msg) == 0.42
+    assert commb.vr60baro(msg) == -1920
+    assert commb.vr60ins(msg) == -1920

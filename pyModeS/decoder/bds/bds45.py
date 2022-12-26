@@ -3,10 +3,12 @@
 # Meteorological hazard report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import Optional
+
+from ... import common
 
 
-def is45(msg):
+def is45(msg: str) -> bool:
     """Check if a message is likely to be BDS code 4,5.
 
     Meteorological hazard report
@@ -60,7 +62,7 @@ def is45(msg):
     return True
 
 
-def turb45(msg):
+def turb45(msg: str) -> Optional[int]:
     """Turbulence.
 
     Args:
@@ -78,7 +80,7 @@ def turb45(msg):
     return turb
 
 
-def ws45(msg):
+def ws45(msg: str) -> Optional[int]:
     """Wind shear.
 
     Args:
@@ -96,7 +98,7 @@ def ws45(msg):
     return ws
 
 
-def mb45(msg):
+def mb45(msg: str) -> Optional[int]:
     """Microburst.
 
     Args:
@@ -114,7 +116,7 @@ def mb45(msg):
     return mb
 
 
-def ic45(msg):
+def ic45(msg: str) -> Optional[int]:
     """Icing.
 
     Args:
@@ -132,7 +134,7 @@ def ic45(msg):
     return ic
 
 
-def wv45(msg):
+def wv45(msg: str) -> Optional[int]:
     """Wake vortex.
 
     Args:
@@ -150,7 +152,7 @@ def wv45(msg):
     return ws
 
 
-def temp45(msg):
+def temp45(msg: str) -> Optional[float]:
     """Static air temperature.
 
     Args:
@@ -174,7 +176,7 @@ def temp45(msg):
     return temp
 
 
-def p45(msg):
+def p45(msg: str) -> Optional[int]:
     """Average static pressure.
 
     Args:
@@ -191,7 +193,7 @@ def p45(msg):
     return p
 
 
-def rh45(msg):
+def rh45(msg: str) -> Optional[int]:
     """Radio height.
 
     Args:

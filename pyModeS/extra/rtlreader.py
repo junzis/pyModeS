@@ -1,8 +1,14 @@
+import time
 import traceback
 import numpy as np
 import pyModeS as pms
-from rtlsdr import RtlSdr
-import time
+
+try:
+    import rtlsdr  # type: ignore
+except:
+    print("------------------------------------------------------------------------")
+    print("! Warning: pyrtlsdr not installed (required for using RTL-SDR devices) !")
+    print("------------------------------------------------------------------------")
 
 sampling_rate = 2e6
 smaples_per_microsec = 2
@@ -21,7 +27,7 @@ class RtlReader(object):
     def __init__(self, **kwargs):
         super(RtlReader, self).__init__()
         self.signal_buffer = []  # amplitude of the sample only
-        self.sdr = RtlSdr()
+        self.sdr = rtlsdr.RtlSdr()
         self.sdr.sample_rate = sampling_rate
         self.sdr.center_freq = modes_frequency
         self.sdr.gain = "auto"
@@ -30,6 +36,8 @@ class RtlReader(object):
         self.raw_pipe_in = None
         self.stop_flag = False
         self.noise_floor = 1e6
+
+        self.exception_queue = None
 
     def _calc_noise(self):
         """Calculate noise floor"""
@@ -162,6 +170,7 @@ class RtlReader(object):
 
     def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
         self.raw_pipe_in = raw_pipe_in
+        self.exception_queue = exception_queue
         self.stop_flag = stop_flag
 
         try:
@@ -173,8 +182,8 @@ class RtlReader(object):
 
         except Exception as e:
             tb = traceback.format_exc()
-            if exception_queue is not None:
-                exception_queue.put(tb)
+            if self.exception_queue is not None:
+                self.exception_queue.put(tb)
             raise e
 
 

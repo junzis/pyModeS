@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 import datetime
 import csv
 import pyModeS as pms
@@ -231,10 +232,13 @@ class Decode:
                     self.acs[icao]["t60"] = t
                 if ias60:
                     self.acs[icao]["ias"] = ias60
+                    output_buffer.append([t, icao, "ias60", ias60])
                 if hdg60:
                     self.acs[icao]["hdg"] = hdg60
+                    output_buffer.append([t, icao, "hdg60", hdg60])
                 if mach60:
                     self.acs[icao]["mach"] = mach60
+                    output_buffer.append([t, icao, "mach60", mach60])
 
                 if roc60baro:
                     output_buffer.append([t, icao, "roc60baro", roc60baro])

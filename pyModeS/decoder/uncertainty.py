@@ -1,7 +1,15 @@
 """Uncertainty parameters.
 
-See source code at: https://github.com/junzis/pyModeS/blob/master/pyModeS/decoder/uncertainty.py
 """
+
+from __future__ import annotations
+
+import sys
+
+if sys.version_info < (3, 8):
+    from typing_extensions import TypedDict
+else:
+    from typing import TypedDict
 
 NA = None
 
@@ -26,7 +34,7 @@ TC_NUCp_lookup = {
     22: 0,
 }
 
-TC_NICv1_lookup = {
+TC_NICv1_lookup: dict[int, int | dict[int, int]] = {
     5: 11,
     6: 10,
     7: 9,
@@ -46,7 +54,7 @@ TC_NICv1_lookup = {
     22: 0,
 }
 
-TC_NICv2_lookup = {
+TC_NICv2_lookup: dict[int, int | dict[int, int]] = {
     5: 11,
     6: 10,
     7: {2: 9, 0: 8},
@@ -67,7 +75,13 @@ TC_NICv2_lookup = {
 }
 
 
-NUCp = {
+class NUCpEntry(TypedDict):
+    HPL: None | float
+    RCu: None | int
+    RCv: None | int
+
+
+NUCp: dict[int, NUCpEntry] = {
     9: {"HPL": 7.5, "RCu": 3, "RCv": 4},
     8: {"HPL": 25, "RCu": 10, "RCv": 15},
     7: {"HPL": 185, "RCu": 93, "RCv": NA},
@@ -80,7 +94,13 @@ NUCp = {
     0: {"HPL": NA, "RCu": NA, "RCv": NA},
 }
 
-NUCv = {
+
+class NUCvEntry(TypedDict):
+    HVE: None | float
+    VVE: None | float
+
+
+NUCv: dict[int, NUCvEntry] = {
     0: {"HVE": NA, "VVE": NA},
     1: {"HVE": 10, "VVE": 15.2},
     2: {"HVE": 3, "VVE": 4.5},
@@ -88,7 +108,13 @@ NUCv = {
     4: {"HVE": 0.3, "VVE": 0.46},
 }
 
-NACp = {
+
+class NACpEntry(TypedDict):
+    EPU: None | int
+    VEPU: None | int
+
+
+NACp: dict[int, NACpEntry] = {
     11: {"EPU": 3, "VEPU": 4},
     10: {"EPU": 10, "VEPU": 15},
     9: {"EPU": 30, "VEPU": 45},
@@ -103,7 +129,13 @@ NACp = {
     0: {"EPU": NA, "VEPU": NA},
 }
 
-NACv = {
+
+class NACvEntry(TypedDict):
+    HFOMr: None | float
+    VFOMr: None | float
+
+
+NACv: dict[int, NACvEntry] = {
     0: {"HFOMr": NA, "VFOMr": NA},
     1: {"HFOMr": 10, "VFOMr": 15.2},
     2: {"HFOMr": 3, "VFOMr": 4.5},
@@ -111,7 +143,13 @@ NACv = {
     4: {"HFOMr": 0.3, "VFOMr": 0.46},
 }
 
-SIL = {
+
+class SILEntry(TypedDict):
+    PE_RCu: None | float
+    PE_VPL: None | float
+
+
+SIL: dict[int, SILEntry] = {
     3: {"PE_RCu": 1e-7, "PE_VPL": 2e-7},
     2: {"PE_RCu": 1e-5, "PE_VPL": 1e-5},
     1: {"PE_RCu": 1e-3, "PE_VPL": 1e-3},
@@ -119,7 +157,12 @@ SIL = {
 }
 
 
-NICv1 = {
+class NICv1Entry(TypedDict):
+    Rc: None | float
+    VPL: None | float
+
+
+NICv1: dict[int, dict[int, NICv1Entry]] = {
     # NIC is used as the index at second Level
     11: {0: {"Rc": 7.5, "VPL": 11}},
     10: {0: {"Rc": 25, "VPL": 37.5}},
@@ -135,7 +178,12 @@ NICv1 = {
     0: {0: {"Rc": NA, "VPL": NA}},
 }
 
-NICv2 = {
+
+class NICv2Entry(TypedDict):
+    Rc: None | float
+
+
+NICv2: dict[int, dict[int, NICv2Entry]] = {
     # Decimal value of [NICa NICb/NICc] is used as the index at second Level
     11: {0: {"Rc": 7.5}},
     10: {0: {"Rc": 25}},

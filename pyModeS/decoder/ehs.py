@@ -11,25 +11,56 @@ The EHS wrapper imports all functions from the following modules:
 
 import warnings
 
-from pyModeS.decoder.bds.bds40 import *
-from pyModeS.decoder.bds.bds50 import *
-from pyModeS.decoder.bds.bds60 import *
-from pyModeS.decoder.bds import infer
+from .bds.bds40 import (
+    is40,
+    selalt40fms,
+    selalt40mcp,
+    p40baro,
+    alt40fms,
+    alt40mcp,
+)
+from .bds.bds50 import is50, roll50, trk50, gs50, rtrk50, tas50
+from .bds.bds60 import is60, hdg60, ias60, mach60, vr60baro, vr60ins
+from .bds import infer
+
+__all__ = [
+    "is40",
+    "selalt40fms",
+    "selalt40mcp",
+    "p40baro",
+    "alt40fms",
+    "alt40mcp",
+    "is50",
+    "roll50",
+    "trk50",
+    "gs50",
+    "rtrk50",
+    "tas50",
+    "is60",
+    "hdg60",
+    "ias60",
+    "mach60",
+    "vr60baro",
+    "vr60ins",
+    "infer",
+]
 
 warnings.simplefilter("once", DeprecationWarning)
 warnings.warn(
-    "pms.ehs module is deprecated. Please use pms.commb instead.", DeprecationWarning
+    "pms.ehs module is deprecated. Please use pms.commb instead.",
+    DeprecationWarning,
 )
 
 
 def BDS(msg):
     warnings.warn(
-        "pms.ehs.BDS() is deprecated, use pms.bds.infer() instead.", DeprecationWarning
+        "pms.ehs.BDS() is deprecated, use pms.bds.infer() instead.",
+        DeprecationWarning,
     )
     return infer(msg)
 
 
 def icao(msg):
-    from pyModeS.decoder.common import icao
+    from . import common
 
-    return icao(msg)
+    return common.icao(msg)

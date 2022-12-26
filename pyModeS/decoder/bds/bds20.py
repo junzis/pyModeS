@@ -3,10 +3,10 @@
 # Aircraft identification
 # ------------------------------------------
 
-from pyModeS import common
+from ... import common
 
 
-def is20(msg):
+def is20(msg: str) -> bool:
     """Check if a message is likely to be BDS code 2,0
 
     Args:
@@ -24,15 +24,17 @@ def is20(msg):
     if d[0:8] != "00100000":
         return False
 
-    cs = cs20(msg)
+    # allow empty callsign
+    if common.bin2int(d[8:56]) == 0:
+        return True
 
-    if "#" in cs:
+    if "#" in cs20(msg):
         return False
 
     return True
 
 
-def cs20(msg):
+def cs20(msg: str) -> str:
     """Aircraft callsign
 
     Args:

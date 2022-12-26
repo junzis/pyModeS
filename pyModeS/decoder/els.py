@@ -10,14 +10,26 @@ The ELS wrapper imports all functions from the following modules:
 
 """
 
-from pyModeS.decoder.bds.bds10 import *
-from pyModeS.decoder.bds.bds17 import *
-from pyModeS.decoder.bds.bds20 import *
-from pyModeS.decoder.bds.bds30 import *
-
 import warnings
+
+from .bds.bds10 import is10, ovc10
+from .bds.bds17 import cap17, is17
+from .bds.bds20 import cs20, is20
+from .bds.bds30 import is30
 
 warnings.simplefilter("once", DeprecationWarning)
 warnings.warn(
-    "pms.els module is deprecated. Please use pms.commb instead.", DeprecationWarning
+    "pms.els module is deprecated. Please use pms.commb instead.",
+    DeprecationWarning,
 )
+
+
+__all__ = [
+    "is10",
+    "ovc10",
+    "is17",
+    "cap17",
+    "is20",
+    "cs20",
+    "is30",
+]

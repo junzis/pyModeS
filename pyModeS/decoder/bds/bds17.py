@@ -3,10 +3,12 @@
 #   Common usage GICB capability report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import List
+
+from ... import common
 
 
-def is17(msg):
+def is17(msg: str) -> bool:
     """Check if a message is likely to be BDS code 1,7
 
     Args:
@@ -21,7 +23,7 @@ def is17(msg):
 
     d = common.hex2bin(common.data(msg))
 
-    if common.bin2int(d[28:56]) != 0:
+    if common.bin2int(d[24:56]) != 0:
         return False
 
     caps = cap17(msg)
@@ -38,14 +40,14 @@ def is17(msg):
     return True
 
 
-def cap17(msg):
+def cap17(msg: str) -> List[str]:
     """Extract capacities from BDS 1,7 message
 
     Args:
         msg (str): 28 hexdigits string
 
     Returns:
-        list: list of support BDS codes
+        list: list of supported BDS codes
     """
     allbds = [
         "05",
@@ -72,14 +74,10 @@ def cap17(msg):
         "56",
         "5F",
         "60",
-        "NA",
-        "NA",
-        "E1",
-        "E2",
     ]
 
     d = common.hex2bin(common.data(msg))
-    idx = [i for i, v in enumerate(d[:28]) if v == "1"]
-    capacity = ["BDS" + allbds[i] for i in idx if allbds[i] is not "NA"]
+    idx = [i for i, v in enumerate(d[:24]) if v == "1"]
+    capacity = ["BDS" + allbds[i] for i in idx]
 
     return capacity

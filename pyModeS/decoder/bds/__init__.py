@@ -18,16 +18,13 @@
 Common functions for Mode-S decoding
 """
 
+from typing import Optional
+
 import numpy as np
 
-from pyModeS.extra import aero
-from pyModeS import common
-
-from pyModeS.decoder.bds import (
-    bds05,
-    bds06,
-    bds08,
-    bds09,
+from ... import common
+from ...extra import aero
+from . import (  # noqa: F401
     bds10,
     bds17,
     bds20,
@@ -36,12 +33,13 @@ from pyModeS.decoder.bds import (
     bds44,
     bds45,
     bds50,
-    bds53,
     bds60,
+    bds61_st1,
+    bds62,
 )
 
 
-def is50or60(msg, spd_ref, trk_ref, alt_ref):
+def is50or60(msg: str, spd_ref: float, trk_ref: float, alt_ref: float) -> Optional[str]:
     """Use reference ground speed and trk to determine BDS50 and DBS60.
 
     Args:
@@ -51,7 +49,8 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         alt_ref (float): reference altitude (ADS-B altitude), ft
 
     Returns:
-        String or None: BDS version, or possible versions, or None if nothing matches.
+        String or None: BDS version, or possible versions,
+          or None if nothing matches.
 
     """
 
@@ -60,24 +59,33 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
         vy = v * np.cos(np.radians(angle))
         return vx, vy
 
+    # message must be both BDS 50 and 60 before processing
     if not (bds50.is50(msg) and bds60.is60(msg)):
         return None
 
-    h50 = bds50.trk50(msg)
-    v50 = bds50.gs50(msg)
-
-    if h50 is None or v50 is None:
-        return "BDS50,BDS60"
-
+    # --- assuming BDS60 ---
     h60 = bds60.hdg60(msg)
     m60 = bds60.mach60(msg)
     i60 = bds60.ias60(msg)
+
+    # additional check now knowing the altitude
+    if (m60 is not None) and (i60 is not None):
+        ias_ = aero.mach2cas(m60, alt_ref * aero.ft) / aero.kts
+        if abs(i60 - ias_) > 20:
+            return "BDS50"
 
     if h60 is None or (m60 is None and i60 is None):
         return "BDS50,BDS60"
 
     m60 = np.nan if m60 is None else m60
     i60 = np.nan if i60 is None else i60
+
+    # --- assuming BDS50 ---
+    h50 = bds50.trk50(msg)
+    v50 = bds50.gs50(msg)
+
+    if h50 is None or v50 is None:
+        return "BDS50,BDS60"
 
     XY5 = vxy(v50 * aero.kts, h50)
     XY6m = vxy(aero.mach2tas(m60, alt_ref * aero.ft), h60)
@@ -104,15 +112,17 @@ def is50or60(msg, spd_ref, trk_ref, alt_ref):
     return BDS
 
 
-def infer(msg, mrar=False):
+def infer(msg: str, mrar: bool = False) -> Optional[str]:
     """Estimate the most likely BDS code of an message.
 
     Args:
         msg (str): 28 hexdigits string
-        mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45). Defaults to False.
+        mrar (bool): Also infer MRAR (BDS 44) and MHR (BDS 45).
+          Defaults to False.
 
     Returns:
-        String or None: BDS version, or possible versions, or None if nothing matches.
+        String or None: BDS version, or possible versions,
+          or None if nothing matches.
 
     """
     df = common.df(msg)
@@ -123,6 +133,8 @@ def infer(msg, mrar=False):
     # For ADS-B / Mode-S extended squitter
     if df == 17:
         tc = common.typecode(msg)
+        if tc is None:
+            return None
 
         if 1 <= tc <= 4:
             return "BDS08"  # identification and category

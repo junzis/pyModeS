@@ -3,10 +3,13 @@
 # Heading and speed report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import Optional
+
+from ... import common
+from ...extra import aero
 
 
-def is60(msg):
+def is60(msg: str) -> bool:
     """Check if a message is likely to be BDS code 6,0
 
     Args:
@@ -54,10 +57,18 @@ def is60(msg):
     if vr_ins is not None and abs(vr_ins) > 6000:
         return False
 
+    # additional check knowing altitude
+    if (mach is not None) and (ias is not None) and (common.df(msg) == 20):
+        alt = common.altcode(msg)
+        if alt is not None:
+            ias_ = aero.mach2cas(mach, alt * aero.ft) / aero.kts
+            if abs(ias - ias_) > 20:
+                return False
+
     return True
 
 
-def hdg60(msg):
+def hdg60(msg: str) -> Optional[float]:
     """Megnetic heading of aircraft
 
     Args:
@@ -77,16 +88,16 @@ def hdg60(msg):
     if sign:
         value = value - 1024
 
-    hdg = value * 90 / 512.0  # degree
+    hdg = value * 90 / 512  # degree
 
     # convert from [-180, 180] to [0, 360]
     if hdg < 0:
         hdg = 360 + hdg
 
-    return round(hdg, 3)
+    return hdg
 
 
-def ias60(msg):
+def ias60(msg: str) -> Optional[float]:
     """Indicated airspeed
 
     Args:
@@ -104,7 +115,7 @@ def ias60(msg):
     return ias
 
 
-def mach60(msg):
+def mach60(msg: str) -> Optional[float]:
     """Aircraft MACH number
 
     Args:
@@ -119,10 +130,10 @@ def mach60(msg):
         return None
 
     mach = common.bin2int(d[24:34]) * 2.048 / 512.0
-    return round(mach, 3)
+    return mach
 
 
-def vr60baro(msg):
+def vr60baro(msg: str) -> Optional[int]:
     """Vertical rate from barometric measurement, this value may be very noisy.
 
     Args:
@@ -148,7 +159,7 @@ def vr60baro(msg):
     return roc
 
 
-def vr60ins(msg):
+def vr60ins(msg: str) -> Optional[int]:
     """Vertical rate measurd by onbard equiments (IRS, AHRS)
 
     Args:

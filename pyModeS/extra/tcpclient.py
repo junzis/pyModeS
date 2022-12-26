@@ -7,11 +7,6 @@ import pyModeS as pms
 import traceback
 import zmq
 
-if sys.version_info > (3, 0):
-    PY_VERSION = 3
-else:
-    PY_VERSION = 2
-
 
 class TcpClient(object):
     def __init__(self, host, port, datatype):
@@ -28,6 +23,8 @@ class TcpClient(object):
         self.raw_pipe_in = None
         self.stop_flag = False
 
+        self.exception_queue = None
+
     def connect(self):
         self.socket = zmq.Context().socket(zmq.STREAM)
         self.socket.setsockopt(zmq.LINGER, 0)
@@ -35,7 +32,7 @@ class TcpClient(object):
         self.socket.connect("tcp://%s:%s" % (self.host, self.port))
 
     def stop(self):
-        self.socket.disconnect()
+        self.socket.close()
 
     def read_raw_buffer(self):
         """ Read raw ADS-B data type.
@@ -255,15 +252,13 @@ class TcpClient(object):
 
     def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
         self.raw_pipe_in = raw_pipe_in
+        self.exception_queue = exception_queue
         self.stop_flag = stop_flag
         self.connect()
 
         while True:
             try:
                 received = [i for i in self.socket.recv(4096)]
-
-                if PY_VERSION == 2:
-                    received = [ord(i) for i in received]
 
                 self.buffer.extend(received)
                 # print(''.join(x.encode('hex') for x in self.buffer))
@@ -286,7 +281,8 @@ class TcpClient(object):
                 continue
             except Exception as e:
                 tb = traceback.format_exc()
-                exception_queue.put(tb)
+                if self.exception_queue is not None:
+                    self.exception_queue.put(tb)
                 raise e
 
 
@@ -296,4 +292,7 @@ if __name__ == "__main__":
     port = int(sys.argv[2])
     datatype = sys.argv[3]
     client = TcpClient(host=host, port=port, datatype=datatype)
-    client.run()
+    try:
+        client.run()
+    finally:
+        client.stop()

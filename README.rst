@@ -1,7 +1,7 @@
 The Python ADS-B/Mode-S Decoder
 ===============================
 
-PyModeS is a Python library designed to decode Mode-S (including ADS-B) message. It can be imported to your python project or used as a standalone tool to view and save live traffic data.
+PyModeS is a Python library designed to decode Mode-S (including ADS-B) messages. It can be imported to your python project or used as a standalone tool to view and save live traffic data.
 
 This is a project created by Junzi Sun, who works at `TU Delft <https://www.tudelft.nl/en/>`_, `Aerospace Engineering Faculty <https://www.tudelft.nl/en/ae/>`_, `CNS/ATM research group <http://cs.lr.tudelft.nl/atm/>`_. It is supported by many `contributors <https://github.com/junzis/pyModeS/graphs/contributors>`_ from different institutions.
 
@@ -72,21 +72,35 @@ Installation examples::
   # stable version
   pip install pyModeS
 
+  # conda (compiled) version
+  conda install -c conda-forge pymodes
+
   # development version
   pip install git+https://github.com/junzis/pyModeS
 
 
-Dependencies ``numpy``, ``pyzmq`` and ``pyrtlsdr`` are installed automatically during previous installations processes.
+Dependencies ``numpy``, and ``pyzmq`` are installed automatically during previous installations processes. 
+
+If you need to connect pyModeS to a RTL-SDR receiver, ``pyrtlsdr`` need to be installed manually::
+
+  pip install pyrtlsdr
+
 
 Advanced installation (using c modules)
 ------------------------------------------
 
 If you want to make use of the (faster) c module, install ``pyModeS`` as follows::
 
+  # conda (compiled) version
+  conda install -c conda-forge pymodes
+
+  # stable version (to be compiled on your side)
+  pip install pyModeS[fast]
+
+  # development version
   git clone https://github.com/junzis/pyModeS
   cd pyModeS
-  make ext
-  make install
+  pip install .[fast]
 
 
 View live traffic (modeslive)
@@ -112,7 +126,7 @@ General usage::
 Live with RTL-SDR
 *******************
 
-If you have an RTL-SDR receiver plugged to the computer, you can connect it with ``rtlsdr`` source switch, shown as follows::
+If you have an RTL-SDR receiver connected to your computer, you can use the ``rtlsdr`` source switch (require ``pyrtlsdr`` package), with command::
 
   $ modeslive --source rtlsdr
 
@@ -261,8 +275,20 @@ Mode-S Enhanced Surveillance (EHS)
   pms.commb.vr60ins(msg)    # Inertial vertical speed (ft/min)
 
 
-Meteorological routine air report (MRAR) [Experimental]
-********************************************************
+Meteorological reports [Experimental]
+**************************************
+
+To identify BDS 4,4 and 4,5 codes, you must set ``mrar`` argument to ``True`` in the ``infer()`` function:
+
+.. code:: python
+
+  pms.bds.infer(msg. mrar=True) 
+
+Once the correct MRAR and MHR messages are identified, decode them as follows:
+
+
+Meteorological routine air report (MRAR)
++++++++++++++++++++++++++++++++++++++++++
 
 .. code:: python
 
@@ -273,8 +299,8 @@ Meteorological routine air report (MRAR) [Experimental]
   pms.commb.hum44(msg)      # Humidity (%)
 
 
-Meteorological hazard air report (MHR) [Experimental]
-*******************************************************
+Meteorological hazard air report (MHR)
++++++++++++++++++++++++++++++++++++++++++
 
 .. code:: python
 

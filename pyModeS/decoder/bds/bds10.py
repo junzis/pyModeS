@@ -3,10 +3,11 @@
 # Data link capability report
 # ------------------------------------------
 
-from pyModeS import common
+
+from ... import common
 
 
-def is10(msg):
+def is10(msg: str) -> bool:
     """Check if a message is likely to be BDS code 1,0
 
     Args:
@@ -38,7 +39,7 @@ def is10(msg):
     return True
 
 
-def ovc10(msg):
+def ovc10(msg: str) -> int:
     """Return the overlay control capability
 
     Args:

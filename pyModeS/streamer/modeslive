@@ -12,9 +12,6 @@ from pyModeS.streamer.screen import Screen
 from pyModeS.streamer.source import NetSource, RtlSdrSource
 
 
-# redirect all stdout to null, avoiding messing up with the screen
-sys.stdout = open(os.devnull, "w")
-
 support_rawtypes = ["raw", "beast", "skysense"]
 
 parser = argparse.ArgumentParser()
@@ -26,8 +23,9 @@ parser.add_argument(
 )
 parser.add_argument(
     "--connect",
-    help="Define server, port and data type. Supported data types are: %s"
-    % support_rawtypes,
+    help="Define server, port and data type. Supported data types are: {}".format(
+        support_rawtypes
+    ),
     nargs=3,
     metavar=("SERVER", "PORT", "DATATYPE"),
     default=None,
@@ -84,6 +82,10 @@ if DUMPTO is not None:
     if not os.path.isdir(DUMPTO):
         print("Error: dump folder (%s) does not exist" % DUMPTO)
         sys.exit(1)
+
+
+# redirect all stdout to null, avoiding messing up with the screen
+sys.stdout = open(os.devnull, "w")
 
 
 raw_pipe_in, raw_pipe_out = multiprocessing.Pipe()

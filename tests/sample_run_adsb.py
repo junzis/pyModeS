@@ -1,11 +1,7 @@
-import sys
-import time
 import csv
+import time
 
-if len(sys.argv) > 1 and sys.argv[1] == "cython":
-    from pyModeS.c_decoder import adsb
-else:
-    from pyModeS.decoder import adsb
+from pyModeS.decoder import adsb
 
 print("===== Decode ADS-B sample data=====")
 

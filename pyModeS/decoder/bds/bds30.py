@@ -3,11 +3,11 @@
 # ACAS active resolution advisory
 # ------------------------------------------
 
-from pyModeS import common
+from ... import common
 
 
-def is30(msg):
-    """Check if a message is likely to be BDS code 2,0
+def is30(msg: str) -> bool:
+    """Check if a message is likely to be BDS code 3,0
 
     Args:
         msg (str): 28 hexdigits string

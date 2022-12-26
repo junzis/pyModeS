@@ -3,10 +3,12 @@
 # Meteorological routine air report
 # ------------------------------------------
 
-from pyModeS import common
+from typing import Optional, Tuple
+
+from ... import common
 
 
-def is44(msg):
+def is44(msg: str) -> bool:
     """Check if a message is likely to be BDS code 4,4.
 
     Meteorological routine air report
@@ -51,7 +53,7 @@ def is44(msg):
     return True
 
 
-def wind44(msg):
+def wind44(msg: str) -> Tuple[Optional[int], Optional[float]]:
     """Wind speed and direction.
 
     Args:
@@ -68,12 +70,12 @@ def wind44(msg):
         return None, None
 
     speed = common.bin2int(d[5:14])  # knots
-    direction = common.bin2int(d[14:23]) * 180.0 / 256.0  # degree
+    direction = common.bin2int(d[14:23]) * 180 / 256  # degree
 
     return round(speed, 0), round(direction, 1)
 
 
-def temp44(msg):
+def temp44(msg: str) -> Tuple[float, float]:
     """Static air temperature.
 
     Args:
@@ -102,7 +104,7 @@ def temp44(msg):
     return temp, temp_alternative
 
 
-def p44(msg):
+def p44(msg: str) -> Optional[int]:
     """Static pressure.
 
     Args:
@@ -122,7 +124,7 @@ def p44(msg):
     return p
 
 
-def hum44(msg):
+def hum44(msg: str) -> Optional[float]:
     """humidity
 
     Args:
@@ -136,13 +138,13 @@ def hum44(msg):
     if d[49] == "0":
         return None
 
-    hm = common.bin2int(d[50:56]) * 100.0 / 64  # %
+    hm = common.bin2int(d[50:56]) * 100 / 64  # %
 
     return round(hm, 1)
 
 
-def turb44(msg):
-    """Turblence.
+def turb44(msg: str) -> Optional[int]:
+    """Turbulence.
 
     Args:
         msg (str): 28 hexdigits string

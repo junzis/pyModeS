@@ -46,7 +46,7 @@ def bds_info(BDS, m):
         )
 
     else:
-        info = None
+        info = []
 
     return info
 
@@ -87,5 +87,5 @@ def commb_decode_all(df, n=None):
 
 
 if __name__ == "__main__":
-    commb_decode_all(df=20, n=100)
-    commb_decode_all(df=21, n=100)
+    commb_decode_all(df=20, n=500)
+    commb_decode_all(df=21, n=500)

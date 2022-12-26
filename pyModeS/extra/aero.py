@@ -17,7 +17,7 @@ Speed conversion at altitude H[m] in ISA
 ::
 
     Mach = tas2mach(Vtas,H)    # true airspeed (Vtas) to mach number conversion
-    Vtas = mach2tas(Mach,H)    # true airspeed (Vtas) to mach number conversion
+    Vtas = mach2tas(Mach,H)    # mach number to true airspeed (Vtas) conversion
     Vtas = eas2tas(Veas,H)     # equivalent airspeed to true airspeed, H in [m]
     Veas = tas2eas(Vtas,H)     # true airspeed to equivent airspeed, H in [m]
     Vtas = cas2tas(Vcas,H)     # Vcas  to Vtas conversion both m/s, H in [m]
@@ -35,18 +35,18 @@ ft = 0.3048  # ft -> m
 fpm = 0.00508  # ft/min -> m/s
 inch = 0.0254  # inch -> m
 sqft = 0.09290304  # 1 square foot
-nm = 1852.0  # nautical mile -> m
+nm = 1852  # nautical mile -> m
 lbs = 0.453592  # pound -> kg
 g0 = 9.80665  # m/s2, Sea level gravity constant
 R = 287.05287  # m2/(s2 x K), gas constant, sea level ISA
-p0 = 101325.0  # Pa, air pressure, sea level ISA
+p0 = 101325  # Pa, air pressure, sea level ISA
 rho0 = 1.225  # kg/m3, air density, sea level ISA
 T0 = 288.15  # K, temperature, sea level ISA
 gamma = 1.40  # cp/cv for air
 gamma1 = 0.2  # (gamma-1)/2 for air
 gamma2 = 3.5  # gamma/(gamma-1) for air
 beta = -0.0065  # [K/m] ISA temp gradient below tropopause
-r_earth = 6371000.0  # m, average earth radius
+r_earth = 6371000  # m, average earth radius
 a0 = 340.293988  # m/s, sea level speed of sound ISA, sqrt(gamma*R*T0)
 
 
@@ -94,8 +94,8 @@ def distance(lat1, lon1, lat2, lon2, H=0):
     """
 
     # phi = 90 - latitude
-    phi1 = np.radians(90.0 - lat1)
-    phi2 = np.radians(90.0 - lat2)
+    phi1 = np.radians(90 - lat1)
+    phi2 = np.radians(90 - lat2)
 
     # theta = longitude
     theta1 = np.radians(lon1)
@@ -158,16 +158,16 @@ def tas2eas(Vtas, H):
 def cas2tas(Vcas, H):
     """Calibrated Airspeed to True Airspeed"""
     p, rho, T = atmos(H)
-    qdyn = p0 * ((1.0 + rho0 * Vcas * Vcas / (7.0 * p0)) ** 3.5 - 1.0)
-    Vtas = np.sqrt(7.0 * p / rho * ((1.0 + qdyn / p) ** (2.0 / 7.0) - 1.0))
+    qdyn = p0 * ((1 + rho0 * Vcas * Vcas / (7 * p0)) ** 3.5 - 1.0)
+    Vtas = np.sqrt(7 * p / rho * ((1 + qdyn / p) ** (2 / 7.0) - 1.0))
     return Vtas
 
 
 def tas2cas(Vtas, H):
     """True Airspeed to Calibrated Airspeed"""
     p, rho, T = atmos(H)
-    qdyn = p * ((1.0 + rho * Vtas * Vtas / (7.0 * p)) ** 3.5 - 1.0)
-    Vcas = np.sqrt(7.0 * p0 / rho0 * ((qdyn / p0 + 1.0) ** (2.0 / 7.0) - 1.0))
+    qdyn = p * ((1 + rho * Vtas * Vtas / (7 * p)) ** 3.5 - 1.0)
+    Vcas = np.sqrt(7 * p0 / rho0 * ((qdyn / p0 + 1.0) ** (2 / 7.0) - 1.0))
     return Vcas
 
 
