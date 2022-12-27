@@ -45,7 +45,8 @@ flake8 = "^6.0.0"
 black = "^22.12.0"
 isort = "^5.11.4"
 pytest = "^7.2.0"
-coverage = "^7.0.1"
+pytest-cov = "^4.0.0"
+codecov = "^2.1.12"
 ipykernel = "^6.20.0"
 
 [tool.poetry.extras]
