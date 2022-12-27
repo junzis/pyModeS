@@ -1,5 +1,6 @@
-from core cimport make_key as c_make_key, btea as c_btea
 from cpython cimport array
+
+from .core cimport make_key as c_make_key, btea as c_btea
 
 import array
 import math

@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "pyModeS"
+version = "2.11"
+description = "Python Mode-S and ADS-B Decoder"
+authors = ["Junzi Sun <j.sun-1@tudelft.nl>"]
+license = "GNU GPL v3"
+readme = "README.rst"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+packages = [
+    { include = "pyModeS", from = "." },
+]
+include = [
+    "LICENSE",
+    "*.pyx",
+    "*.pxd",
+    "*.pyi",
+    "py.typed",
+    { path = "src/pyModeS/**/*.so", format = "wheel" }
+]
+
+[tool.poetry.build]
+generate-setup-file = false
+script = "build.py"
+
+[tool.poetry.scripts]
+modeslive = "pyModeS.streamer.modeslive:main"
+
+[tool.poetry.dependencies]
+python = "^3.8.1"
+numpy = "^1.24.1"
+pyzmq = "^24.0.1"
+pyrtlsdr = {version = "^0.2.93", optional = true}
+
+[tool.poetry.dev-dependencies]
+Cython = "^0.29.32"
+mypy = "^0.991"
+flake8 = "^6.0.0"
+black = "^22.12.0"
+isort = "^5.11.4"
+pytest = "^7.2.0"
+ipykernel = "^6.20.0"
+
+[tool.poetry.extras]
+rtlsdr = ["pyrtlsdr"]
+
+[tool.black]
+line-length = 80
+target_version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.isort]
+line_length = 80
+profile = "black"
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "Cython>=0.29.32"]
+build-backend = "poetry.core.masonry.api"
