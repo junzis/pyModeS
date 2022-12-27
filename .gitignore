@@ -5,6 +5,11 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
+# Cython
+pyModeS/decoder/flarm/decode.c
+pyModeS/extra/demod2400/core.c
+pyModeS/c_common.c
+
 # C extensions
 *.so
 
@@ -64,3 +69,4 @@ target/
 .venv
 env/
 venv/
+

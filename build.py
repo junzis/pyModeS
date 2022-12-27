@@ -37,16 +37,16 @@ def build() -> None:
             extra_compile_args=compile_args,
             include_dirs=["pyModeS/decoder/flarm"],
         ),
-        # Extension(
-        #     "pyModeS.extra.demod2400.core",
-        #     [
-        #         "pyModeS/extra/demod2400/core.pyx",
-        #         "pyModeS/extra/demod2400/demod2400.c",
-        #     ],
-        #     extra_compile_args=compile_args,
-        #     include_dirs=["pyModeS/extra/demod2400"],
-        #     libraries=["m"],
-        # ),
+        Extension(
+            "pyModeS.extra.demod2400.core",
+            [
+                "pyModeS/extra/demod2400/core.pyx",
+                "pyModeS/extra/demod2400/demod2400.c",
+            ],
+            extra_compile_args=compile_args,
+            include_dirs=["pyModeS/extra/demod2400"],
+            libraries=["m"],
+        ),
     ]
 
     ext_modules = cythonize(

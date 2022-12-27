@@ -9,7 +9,7 @@ import signal
 import multiprocessing
 from pyModeS.streamer.decode import Decode
 from pyModeS.streamer.screen import Screen
-from pyModeS.streamer.source import NetSource, RtlSdrSource  # , RtlSdrSource24
+from pyModeS.streamer.source import NetSource, RtlSdrSource, RtlSdrSource24
 
 
 def main():
@@ -100,8 +100,8 @@ def main():
         source = NetSource(host=SERVER, port=PORT, rawtype=DATATYPE)
     elif SOURCE == "rtlsdr":
         source = RtlSdrSource()
-    # elif SOURCE == "rtlsdr24":
-    #     source = RtlSdrSource24()
+    elif SOURCE == "rtlsdr24":
+        source = RtlSdrSource24()
 
     recv_process = multiprocessing.Process(
         target=source.run, args=(raw_pipe_in, stop_flag, exception_queue)
