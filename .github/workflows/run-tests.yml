@@ -5,6 +5,9 @@ on:
   pull_request_target:
   workflow_dispatch:
 
+env:
+  POETRY_VERSION: "1.3.1"
+
 jobs:
   deploy:
     runs-on: ${{ matrix.os }}
@@ -24,30 +27,39 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Poetry cache depends on OS, Python version and Poetry version.
+      - name: Cache Poetry cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-cache-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ env.POETRY_VERSION }}
+
+      # virtualenv cache should depends on OS, Python version and `poetry.lock` (and optionally workflow files).
+      - name: Cache Packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.local
+          key: poetry-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1.3.3
+        with:
+          version: ${{ env.POETRY_VERSION }}
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
       - name: Install dependencies
         run: |
-          pip install -U pip numpy cython mypy
-          pip install -U pytest codecov pytest-cov
-          pip install .
+          poetry install
 
       - name: Type checking
         if: ${{ env.PYTHON_VERSION != '3.7' }}
         run: |
-          mypy pyModeS
+          poetry run mypy pyModeS
 
-      - name: Run tests (without Cython)
+      - name: Run tests
         run: |
-          pytest tests --cov --cov-report term-missing
-
-      - name: Install with Cython
-        run: |
-          pip install -U cython
-          pip uninstall -y pymodes
-          pip install .
-
-      - name: Run tests (with Cython)
-        run: |
-          pytest tests
+          poetry run pytest tests --cov --cov-report term-missing
 
       - name: Upload coverage to Codecov
         if: ${{ github.event_name != 'pull_request_target' && env.PYTHON_VERSION == '3.10' }}
