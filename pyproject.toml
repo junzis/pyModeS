@@ -33,15 +33,15 @@ script = "build.py"
 modeslive = "pyModeS.streamer.modeslive:main"
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
-numpy = "^1.24.1"
-pyzmq = "^24.0.1"
+python = "^3.8"
+numpy = "^1.24"
+pyzmq = "^24.0"
 pyrtlsdr = {version = "^0.2.93", optional = true}
 
 [tool.poetry.group.dev.dependencies]
 Cython = "^0.29.32"
 mypy = "^0.991"
-flake8 = "^6.0.0"
+flake8 = "^5.0.0"
 black = "^22.12.0"
 isort = "^5.11.4"
 pytest = "^7.2.0"
