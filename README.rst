@@ -94,13 +94,13 @@ If you want to make use of the (faster) c module, install ``pyModeS`` as follows
   # conda (compiled) version
   conda install -c conda-forge pymodes
 
-  # stable version (to be compiled on your side)
-  pip install pyModeS[fast]
+  # stable version
+  pip install pyModeS
 
   # development version
   git clone https://github.com/junzis/pyModeS
   cd pyModeS
-  pip install .[fast]
+  poetry install -E rtlsdr
 
 
 View live traffic (modeslive)
