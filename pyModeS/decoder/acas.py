@@ -2,7 +2,9 @@
 Decoding Air-Air Surveillance (ACAS) DF=0/16
 """
 
-from pyModeS import common
+from __future__ import annotations
+
+from .. import common
 import warnings
 
 warnings.simplefilter("always", UserWarning)
@@ -23,7 +25,7 @@ def isACAS(msg: str) -> bool:
         return False
 
 
-def rac(msg: str) -> str:
+def rac(msg: str) -> None | str:
     """Resolution Advisory Complement.
 
     :param msg: 28 hexdigits string
@@ -52,7 +54,7 @@ def rac(msg: str) -> str:
     return "; ".join(RAC)
 
 
-def rat(msg: str) -> bool:
+def rat(msg: str) -> None | int:
     """RA terminated indicator
 
     Mode S transponder is still required to report RA 18 seconds after
@@ -70,7 +72,7 @@ def rat(msg: str) -> bool:
     return mte
 
 
-def mte(msg: str) -> bool:
+def mte(msg: str) -> None | int:
     """Multiple threat encounter.
 
     :param msg: 28 hexdigits string
@@ -85,7 +87,7 @@ def mte(msg: str) -> bool:
     return mte
 
 
-def ara(msg: str) -> str:
+def ara(msg: str) -> None | str:
     """Decode active resolution advisory.
 
     :param msg: 28 bytes hexadecimal message string

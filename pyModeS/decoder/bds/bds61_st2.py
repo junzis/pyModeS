@@ -5,10 +5,10 @@
 #   (Subtype 1)
 # ------------------------------------------
 
-from typing import Tuple
-from pyModeS import common
+from __future__ import annotations
 
-from pyModeS.decoder import acas
+from ... import common
+from .. import acas
 
 
 def threat_type(msg: str) -> int:
@@ -40,7 +40,7 @@ def threat_identity(msg: str) -> str:
         raise RuntimeError("%s: Missing threat identity (ICAO)")
 
 
-def threat_location(msg: str) -> Tuple:
+def threat_location(msg: str) -> None | tuple[int, int, int]:
     """Get the altitude, range, and bearing of the threat.
 
     Altitude is the Mode C altitude
@@ -58,6 +58,8 @@ def threat_location(msg: str) -> Tuple:
         bearing = common.bin2int(mb[51:57])
         return altitude, distance, bearing
 
+    return None
+
 
 def has_multiple_threats(msg: str) -> bool:
     """Indicate if the ACAS is processing multiple threats simultaneously.
@@ -68,7 +70,7 @@ def has_multiple_threats(msg: str) -> bool:
     return acas.mte(msg) == 1
 
 
-def active_resolution_advisories(msg: str) -> str:
+def active_resolution_advisories(msg: str) -> None | str:
     """Decode active resolution advisory.
 
     Uses ARA decoding function from ACAS module.
@@ -91,7 +93,7 @@ def is_ra_terminated(msg: str) -> bool:
     return acas.rat(msg) == 1
 
 
-def ra_complement(msg: str) -> str:
+def ra_complement(msg: str) -> None | str:
     """Resolution Advisory Complement.
 
     :param msg: 28 hexdigits string
