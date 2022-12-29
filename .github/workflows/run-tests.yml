@@ -27,18 +27,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Poetry cache depends on OS, Python version and Poetry version.
-      - name: Cache Poetry cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pypoetry
-          key: poetry-cache-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ env.POETRY_VERSION }}
-
       # virtualenv cache should depends on OS, Python version and `poetry.lock` (and optionally workflow files).
       - name: Cache Packages
         uses: actions/cache@v3
+        if: runner.os != 'windows-latest'
         with:
-          path: ~/.local
+          path: |
+            ~/.local
+            .venv
           key: poetry-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: Add poetry to windows path
@@ -53,12 +49,14 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
+      - name: Display Python version
+        run: poetry run python -c "import sys; print(sys.version)"
+
       - name: Install dependencies
         run: |
           poetry install
 
       - name: Type checking
-        if: ${{ env.PYTHON_VERSION != '3.7' }}
         run: |
           poetry run mypy pyModeS
 
@@ -67,7 +65,7 @@ jobs:
           poetry run pytest tests --cov --cov-report term-missing
 
       - name: Upload coverage to Codecov
-        if: ${{ github.event_name != 'pull_request_target' && env.PYTHON_VERSION == '3.10' }}
+        if: ${{ github.event_name != 'pull_request_target' }}
         uses: codecov/codecov-action@v2
         with:
           env_vars: PYTHON_VERSION
