@@ -37,6 +37,7 @@ jobs:
       # virtualenv cache should depends on OS, Python version and `poetry.lock` (and optionally workflow files).
       - name: Cache Packages
         uses: actions/cache@v3
+        if: matrix.os != 'windows-latest'
         with:
           path: ~/.local
           key: poetry-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
