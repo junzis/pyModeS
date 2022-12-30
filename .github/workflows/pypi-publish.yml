@@ -17,7 +17,9 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # It's just easier to recompile from source for Ubuntu and MacOS
+        # Yes, it is...
+        os: [windows-latest] # ubuntu-latest, macos-latest
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
     steps:
@@ -59,7 +61,7 @@ jobs:
           poetry run twine upload dist/*.whl
 
       - name: Build and publish (source)
-        if: ${{ startsWith(runner.os, 'ubuntu') && matrix.python-version == '3.11' }}
+        if: ${{ startsWith(runner.os, 'windows') && matrix.python-version == '3.11' }}
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
