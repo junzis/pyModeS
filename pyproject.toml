@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyModeS"
-version = "2.12"
+version = "2.13"
 description = "Python Mode-S and ADS-B Decoder"
 authors = ["Junzi Sun <j.sun-1@tudelft.nl>"]
 license = "GNU GPL v3"
@@ -22,7 +22,7 @@ include = [
     "*.pxd",
     "*.pyi",
     "py.typed",
-    { path = "src/pyModeS/**/*.so", format = "wheel" }
+    { path = "pyModeS/**/*.so", format = "wheel" }
 ]
 
 [tool.poetry.build]
@@ -39,7 +39,6 @@ pyzmq = "^24.0"
 pyrtlsdr = {version = "^0.2.93", optional = true}
 
 [tool.poetry.group.dev.dependencies]
-Cython = "^0.29.32"
 mypy = "^0.991"
 flake8 = "^5.0.0"
 black = "^22.12.0"
@@ -47,7 +46,6 @@ isort = "^5.11.4"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 codecov = "^2.1.12"
-ipykernel = "^6.20.0"
 
 [tool.poetry.extras]
 rtlsdr = ["pyrtlsdr"]
