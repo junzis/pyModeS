@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyModeS"
-version = "2.11"
+version = "2.12"
 description = "Python Mode-S and ADS-B Decoder"
 authors = ["Junzi Sun <j.sun-1@tudelft.nl>"]
 license = "GNU GPL v3"
