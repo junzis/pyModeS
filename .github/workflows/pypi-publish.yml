@@ -55,7 +55,7 @@ jobs:
           poetry run twine upload dist/*.whl
 
       - name: Build and publish (source)
-        if: "startsWith(runner.os, 'ubuntu') and env.PYTHON_VERSION == '3.10'"
+        if: "startsWith(runner.os, 'ubuntu') && env.PYTHON_VERSION == '3.10'"
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
