@@ -69,3 +69,65 @@ jobs:
         uses: codecov/codecov-action@v3
         with:
           env_vars: PYTHON_VERSION
+
+  # "deploy" job variant for other architectures.
+  deploy_other_archs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: aarch64
+            distro: ubuntu22.04
+            python-version: "3.10"
+          - arch: aarch64
+            distro: ubuntu20.04
+            python-version: "3.8"
+
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # virtualenv cache should depends on OS, architecture, Python version and `poetry.lock` (and optionally workflow files).
+      - name: Cache Packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local
+            .venv
+          key: poetry-${{ runner.distro }}-${{ runner.arch }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Setup and test
+        # Perform the following within a platform/architecture specific container:
+        # * Install and configure Poetry
+        # * Display Python version and architecture
+        # * Install dependencies
+        # * Type checking
+        # * Run tests
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+          # Not required, but speeds up builds
+          githubToken: ${{ github.token }}
+          # Install includes Python and other OS dependencies.
+          install: |
+            apt-get -q update && apt-get -q install -y python3 python3-venv python3-pip
+          # WORKAROUND: Using --no-ansi to avoid a bug in headless environments, see <https://github.com/python-poetry/poetry/issues/7184>.
+          run: |
+            python3 -m venv .venv
+            source .venv/bin/activate
+            pip install --progress-bar=off "poetry==${{ env.POETRY_VERSION }}"
+            poetry config virtualenvs.create true
+            poetry config virtualenvs.in-project true
+            poetry run python -c "import sys; import platform; print(sys.version + ' (' + platform.uname().machine + ')')"
+            poetry install --no-ansi
+            poetry run mypy pyModeS
+            poetry run pytest tests --cov --cov-report term-missing
+
+      - name: Upload coverage to Codecov
+        if: ${{ github.event_name != 'pull_request_target' }}
+        uses: codecov/codecov-action@v3
+        with:
+          env_vars: PYTHON_VERSION
