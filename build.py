@@ -12,12 +12,12 @@ def build() -> None:
 
     if sys.platform == "linux":
         compile_args += [
-            "-march=native",
-            "-O3",
-            "-msse",
-            "-msse2",
-            "-mfma",
-            "-mfpmath=sse",
+            # "-march=native",
+            # "-O3",
+            # "-msse",
+            # "-msse2",
+            # "-mfma",
+            # "-mfpmath=sse",
             "-Wno-pointer-sign",
             "-Wno-unused-variable",
         ]
