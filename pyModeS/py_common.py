@@ -231,7 +231,7 @@ def squawk(binstr: str) -> str:
         binstr (String): 13 bits binary string
 
     Returns:
-        int: altitude in ft
+        string: squawk code
 
     """
     if len(binstr) != 13 or not set(binstr).issubset(set("01")):
