@@ -1,14 +1,22 @@
+from __future__ import annotations
+
 import time
 import traceback
 import numpy as np
 import pyModeS as pms
 
+from typing import Any
+
+
+import_msg = """
+---------------------------------------------------------------------
+Warning: pyrtlsdr not installed (required for using RTL-SDR devices)!
+---------------------------------------------------------------------"""
+
 try:
     import rtlsdr  # type: ignore
-except:
-    print("------------------------------------------------------------------------")
-    print("! Warning: pyrtlsdr not installed (required for using RTL-SDR devices) !")
-    print("------------------------------------------------------------------------")
+except ImportError:
+    print(import_msg)
 
 sampling_rate = 2e6
 smaples_per_microsec = 2
@@ -24,9 +32,9 @@ th_amp_diff = 0.8  # signal amplitude threshold difference between 0 and 1 bit
 
 
 class RtlReader(object):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super(RtlReader, self).__init__()
-        self.signal_buffer = []  # amplitude of the sample only
+        self.signal_buffer: list[float] = []  # amplitude of the sample only
         self.sdr = rtlsdr.RtlSdr()
         self.sdr.sample_rate = sampling_rate
         self.sdr.center_freq = modes_frequency
@@ -39,7 +47,7 @@ class RtlReader(object):
 
         self.exception_queue = None
 
-    def _calc_noise(self):
+    def _calc_noise(self) -> float:
         """Calculate noise floor"""
         window = smaples_per_microsec * 100
         total_len = len(self.signal_buffer)
@@ -50,7 +58,7 @@ class RtlReader(object):
         )
         return min(means)
 
-    def _process_buffer(self):
+    def _process_buffer(self) -> list[list[Any]]:
         """process raw IQ data in the buffer"""
 
         # update noise floor
@@ -70,17 +78,18 @@ class RtlReader(object):
                 i += 1
                 continue
 
-            if self._check_preamble(self.signal_buffer[i : i + pbits * 2]):
-                frame_start = i + pbits * 2
-                frame_end = i + pbits * 2 + (fbits + 1) * 2
+            frame_start = i + pbits * 2
+            if self._check_preamble(self.signal_buffer[i:frame_start]):
                 frame_length = (fbits + 1) * 2
+                frame_end = frame_start + frame_length
                 frame_pulses = self.signal_buffer[frame_start:frame_end]
 
                 threshold = max(frame_pulses) * 0.2
 
-                msgbin = []
+                msgbin: list[int] = []
                 for j in range(0, frame_length, 2):
-                    p2 = frame_pulses[j : j + 2]
+                    j_2 = j + 2
+                    p2 = frame_pulses[j:j_2]
                     if len(p2) < 2:
                         break
 
@@ -117,7 +126,7 @@ class RtlReader(object):
 
         return messages
 
-    def _check_preamble(self, pulses):
+    def _check_preamble(self, pulses) -> bool:
         if len(pulses) != 16:
             return False
 
@@ -127,7 +136,7 @@ class RtlReader(object):
 
         return True
 
-    def _check_msg(self, msg):
+    def _check_msg(self, msg) -> bool:
         df = pms.df(msg)
         msglen = len(msg)
         if df == 17 and msglen == 28:
@@ -137,8 +146,9 @@ class RtlReader(object):
             return True
         elif df in [4, 5, 11] and msglen == 14:
             return True
+        return False
 
-    def _debug_msg(self, msg):
+    def _debug_msg(self, msg) -> None:
         df = pms.df(msg)
         msglen = len(msg)
         if df == 17 and msglen == 28:
@@ -151,7 +161,7 @@ class RtlReader(object):
             # print("[*]", msg)
             pass
 
-    def _read_callback(self, data, rtlsdr_obj):
+    def _read_callback(self, data, rtlsdr_obj) -> None:
         amp = np.absolute(data)
         self.signal_buffer.extend(amp.tolist())
 
@@ -159,16 +169,18 @@ class RtlReader(object):
             messages = self._process_buffer()
             self.handle_messages(messages)
 
-    def handle_messages(self, messages):
+    def handle_messages(self, messages) -> None:
         """re-implement this method to handle the messages"""
         for msg, t in messages:
             # print("%15.9f %s" % (t, msg))
             pass
 
-    def stop(self, *args, **kwargs):
+    def stop(self, *args, **kwargs) -> None:
         self.sdr.close()
 
-    def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None):
+    def run(
+        self, raw_pipe_in=None, stop_flag=None, exception_queue=None
+    ) -> None:
         self.raw_pipe_in = raw_pipe_in
         self.exception_queue = exception_queue
         self.stop_flag = stop_flag

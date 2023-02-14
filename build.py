@@ -1,9 +1,10 @@
 import os
 import shutil
 import sys
-from distutils.core import Distribution, Extension
 from distutils.command import build_ext
+from distutils.core import Distribution, Extension
 
+# import pip
 from Cython.Build import cythonize
 
 
@@ -11,16 +12,7 @@ def build() -> None:
     compile_args = []
 
     if sys.platform == "linux":
-        compile_args += [
-            # "-march=native",
-            # "-O3",
-            # "-msse",
-            # "-msse2",
-            # "-mfma",
-            # "-mfpmath=sse",
-            "-Wno-pointer-sign",
-            "-Wno-unused-variable",
-        ]
+        compile_args += ["-Wno-pointer-sign", "-Wno-unused-variable"]
 
     extensions = [
         Extension(
