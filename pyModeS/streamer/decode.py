@@ -73,8 +73,15 @@ class Decode:
                     "VFOMr": None,
                     "PE_RCu": None,
                     "PE_VPL": None,
+                    "hum44" : None,
+                    "p44" : None,
+                    "temp44" : None,
+                    "turb44" : None,
+                    "wind44" : None,
                 }
 
+            self.acs[icao]["tc"] = tc
+            self.acs[icao]["icao"] = icao
             self.acs[icao]["t"] = t
             self.acs[icao]["live"] = int(t)
 
@@ -155,7 +162,7 @@ class Decode:
                 ac["nic_bc"] = pms.adsb.nic_b(msg)
 
             if (5 <= tc <= 8) or (9 <= tc <= 18) or (20 <= tc <= 22):
-                ac["HPL"], ac["RCu"], ac["RCv"] = pms.adsb.nuc_p(msg)
+                ac["NUCp"], ac["HPL"], ac["RCu"], ac["RCv"] = pms.adsb.nuc_p(msg)
 
                 if (ac["ver"] == 1) and ("nic_s" in ac.keys()):
                     ac["Rc"], ac["VPL"] = pms.adsb.nic_v1(msg, ac["nic_s"])
@@ -164,20 +171,20 @@ class Decode:
                     and ("nic_a" in ac.keys())
                     and ("nic_bc" in ac.keys())
                 ):
-                    ac["Rc"] = pms.adsb.nic_v2(msg, ac["nic_a"], ac["nic_bc"])
+                    ac["NIC"], ac["Rc"] = pms.adsb.nic_v2(msg, ac["nic_a"], ac["nic_bc"])
 
             if tc == 19:
-                ac["HVE"], ac["VVE"] = pms.adsb.nuc_v(msg)
+                ac["NUCv"], ac["HVE"], ac["VVE"] = pms.adsb.nuc_v(msg)
                 if ac["ver"] in [1, 2]:
-                    ac["HFOMr"], ac["VFOMr"] = pms.adsb.nac_v(msg)
+                    ac["NACv"], ac["HFOMr"], ac["VFOMr"] = pms.adsb.nac_v(msg)
 
             if tc == 29:
                 ac["PE_RCu"], ac["PE_VPL"], ac["base"] = pms.adsb.sil(msg, ac["ver"])
-                ac["EPU"], ac["VEPU"] = pms.adsb.nac_p(msg)
+                ac["NACp"], ac["HEPU"], ac["VEPU"] = pms.adsb.nac_p(msg)
 
             if tc == 31:
                 ac["ver"] = pms.adsb.version(msg)
-                ac["EPU"], ac["VEPU"] = pms.adsb.nac_p(msg)
+                ac["NACp"], ac["HEPU"], ac["VEPU"] = pms.adsb.nac_p(msg)
                 ac["PE_RCu"], ac["PE_VPL"], ac["sil_base"] = pms.adsb.sil(
                     msg, ac["ver"]
                 )
@@ -194,6 +201,8 @@ class Decode:
             if icao not in self.acs:
                 continue
 
+            self.acs[icao]["icao"] = icao
+            self.acs[icao]["t"] = t
             self.acs[icao]["live"] = int(t)
 
             bds = pms.bds.infer(msg)
@@ -217,8 +226,10 @@ class Decode:
                     output_buffer.append([t, icao, "rtrk50", rtrk50])
 
                 if trk50:
+                    self.acs[icao]["trk50"] = trk50
                     output_buffer.append([t, icao, "trk50", trk50])
                 if gs50:
+                    self.acs[icao]["gs50"] = gs50
                     output_buffer.append([t, icao, "gs50", gs50])
 
             elif bds == "BDS60":
@@ -241,9 +252,19 @@ class Decode:
                     output_buffer.append([t, icao, "mach60", mach60])
 
                 if roc60baro:
+                    self.acs[icao]["roc60baro"] = roc60baro
                     output_buffer.append([t, icao, "roc60baro", roc60baro])
                 if roc60ins:
+                    self.acs[icao]["roc60ins"] = roc60ins
                     output_buffer.append([t, icao, "roc60ins", roc60ins])
+
+            elif bds == "BDS44":
+                if(pms.commb.is44(msg)):
+                    self.acs[icao]["hum44"] = pms.commb.hum44(msg)
+                    self.acs[icao]["p44"] = pms.commb.p44(msg)
+                    self.acs[icao]["temp44"] = pms.commb.temp44(msg)
+                    self.acs[icao]["turb44"] = pms.commb.turb44(msg)
+                    self.acs[icao]["wind44"] = pms.commb.wind44(msg)
 
         # clear up old data
         for icao in list(self.acs.keys()):
