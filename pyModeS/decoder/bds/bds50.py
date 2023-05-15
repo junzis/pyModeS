@@ -81,7 +81,7 @@ def roll50(msg: str) -> Optional[float]:
         value = value - 512
 
     angle = value * 45 / 256  # degree
-    return round(angle, 1)
+    return round(angle, 3)
 
 
 def trk50(msg: str) -> Optional[float]:
