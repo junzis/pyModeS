@@ -81,7 +81,7 @@ def roll50(msg: str) -> Optional[float]:
         value = value - 512
 
     angle = value * 45 / 256  # degree
-    return round(angle, 3)
+    return angle
 
 
 def trk50(msg: str) -> Optional[float]:
@@ -110,7 +110,7 @@ def trk50(msg: str) -> Optional[float]:
     if trk < 0:
         trk = 360 + trk
 
-    return round(trk, 3)
+    return trk
 
 
 def gs50(msg: str) -> Optional[float]:
@@ -154,7 +154,7 @@ def rtrk50(msg: str) -> Optional[float]:
         value = value - 512
 
     angle = value * 8 / 256  # degree / sec
-    return round(angle, 3)
+    return angle
 
 
 def tas50(msg: str) -> Optional[float]:

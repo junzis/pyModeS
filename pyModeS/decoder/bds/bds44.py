@@ -72,7 +72,7 @@ def wind44(msg: str) -> Tuple[Optional[int], Optional[float]]:
     speed = common.bin2int(d[5:14])  # knots
     direction = common.bin2int(d[14:23]) * 180 / 256  # degree
 
-    return round(speed, 0), round(direction, 1)
+    return speed, direction
 
 
 def temp44(msg: str) -> Tuple[float, float]:
@@ -96,10 +96,8 @@ def temp44(msg: str) -> Tuple[float, float]:
         value = value - 1024
 
     temp = value * 0.25  # celsius
-    temp = round(temp, 2)
 
     temp_alternative = value * 0.125  # celsius
-    temp_alternative = round(temp_alternative, 3)
 
     return temp, temp_alternative
 
@@ -140,7 +138,7 @@ def hum44(msg: str) -> Optional[float]:
 
     hm = common.bin2int(d[50:56]) * 100 / 64  # %
 
-    return round(hm, 1)
+    return hm
 
 
 def turb44(msg: str) -> Optional[int]:

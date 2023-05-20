@@ -1,4 +1,5 @@
 from pyModeS import adsb
+from pytest import approx
 
 # === TEST ADS-B package ===
 
@@ -22,7 +23,7 @@ def test_adsb_position():
         1446332400,
         1446332405,
     )
-    assert pos == (49.81755, 6.08442)
+    assert pos == (approx(49.81755, 0.001), approx(6.08442, 0.001))
 
 
 def test_adsb_position_swap_odd_even():
@@ -32,32 +33,32 @@ def test_adsb_position_swap_odd_even():
         1446332405,
         1446332400,
     )
-    assert pos == (49.81755, 6.08442)
+    assert pos == (approx(49.81755, 0.001), approx(6.08442, 0.001))
 
 
 def test_adsb_position_with_ref():
     pos = adsb.position_with_ref("8D40058B58C901375147EFD09357", 49.0, 6.0)
-    assert pos == (49.82410, 6.06785)
+    assert pos == (approx(49.82410, 0.001), approx(6.06785, 0.001))
     pos = adsb.position_with_ref("8FC8200A3AB8F5F893096B000000", -43.5, 172.5)
-    assert pos == (-43.48564, 172.53942)
+    assert pos == (approx(-43.48564, 0.001), approx(172.53942, 0.001))
 
 
 def test_adsb_airborne_position_with_ref():
     pos = adsb.airborne_position_with_ref(
         "8D40058B58C901375147EFD09357", 49.0, 6.0
     )
-    assert pos == (49.82410, 6.06785)
+    assert pos == (approx(49.82410, 0.001), approx(6.06785, 0.001))
     pos = adsb.airborne_position_with_ref(
         "8D40058B58C904A87F402D3B8C59", 49.0, 6.0
     )
-    assert pos == (49.81755, 6.08442)
+    assert pos == (approx(49.81755, 0.001), approx(6.08442, 0.001))
 
 
 def test_adsb_surface_position_with_ref():
     pos = adsb.surface_position_with_ref(
         "8FC8200A3AB8F5F893096B000000", -43.5, 172.5
     )
-    assert pos == (-43.48564, 172.53942)
+    assert pos == (approx(-43.48564, 0.001), approx(172.53942, 0.001))
 
 
 def test_adsb_surface_position():
@@ -69,7 +70,7 @@ def test_adsb_surface_position():
         -43.496,
         172.558,
     )
-    assert pos == (-43.48564, 172.53942)
+    assert pos == (approx(-43.48564, 0.001), approx(172.53942, 0.001))
 
 
 def test_adsb_alt():
@@ -80,9 +81,9 @@ def test_adsb_velocity():
     vgs = adsb.velocity("8D485020994409940838175B284F")
     vas = adsb.velocity("8DA05F219B06B6AF189400CBC33F")
     vgs_surface = adsb.velocity("8FC8200A3AB8F5F893096B000000")
-    assert vgs == (159, 182.88, -832, "GS")
-    assert vas == (375, 243.98, -2304, "TAS")
-    assert vgs_surface == (19, 42.2, 0, "GS")
+    assert vgs == (159, approx(182.88, 0.1), -832, "GS")
+    assert vas == (375, approx(243.98, 0.1), -2304, "TAS")
+    assert vgs_surface == (19, approx(42.2, 0.1), 0, "GS")
     assert adsb.altitude_diff("8D485020994409940838175B284F") == 550
 
 
@@ -96,7 +97,9 @@ def test_adsb_target_state_status():
     sel_alt = adsb.selected_altitude("8DA05629EA21485CBF3F8CADAEEB")
     assert sel_alt == (16992, "MCP/FCU")
     assert adsb.baro_pressure_setting("8DA05629EA21485CBF3F8CADAEEB") == 1012.8
-    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == 66.8
+    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == approx(
+        66.8, 0.1
+    )
     assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") is True
     assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") is True
     assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") is False

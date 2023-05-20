@@ -48,7 +48,6 @@ def airborne_velocity(
     spd: None | float
 
     if subtype in (1, 2):
-
         v_ew = common.bin2int(mb[14:24])
         v_ns = common.bin2int(mb[25:35])
 
@@ -77,7 +76,7 @@ def airborne_velocity(
             trk = math.degrees(trk)  # convert to degrees
             trk = trk if trk >= 0 else trk + 360  # no negative val
 
-            trk_or_hdg = round(trk, 2)
+            trk_or_hdg = trk
 
         spd_type = "GS"
         dir_type = "TRUE_NORTH"
@@ -87,7 +86,6 @@ def airborne_velocity(
             hdg = None
         else:
             hdg = common.bin2int(mb[14:24]) / 1024 * 360.0
-            hdg = round(hdg, 2)
 
         trk_or_hdg = hdg
 

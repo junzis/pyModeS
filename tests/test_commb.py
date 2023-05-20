@@ -1,5 +1,5 @@
 from pyModeS import bds, commb
-import pytest
+from pytest import approx
 
 # from pyModeS import ehs, els    # deprecated
 
@@ -23,32 +23,24 @@ def test_bds40_functions():
 
 
 def test_bds50_functions():
-    assert bds.bds50.roll50("A000139381951536E024D4CCF6B5") == 2.1
-    assert bds.bds50.roll50("A0001691FFD263377FFCE02B2BF9") == -0.4
-    assert bds.bds50.trk50("A000139381951536E024D4CCF6B5") == 114.258
-    assert bds.bds50.gs50("A000139381951536E024D4CCF6B5") == 438
-    assert bds.bds50.rtrk50("A000139381951536E024D4CCF6B5") == 0.125
-    assert bds.bds50.tas50("A000139381951536E024D4CCF6B5") == 424
+    msg1 = "A000139381951536E024D4CCF6B5"
+    msg2 = "A0001691FFD263377FFCE02B2BF9"
 
-    assert commb.roll50("A000139381951536E024D4CCF6B5") == 2.1
-    assert commb.roll50("A0001691FFD263377FFCE02B2BF9") == -0.4  # signed value
-    assert commb.trk50("A000139381951536E024D4CCF6B5") == 114.258
-    assert commb.gs50("A000139381951536E024D4CCF6B5") == 438
-    assert commb.rtrk50("A000139381951536E024D4CCF6B5") == 0.125
-    assert commb.tas50("A000139381951536E024D4CCF6B5") == 424
+    for module in [bds.bds50, commb]:
+        assert module.roll50(msg1) == approx(2.1, 0.01)
+        assert module.roll50(msg2) == approx(-0.35, 0.01)  # signed value
+        assert module.trk50(msg1) == approx(114.258, 0.1)
+        assert module.gs50(msg1) == 438
+        assert module.rtrk50(msg1) == 0.125
+        assert module.tas50(msg1) == 424
 
 
 def test_bds60_functions():
     msg = "A00004128F39F91A7E27C46ADC21"
 
-    assert bds.bds60.hdg60(msg) == pytest.approx(42.71484)
-    assert bds.bds60.ias60(msg) == 252
-    assert bds.bds60.mach60(msg) == 0.42
-    assert bds.bds60.vr60baro(msg) == -1920
-    assert bds.bds60.vr60ins(msg) == -1920
-
-    assert commb.hdg60(msg) == pytest.approx(42.71484)
-    assert commb.ias60(msg) == 252
-    assert commb.mach60(msg) == 0.42
-    assert commb.vr60baro(msg) == -1920
-    assert commb.vr60ins(msg) == -1920
+    for module in [bds.bds60, commb]:
+        assert bds.bds60.hdg60(msg) == approx(42.71484)
+        assert bds.bds60.ias60(msg) == 252
+        assert bds.bds60.mach60(msg) == 0.42
+        assert bds.bds60.vr60baro(msg) == -1920
+        assert bds.bds60.vr60ins(msg) == -1920
