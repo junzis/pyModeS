@@ -171,7 +171,6 @@ def temp45(msg: str) -> Optional[float]:
         value = value - 512
 
     temp = value * 0.25  # celsius
-    temp = round(temp, 1)
 
     return temp
 

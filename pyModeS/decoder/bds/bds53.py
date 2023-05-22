@@ -86,7 +86,7 @@ def hdg53(msg: str) -> Optional[float]:
     if hdg < 0:
         hdg = 360 + hdg
 
-    return round(hdg, 3)
+    return hdg
 
 
 def ias53(msg: str) -> Optional[float]:
@@ -122,7 +122,7 @@ def mach53(msg: str) -> Optional[float]:
         return None
 
     mach = common.bin2int(d[24:33]) * 0.008
-    return round(mach, 3)
+    return mach
 
 
 def tas53(msg: str) -> Optional[float]:
@@ -140,7 +140,7 @@ def tas53(msg: str) -> Optional[float]:
         return None
 
     tas = common.bin2int(d[34:46]) * 0.5  # kts
-    return round(tas, 1)
+    return tas
 
 
 def vr53(msg: str) -> Optional[int]:

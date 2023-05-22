@@ -200,7 +200,6 @@ def selected_heading(msg: str) -> None | float:
     else:
         hdg_sign = int(mb[30])
         hdg = (hdg_sign + 1) * common.bin2int(mb[31:39]) * (180 / 256)
-        hdg = round(hdg, 2)
 
     return hdg
 

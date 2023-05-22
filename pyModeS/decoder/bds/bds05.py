@@ -82,7 +82,7 @@ def airborne_position(
     if lon > 180:
         lon = lon - 360
 
-    return round(lat, 5), round(lon, 5)
+    return lat, lon
 
 
 def airborne_position_with_ref(
@@ -129,7 +129,7 @@ def airborne_position_with_ref(
 
     lon = d_lon * (m + cprlon)
 
-    return round(lat, 5), round(lon, 5)
+    return lat, lon
 
 
 def altitude(msg: str) -> None | int:

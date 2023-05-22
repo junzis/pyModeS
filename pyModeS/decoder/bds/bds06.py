@@ -19,7 +19,6 @@ def surface_position(
     lat_ref: float,
     lon_ref: float,
 ) -> None | tuple[float, float]:
-
     """Decode surface position from a pair of even and odd position message,
     the lat/lon of receiver must be provided to yield the correct solution.
 
@@ -92,7 +91,7 @@ def surface_position(
     imin = min(range(4), key=dls.__getitem__)
     lon = lons[imin]
 
-    return round(lat, 5), round(lon, 5)
+    return lat, lon
 
 
 def surface_position_with_ref(
@@ -139,12 +138,12 @@ def surface_position_with_ref(
 
     lon = d_lon * (m + cprlon)
 
-    return round(lat, 5), round(lon, 5)
+    return lat, lon
 
 
 def surface_velocity(
     msg: str, source: bool = False
-) -> tuple[None | float, float, int, str]:
+) -> tuple[None | float, None | float, int, str]:
     """Decode surface velocity from a surface position message
 
     Args:
@@ -173,7 +172,6 @@ def surface_velocity(
     trk_status = int(mb[12])
     if trk_status == 1:
         trk = common.bin2int(mb[13:20]) * 360 / 128
-        trk = round(trk, 1)
     else:
         trk = None
 
