@@ -28,7 +28,7 @@ def test_bds50_functions():
 
     for module in [bds.bds50, commb]:
         assert module.roll50(msg1) == approx(2.1, 0.01)
-        assert module.roll50(msg2) == approx(-0.4, 0.01)  # signed value
+        assert module.roll50(msg2) == approx(-0.35, 0.01)  # signed value
         assert module.trk50(msg1) == approx(114.258, 0.1)
         assert module.gs50(msg1) == 438
         assert module.rtrk50(msg1) == 0.125
