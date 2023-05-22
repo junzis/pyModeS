@@ -65,7 +65,6 @@ jobs:
           poetry run pytest tests --cov --cov-report term-missing
 
       - name: Upload coverage to Codecov
-        if: ${{ github.event_name != 'pull_request_target' }}
         uses: codecov/codecov-action@v3
         with:
           env_vars: PYTHON_VERSION
