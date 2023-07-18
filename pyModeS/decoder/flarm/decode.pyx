@@ -142,5 +142,6 @@ def flarm(long timestamp, str msg, float refLat, float refLon, **kwargs):
         isIcao24=magic==0x10,
         noTrack=noTrack,
         stealth=stealth,
+        gps=gps,
         **kwargs
     )
