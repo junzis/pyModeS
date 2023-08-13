@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pyModeS"
-version = "2.16"
+version = "2.17"
 description = "Python Mode-S and ADS-B Decoder"
 authors = ["Junzi Sun <j.sun-1@tudelft.nl>"]
 license = "GNU GPL v3"
@@ -22,7 +22,8 @@ include = [
     "*.pxd",
     "*.pyi",
     "py.typed",
-    { path = "pyModeS/**/*.so", format = "wheel" }
+    { path = "pyModeS/**/*.so", format = "wheel" },
+    { path = "pyModeS/**/*.pyd", format = "wheel" }
 ]
 
 [tool.poetry.build]
