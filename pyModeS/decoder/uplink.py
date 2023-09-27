@@ -131,7 +131,7 @@ def lockout(msg):
     if uf(msg) in {4, 5, 20, 21}:
         lockout = False
         di = mbytes[1] & 0x7
-        if di == 7:
+        if (di == 1 or di == 7):
             # LOS
             if ((mbytes[3] & 0x40) >> 6) == 1:
                 lockout = True
