@@ -131,7 +131,7 @@ def lockout(msg):
     if uf(msg) in {4, 5, 20, 21}:
         lockout = False
         di = mbytes[1] & 0x7
-        if di == 7:
+        if (di == 1 or di == 7):
             # LOS
             if ((mbytes[3] & 0x40) >> 6) == 1:
                 lockout = True
@@ -187,10 +187,16 @@ def uplink_fields(msg):
         if RR > 15:
             BDS1 = RR - 16
             BDS2 = 0
-        if di == 0 or di == 1:
+        if di == 0:
+            # II
+            II = (mbytes[2] >> 4) & 0xF
+            IC = "II" + str(II)            
+        elif di == 1:
             # II
             II = (mbytes[2] >> 4) & 0xF
             IC = "II" + str(II)
+            if ((mbytes[3] & 0x40) >> 6) == 1:
+                lockout = True        
         elif di == 7:
             # LOS
             if ((mbytes[3] & 0x40) >> 6) == 1:
