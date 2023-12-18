@@ -311,7 +311,7 @@ cpdef int altitude(str binstr):
 
     if bin2int(binstr) == 0:
         # altitude unknown or invalid
-        alt = -9999
+        alt = -999999
 
     elif Mbit == 48:  # unit in ft, "0" -> 48
         if Qbit == 49:  # 25ft interval, "1" -> 49

@@ -152,6 +152,11 @@ def altitude(msg: str) -> None | int:
 
     if tc < 19:
         altcode = altbin[0:6] + "0" + altbin[6:]
-        return common.altitude(altcode)
+        alt = common.altitude(altcode)
+        if alt != -999999:
+            return alt
+        else:
+            # return None if altitude is invalid
+            return None
     else:
         return common.bin2int(altbin) * 3.28084  # type: ignore
