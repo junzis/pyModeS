@@ -88,9 +88,9 @@ def capability(msg: str) -> tuple[int, None | str]:
         )
     elif ca == 7:
         text = (
-            "Downlink Request value is 0, "
+            "Downlink Request value is not 0, "
             "or the Flight Status is 2, 3, 4 or 5, "
-            "either airborne or on the ground"
+            "and either airborne or on the ground"
         )
     else:
         text = None
