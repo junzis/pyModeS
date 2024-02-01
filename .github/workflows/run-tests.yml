@@ -29,7 +29,7 @@ jobs:
 
       # virtualenv cache should depends on OS, Python version and `poetry.lock` (and optionally workflow files).
       - name: Cache Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ !startsWith(runner.os, 'windows') }}
         with:
           path: |
