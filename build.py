@@ -1,11 +1,11 @@
 import os
 import shutil
 import sys
-from distutils.command import build_ext
-from distutils.core import Distribution, Extension
 
 # import pip
 from Cython.Build import cythonize
+from setuptools import Distribution, Extension
+from setuptools.command import build_ext
 
 
 def build() -> None:
@@ -46,9 +46,7 @@ def build() -> None:
         compiler_directives={"binding": True, "language_level": 3},
     )
 
-    distribution = Distribution(
-        {"name": "extended", "ext_modules": ext_modules}
-    )
+    distribution = Distribution({"name": "extended", "ext_modules": ext_modules})
     distribution.package_dir = "extended"  # type: ignore
 
     cmd = build_ext.build_ext(distribution)
@@ -57,7 +55,7 @@ def build() -> None:
     cmd.run()
 
     # Copy built extensions back to the project
-    for output in cmd.get_outputs():
+    for output in cmd.get_output_mapping():
         relative_extension = os.path.relpath(output, cmd.build_lib)
         shutil.copyfile(output, relative_extension)
         mode = os.stat(relative_extension).st_mode

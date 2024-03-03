@@ -25,17 +25,14 @@ include = [
     { path = "pyModeS/**/*.so", format = "wheel" },
     { path = "pyModeS/**/*.pyd", format = "wheel" }
 ]
-
-[tool.poetry.build]
-generate-setup-file = false
-script = "build.py"
+build = "build.py"
 
 [tool.poetry.scripts]
 modeslive = "pyModeS.streamer.modeslive:main"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-numpy = ">=1.24"
+python = "^3.9"
+numpy = ">=1.26"
 pyzmq = ">=24.0"
 pyrtlsdr = {version = ">=0.2.93", optional = true}
 
@@ -53,7 +50,7 @@ rtlsdr = ["pyrtlsdr"]
 
 [tool.black]
 line-length = 80
-target_version = ['py38', 'py39', 'py310', 'py311']
+target_version = ['py39', 'py310', 'py311', 'py312']
 include = '\.pyi?$'
 
 [tool.isort]
@@ -61,5 +58,5 @@ line_length = 80
 profile = "black"
 
 [build-system]
-requires = ["poetry-core>=1.0.0", "Cython>=0.29.32"]
+requires = ["poetry-core>=1.0.0", "Cython>=0.29.32", "setuptools>=69.1.1"]
 build-backend = "poetry.core.masonry.api"
