@@ -1,4 +1,5 @@
 from typing import TypedDict
+from typing_extensions import Annotated
 
 from .decode import flarm as flarm_decode
 
@@ -10,8 +11,8 @@ class DecodedMessage(TypedDict):
     icao24: str
     latitude: float
     longitude: float
-    altitude: int
-    vertical_speed: float
+    altitude: Annotated[int, "m"]
+    vertical_speed: Annotated[float, "m/s"]
     groundspeed: int
     track: int
     type: str
