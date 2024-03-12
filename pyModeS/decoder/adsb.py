@@ -459,6 +459,7 @@ def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int, int]:
 
         Rc = uncertainty.NICv2[NIC][NICs]["Rc"]
     except KeyError:
+        NIC = None
         Rc = uncertainty.NA
 
     return NIC, Rc  # type: ignore
