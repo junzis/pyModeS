@@ -63,7 +63,7 @@ class TcpClient(object):
 
         return messages
 
-    def read_beast_buffer_rssi_piaware(self):
+    def read_beast_buffer(self):
         """Handle mode-s beast data type.
 
         <esc> "1" : 6 byte MLAT timestamp, 1 byte signal level,
@@ -150,7 +150,7 @@ class TcpClient(object):
             messages.append([msg, ts])
         return messages
     
-    def read_beast_buffer(self):
+    def read_beast_buffer_rssi_piaware(self):
         """Handle mode-s beast data type.
 
         <esc> "1" : 6 byte MLAT timestamp, 1 byte signal level,
