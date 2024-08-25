@@ -12,6 +12,7 @@ The ADS-B module also imports functions from the following modules:
 """
 
 from __future__ import annotations
+
 from datetime import datetime
 
 from .. import common
@@ -161,9 +162,7 @@ def position(
         raise RuntimeError("Incorrect or inconsistent message types")
 
 
-def position_with_ref(
-    msg: str, lat_ref: float, lon_ref: float
-) -> tuple[float, float]:
+def position_with_ref(msg: str, lat_ref: float, lon_ref: float) -> tuple[float, float]:
     """Decode position with only one message.
 
     A reference position is required, which can be previously
@@ -425,7 +424,7 @@ def nic_v1(msg: str, NICs: int) -> tuple[int, None | float, None | float]:
     return NIC, Rc, VPL
 
 
-def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int, int]:
+def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int, int | None]:
     """Calculate NIC, navigation integrity category, for ADS-B version 2
 
     Args:
