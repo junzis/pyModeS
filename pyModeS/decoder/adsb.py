@@ -424,7 +424,7 @@ def nic_v1(msg: str, NICs: int) -> tuple[int, None | float, None | float]:
     return NIC, Rc, VPL
 
 
-def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int, int | None]:
+def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int | None, int | None]:
     """Calculate NIC, navigation integrity category, for ADS-B version 2
 
     Args:
@@ -458,7 +458,7 @@ def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int, int | None]:
 
         Rc = uncertainty.NICv2[NIC][NICs]["Rc"]
     except KeyError:
-        NIC = None
+        NIC = uncertainty.NA
         Rc = uncertainty.NA
 
     return NIC, Rc  # type: ignore
