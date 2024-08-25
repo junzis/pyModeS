@@ -877,5 +877,5 @@ rtlsdr = ["pyrtlsdr"]
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.9"
-content-hash = "99bee66d485fec146c4951b52b6d29ccd68254e733f12af4493bac432cb9b434"
+python-versions = ">=3.9"
+content-hash = "f92c8f8bdcbe5a3351cbe1c026b19b913c9b4502e6ecc3a35b3cbef4d48fee7d"
