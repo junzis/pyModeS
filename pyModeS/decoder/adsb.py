@@ -455,11 +455,9 @@ def nic_v2(msg: str, NICa: int, NICbc: int) -> tuple[int | None, int | None]:
     try:
         if isinstance(NIC, dict):
             NIC = NIC[NICs]
-
         Rc = uncertainty.NICv2[NIC][NICs]["Rc"]
     except KeyError:
-        NIC = uncertainty.NA
-        Rc = uncertainty.NA
+        return None, None
 
     return NIC, Rc  # type: ignore
 
