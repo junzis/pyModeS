@@ -211,7 +211,7 @@ def tell(msg: str) -> None:
             _print("True airspeed", commb.tas50(msg), "knots")
 
         if BDS == "BDS60":
-            _print("Megnatic Heading", commb.hdg60(msg), "degrees")
+            _print("Magnetic Heading", commb.hdg60(msg), "degrees")
             _print("Indicated airspeed", commb.ias60(msg), "knots")
             _print("Mach number", commb.mach60(msg))
             _print("Vertical rate (Baro)", commb.vr60baro(msg), "feet/minute")
