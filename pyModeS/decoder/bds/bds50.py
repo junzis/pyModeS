@@ -50,7 +50,7 @@ def is50(msg: str) -> bool:
         return False
 
     tas = tas50(msg)
-    if tas is not None and tas > 500:
+    if tas is not None and tas > 600:
         return False
 
     if (gs is not None) and (tas is not None) and (abs(tas - gs) > 200):
@@ -145,11 +145,9 @@ def rtrk50(msg: str) -> Optional[float]:
     if d[34] == "0":
         return None
 
-    if d[36:45] == "111111111":
-        return None
-
     sign = int(d[35])  # 1 -> negative value, two's complement
     value = common.bin2int(d[36:45])
+
     if sign:
         value = value - 512
 

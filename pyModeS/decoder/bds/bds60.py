@@ -150,10 +150,8 @@ def vr60baro(msg: str) -> Optional[int]:
     sign = int(d[35])  # 1 -> negative value, two's complement
     value = common.bin2int(d[36:45])
 
-    if value == 0 or value == 511:  # all zeros or all ones
-        return 0
-
-    value = value - 512 if sign else value
+    if sign:
+        value = value - 512
 
     roc = value * 32  # feet/min
     return roc
@@ -176,10 +174,8 @@ def vr60ins(msg: str) -> Optional[int]:
     sign = int(d[46])  # 1 -> negative value, two's complement
     value = common.bin2int(d[47:56])
 
-    if value == 0 or value == 511:  # all zeros or all ones
-        return 0
-
-    value = value - 512 if sign else value
+    if sign:
+        value = value - 512
 
     roc = value * 32  # feet/min
     return roc
