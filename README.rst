@@ -359,19 +359,8 @@ Here is an example:
 
 Unit test
 ---------
-To perform unit tests, ``pytest`` must be install first.
 
-Build Cython extensions
-::
+.. code:: bash
 
-  $ make ext
-
-Run unit tests
-::
-
-  $ make test
-
-Clean build files
-::
-
-  $ make clean
+  uv sync --dev --all-extras
+  uv run pytest
