@@ -165,7 +165,7 @@ class Decode:
                 ac["NUCp"], ac["HPL"], ac["RCu"], ac["RCv"] = pms.adsb.nuc_p(msg)
 
                 if (ac["ver"] == 1) and ("nic_s" in ac.keys()):
-                    ac["Rc"], ac["VPL"] = pms.adsb.nic_v1(msg, ac["nic_s"])
+                    ac["NIC"], ac["Rc"], ac["VPL"] = pms.adsb.nic_v1(msg, ac["nic_s"])
                 elif (
                     (ac["ver"] == 2)
                     and ("nic_a" in ac.keys())
