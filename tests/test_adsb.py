@@ -54,6 +54,15 @@ def test_adsb_airborne_position_with_ref():
     assert pos == (approx(49.81755, 0.001), approx(6.08442, 0.001))
 
 
+def test_adsb_airborne_position_with_ref_numerical_challenge():
+    lat_ref = 30.508474576271183 # Close to (360.0/59.0)*5
+    lon_ref = 7.2*5.0+3e-15
+    pos = adsb.airborne_position_with_ref(
+        "8D06A15358BF17FF7D4A84", lat_ref, lon_ref
+    )
+    assert pos == (approx(30.50540, 0.001), approx(33.44787, 0.001))
+
+
 def test_adsb_surface_position_with_ref():
     pos = adsb.surface_position_with_ref(
         "8FC8200A3AB8F5F893096B000000", -43.5, 172.5
