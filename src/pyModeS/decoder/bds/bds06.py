@@ -119,9 +119,8 @@ def surface_position_with_ref(
     i = int(mb[21])
     d_lat = 90 / 59 if i else 90 / 60
 
-    j = common.floor(lat_ref / d_lat) + common.floor(
-        0.5 + ((lat_ref % d_lat) / d_lat) - cprlat
-    )
+    # From 1090 MOPS, Vol.1  DO-260C, A.1.7.6
+    j = common.floor(0.5 + lat_ref / d_lat - cprlat)
 
     lat = d_lat * (j + cprlat)
 
@@ -132,9 +131,7 @@ def surface_position_with_ref(
     else:
         d_lon = 90
 
-    m = common.floor(lon_ref / d_lon) + common.floor(
-        0.5 + ((lon_ref % d_lon) / d_lon) - cprlon
-    )
+    m = common.floor(0.5 + lon_ref / d_lon - cprlon)
 
     lon = d_lon * (m + cprlon)
 
