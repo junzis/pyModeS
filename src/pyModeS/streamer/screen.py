@@ -70,6 +70,18 @@ class Screen(object):
             % len(self.acs),
         )
 
+
+    def round_float(self, value, max_width):
+        # Constrain a floating point number to a maximum string size.
+        # Subtract 2 to account for decimal and column spacing.
+
+        sign_size = 1 if value < 0 else 0
+        int_size = len(str(int(value)))
+        max_precision = max_width - int_size - sign_size - 2
+        rounded_value = round(value, max_precision)
+
+        return f"{rounded_value:.{max_precision}f}"
+
     def update(self):
         if len(self.acs) == 0:
             return
@@ -127,6 +139,10 @@ class Screen(object):
                         val = ""
                     else:
                         val = ac[c]
+
+                    if isinstance(val, float):
+                        val = self.round_float(val, cw)
+
                     val_str = str(val)
                     line += (cw - len(val_str)) * " " + val_str
 
