@@ -91,6 +91,12 @@ def main():
     # redirect all stdout to null, avoiding messing up with the screen
     sys.stdout = open(os.devnull, "w")
 
+    # Explicitly set the start method to fork to avoid errors when running
+    # on OSX which otherwise defaults to spawn. Starting in Python 3.14, fork
+    # must be explicitly set if needed.
+    # See: https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
+    multiprocessing.set_start_method("fork")
+
     raw_pipe_in, raw_pipe_out = multiprocessing.Pipe()
     ac_pipe_in, ac_pipe_out = multiprocessing.Pipe()
     exception_queue = multiprocessing.Queue()
