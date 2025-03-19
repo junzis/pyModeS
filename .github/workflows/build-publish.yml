@@ -24,7 +24,7 @@ jobs:
 
       - name: Build packages
         run: |
-          uvx --with hatch-vcs hatchling build
+          uvx --with cython --with setuptools hatchling build
 
       - name: Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

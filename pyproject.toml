@@ -1,6 +1,6 @@
 [project]
 name = "pyModeS"
-version = "2.19"
+version = "2.20"
 description = "Python Mode-S and ADS-B Decoder"
 authors = [{ name = "Junzi Sun", email = "j.sun-1@tudelft.nl" }]
 license = { text = "GNU GPL v3" }
@@ -19,6 +19,13 @@ dependencies = ["numpy>=1.26", "pyzmq>=24.0"]
 [project.optional-dependencies]
 rtlsdr = ["pyrtlsdr>=0.2.93"]
 
+[project.scripts]
+modeslive = "pyModeS.streamer.modeslive:main"
+
+[project.urls]
+homepage = "https://mode-s.org"
+repository = "https://github.com/junzis/pyModeS"
+issues = "https://github.com/junzis/pyModeS/issues"
 
 [tool.uv]
 dev-dependencies = [
@@ -31,11 +38,8 @@ dev-dependencies = [
     "codecov>=2.1.12",
 ]
 
-[project.scripts]
-modeslive = "pyModeS.streamer.modeslive:main"
-
 [tool.ruff]
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -50,10 +54,9 @@ select = [
     "RUF",
 ]
 
-[tool.ruff.lint.isort]
-known-first-party = ["numpy", "pandas", "pyproj", "shapely"]
-
-
 [build-system]
-requires = ["hatchling", "Cython>=0.29.32", "setuptools>=69.1.1"]
+requires = ["hatchling", "Cython", "setuptools"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel.hooks.custom]
+dependencies = ["setuptools"]
