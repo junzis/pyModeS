@@ -2,7 +2,7 @@
 name = "pyModeS"
 version = "2.20"
 description = "Python Mode-S and ADS-B Decoder"
-authors = [{ name = "Junzi Sun", email = "j.sun-1@tudelft.nl" }]
+authors = [{ name = "Junzi Sun", email = "git@junzis.com" }]
 license = { text = "GNU GPL v3" }
 readme = "README.rst"
 classifiers = [
