@@ -46,8 +46,15 @@ def is44(msg: str) -> bool:
     if vw is not None and vw > 250:
         return False
 
-    temp, temp2 = temp44(msg)
-    if min(temp, temp2) > 60 or max(temp, temp2) < -80:
+    temp = temp44(msg)
+    if temp > 60 or temp < -80:
+        return False
+
+    # If all values are zero, the message was likely not MRAR
+    if vw is not None and vw == 0 and dw is not None and dw == 0 and temp is not None and temp == 0:
+        return False
+    
+    if vw is None and dw is None and temp is None:
         return False
 
     return True
@@ -82,9 +89,7 @@ def temp44(msg: str) -> Tuple[float, float]:
         msg (str): 28 hexdigits string
 
     Returns:
-        float, float: temperature and alternative temperature in Celsius degree.
-            Note: Two values returns due to what seems to be an inconsistency
-            error in ICAO 9871 (2008) Appendix A-67.
+        float: temperature in Celsius degree.
 
     """
     d = common.hex2bin(common.data(msg))
@@ -97,9 +102,7 @@ def temp44(msg: str) -> Tuple[float, float]:
 
     temp = value * 0.25  # celsius
 
-    temp_alternative = value * 0.125  # celsius
-
-    return temp, temp_alternative
+    return temp
 
 
 def p44(msg: str) -> Optional[int]:
