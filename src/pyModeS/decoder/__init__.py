@@ -220,8 +220,7 @@ def tell(msg: str) -> None:
         if BDS == "BDS44":
             _print("Wind speed", commb.wind44(msg)[0], "knots")
             _print("Wind direction", commb.wind44(msg)[1], "degrees")
-            _print("Temperature 1", commb.temp44(msg)[0], "Celsius")
-            _print("Temperature 2", commb.temp44(msg)[1], "Celsius")
+            _print("Temperature", commb.temp44(msg), "Celsius")
             _print("Pressure", commb.p44(msg), "hPa")
             _print("Humidity", commb.hum44(msg), "%")
             _print("Turbulence", commb.turb44(msg))

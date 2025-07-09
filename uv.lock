@@ -534,7 +534,7 @@ wheels = [
 
 [[package]]
 name = "pymodes"
-version = "2.20"
+version = "2.22"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },

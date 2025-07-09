@@ -1,6 +1,6 @@
 [project]
 name = "pyModeS"
-version = "2.21"
+version = "2.22"
 description = "Python Mode-S and ADS-B Decoder"
 authors = [{ name = "Junzi Sun", email = "git@junzis.com" }]
 license = { text = "GNU GPL v3" }

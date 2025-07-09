@@ -82,7 +82,7 @@ def wind44(msg: str) -> Tuple[Optional[int], Optional[float]]:
     return speed, direction
 
 
-def temp44(msg: str) -> Tuple[float, float]:
+def temp44(msg: str) -> float:
     """Static air temperature.
 
     Args:
