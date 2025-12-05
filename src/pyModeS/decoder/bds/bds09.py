@@ -119,7 +119,7 @@ def airborne_velocity(
         return spd, trk_or_hdg, vs, spd_type
 
 
-def altitude_diff(msg: str) -> None | float:
+def altitude_diff(msg: str) -> None | int:
     """Decode the differece between GNSS and barometric altitude.
 
     Args:

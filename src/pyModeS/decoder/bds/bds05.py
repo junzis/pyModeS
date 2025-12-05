@@ -156,4 +156,4 @@ def altitude(msg: str) -> None | int:
             # return None if altitude is invalid
             return None
     else:
-        return common.bin2int(altbin) * 3.28084  # type: ignore
+        return int(common.bin2int(altbin) * 3.28084)

@@ -195,7 +195,7 @@ def position_with_ref(msg: str, lat_ref: float, lon_ref: float) -> tuple[float, 
         raise RuntimeError("incorrect or inconsistent message types")
 
 
-def altitude(msg: str) -> None | float:
+def altitude(msg: str) -> None | int:
     """Decode aircraft altitude.
 
     Args:

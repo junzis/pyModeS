@@ -132,7 +132,7 @@ def tell(msg: str) -> None:
                 _print("TCAS/ACAS RA", tcas_ra_types[tcas_ra])
                 _print("Emergency status", emergency_types[emergency_status])
             else:
-                alt, alt_source = adsb.selected_altitude(msg)  # type: ignore
+                alt, alt_source = adsb.selected_altitude(msg)
                 baro = adsb.baro_pressure_setting(msg)
                 hdg = adsb.selected_heading(msg)
                 autopilot = adsb.autopilot(msg)
