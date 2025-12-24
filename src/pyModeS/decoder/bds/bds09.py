@@ -7,13 +7,24 @@
 from __future__ import annotations
 
 import math
+from typing import Literal, overload
 
 from ... import common
 
 
+@overload
+def airborne_velocity(msg: str, source: Literal[False] = False) -> tuple[None | float, None | float, None | int, str]: ...
+
+
+@overload
+def airborne_velocity(
+    msg: str, source: Literal[True]
+) -> tuple[None | float, None | float, None | int, str, str, str]: ...
+
+
 def airborne_velocity(
     msg: str, source: bool = False
-) -> None | tuple[None | int, None | float, None | int, str]:
+) -> None | tuple[None | float, None | float, None | int, str] | tuple[None | float, None | float, None | int, str, str, str]:
     """Decode airborne velocity.
 
     Args:
@@ -23,7 +34,7 @@ def airborne_velocity(
             If set to True, the function will return six value instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]:
+        float, float, int, string, [string], [string]:
             - Speed (kt)
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
@@ -107,14 +118,7 @@ def airborne_velocity(
     vs = None if vr == 0 else int(vr_sign * (vr - 1) * 64)
 
     if source:
-        return (  # type: ignore
-            spd,
-            trk_or_hdg,
-            vs,
-            spd_type,
-            dir_type,
-            vr_source,
-        )
+        return spd, trk_or_hdg, vs, spd_type, dir_type, vr_source
     else:
         return spd, trk_or_hdg, vs, spd_type
 

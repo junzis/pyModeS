@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal, overload
 
 from ... import common
 
@@ -138,9 +139,19 @@ def surface_position_with_ref(
     return lat, lon
 
 
+@overload
+def surface_velocity(msg: str, source: Literal[False] = False) -> tuple[None | float, None | float, int, str]: ...
+
+
+@overload
+def surface_velocity(
+    msg: str, source: Literal[True]
+) -> tuple[None | float, None | float, int, str, str, str | None]: ...
+
+
 def surface_velocity(
     msg: str, source: bool = False
-) -> tuple[None | float, None | float, int, str]:
+) -> tuple[None | float, None | float, int, str] | tuple[None | float, None | float, int, str, str, str | None]:
     """Decode surface velocity from a surface position message
 
     Args:
@@ -150,7 +161,7 @@ def surface_velocity(
             If set to True, the function will return six value instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]:
+        float, float, int, string, [string], [string]:
             - Speed (kt)
             - Angle (degree), ground track
             - Vertical rate, always 0
@@ -189,6 +200,6 @@ def surface_velocity(
         spd = kts_lb[i - 1] + (mov - mov_lb[i - 1]) * step[i - 1]
 
     if source:
-        return spd, trk, 0, "GS", "TRUE_NORTH", None  # type: ignore
+        return spd, trk, 0, "GS", "TRUE_NORTH", None
     else:
         return spd, trk, 0, "GS"
