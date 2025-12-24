@@ -14,6 +14,7 @@ The ADS-B module also imports functions from the following modules:
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Literal, overload
 
 from .. import common
 from . import uncertainty
@@ -219,9 +220,25 @@ def altitude(msg: str) -> None | float:
         return altitude05(msg)
 
 
+@overload
+def velocity(
+    msg: str, source: Literal[False] = False
+) -> None | tuple[None | float, None | float, None | int, str]: ...
+
+
+@overload
+def velocity(
+    msg: str, source: Literal[True]
+) -> None | tuple[None | float, None | float, None | int, str, str, str | None]: ...
+
+
 def velocity(
     msg: str, source: bool = False
-) -> None | tuple[None | float, None | float, None | int, str]:
+) -> (
+    None
+    | tuple[None | float, None | float, None | int, str]
+    | tuple[None | float, None | float, None | int, str, str, str | None]
+):
     """Calculate the speed, heading, and vertical rate
        (handles both airborne or surface message).
 
@@ -232,7 +249,7 @@ def velocity(
             If set to True, the function will return six value instead of four.
 
     Returns:
-        int, float, int, string, [string], [string]:
+        float, float, int, string, [string], [string]:
             - Speed (kt)
             - Angle (degree), either ground track or heading
             - Vertical rate (ft/min)
