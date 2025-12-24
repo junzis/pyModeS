@@ -185,7 +185,6 @@ Core functions for ADS-B decoding
   pms.adsb.position(msg_even, msg_odd, t_even, t_odd, lat_ref=None, lon_ref=None)
   pms.adsb.airborne_position(msg_even, msg_odd, t_even, t_odd)
   pms.adsb.surface_position(msg_even, msg_odd, t_even, t_odd, lat_ref, lon_ref)
-  pms.adsb.surface_velocity(msg)
 
   pms.adsb.position_with_ref(msg, lat_ref, lon_ref)
   pms.adsb.airborne_position_with_ref(msg, lat_ref, lon_ref)
@@ -196,17 +195,18 @@ Core functions for ADS-B decoding
   # Typecode: 19
   pms.adsb.velocity(msg)          # Handles both surface & airborne messages
   pms.adsb.speed_heading(msg)     # Handles both surface & airborne messages
-  pms.adsb.airborne_velocity(msg)
+  pms.adsb.surface_velocity(msg, source)
+  pms.adsb.airborne_velocity(msg, source)
 
 
 Note: When you have a fix position of the aircraft, it is convenient to use `position_with_ref()` method to decode with only one position message (either odd or even). This works with both airborne and surface position messages. But the reference position shall be within 180NM (airborne) or 45NM (surface) of the true position.
 
 
-Decode altitude replies in DF4 / DF20
-**************************************
+Decode altitude replies in DF0 / DF4 / DF16 /DF20
+**************************************************
 .. code:: python
 
-  pms.common.altcode(msg)   # Downlink format must be 4 or 20
+  pms.common.altcode(msg)   # Downlink format must be 0, 4, 16 or 20
 
 
 Decode identity replies in DF5 / DF21
@@ -282,7 +282,7 @@ To identify BDS 4,4 and 4,5 codes, you must set ``mrar`` argument to ``True`` in
 
 .. code:: python
 
-  pms.bds.infer(msg. mrar=True) 
+  pms.bds.infer(msg, mrar=True) 
 
 Once the correct MRAR and MHR messages are identified, decode them as follows:
 
