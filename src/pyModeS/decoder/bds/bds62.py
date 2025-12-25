@@ -9,7 +9,7 @@ from __future__ import annotations
 from ... import common
 
 
-def selected_altitude(msg: str) -> tuple[None | float, str]:
+def selected_altitude(msg: str) -> tuple[None | int, str]:
     """Decode selected altitude.
 
     Args:
