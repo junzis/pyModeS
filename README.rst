@@ -60,7 +60,7 @@ Detailed manual on Mode-S decoding is published at:
 https://mode-s.org/decode
 
 The API documentation of pyModeS is at:
-https://mode-s.org/api
+https://mode-s.org/pymodes/api/index.html
 
 
 
