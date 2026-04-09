@@ -185,3 +185,72 @@ def test_nuc_p_rejects_identification():
     import pytest
     with pytest.raises(RuntimeError):
         adsb.nuc_p("8D406B902015A678D4D220AA4BDA")
+
+
+def test_adsb_altitude_negative_and_small():
+    """BDS 0,5 altitude decode — negative values (below sea level),
+    zero, and small positives. Regression gate for the altitude
+    contract after the c_common/py_common unification.
+    """
+    cases = [
+        ("8d484fde5803b647ecec4fcdd74f", -325),
+        ("8d4845575803c647bcec2a980abc", -300),
+        ("8d3424d25803d64c18ee03351f89", -275),
+        ("8d4401e458058645a8ea90496290", 0),
+        ("8d346355580596459cea86756acc", 25),
+        ("8d346355580b064116e70a269f97", 1000),
+        ("8d343386581f06318ad4fecab734", 5000),
+    ]
+    for msg, expected in cases:
+        got = adsb.altitude(msg)
+        assert got == expected, f"msg={msg} expected alt={expected}, got {got}"
+
+
+def test_adsb_vertical_rate_sign_bits():
+    """BDS 0,9 vertical rate — positive and negative values at the
+    minimum-magnitude boundary (±64 ft/min) and typical mid-range.
+
+    Uses adsb.velocity() which dispatches to airborne_velocity for TC=19
+    and returns (spd, trk/hdg, vs, type).
+    """
+    cases = [
+        ("8d3461cf9908388930080f948ea1", +64),
+        ("8d3461cf9908558e100c1071eb67", +128),
+        ("8d3461cf99085a8f10400f80e6ac", +960),
+        ("8d394c0f990c4932780838866883", -64),
+    ]
+    for msg, expected_vs in cases:
+        result = adsb.velocity(msg)
+        assert result is not None, f"msg={msg} returned None"
+        vs = result[2]
+        assert vs == expected_vs, f"msg={msg} expected vs={expected_vs}, got {vs}"
+
+
+def test_adsb_surface_velocity_movement_ranges():
+    """BDS 0,6 surface movement field — one sample per step-boundary bin.
+
+    Regression gate for the existing correct implementation across
+    movement-code bins: 0 (no info), 1 (stopped), 9 (1.0 kt),
+    24/25 (0.5 kt step range), 39, 94, 109, 124. adsb.velocity()
+    dispatches to surface_velocity for TC 5-8.
+    """
+    cases = [
+        ("8c3944f8400002acb23cda192b95", None),   # code 0 → no info
+        ("903a33ff40100858d34ff3cce976", 0.0),    # code 1 → stopped
+        ("8c394c0f389b1667e947db7bb8bc", 1.0),    # code 9
+        ("8c3461cf398d60597b4ea434c4d7", 7.5),    # code 24
+        ("8c3461cf399d6059814ea81483a9", 8.0),    # code 25 (validates 0.5 kt step)
+        ("8c3461cf3a7f3059c94e5bf4e169", 15.0),   # code 39
+        ("8c3950cf3dede47bac304d3b5122", 70.0),   # code 94
+        ("8c3933203edde47b9e2ffa5e77b8", 100.0),  # code 109
+        ("8d3933203fcde2a84e39e1c6c5bc", 175.0),  # code 124
+    ]
+    for msg, expected_spd in cases:
+        result = adsb.velocity(msg)
+        spd = result[0]
+        if expected_spd is None:
+            assert spd is None, f"msg={msg} expected None, got {spd}"
+        else:
+            assert spd is not None and abs(spd - expected_spd) < 0.01, (
+                f"msg={msg} expected {expected_spd} kt, got {spd}"
+            )
