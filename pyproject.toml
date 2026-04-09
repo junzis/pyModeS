@@ -27,8 +27,8 @@ homepage = "https://mode-s.org"
 repository = "https://github.com/junzis/pyModeS"
 issues = "https://github.com/junzis/pyModeS/issues"
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "mypy>=0.991",
     "flake8>=5.0.0",
     "black>=22.12.0",
