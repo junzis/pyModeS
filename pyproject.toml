@@ -1,6 +1,6 @@
 [project]
-name = "pyModeS"
-version = "2.22.0"
+name = "pymodes"
+version = "3.0.0.dev0"
 description = "Python Mode-S and ADS-B Decoder"
 authors = [{ name = "Junzi Sun", email = "git@junzis.com" }]
 license = { text = "GNU GPL v3" }
@@ -11,16 +11,18 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
-requires-python = ">=3.9"
-dependencies = ["numpy>=1.26", "pyzmq>=24.0"]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+]
 
 [project.optional-dependencies]
 rtlsdr = ["pyrtlsdr>=0.2.93"]
-
-[project.scripts]
-modeslive = "pyModeS.streamer.modeslive:main"
 
 [project.urls]
 homepage = "https://mode-s.org"
@@ -29,17 +31,15 @@ issues = "https://github.com/junzis/pyModeS/issues"
 
 [dependency-groups]
 dev = [
-    "mypy>=0.991",
-    "flake8>=5.0.0",
-    "black>=22.12.0",
-    "isort>=5.11.4",
+    "mypy>=1.13",
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
-    "codecov>=2.1.12",
+    "ruff>=0.15.8",
 ]
 
 [tool.ruff]
 target-version = "py311"
+line-length = 88
 
 [tool.ruff.lint]
 select = [
@@ -47,16 +47,54 @@ select = [
     "W",      # pycodestyle
     "F",      # pyflakes
     "I",      # isort
+    "B",      # flake8-bugbear
+    "UP",     # pyupgrade
+    "SIM",    # flake8-simplify
     "NPY",    # numpy
-    "NPY201", # numpy
-    # "PD",  # pandas
-    "DTZ", # flake8-datetimez
-    "RUF",
+    "NPY201", # numpy 2 compat
+    "DTZ",    # flake8-datetimez
+    "RUF",    # ruff-specific
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+packages = ["pymodes"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_return_any = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+]
+
+[tool.coverage.run]
+source = ["src/pymodes"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
 ]
 
 [build-system]
-requires = ["hatchling", "Cython", "setuptools"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel.hooks.custom]
-dependencies = ["setuptools"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/pymodes"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/pymodes",
+    "README.rst",
+    "LICENSE",
+    "pyproject.toml",
+]
