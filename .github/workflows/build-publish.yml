@@ -1,4 +1,4 @@
-name: Build and publish pyModeS
+name: Build and publish pymodes
 
 on:
   push:
@@ -9,56 +9,31 @@ on:
 permissions:
   contents: write
 
-env:
-  CIBW_BUILD: cp310* cp311* cp312* cp313*
-  CIBW_ARCHS_WINDOWS: auto64
-  CIBW_ARCHS_LINUX: auto64 aarch64
-  CIBW_ARCHS_MACOS: universal2
-  # CIBW_ARCHS_MACOS: auto universal2
-  CIBW_TEST_SKIP: "*universal2:arm64"
-
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, windows-latest, macos-14]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        if: runner.os == 'Linux' && runner.arch == 'X64'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
-          path: ./wheelhouse/*.whl
-
-  build_sdist:
-    name: Build source distribution
+  build:
+    name: Build pure-Python wheel and sdist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build sdist
-        run: pipx run build --sdist
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build
+        run: uv build
 
       - uses: actions/upload-artifact@v4
         with:
-          name: cibw-sdist
-          path: dist/*.tar.gz
+          name: dist
+          path: dist/*
 
-  upload_pypi:
-    needs: [build_wheels, build_sdist]
+  publish:
+    needs: [build]
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -68,10 +43,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          # unpacks all CIBW artifacts into dist/
-          pattern: cibw-*
+          name: dist
           path: dist
-          merge-multiple: true
 
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
