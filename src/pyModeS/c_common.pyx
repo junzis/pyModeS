@@ -206,11 +206,10 @@ cpdef bint is_icao_assigned(str icao):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef int typecode(str msg):
+cpdef object typecode(str msg):
     """Type code of ADS-B message"""
     if df(msg) not in (17, 18):
-        return -1
-        # return None
+        return None
 
     cdef str tcbin = hex2bin(msg[8:10])
     return bin2int(tcbin[0:5])
@@ -282,7 +281,7 @@ cpdef str squawk(str binstr):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef int altcode(str msg):
+cpdef object altcode(str msg):
     """Compute the altitude."""
     if df(msg) not in [0, 4, 16, 20]:
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
@@ -293,7 +292,7 @@ cpdef int altcode(str msg):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef int altitude(str binstr):
+cpdef object altitude(str binstr):
 
     if len(binstr) != 13 or not set(binstr).issubset(set("01")):
         raise RuntimeError("Input must be 13 bits binary string")
@@ -304,14 +303,14 @@ cpdef int altitude(str binstr):
     cdef char Mbit = binstr[6]
     cdef char Qbit = binstr[8]
 
-    cdef int alt = 0
+    alt = None
     cdef bytearray vbin
     cdef bytearray _graybytes = bytearray(11)
     cdef unsigned char[:] graybytes = _graybytes
 
     if bin2int(binstr) == 0:
         # altitude unknown or invalid
-        alt = -999999
+        return None
 
     elif Mbit == 48:  # unit in ft, "0" -> 48
         if Qbit == 49:  # 25ft interval, "1" -> 49
@@ -341,7 +340,7 @@ cpdef int altitude(str binstr):
     return alt
 
 
-cpdef int gray2alt(str codestr):
+cpdef object gray2alt(str codestr):
     cdef str gc500 = codestr[:8]
     cdef int n500 = gray2int(gc500)
 
@@ -350,8 +349,7 @@ cpdef int gray2alt(str codestr):
     cdef int n100 = gray2int(gc100)
 
     if n100 in [0, 5, 6]:
-        return -1
-        #return None
+        return None
 
     if n100 == 7:
         n100 = 5
