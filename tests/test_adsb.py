@@ -1,7 +1,5 @@
 """Tests for pymodes.decoder.adsb — ADSB class dispatch for DF17/18."""
 
-import pytest
-
 from pymodes import decode
 
 
@@ -53,7 +51,3 @@ class TestAdsbStubsRaiseNotImplemented:
 
     These tests will flip to real assertions in subsequent tasks.
     """
-
-    def test_bds62_tc29_not_implemented(self):
-        with pytest.raises(NotImplementedError):
-            decode("8DA05629EA21485CBF3F8CADAEEB")
