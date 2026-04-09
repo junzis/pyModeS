@@ -4,7 +4,8 @@ import json
 
 import pytest
 
-from pymodes.message import DecodedMessage
+from pymodes.errors import InvalidHexError, InvalidLengthError
+from pymodes.message import DecodedMessage, Message
 
 
 class TestDecodedMessage:
@@ -91,3 +92,121 @@ class TestDecodedMessage:
         }
         collisions = SAMPLE_FIELDS & FORBIDDEN
         assert not collisions, f"field names collide with dict methods: {collisions}"
+
+
+class TestMessageConstruction:
+    def test_from_long_hex_string(self):
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        assert m._length == 112
+        assert m._n == int("8D406B902015A678D4D220AA4BDA", 16)
+
+    def test_from_short_hex_string(self):
+        m = Message("20000000000000")
+        assert m._length == 56
+        assert m._n == 0x20000000000000
+
+    def test_from_int_requires_length_hint(self):
+        # An int alone is ambiguous (56 or 112 bits); explicit length kwarg required
+        m = Message(0x8D406B902015A678D4D220AA4BDA, length=112)
+        assert m._length == 112
+
+    def test_from_int_no_length_defaults_to_112(self):
+        # Without explicit length, assume long format (most common).
+        # v3.0.0 does not emit a warning for this case; callers who
+        # construct from int are expected to know the message length.
+        m = Message(0x8D406B902015A678D4D220AA4BDA)
+        assert m._length == 112
+
+    def test_invalid_hex_raises(self):
+        with pytest.raises(InvalidHexError):
+            Message("XYZ")
+
+    def test_wrong_length_raises(self):
+        with pytest.raises(InvalidLengthError):
+            Message("8D")
+
+    def test_hex_is_case_insensitive(self):
+        m_upper = Message("8D406B902015A678D4D220AA4BDA")
+        m_lower = Message("8d406b902015a678d4d220aa4bda")
+        assert m_upper._n == m_lower._n
+
+
+class TestMessageDfIcaoCrc:
+    def test_df17_df_is_17(self):
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        assert m.df == 17
+
+    def test_df17_icao_from_header(self):
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        assert m.icao == "406B90"
+
+    def test_df11_icao_from_header(self):
+        # DF11 all-call reply has ICAO in bits 8-31 (same as DF17/18).
+        # Synthetic test with placeholder CRC — we only check df and icao.
+        m = Message("58406B90000000")
+        assert m.df == 11
+        assert m.icao == "406B90"
+
+    def test_df4_icao_from_crc_derivation(self):
+        # DF4 encodes ICAO in the CRC remainder.
+        # Build a synthetic DF4 message where parity = crc_of_header XOR icao
+        # so the computed remainder equals icao.
+        from pymodes._bits import crc_remainder
+
+        icao = 0x400940
+        # 56-bit message: [header:32][parity:24]
+        # Header: DF=4 (00100) in top 5 bits = 0x20 in top byte, rest zero
+        n_without_parity = 0x20000000 << 24
+        crc0 = crc_remainder(n_without_parity, 56)
+        parity = crc0 ^ icao
+        n_full = n_without_parity | parity
+        m = Message(f"{n_full:014X}")
+        assert m.df == 4
+        assert m.icao == "400940"
+
+    def test_df17_crc_valid(self):
+        # Known-valid DF17 message — CRC remainder should be 0
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        assert m.crc_valid is True
+        assert m.crc == 0
+
+    def test_df17_crc_invalid(self):
+        # Flip a bit in the message body to break CRC
+        n = int("8D406B902015A678D4D220AA4BDA", 16) ^ (1 << 50)
+        m = Message(n, length=112)
+        assert m.crc_valid is False
+        assert m.crc != 0
+
+    def test_typecode_for_df17(self):
+        # DF17 TC=4 identification
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        assert m.typecode == 4
+
+    def test_typecode_for_df20_is_none(self):
+        # Typecode is only defined for DF17/18 extended squitter
+        m = Message("A000083E202CC371C31DE0AA1CCF")
+        assert m.df == 20
+        assert m.typecode is None
+
+    def test_cached_property_computes_once(self):
+        # Accessing .df twice should not recompute
+        m = Message("8D406B902015A678D4D220AA4BDA")
+        first = m.df
+        # Directly check the __dict__ entry that cached_property stores
+        assert "df" in m.__dict__
+        second = m.df
+        assert first == second == 17
+
+
+class TestMessageFromMe:
+    def test_from_me_classmethod(self):
+        # ME field for "8D406B902015A678D4D220AA4BDA" is bits 32-87,
+        # which are hex chars 8-21 = "2015A678D4D220"
+        m = Message.from_me("2015A678D4D220", df=17, icao="406B90")
+        assert m.df == 17
+        assert m.icao == "406B90"
+        assert m.typecode == 4  # ME[0:5] = 00100 = 4
+
+    def test_from_me_wrong_length_raises(self):
+        with pytest.raises(InvalidLengthError):
+            Message.from_me("2015A6", df=17, icao="406B90")
