@@ -130,3 +130,25 @@ def test_adsb_target_state_status():
 #     assert adsb.nic('8F48511C598D04F12CCF82451642') == 9
 #     assert adsb.nic('8DA4D53A50DBF8C6330F3B35458F') == 10
 #     assert adsb.nic('8D3C4ACF4859F1736F8E8ADF4D67') == 11
+
+
+def test_airborne_velocity_subtype3_heading_zero():
+    """BDS09 subtype 3 (airspeed) with heading=0° (due north) must decode,
+    not be silently dropped by the ground-speed zero-guard.
+
+    Regression for the bug where bds09.airborne_velocity's early return
+    at line 55-56 treated all zero bit-14-24 fields as invalid, including
+    legitimate heading=0° for airspeed subtypes.
+    """
+    # Synthetic TC=19 subtype=3 message:
+    #   heading=0°, airspeed=100 kt IAS, VR=+1024 ft/min (GNSS).
+    # CRC is not verified by adsb.velocity(), so the last 6 hex chars
+    # are arbitrary zero padding.
+    msg = "8D4841409B04000CA04400000000"
+    result = adsb.velocity(msg)
+    assert result is not None, "Should not return None for heading=0°"
+    spd, hdg, vs, spd_type = result
+    assert spd == 100
+    assert hdg == 0.0, f"Expected heading 0.0°, got {hdg}"
+    assert vs == 1024
+    assert spd_type == "IAS"

@@ -52,9 +52,6 @@ def airborne_velocity(
 
     subtype = common.bin2int(mb[5:8])
 
-    if common.bin2int(mb[14:24]) == 0 or common.bin2int(mb[25:35]) == 0:
-        return None
-
     trk_or_hdg: None | float
     spd: None | float
 
