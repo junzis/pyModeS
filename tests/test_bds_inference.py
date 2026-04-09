@@ -40,3 +40,26 @@ def test_surface_position():
     lat, lon = bds.bds06.surface_position(msg0, msg1, t0, t1, lat_ref, lon_ref)
 
     assert abs(lon_ref - lon) < 0.05
+
+
+def test_is45_bounds_check_applies_to_zero_temperature():
+    """BDS45 is45 must run its temperature bounds check unconditionally,
+    not short-circuit via a truthy test that treats 0.0°C as 'no data'.
+
+    The original code at bds45.py:58 read `if temp: if temp > 60 or
+    temp < -80: return False` which skipped the bounds check entirely
+    when temp == 0.0. The fix uses an explicit `-80 <= temp <= 60`
+    range test.
+    """
+    import inspect
+
+    from pyModeS.decoder.bds import bds45
+
+    src = inspect.getsource(bds45.is45)
+    assert "if temp:" not in src, (
+        "bds45.is45 still uses truthy `if temp:` check — must use "
+        "explicit `-80 <= temp <= 60` range test so 0.0°C is validated"
+    )
+    assert "-80" in src and "60" in src, (
+        "bds45.is45 must contain explicit temperature bounds"
+    )

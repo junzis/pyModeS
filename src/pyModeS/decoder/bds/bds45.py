@@ -55,9 +55,8 @@ def is45(msg: str) -> bool:
         return False
 
     temp = temp45(msg)
-    if temp:
-        if temp > 60 or temp < -80:
-            return False
+    if not (-80 <= temp <= 60):
+        return False
 
     return True
 

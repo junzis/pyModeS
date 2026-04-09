@@ -47,14 +47,14 @@ def is44(msg: str) -> bool:
         return False
 
     temp = temp44(msg)
-    if temp > 60 or temp < -80:
+    if not (-80 <= temp <= 60):
         return False
 
     # If all values are zero, the message was likely not MRAR
-    if vw is not None and vw == 0 and dw is not None and dw == 0 and temp is not None and temp == 0:
+    if vw is not None and vw == 0 and dw is not None and dw == 0 and temp == 0:
         return False
-    
-    if vw is None and dw is None and temp is None:
+
+    if vw is None and dw is None:
         return False
 
     return True
