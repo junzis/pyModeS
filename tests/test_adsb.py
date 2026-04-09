@@ -171,3 +171,17 @@ def test_selected_heading_sign_bit_one():
     hdg = adsb.selected_heading(msg)
     assert hdg is not None
     assert abs(hdg - 246.796875) < 0.01, f"Expected ~246.8°, got {hdg}"
+
+
+def test_nuc_p_happy_path():
+    """nuc_p returns a 4-tuple for a valid airborne position message (TC=11)."""
+    msg = "8D40058B58C901375147EFD09357"
+    NUCp, HPL, RCu, RCv = adsb.nuc_p(msg)
+    assert NUCp is not None
+
+
+def test_nuc_p_rejects_identification():
+    """nuc_p raises for a non-position typecode (TC=4 aircraft identification)."""
+    import pytest
+    with pytest.raises(RuntimeError):
+        adsb.nuc_p("8D406B902015A678D4D220AA4BDA")
