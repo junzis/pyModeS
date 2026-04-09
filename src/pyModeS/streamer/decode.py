@@ -1,9 +1,13 @@
+import csv
+import datetime
+import logging
 import os
 import time
 import traceback
-import datetime
-import csv
+
 import pyModeS as pms
+
+logger = logging.getLogger(__name__)
 
 
 class Decode:
@@ -85,12 +89,12 @@ class Decode:
             self.acs[icao]["t"] = t
             self.acs[icao]["live"] = int(t)
 
-            if 1 <= tc <= 4:
+            if tc is not None and 1 <= tc <= 4:
                 cs = pms.adsb.callsign(msg)
                 self.acs[icao]["call"] = cs
                 output_buffer.append([t, icao, "cs", cs])
 
-            if (5 <= tc <= 8) or (tc == 19):
+            if tc is not None and ((5 <= tc <= 8) or (tc == 19)):
                 vdata = pms.adsb.velocity(msg)
                 if vdata is None:
                     continue
@@ -135,8 +139,9 @@ class Decode:
                             self.lat0,
                             self.lon0,
                         )
-                    except:
+                    except Exception as e:
                         # mix of surface and airborne position message
+                        logger.debug("position decode mismatch: %s", e)
                         continue
                 else:
                     latlon = None
