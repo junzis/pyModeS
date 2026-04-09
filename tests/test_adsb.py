@@ -44,10 +44,3 @@ class TestAdsbDispatchIdentification:
         assert result["typecode"] == 0
         assert "bds" not in result
         assert "callsign" not in result
-
-
-class TestAdsbStubsRaiseNotImplemented:
-    """Stubs for unimplemented BDS codes raise NotImplementedError.
-
-    These tests will flip to real assertions in subsequent tasks.
-    """
