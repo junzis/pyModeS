@@ -1,8 +1,9 @@
 """pymodes — Python decoder for Mode-S and ADS-B messages.
 
-Version 3.0: ground-up rewrite of pyModeS with a class-based API,
-int-shift internals, and no Cython extension.
+Version 3.0: ground-up rewrite of pyModeS.
 """
+
+from importlib.metadata import version as _version
 
 from pymodes.core import decode
 from pymodes.errors import (
@@ -13,7 +14,7 @@ from pymodes.errors import (
 )
 from pymodes.message import DecodedMessage, Message
 
-__version__ = "3.0.0.dev0"
+__version__ = _version("pymodes")
 
 __all__ = [
     "DecodeError",
