@@ -47,6 +47,7 @@ def register(
 # Import decoder modules to populate _DECODERS via @register decorators.
 # These imports are at the bottom to avoid circular dependencies.
 from pymodes.decoder import (  # noqa: E402
+    acas,  # noqa: F401
     allcall,  # noqa: F401
     surv,  # noqa: F401
 )
