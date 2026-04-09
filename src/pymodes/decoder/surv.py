@@ -1,4 +1,4 @@
-"""SurvReply — decoder for DF4 (altitude) and DF5 (identity) replies.
+"""Surv — decoder for DF4 (altitude) and DF5 (identity) replies.
 
 Short 56-bit surveillance replies elicited by ground-station
 interrogations. Both carry the same header fields (FS, DR, UM);
@@ -30,7 +30,7 @@ _FLIGHT_STATUS_TEXT = {
 
 
 @register(4, 5)
-class SurvReply(DecoderBase):
+class Surv(DecoderBase):
     """Decoder for DF4 surveillance altitude replies and DF5 identity replies."""
 
     def decode(self) -> Decoded:

@@ -2,9 +2,9 @@
 
 Each decoder class handles one or more downlink formats (see spec §5.3):
 
-- AllCallReply: DF11
-- SurvReply:    DF4, DF5
-- ACAS:         DF0, DF16
+- AllCall: DF11
+- Surv:    DF4, DF5
+- ACAS:    DF0, DF16
 - ADSB:         DF17, DF18 (Plan 2)
 - CommB:        DF20, DF21 (Plan 3)
 
@@ -32,7 +32,7 @@ def register(
 
     Usage:
         @register(11)
-        class AllCallReply(DecoderBase):
+        class AllCall(DecoderBase):
             ...
     """
 

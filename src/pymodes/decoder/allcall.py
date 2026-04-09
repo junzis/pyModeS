@@ -1,4 +1,4 @@
-"""AllCallReply — decoder for DF11 (All-Call Reply).
+"""AllCall — decoder for DF11 (All-Call Reply).
 
 DF11 is the aircraft's response to a ground-station all-call
 interrogation. It carries only the ICAO address and the transponder
@@ -29,7 +29,7 @@ _CAPABILITY_TEXT = {
 
 
 @register(11)
-class AllCallReply(DecoderBase):
+class AllCall(DecoderBase):
     """Decoder for DF11 all-call reply messages."""
 
     def decode(self) -> Decoded:
