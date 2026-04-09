@@ -215,7 +215,9 @@ class Message:
 
         decoder_cls = _DECODERS.get(self.df)
         if decoder_cls is not None:
-            decoder = decoder_cls(self._n, df=self.df, icao=self.icao)
+            decoder = decoder_cls(
+                self._n, df=self.df, icao=self.icao, length=self._length
+            )
             result.update(decoder.decode())
 
         return result

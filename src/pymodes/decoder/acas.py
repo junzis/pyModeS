@@ -27,7 +27,6 @@ DF16 only:  bits 32-87: MV (56) — ACAS RA message
 from __future__ import annotations
 
 from pymodes._altcode import altcode_to_altitude
-from pymodes._bits import extract_field
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
 from pymodes.message import Decoded
@@ -40,24 +39,20 @@ class ACAS(DecoderBase):
     def decode(self) -> Decoded:
         result: Decoded = Decoded()
 
-        # Determine length based on DF
-        length = 56 if self._df == 0 else 112
-
-        # Shared header fields
-        vs = extract_field(self._n, 5, 1, length)
+        # Shared header fields (positions are identical for DF0 and DF16)
+        vs = self._extract(5, 1)
         result["vertical_status"] = "on-ground" if vs == 1 else "airborne"
 
-        result["cross_link_capability"] = extract_field(self._n, 6, 1, length)
-        result["sensitivity_level"] = extract_field(self._n, 8, 3, length)
-        result["reply_information"] = extract_field(self._n, 13, 4, length)
+        result["cross_link_capability"] = self._extract(6, 1)
+        result["sensitivity_level"] = self._extract(8, 3)
+        result["reply_information"] = self._extract(13, 4)
 
         # Altitude code at bits 19-31
-        ac = extract_field(self._n, 19, 13, length)
-        result["altitude"] = altcode_to_altitude(ac)
+        result["altitude"] = altcode_to_altitude(self._extract(19, 13))
 
-        # DF16-specific: expose the MV field as raw hex
+        # DF16-specific: expose the 56-bit MV field (bits 32-87) as raw hex.
+        # DecoderBase populates self._me for all 112-bit messages.
         if self._df == 16:
-            mv = extract_field(self._n, 32, 56, 112)
-            result["mv"] = f"{mv:014X}"
+            result["mv"] = f"{self._me:014X}"
 
         return result

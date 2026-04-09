@@ -11,7 +11,6 @@ Layout:
 from __future__ import annotations
 
 from pymodes._altcode import altcode_to_altitude
-from pymodes._bits import extract_field
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
@@ -37,18 +36,18 @@ class Surv(DecoderBase):
         result: Decoded = Decoded()
 
         # Flight status: bits 5-7
-        fs = extract_field(self._n, 5, 3, 56)
+        fs = self._extract(5, 3)
         result["flight_status"] = fs
         result["flight_status_text"] = _FLIGHT_STATUS_TEXT.get(fs, "Unknown")
 
         # Downlink request: bits 8-12
-        result["downlink_request"] = extract_field(self._n, 8, 5, 56)
+        result["downlink_request"] = self._extract(8, 5)
 
         # Utility message: bits 13-18
-        result["utility_message"] = extract_field(self._n, 13, 6, 56)
+        result["utility_message"] = self._extract(13, 6)
 
         # Altitude code (DF4) or identity code (DF5): bits 19-31
-        ac_or_id = extract_field(self._n, 19, 13, 56)
+        ac_or_id = self._extract(19, 13)
 
         if self._df == 4:
             result["altitude"] = altcode_to_altitude(ac_or_id)

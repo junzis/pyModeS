@@ -10,7 +10,6 @@ Message layout (56 bits):
 
 from __future__ import annotations
 
-from pymodes._bits import extract_field
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
 from pymodes.message import Decoded
@@ -33,7 +32,7 @@ class AllCall(DecoderBase):
     """Decoder for DF11 all-call reply messages."""
 
     def decode(self) -> Decoded:
-        ca = extract_field(self._n, 5, 3, 56)
+        ca = self._extract(5, 3)
         return Decoded(
             {
                 "capability": ca,

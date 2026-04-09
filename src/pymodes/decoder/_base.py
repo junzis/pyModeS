@@ -1,30 +1,57 @@
 """Base class for all pymodes decoder classes.
 
-Each decoder is a small class that takes the raw message int and
-the DF value at construction time, then exposes a `decode()` method
-returning a Decoded dict of DF-specific fields.
+Each decoder stores the raw message int plus its length (56 or 112)
+and, for long messages, the 56-bit ME/MV/MB payload extracted from
+bits 32-87. Subclasses call `self._extract(start, width)` to pull
+unsigned bit fields from the full message, or use `self._me`
+directly for payload-level positions.
 """
 
 from __future__ import annotations
 
+from pymodes._bits import extract_field
 from pymodes.message import Decoded
 
 
 class DecoderBase:
     """Abstract base for all decoder classes.
 
-    Subclasses store the message int and DF and implement `decode()`.
+    Subclasses receive the full message int, the DF, the ICAO string,
+    and the bit length at construction. They implement `decode()` to
+    return DF-specific fields.
+
+    Attributes:
+        _n: the full message int (56 or 112 bits wide).
+        _df: downlink format (for branching inside decoders that
+            handle multiple DFs).
+        _icao: the ICAO address as an uppercase hex string.
+        _length: 56 or 112, the bit width of the message.
+        _me: the 56-bit ME/MV/MB payload (bits 32-87) for 112-bit
+            messages, or 0 for short messages. Used by ADS-B and
+            Comm-B decoders that address fields relative to the
+            payload MSB.
     """
 
-    __slots__ = ("_df", "_icao", "_n")
+    __slots__ = ("_df", "_icao", "_length", "_me", "_n")
 
-    def __init__(self, n: int, *, df: int, icao: str) -> None:
+    def __init__(self, n: int, *, df: int, icao: str, length: int) -> None:
         self._n = n
         self._df = df
         self._icao = icao
+        self._length = length
+        # For 112-bit messages, extract the 56-bit ME/MV/MB payload at
+        # bits 32-87. Short messages have no such field; set to 0.
+        self._me = extract_field(n, 32, 56, 112) if length == 112 else 0
+
+    def _extract(self, start: int, width: int) -> int:
+        """Extract an unsigned bit field from the full message int.
+
+        Positions are 0-indexed from the message MSB.
+        """
+        return extract_field(self._n, start, width, self._length)
 
     def decode(self) -> Decoded:  # pragma: no cover - abstract
-        """Return a Decoded with DF-specific fields.
+        """Return a Decoded dict with DF-specific fields.
 
         Subclasses override this. The returned dict should contain
         only fields specific to this decoder — df, icao, and crc_valid
