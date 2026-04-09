@@ -1,7 +1,9 @@
 import sys
 
 import pytest
+
 from pyModeS import bds
+
 
 # this one fails on GitHub action for some unknown reason
 # it looks successful on other Windows instances though

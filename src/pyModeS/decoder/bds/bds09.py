@@ -13,7 +13,9 @@ from ... import common
 
 
 @overload
-def airborne_velocity(msg: str, source: Literal[False] = False) -> tuple[None | float, None | float, None | int, str]: ...
+def airborne_velocity(
+    msg: str, source: Literal[False] = False
+) -> tuple[None | float, None | float, None | int, str]: ...
 
 
 @overload
@@ -24,7 +26,11 @@ def airborne_velocity(
 
 def airborne_velocity(
     msg: str, source: bool = False
-) -> None | tuple[None | float, None | float, None | int, str] | tuple[None | float, None | float, None | int, str, str, str]:
+) -> (
+    None
+    | tuple[None | float, None | float, None | int, str]
+    | tuple[None | float, None | float, None | int, str, str, str]
+):
     """Decode airborne velocity.
 
     Args:
@@ -44,9 +50,7 @@ def airborne_velocity(
 
     """
     if common.typecode(msg) != 19:
-        raise RuntimeError(
-            "%s: Not a airborne velocity message, expecting TC=19" % msg
-        )
+        raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
 
     mb = common.hex2bin(msg)[32:]
 
@@ -134,9 +138,7 @@ def altitude_diff(msg: str) -> None | int:
     tc = common.typecode(msg)
 
     if tc is None or tc != 19:
-        raise RuntimeError(
-            "%s: Not a airborne velocity message, expecting TC=19" % msg
-        )
+        raise RuntimeError("%s: Not a airborne velocity message, expecting TC=19" % msg)
 
     msgbin = common.hex2bin(msg)
     sign = -1 if int(msgbin[80]) else 1

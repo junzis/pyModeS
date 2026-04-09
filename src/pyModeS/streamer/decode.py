@@ -77,11 +77,11 @@ class Decode:
                     "VFOMr": None,
                     "PE_RCu": None,
                     "PE_VPL": None,
-                    "hum44" : None,
-                    "p44" : None,
-                    "temp44" : None,
-                    "turb44" : None,
-                    "wind44" : None,
+                    "hum44": None,
+                    "p44": None,
+                    "temp44": None,
+                    "turb44": None,
+                    "wind44": None,
                 }
 
             self.acs[icao]["tc"] = tc
@@ -176,7 +176,9 @@ class Decode:
                     and ("nic_a" in ac.keys())
                     and ("nic_bc" in ac.keys())
                 ):
-                    ac["NIC"], ac["Rc"] = pms.adsb.nic_v2(msg, ac["nic_a"], ac["nic_bc"])
+                    ac["NIC"], ac["Rc"] = pms.adsb.nic_v2(
+                        msg, ac["nic_a"], ac["nic_bc"]
+                    )
 
             if tc == 19:
                 ac["NUCv"], ac["HVE"], ac["VVE"] = pms.adsb.nuc_v(msg)
@@ -264,7 +266,7 @@ class Decode:
                     output_buffer.append([t, icao, "roc60ins", roc60ins])
 
             elif bds == "BDS44":
-                if(pms.commb.is44(msg)):
+                if pms.commb.is44(msg):
                     self.acs[icao]["hum44"] = pms.commb.hum44(msg)
                     self.acs[icao]["p44"] = pms.commb.p44(msg)
                     self.acs[icao]["temp44"] = pms.commb.temp44(msg)

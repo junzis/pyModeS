@@ -8,25 +8,19 @@ except Exception:
     from . import py_common as common  # type: ignore
     from .py_common import *  # type: ignore
 
-from .decoder import tell
-from .decoder import adsb
-from .decoder import commb
-from .decoder import allcall
-from .decoder import surv
-from .decoder import bds
-from .extra import aero
-from .extra import tcpclient
+from .decoder import adsb, allcall, bds, commb, surv, tell
+from .extra import aero, tcpclient
 
 __all__ = [
-    "common",
-    "tell",
     "adsb",
-    "commb",
-    "allcall",
-    "surv",
-    "bds",
     "aero",
+    "allcall",
+    "bds",
+    "commb",
+    "common",
+    "surv",
     "tcpclient",
+    "tell",
 ]
 
 

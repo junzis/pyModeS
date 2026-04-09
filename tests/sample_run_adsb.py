@@ -12,7 +12,6 @@ msg1 = None
 
 tstart = time.time()
 for i, r in enumerate(csv.reader(f)):
-
     ts = int(r[0])
     m = r[1].encode()
 

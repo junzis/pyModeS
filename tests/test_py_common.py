@@ -99,7 +99,7 @@ def test_is_icao_assigned_outside_boundaries(lo, hi, name):
     if lo > 0:
         below = lo - 1
         in_other = any(
-            l <= below <= h for (l, h, _) in RESERVED_RANGES if l != lo
+            low <= below <= high for (low, high, _) in RESERVED_RANGES if low != lo
         )
         if not in_other:
             assert py_common.is_icao_assigned(f"{below:06X}") is True, (
@@ -108,7 +108,7 @@ def test_is_icao_assigned_outside_boundaries(lo, hi, name):
     if hi < 0xFFFFFF:
         above = hi + 1
         in_other = any(
-            l <= above <= h for (l, h, _) in RESERVED_RANGES if l != lo
+            low <= above <= high for (low, high, _) in RESERVED_RANGES if low != lo
         )
         if not in_other:
             assert py_common.is_icao_assigned(f"{above:06X}") is True, (

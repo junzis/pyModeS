@@ -2,8 +2,8 @@
 Decode all-call reply messages, with downlink format 11
 """
 
-
 from __future__ import annotations
+
 from typing import Callable, TypeVar
 
 from .. import common
@@ -13,7 +13,6 @@ F = Callable[[str], T]
 
 
 def _checkdf(func: F[T]) -> F[T]:
-
     """Ensure downlink format is 11."""
 
     def wrapper(msg: str) -> T:
@@ -82,10 +81,7 @@ def capability(msg: str) -> tuple[int, None | str]:
     elif ca == 5:
         text = "level 2 transponder, ability to set CA to 7, airborne"
     elif ca == 6:
-        text = (
-            "evel 2 transponder, ability to set CA to 7, "
-            "either airborne or ground"
-        )
+        text = "evel 2 transponder, ability to set CA to 7, either airborne or ground"
     elif ca == 7:
         text = (
             "Downlink Request value is not 0, "

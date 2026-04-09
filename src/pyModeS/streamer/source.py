@@ -1,6 +1,6 @@
 import pyModeS as pms
-from pyModeS.extra.tcpclient import TcpClient
 from pyModeS.extra.rtlreader import RtlReader
+from pyModeS.extra.tcpclient import TcpClient
 
 
 class NetSource(TcpClient):

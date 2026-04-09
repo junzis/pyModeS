@@ -3,6 +3,7 @@ Decode short roll call surveillance replies, with downlink format 4 or 5
 """
 
 from __future__ import annotations
+
 from typing import Callable, TypeVar
 
 from .. import common

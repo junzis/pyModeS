@@ -1,4 +1,5 @@
 from typing import TypedDict
+
 from typing_extensions import Annotated
 
 from .decode import flarm as flarm_decode

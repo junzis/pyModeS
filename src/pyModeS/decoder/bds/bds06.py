@@ -140,7 +140,9 @@ def surface_position_with_ref(
 
 
 @overload
-def surface_velocity(msg: str, source: Literal[False] = False) -> tuple[None | float, None | float, int, str]: ...
+def surface_velocity(
+    msg: str, source: Literal[False] = False
+) -> tuple[None | float, None | float, int, str]: ...
 
 
 @overload
@@ -151,7 +153,10 @@ def surface_velocity(
 
 def surface_velocity(
     msg: str, source: bool = False
-) -> tuple[None | float, None | float, int, str] | tuple[None | float, None | float, int, str, str, str | None]:
+) -> (
+    tuple[None | float, None | float, int, str]
+    | tuple[None | float, None | float, int, str, str, str | None]
+):
     """Decode surface velocity from a surface position message
 
     Args:

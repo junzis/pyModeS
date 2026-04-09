@@ -1,6 +1,7 @@
-from typing import Optional
-from .. import common
 from textwrap import wrap
+from typing import Optional
+
+from .. import common
 
 
 def uplink_icao(msg: str) -> str:
@@ -35,7 +36,6 @@ def bds(msg: str) -> Optional[str]:
     mbytes = list(map(common.bin2int, msgbin_split))
 
     if UF in {4, 5, 20, 21}:
-
         di = mbytes[1] & 0x7  # DI - Designator Identification
         RR = mbytes[1] >> 3 & 0x1F
         if RR > 15:
@@ -51,7 +51,7 @@ def bds(msg: str) -> Optional[str]:
                 # (as per ICAO Annex 10 Vol IV)
                 BDS2 = 0
 
-            return str(format(BDS1,"X")) + str(format(BDS2,"X"))
+            return str(format(BDS1, "X")) + str(format(BDS2, "X"))
         else:
             return None
     else:
@@ -92,7 +92,6 @@ def ic(msg: str) -> Optional[str]:
     mbytes = list(map(common.bin2int, msgbin_split))
     IC = None
     if UF == 11:
-
         codeLabel = mbytes[1] & 0x7
         icField = (mbytes[1] >> 3) & 0xF
 
@@ -131,7 +130,7 @@ def lockout(msg):
     if uf(msg) in {4, 5, 20, 21}:
         lockout = False
         di = mbytes[1] & 0x7
-        if (di == 1 or di == 7):
+        if di == 1 or di == 7:
             # LOS
             if ((mbytes[3] & 0x40) >> 6) == 1:
                 lockout = True
@@ -157,7 +156,6 @@ def uplink_fields(msg):
     RRS = ""
     BDS = ""
     if uf(msg) == 11:
-
         # Probability of Reply decoding
 
         PR = ((mbytes[0] & 0x7) << 1) | ((mbytes[1] & 0x80) >> 7)
@@ -190,13 +188,13 @@ def uplink_fields(msg):
         if di == 0:
             # II
             II = (mbytes[2] >> 4) & 0xF
-            IC = "II" + str(II)            
+            IC = "II" + str(II)
         elif di == 1:
             # II
             II = (mbytes[2] >> 4) & 0xF
             IC = "II" + str(II)
             if ((mbytes[3] & 0x40) >> 6) == 1:
-                lockout = True        
+                lockout = True
         elif di == 7:
             # LOS
             if ((mbytes[3] & 0x40) >> 6) == 1:
@@ -216,8 +214,8 @@ def uplink_fields(msg):
             RRS = ((mbytes[2] & 0x1) << 3) | ((mbytes[3] & 0xE0) >> 5)
             BDS2 = RRS
         if RR > 15:
-            BDS = str(format(BDS1,"X")) + str(format(BDS2,"X"))
-            
+            BDS = str(format(BDS1, "X")) + str(format(BDS2, "X"))
+
     return {
         "DI": di,
         "IC": IC,

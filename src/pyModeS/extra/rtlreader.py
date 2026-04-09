@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import time
 import traceback
-import numpy as np
-import pyModeS as pms
-
 from typing import Any
 
+import numpy as np
+
+import pyModeS as pms
 
 import_msg = """
 ---------------------------------------------------------------------
@@ -178,9 +178,7 @@ class RtlReader(object):
     def stop(self, *args, **kwargs) -> None:
         self.sdr.close()
 
-    def run(
-        self, raw_pipe_in=None, stop_flag=None, exception_queue=None
-    ) -> None:
+    def run(self, raw_pipe_in=None, stop_flag=None, exception_queue=None) -> None:
         self.raw_pipe_in = raw_pipe_in
         self.exception_queue = exception_queue
         self.stop_flag = stop_flag

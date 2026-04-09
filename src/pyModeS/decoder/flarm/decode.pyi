@@ -4,7 +4,6 @@ from . import DecodedMessage
 
 AIRCRAFT_TYPES: list[str]
 
-
 def flarm(
     timestamp: int,
     msg: str,

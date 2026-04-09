@@ -18,9 +18,7 @@ def is_emergency(msg: str) -> bool:
     :return: if the aircraft has declared an emergency
     """
     if common.typecode(msg) != 28:
-        raise RuntimeError(
-            "%s: Not an airborne status message, expecting TC=28" % msg
-        )
+        raise RuntimeError("%s: Not an airborne status message, expecting TC=28" % msg)
 
     mb = common.hex2bin(msg)[32:]
     subtype = common.bin2int(mb[5:8])
@@ -74,9 +72,7 @@ def emergency_squawk(msg: str) -> str:
     :return: aircraft squawk code
     """
     if common.typecode(msg) != 28:
-        raise RuntimeError(
-            "%s: Not an airborne status message, expecting TC=28" % msg
-        )
+        raise RuntimeError("%s: Not an airborne status message, expecting TC=28" % msg)
 
     msgbin = common.hex2bin(msg)
 

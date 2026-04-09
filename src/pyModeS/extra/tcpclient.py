@@ -1,12 +1,14 @@
 """Stream beast raw data from a TCP server, convert to mode-s messages."""
 
+import math
 import os
 import sys
 import time
-import pyModeS as pms
 import traceback
+
 import zmq
-import math
+
+import pyModeS as pms
 
 
 class TcpClient(object):
@@ -36,7 +38,7 @@ class TcpClient(object):
         self.socket.close()
 
     def read_raw_buffer(self):
-        """ Read raw ADS-B data type.
+        """Read raw ADS-B data type.
 
         String strats with "*" and ends with ";". For example:
             *5d484ba898f8c6;
@@ -226,18 +228,18 @@ class TcpClient(object):
             if len(msg) not in [14, 28]:
                 continue
 
-            '''
+            """
                 we get the raw 0-255 byte value (raw_rssi = mm[7])
                 we scale it to 0.0 - 1.0 (voltage = raw_rssi / 255)
                 we convert it to a dBFS power value (rolling the squaring of the voltage into the dB calculation)
-            '''
+            """
 
             df = pms.df(msg)
-            raw_rssi = mm[7] # eighth byte of Mode-S message should contain RSSI value
-            rssi_ratio = raw_rssi / 255 
-            signalLevel = rssi_ratio ** 2 
-            dbfs_rssi = 10 * math.log10(signalLevel) 
- 
+            raw_rssi = mm[7]  # eighth byte of Mode-S message should contain RSSI value
+            rssi_ratio = raw_rssi / 255
+            signalLevel = rssi_ratio**2
+            dbfs_rssi = 10 * math.log10(signalLevel)
+
             # skip incomplete message
             if df in [0, 4, 5, 11] and len(msg) != 14:
                 continue

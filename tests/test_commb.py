@@ -1,5 +1,6 @@
-from pyModeS import bds, commb
 from pytest import approx
+
+from pyModeS import bds, commb
 
 # from pyModeS import ehs, els    # deprecated
 

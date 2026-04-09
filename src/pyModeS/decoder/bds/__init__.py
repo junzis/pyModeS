@@ -39,9 +39,7 @@ from . import (  # noqa: F401
 )
 
 
-def is50or60(
-    msg: str, spd_ref: float, trk_ref: float, alt_ref: float
-) -> Optional[str]:
+def is50or60(msg: str, spd_ref: float, trk_ref: float, alt_ref: float) -> Optional[str]:
     """Use reference ground speed and trk to determine BDS50 and DBS60.
 
     Args:

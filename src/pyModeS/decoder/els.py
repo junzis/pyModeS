@@ -25,11 +25,11 @@ warnings.warn(
 
 
 __all__ = [
-    "is10",
-    "ovc10",
-    "is17",
     "cap17",
-    "is20",
     "cs20",
+    "is10",
+    "is17",
+    "is20",
     "is30",
+    "ovc10",
 ]

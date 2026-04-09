@@ -1,6 +1,4 @@
-"""Uncertainty parameters.
-
-"""
+"""Uncertainty parameters."""
 
 from __future__ import annotations
 

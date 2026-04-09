@@ -1,5 +1,6 @@
-from pyModeS import adsb
 from pytest import approx
+
+from pyModeS import adsb
 
 # === TEST ADS-B package ===
 
@@ -44,19 +45,15 @@ def test_adsb_position_with_ref():
 
 
 def test_adsb_airborne_position_with_ref():
-    pos = adsb.airborne_position_with_ref(
-        "8D40058B58C901375147EFD09357", 49.0, 6.0
-    )
+    pos = adsb.airborne_position_with_ref("8D40058B58C901375147EFD09357", 49.0, 6.0)
     assert pos == (approx(49.82410, 0.001), approx(6.06785, 0.001))
-    pos = adsb.airborne_position_with_ref(
-        "8D40058B58C904A87F402D3B8C59", 49.0, 6.0
-    )
+    pos = adsb.airborne_position_with_ref("8D40058B58C904A87F402D3B8C59", 49.0, 6.0)
     assert pos == (approx(49.81755, 0.001), approx(6.08442, 0.001))
 
 
 def test_adsb_airborne_position_with_ref_numerical_challenge():
-    lat_ref = 30.508474576271183 # Close to (360.0/59.0)*5
-    lon_ref = 7.2*5.0+3e-15
+    lat_ref = 30.508474576271183  # Close to (360.0/59.0)*5
+    lon_ref = 7.2 * 5.0 + 3e-15
     pos = adsb.airborne_position_with_ref(
         "8D06A15358BF17FF7D4A84B47B95", lat_ref, lon_ref
     )
@@ -64,9 +61,7 @@ def test_adsb_airborne_position_with_ref_numerical_challenge():
 
 
 def test_adsb_surface_position_with_ref():
-    pos = adsb.surface_position_with_ref(
-        "8FC8200A3AB8F5F893096B000000", -43.5, 172.5
-    )
+    pos = adsb.surface_position_with_ref("8FC8200A3AB8F5F893096B000000", -43.5, 172.5)
     assert pos == (approx(-43.48564, 0.001), approx(172.53942, 0.001))
 
 
@@ -106,9 +101,7 @@ def test_adsb_target_state_status():
     sel_alt = adsb.selected_altitude("8DA05629EA21485CBF3F8CADAEEB")
     assert sel_alt == (16992, "MCP/FCU")
     assert adsb.baro_pressure_setting("8DA05629EA21485CBF3F8CADAEEB") == 1012.8
-    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == approx(
-        66.8, 0.1
-    )
+    assert adsb.selected_heading("8DA05629EA21485CBF3F8CADAEEB") == approx(66.8, 0.1)
     assert adsb.autopilot("8DA05629EA21485CBF3F8CADAEEB") is True
     assert adsb.vnav_mode("8DA05629EA21485CBF3F8CADAEEB") is True
     assert adsb.altitude_hold_mode("8DA05629EA21485CBF3F8CADAEEB") is False
@@ -183,6 +176,7 @@ def test_nuc_p_happy_path():
 def test_nuc_p_rejects_identification():
     """nuc_p raises for a non-position typecode (TC=4 aircraft identification)."""
     import pytest
+
     with pytest.raises(RuntimeError):
         adsb.nuc_p("8D406B902015A678D4D220AA4BDA")
 
@@ -235,13 +229,13 @@ def test_adsb_surface_velocity_movement_ranges():
     dispatches to surface_velocity for TC 5-8.
     """
     cases = [
-        ("8c3944f8400002acb23cda192b95", None),   # code 0 → no info
-        ("903a33ff40100858d34ff3cce976", 0.0),    # code 1 → stopped
-        ("8c394c0f389b1667e947db7bb8bc", 1.0),    # code 9
-        ("8c3461cf398d60597b4ea434c4d7", 7.5),    # code 24
-        ("8c3461cf399d6059814ea81483a9", 8.0),    # code 25 (validates 0.5 kt step)
-        ("8c3461cf3a7f3059c94e5bf4e169", 15.0),   # code 39
-        ("8c3950cf3dede47bac304d3b5122", 70.0),   # code 94
+        ("8c3944f8400002acb23cda192b95", None),  # code 0 → no info
+        ("903a33ff40100858d34ff3cce976", 0.0),  # code 1 → stopped
+        ("8c394c0f389b1667e947db7bb8bc", 1.0),  # code 9
+        ("8c3461cf398d60597b4ea434c4d7", 7.5),  # code 24
+        ("8c3461cf399d6059814ea81483a9", 8.0),  # code 25 (validates 0.5 kt step)
+        ("8c3461cf3a7f3059c94e5bf4e169", 15.0),  # code 39
+        ("8c3950cf3dede47bac304d3b5122", 70.0),  # code 94
         ("8c3933203edde47b9e2ffa5e77b8", 100.0),  # code 109
         ("8d3933203fcde2a84e39e1c6c5bc", 175.0),  # code 124
     ]

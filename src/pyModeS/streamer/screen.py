@@ -1,8 +1,9 @@
 import curses
-import numpy as np
-import time
 import threading
+import time
 import traceback
+
+import numpy as np
 
 COLUMNS = [
     ("call", 10),
@@ -69,7 +70,6 @@ class Screen(object):
             "Online aircraft [%d] ('Ctrl+C' to exit, 'Enter' to lock one)"
             % len(self.acs),
         )
-
 
     def round_float(self, value, max_width):
         # Constrain a floating point number to a maximum string size.

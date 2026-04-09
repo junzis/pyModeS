@@ -1,7 +1,9 @@
 import sys
 import time
+
 import pandas as pd
 from tqdm import tqdm
+
 from pyModeS.decoder import adsb
 
 fin = sys.argv[1]

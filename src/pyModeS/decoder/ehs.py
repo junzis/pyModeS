@@ -11,38 +11,38 @@ The EHS wrapper imports all functions from the following modules:
 
 import warnings
 
+from .bds import infer
 from .bds.bds40 import (
-    is40,
-    selalt40fms,
-    selalt40mcp,
-    p40baro,
     alt40fms,
     alt40mcp,
+    is40,
+    p40baro,
+    selalt40fms,
+    selalt40mcp,
 )
-from .bds.bds50 import is50, roll50, trk50, gs50, rtrk50, tas50
-from .bds.bds60 import is60, hdg60, ias60, mach60, vr60baro, vr60ins
-from .bds import infer
+from .bds.bds50 import gs50, is50, roll50, rtrk50, tas50, trk50
+from .bds.bds60 import hdg60, ias60, is60, mach60, vr60baro, vr60ins
 
 __all__ = [
-    "is40",
-    "selalt40fms",
-    "selalt40mcp",
-    "p40baro",
     "alt40fms",
     "alt40mcp",
-    "is50",
-    "roll50",
-    "trk50",
     "gs50",
-    "rtrk50",
-    "tas50",
-    "is60",
     "hdg60",
     "ias60",
+    "infer",
+    "is40",
+    "is50",
+    "is60",
     "mach60",
+    "p40baro",
+    "roll50",
+    "rtrk50",
+    "selalt40fms",
+    "selalt40mcp",
+    "tas50",
+    "trk50",
     "vr60baro",
     "vr60ins",
-    "infer",
 ]
 
 warnings.simplefilter("once", DeprecationWarning)

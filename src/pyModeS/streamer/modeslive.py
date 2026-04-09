@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import os
-import sys
-import time
 import argparse
 import curses
-import signal
 import multiprocessing
+import os
+import signal
+import sys
+import time
+
 from pyModeS.streamer.decode import Decode
 from pyModeS.streamer.screen import Screen
 from pyModeS.streamer.source import NetSource, RtlSdrSource  # , RtlSdrSource24
@@ -71,8 +72,7 @@ def main():
             SERVER, PORT, DATATYPE = args.connect
             if DATATYPE not in support_rawtypes:
                 print(
-                    "Data type not supported, available ones are %s"
-                    % support_rawtypes
+                    "Data type not supported, available ones are %s" % support_rawtypes
                 )
 
     else:

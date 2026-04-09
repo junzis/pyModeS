@@ -1,5 +1,5 @@
 def tell(msg: str) -> None:
-    from .. import common, adsb, commb, bds
+    from .. import adsb, bds, commb, common
 
     def _print(label, value, unit=None):
         print("%28s: " % label, end="")
@@ -149,9 +149,7 @@ def tell(msg: str) -> None:
                 )
                 _print("Selected Heading", hdg, "°")
                 if not (common.bin2int((common.hex2bin(msg)[32:])[46]) == 0):
-                    _print(
-                        "Autopilot", types_29[autopilot] if autopilot else None
-                    )
+                    _print("Autopilot", types_29[autopilot] if autopilot else None)
                     _print("VNAV mode", types_29[vnav] if vnav else None)
                     _print(
                         "Altitude hold mode",

@@ -1,4 +1,4 @@
-from pyModeS import commb, common, bds
+from pyModeS import bds, commb, common
 
 # === Decode sample data file ===
 

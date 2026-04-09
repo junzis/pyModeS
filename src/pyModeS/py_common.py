@@ -1,7 +1,7 @@
+from textwrap import wrap
 from typing import Optional
 
 import numpy as np
-from textwrap import wrap
 
 
 def hex2bin(hexstr: str) -> str:
