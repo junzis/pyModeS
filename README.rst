@@ -143,7 +143,7 @@ If you want to connect to a TCP server that broadcast raw data. use can use ``ne
 
 Example screenshot:
 
-.. image:: https://github.com/junzis/pyModeS/raw/master/doc/modeslive-screenshot.png
+.. image:: https://github.com/junzis/pyModeS/raw/main/doc/modeslive-screenshot.png
    :width: 700px
 
 
