@@ -286,8 +286,7 @@ cpdef object altcode(str msg):
     if df(msg) not in [0, 4, 16, 20]:
         raise RuntimeError("Message must be Downlink Format 0, 4, 16, or 20.")
 
-    alt = altitude(hex2bin(msg)[19:32])
-    return alt
+    return altitude(hex2bin(msg)[19:32])
 
 
 @cython.boundscheck(False)
