@@ -194,3 +194,28 @@ class Message:
         if self.df not in (17, 18):
             return None
         return extract_field(self._n, 32, 5, self._length)
+
+    def decode(self) -> DecodedMessage:
+        """Decode every field of this message.
+
+        Returns a DecodedMessage dict containing df, icao, crc_valid,
+        and whatever DF-specific fields the appropriate decoder class
+        extracts.
+        """
+        # Import locally to avoid circular import at module load time
+        from pymodes.decoder import _DECODERS
+
+        result: DecodedMessage = DecodedMessage(
+            {
+                "df": self.df,
+                "icao": self.icao,
+                "crc_valid": self.crc_valid,
+            }
+        )
+
+        decoder_cls = _DECODERS.get(self.df)
+        if decoder_cls is not None:
+            decoder = decoder_cls(self._n, df=self.df, icao=self.icao)
+            result.update(decoder.decode())
+
+        return result

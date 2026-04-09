@@ -53,16 +53,7 @@ def decode(
             raise ValueError("df and icao are required when me is provided")
         message = Message.from_me(me, df=df, icao=icao)
     else:
-        assert msg is not None  # mypy narrowing
+        assert msg is not None
         message = Message(msg)
 
-    # Phase 1 scaffold: return minimal header fields. Later phases
-    # dispatch to decoder classes that add fields based on DF.
-    result: DecodedMessage = DecodedMessage(
-        {
-            "df": message.df,
-            "icao": message.icao,
-            "crc_valid": message.crc_valid,
-        }
-    )
-    return result
+    return message.decode()
