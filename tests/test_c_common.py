@@ -62,3 +62,45 @@ def test_graycode_to_altitude():
     assert c_common.gray2alt("11011110100") == 73200
     assert c_common.gray2alt("10000000011") == 126600
     assert c_common.gray2alt("10000000001") == 126700
+
+
+def test_cprNL_boundary_parity():
+    """c_common.cprNL and py_common.cprNL must agree at every tested
+    latitude, including at and near the ±87° boundary where the two
+    implementations use different (but mathematically equivalent)
+    tolerance formulations.
+
+    Regression gate against future drift: if someone touches either
+    implementation's tolerance, this test catches the divergence.
+    """
+    from pyModeS import py_common
+
+    lats = [
+        0.0,
+        45.0,
+        60.0,
+        85.0,
+        86.0,
+        86.99,
+        86.999,
+        86.9999,
+        86.99999999,
+        87.0,
+        87.00000001,
+        87.0001,
+        87.001,
+        87.1,
+        88.0,
+        89.0,
+        -0.0,
+        -45.0,
+        -87.0,
+        -86.99999999,
+        -87.00000001,
+        -89.0,
+    ]
+    for lat in lats:
+        assert py_common.cprNL(lat) == c_common.cprNL(lat), (
+            f"cprNL disagreement at lat={lat}: "
+            f"py={py_common.cprNL(lat)} c={c_common.cprNL(lat)}"
+        )
