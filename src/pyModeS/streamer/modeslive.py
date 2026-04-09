@@ -93,9 +93,12 @@ def main():
 
     # Explicitly set the start method to fork to avoid errors when running
     # on OSX which otherwise defaults to spawn. Starting in Python 3.14, fork
-    # must be explicitly set if needed.
+    # must be explicitly set if needed. 'fork' is unavailable on Windows, so
+    # guard the call — the streamer is not supported on Windows anyway, but
+    # importing pyModeS.streamer.modeslive there should not crash.
     # See: https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
-    multiprocessing.set_start_method("fork")
+    if "fork" in multiprocessing.get_all_start_methods():
+        multiprocessing.set_start_method("fork", force=True)
 
     raw_pipe_in, raw_pipe_out = multiprocessing.Pipe()
     ac_pipe_in, ac_pipe_out = multiprocessing.Pipe()
