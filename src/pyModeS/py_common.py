@@ -42,7 +42,7 @@ def crc(msg: str, encode: bool = False) -> int:
         msg: 28 bytes hexadecimal message string
         encode: True to encode the date only and return the checksum
     Returns:
-        int: message checksum, or partity bits (encoder)
+        int: message checksum, or parity bits (encoder)
 
     """
     # the CRC generator

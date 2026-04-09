@@ -69,13 +69,13 @@ def is60(msg: str) -> bool:
 
 
 def hdg60(msg: str) -> Optional[float]:
-    """Megnetic heading of aircraft
+    """Magnetic heading of aircraft
 
     Args:
         msg (str): 28 hexdigits string
 
     Returns:
-        float: heading in degrees to megnetic north (from 0 to 360)
+        float: heading in degrees to magnetic north (from 0 to 360)
     """
     d = common.hex2bin(common.data(msg))
 
@@ -158,7 +158,7 @@ def vr60baro(msg: str) -> Optional[int]:
 
 
 def vr60ins(msg: str) -> Optional[int]:
-    """Vertical rate measurd by onbard equiments (IRS, AHRS)
+    """Vertical rate measured by onboard equipment (IRS, AHRS)
 
     Args:
         msg (str): 28 hexdigits string

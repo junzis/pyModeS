@@ -97,7 +97,7 @@ cpdef long crc(str msg, bint encode=False):
         msg (string): 28 bytes hexadecimal message string
         encode (bool): True to encode the date only and return the checksum
     Returns:
-        int: message checksum, or partity bits (encoder)
+        int: message checksum, or parity bits (encoder)
 
     """
     # the CRC generator
@@ -315,7 +315,7 @@ cpdef object altitude(str binstr):
         if Qbit == 49:  # 25ft interval, "1" -> 49
             vbin = _mbin[:6] + _mbin[7:8] + _mbin[9:]
             alt = bin2int(vbin.decode()) * 25 - 1000
-        if Qbit == 48:  # 100ft interval, above 50175ft, "0" -> 48
+        if Qbit == 48:  # 100ft interval, above 50187.5ft, "0" -> 48
             graybytes[8] = mbin[0]
             graybytes[2] = mbin[1]
             graybytes[9] = mbin[2]
