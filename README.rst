@@ -100,7 +100,7 @@ If you want to make use of the (faster) c module, install ``pyModeS`` as follows
   # development version
   git clone https://github.com/junzis/pyModeS
   cd pyModeS
-  poetry install -E rtlsdr
+  uv sync --dev --all-extras
 
 
 View live traffic (modeslive)
