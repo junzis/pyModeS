@@ -29,7 +29,7 @@ from typing import Any
 
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.decoder.bds import bds08
+from pymodes.decoder.bds import bds08, bds09
 from pymodes.message import Decoded
 
 
@@ -39,10 +39,6 @@ def _not_implemented_bds05(me: int, *, tc: int) -> dict[str, Any]:
 
 def _not_implemented_bds06(me: int) -> dict[str, Any]:
     raise NotImplementedError("bds06 decoder not yet implemented")
-
-
-def _not_implemented_bds09(me: int) -> dict[str, Any]:
-    raise NotImplementedError("bds09 decoder not yet implemented")
 
 
 def _not_implemented_bds61(me: int) -> dict[str, Any]:
@@ -62,7 +58,7 @@ _ADSB_RANGES: list[tuple[set[int] | range, str, Callable[..., dict[str, Any]]]] 
     (range(1, 5), "0,8", bds08.decode_bds08),
     (range(5, 9), "0,6", _not_implemented_bds06),
     (range(9, 19), "0,5", _not_implemented_bds05),
-    ({19}, "0,9", _not_implemented_bds09),
+    ({19}, "0,9", bds09.decode_bds09),
     (range(20, 23), "0,5", _not_implemented_bds05),
     ({28}, "6,1", _not_implemented_bds61),
     ({29}, "6,2", _not_implemented_bds62),
