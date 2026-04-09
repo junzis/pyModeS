@@ -12,8 +12,6 @@ This module provides three primitives used by every decoder:
 - crc_remainder(n, length) — 24-bit Mode-S CRC computation
 """
 
-from __future__ import annotations
-
 
 def extract_field(n: int, start: int, width: int, total_bits: int) -> int:
     """Extract `width` bits starting at bit `start` (MSB-first) from an

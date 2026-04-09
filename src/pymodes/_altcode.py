@@ -13,8 +13,6 @@ It supports two encodings:
 If the entire 13-bit field is zero, altitude is reported as unknown.
 """
 
-from __future__ import annotations
-
 
 def altcode_to_altitude(ac: int) -> int | None:
     """Decode a 13-bit Mode-S altitude code field to feet.

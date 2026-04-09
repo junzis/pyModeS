@@ -8,8 +8,6 @@ Layout:
     [DF: 5][FS: 3][DR: 5][UM: 6][AC/ID: 13][AP: 24]
 """
 
-from __future__ import annotations
-
 from pymodes._altcode import altcode_to_altitude
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register

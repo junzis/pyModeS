@@ -12,14 +12,9 @@ Message.decode() dispatches to the correct class via _DECODERS below.
 Entries are added by the task that implements each decoder class.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from pymodes.decoder._base import DecoderBase
-
+from pymodes.decoder._base import DecoderBase
 
 # DF → decoder class. Populated by each decoder module as it is added.
 _DECODERS: dict[int, type[DecoderBase]] = {}

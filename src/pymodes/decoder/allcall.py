@@ -8,8 +8,6 @@ Message layout (56 bits):
     [DF: 5][CA: 3][AA: 24][PI: 24]
 """
 
-from __future__ import annotations
-
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
 from pymodes.message import Decoded

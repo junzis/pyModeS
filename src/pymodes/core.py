@@ -9,8 +9,6 @@ icao, crc_valid). Later phases plug in the decoder classes via the
 dispatch table in pymodes.decoder.
 """
 
-from __future__ import annotations
-
 from pymodes.message import Decoded, Message
 
 

@@ -24,8 +24,6 @@ DF16 only:  bits 32-87: MV (56) — ACAS RA message
             bits 88-111: AP (24)
 """
 
-from __future__ import annotations
-
 from pymodes._altcode import altcode_to_altitude
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase

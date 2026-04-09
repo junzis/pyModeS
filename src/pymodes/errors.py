@@ -5,8 +5,6 @@ ValueError subclass so users can use `except ValueError:` to catch any
 decoder issue. Specific subclasses distinguish the failure mode.
 """
 
-from __future__ import annotations
-
 
 class DecodeError(ValueError):
     """Base class for all pymodes decode errors."""

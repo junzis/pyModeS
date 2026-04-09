@@ -14,8 +14,6 @@ formed by combining 3 interleaved pulse bits:
 The X bit is always 0 (reserved). Bit positions are 0-indexed MSB-first.
 """
 
-from __future__ import annotations
-
 
 def idcode_to_squawk(idcode: int) -> str:
     """Decode a 13-bit identity code to a 4-digit octal squawk string.

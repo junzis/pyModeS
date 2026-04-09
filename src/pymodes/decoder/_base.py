@@ -7,8 +7,6 @@ unsigned bit fields from the full message, or use `self._me`
 directly for payload-level positions.
 """
 
-from __future__ import annotations
-
 from pymodes._bits import extract_field
 from pymodes.message import Decoded
 

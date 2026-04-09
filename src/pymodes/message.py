@@ -12,11 +12,9 @@ This module defines two public types:
   via decode().
 """
 
-from __future__ import annotations
-
 import json
 from functools import cached_property
-from typing import Any
+from typing import Any, Self
 
 from pymodes._bits import crc_remainder, extract_field
 from pymodes.errors import InvalidHexError, InvalidLengthError, UnknownDFError
@@ -113,7 +111,7 @@ class Message:
         return int(hexstr, 16), len(hexstr) * 4
 
     @classmethod
-    def from_me(cls, me: str, *, df: int, icao: str) -> Message:
+    def from_me(cls, me: str, *, df: int, icao: str) -> Self:
         """Construct a Message from the ME field alone plus explicit headers.
 
         Useful when the full message is not available (e.g., logs that
