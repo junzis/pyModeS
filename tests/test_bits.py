@@ -1,5 +1,6 @@
 """Tests for pymodes._bits bit-extraction primitives."""
 
+from pymodes._altcode import altcode_to_altitude
 from pymodes._bits import crc_remainder, extract_field, extract_signed
 
 
@@ -122,3 +123,34 @@ class TestCrcRemainder:
         full = df_ca_aa | pi
         # Recomputing over the full message should give 0
         assert crc_remainder(full, 56) == 0
+
+
+class TestAltCodeDecode:
+    def test_altcode_all_zero_returns_none(self):
+        # All-zero altitude code means "altitude unknown or invalid"
+        assert altcode_to_altitude(0) is None
+
+    def test_altcode_25ft_interval(self):
+        # Q=1, 25-ft interval. AC = 0x1030 should decode to 25000 ft.
+        # Working: AC bits = 1_0000_0011_0000 (pos 0..12 MSB-first)
+        # M (pos 6) = 0, Q (pos 8) = 1, so Q=1 path
+        # 11 non-M non-Q bits in order (pos 0,1,2,3,4,5,7,9,10,11,12):
+        # 1,0,0,0,0,0,1,0,0,0,0 = 0b10000010000 = 1040
+        # altitude = 1040 * 25 - 1000 = 25000
+        assert altcode_to_altitude(0x1030) == 25000
+
+    def test_altcode_q1_zero_value(self):
+        # Q=1, 11-bit value = 0 → altitude = 0*25 - 1000 = -1000 ft
+        # Q is at position 8 (MSB-first), LSB index = 12 - 8 = 4
+        # AC = 1 << 4 = 0x0010 (only the Q bit set, all data bits zero)
+        assert altcode_to_altitude(0x0010) == -1000
+
+    def test_altcode_100ft_gray_code_placeholder(self):
+        # Q=0 path uses Gillham gray code. Phase 1 returns None for
+        # Q=0 cases — full gray code support is deferred to phase 5.
+        # All-zero is handled by the "unknown" check, not the Q=0 path.
+        # So we test a non-zero Q=0 value.
+        # AC = 0b0000001000000 (M=0, Q=0, B1=1) = 0x0040
+        result = altcode_to_altitude(0x0040)
+        # Phase 1 placeholder: returns None for Q=0
+        assert result is None
