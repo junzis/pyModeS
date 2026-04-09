@@ -152,3 +152,22 @@ def test_airborne_velocity_subtype3_heading_zero():
     assert hdg == 0.0, f"Expected heading 0.0°, got {hdg}"
     assert vs == 1024
     assert spd_type == "IAS"
+
+
+def test_selected_heading_sign_bit_one():
+    """BDS62 selected heading, sign bit = 1 (upper half of range).
+
+    Regression for the formula bug where (hdg_sign+1)*magnitude*(180/256)
+    disagreed with the correct bin2int(mb[30:39])*360/512 whenever the
+    sign bit was set. Message below is the existing sign=0 test message
+    (`8DA05629EA21485CBF3F8CADAEEB` from test_adsb_target_state_status)
+    with bit 30 of the ME flipped (nibble 7: C→E), giving
+    mb[30:39]=101011111 (351).  Expected: 351 * 360/512 = 246.796875°.
+
+    The sign=0 case is already covered by the existing
+    test_adsb_target_state_status test in this file.
+    """
+    msg = "8DA05629EA21485EBF3F8CADAEEB"
+    hdg = adsb.selected_heading(msg)
+    assert hdg is not None
+    assert abs(hdg - 246.796875) < 0.01, f"Expected ~246.8°, got {hdg}"

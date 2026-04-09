@@ -198,8 +198,7 @@ def selected_heading(msg: str) -> None | float:
     if int(mb[29]) == 0:
         return None
     else:
-        hdg_sign = int(mb[30])
-        hdg = (hdg_sign + 1) * common.bin2int(mb[31:39]) * (180 / 256)
+        hdg = common.bin2int(mb[30:39]) * 360 / 512
 
     return hdg
 
