@@ -1,3 +1,5 @@
+import pytest
+
 from pyModeS import py_common
 
 
@@ -62,3 +64,61 @@ def test_graycode_to_altitude():
     assert py_common.gray2alt("11011110100") == 73200
     assert py_common.gray2alt("10000000011") == 126600
     assert py_common.gray2alt("10000000001") == 126700
+
+
+RESERVED_RANGES = [
+    (0x200000, 0x27FFFF, "AFI"),
+    (0x280000, 0x28FFFF, "SAM"),
+    (0x500000, 0x5FFFFF, "EUR/NAT"),
+    (0x600000, 0x67FFFF, "MID"),
+    (0x680000, 0x6F0000, "ASIA"),
+    (0x900000, 0x9FFFFF, "NAM/PAC"),
+    (0xB00000, 0xBFFFFF, "CAR"),
+    (0xD00000, 0xDFFFFF, "future"),
+    (0xF00000, 0xFFFFFF, "future"),
+]
+
+
+@pytest.mark.parametrize("lo,hi,name", RESERVED_RANGES)
+def test_is_icao_assigned_boundaries_are_unassigned(lo, hi, name):
+    """Both the low and high boundary of every reserved range must report
+    as NOT assigned. Regression for the strict-inequality bug where
+    `lo < icaoint < hi` let the endpoints leak through."""
+    assert py_common.is_icao_assigned(f"{lo:06X}") is False, (
+        f"{name} range low boundary {lo:06X} leaked through"
+    )
+    assert py_common.is_icao_assigned(f"{hi:06X}") is False, (
+        f"{name} range high boundary {hi:06X} leaked through"
+    )
+
+
+@pytest.mark.parametrize("lo,hi,name", RESERVED_RANGES)
+def test_is_icao_assigned_outside_boundaries(lo, hi, name):
+    """One below the low boundary and one above the high boundary must
+    report as assigned (unless they fall into another reserved range)."""
+    if lo > 0:
+        below = lo - 1
+        in_other = any(
+            l <= below <= h for (l, h, _) in RESERVED_RANGES if l != lo
+        )
+        if not in_other:
+            assert py_common.is_icao_assigned(f"{below:06X}") is True, (
+                f"{name} lo-1 {below:06X} should be assigned"
+            )
+    if hi < 0xFFFFFF:
+        above = hi + 1
+        in_other = any(
+            l <= above <= h for (l, h, _) in RESERVED_RANGES if l != lo
+        )
+        if not in_other:
+            assert py_common.is_icao_assigned(f"{above:06X}") is True, (
+                f"{name} hi+1 {above:06X} should be assigned"
+            )
+
+
+@pytest.mark.parametrize("lo,hi,name", RESERVED_RANGES)
+def test_is_icao_assigned_boundaries_c_common(lo, hi, name):
+    """Same boundary check against the Cython implementation."""
+    c_common = pytest.importorskip("pyModeS.c_common")
+    assert c_common.is_icao_assigned(f"{lo:06X}") is False
+    assert c_common.is_icao_assigned(f"{hi:06X}") is False

@@ -183,23 +183,23 @@ cpdef bint is_icao_assigned(str icao):
 
     cdef long icaoint = hex2int(icao)
 
-    if 0x200000 < icaoint < 0x27FFFF:
+    if 0x200000 <= icaoint <= 0x27FFFF:
         return False  # AFI
-    if 0x280000 < icaoint < 0x28FFFF:
+    if 0x280000 <= icaoint <= 0x28FFFF:
         return False  # SAM
-    if 0x500000 < icaoint < 0x5FFFFF:
+    if 0x500000 <= icaoint <= 0x5FFFFF:
         return False  # EUR, NAT
-    if 0x600000 < icaoint < 0x67FFFF:
+    if 0x600000 <= icaoint <= 0x67FFFF:
         return False  # MID
-    if 0x680000 < icaoint < 0x6F0000:
+    if 0x680000 <= icaoint <= 0x6F0000:
         return False  # ASIA
-    if 0x900000 < icaoint < 0x9FFFFF:
+    if 0x900000 <= icaoint <= 0x9FFFFF:
         return False  # NAM, PAC
-    if 0xB00000 < icaoint < 0xBFFFFF:
+    if 0xB00000 <= icaoint <= 0xBFFFFF:
         return False  # CAR
-    if 0xD00000 < icaoint < 0xDFFFFF:
+    if 0xD00000 <= icaoint <= 0xDFFFFF:
         return False  # future
-    if 0xF00000 < icaoint < 0xFFFFFF:
+    if 0xF00000 <= icaoint <= 0xFFFFFF:
         return False  # future
 
     return True
