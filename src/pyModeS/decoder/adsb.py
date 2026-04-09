@@ -342,7 +342,7 @@ def nuc_p(msg: str) -> tuple[int, None | float, None | int, None | int]:
     """
     tc = typecode(msg)
 
-    if tc is None or tc < 5 or tc > 22:
+    if tc is None or tc < 5 or tc == 19 or tc > 22:
         raise RuntimeError(
             "%s: Not a surface position message (5<TC<8), \
             airborne position message (8<TC<19), \

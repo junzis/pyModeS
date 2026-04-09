@@ -248,3 +248,19 @@ def test_adsb_surface_velocity_movement_ranges():
             assert spd is not None and abs(spd - expected_spd) < 0.01, (
                 f"msg={msg} expected {expected_spd} kt, got {spd}"
             )
+
+
+def test_nuc_p_rejects_airborne_velocity():
+    """nuc_p must reject TC=19 airborne velocity messages with a
+    RuntimeError, not a latent KeyError from uncertainty.TC_NUCp_lookup.
+
+    Previously the guard allowed TC=19 through because it only checked
+    `tc < 5 or tc > 22`. Since TC_NUCp_lookup has no entry for 19,
+    the function would crash with KeyError instead of the documented
+    RuntimeError.
+    """
+    import pytest
+
+    # 8D485020994409940838175B284F is TC=19 per test_adsb_velocity
+    with pytest.raises(RuntimeError):
+        adsb.nuc_p("8D485020994409940838175B284F")
