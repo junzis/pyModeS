@@ -54,10 +54,6 @@ class TestAdsbStubsRaiseNotImplemented:
     These tests will flip to real assertions in subsequent tasks.
     """
 
-    def test_bds06_tc7_not_implemented(self):
-        with pytest.raises(NotImplementedError):
-            decode("8FC8200A3AB8F5F893096B000000")
-
     def test_bds61_tc28_not_implemented(self):
         with pytest.raises(NotImplementedError):
             decode("8DA2C1B6E112B600000000760759")

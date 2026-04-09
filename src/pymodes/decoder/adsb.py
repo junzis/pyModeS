@@ -29,12 +29,8 @@ from typing import Any
 
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.decoder.bds import bds05, bds08, bds09
+from pymodes.decoder.bds import bds05, bds06, bds08, bds09
 from pymodes.message import Decoded
-
-
-def _not_implemented_bds06(me: int) -> dict[str, Any]:
-    raise NotImplementedError("bds06 decoder not yet implemented")
 
 
 def _not_implemented_bds61(me: int) -> dict[str, Any]:
@@ -52,7 +48,7 @@ def _not_implemented_bds65(me: int) -> dict[str, Any]:
 # Human-editable range table. Each row is (typecode_set, bds_code, decoder_fn).
 _ADSB_RANGES: list[tuple[set[int] | range, str, Callable[..., dict[str, Any]]]] = [
     (range(1, 5), "0,8", bds08.decode_bds08),
-    (range(5, 9), "0,6", _not_implemented_bds06),
+    (range(5, 9), "0,6", bds06.decode_bds06),
     (range(9, 19), "0,5", bds05.decode_bds05),
     ({19}, "0,9", bds09.decode_bds09),
     (range(20, 23), "0,5", bds05.decode_bds05),
