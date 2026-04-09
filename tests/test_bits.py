@@ -2,6 +2,7 @@
 
 from pymodes._altcode import altcode_to_altitude
 from pymodes._bits import crc_remainder, extract_field, extract_signed
+from pymodes._idcode import idcode_to_squawk
 
 
 class TestExtractField:
@@ -154,3 +155,34 @@ class TestAltCodeDecode:
         result = altcode_to_altitude(0x0040)
         # Phase 1 placeholder: returns None for Q=0
         assert result is None
+
+
+class TestIdCodeDecode:
+    def test_idcode_zero(self):
+        assert idcode_to_squawk(0) == "0000"
+
+    def test_idcode_7777(self):
+        # All-ones squawk. For 7777: all A/B/C/D pulse bits set, X=0.
+        # Bit positions in the 13-bit ID field (MSB-first):
+        #   C1(0) A1(1) C2(2) A2(3) C4(4) A4(5) X(6)
+        #   B1(7) D1(8) B2(9) D2(10) B4(11) D4(12)
+        # 1111110111111 = 0x1FBF
+        assert idcode_to_squawk(0x1FBF) == "7777"
+
+    def test_idcode_1200(self):
+        # Squawk 1200 — VFR code in the US.
+        # A=1 (A4 A2 A1 = 0 0 1), B=2 (B4 B2 B1 = 0 1 0), C=0, D=0
+        # Bit positions:
+        #   C1(0)=0 A1(1)=1 C2(2)=0 A2(3)=0 C4(4)=0 A4(5)=0 X(6)=0
+        #   B1(7)=0 D1(8)=0 B2(9)=1 D2(10)=0 B4(11)=0 D4(12)=0
+        # = 0b0100000001000 = 0x0808
+        assert idcode_to_squawk(0x0808) == "1200"
+
+    def test_idcode_7500(self):
+        # Squawk 7500 — unlawful-interference (hijack) code.
+        # A=7 (1 1 1), B=5 (1 0 1), C=0, D=0
+        # Bit positions:
+        #   C1(0)=0 A1(1)=1 C2(2)=0 A2(3)=1 C4(4)=0 A4(5)=1 X(6)=0
+        #   B1(7)=1 D1(8)=0 B2(9)=0 D2(10)=0 B4(11)=1 D4(12)=0
+        # = 0b0101010100010 = 0x0AA2
+        assert idcode_to_squawk(0x0AA2) == "7500"
