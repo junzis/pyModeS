@@ -12,13 +12,13 @@ from pymodes.errors import (
     InvalidLengthError,
     UnknownDFError,
 )
-from pymodes.message import DecodedMessage, Message
+from pymodes.message import Decoded, Message
 
 __version__ = _version("pymodes")
 
 __all__ = [
     "DecodeError",
-    "DecodedMessage",
+    "Decoded",
     "InvalidHexError",
     "InvalidLengthError",
     "Message",

@@ -2,12 +2,12 @@
 
 Each decoder is a small class that takes the raw message int and
 the DF value at construction time, then exposes a `decode()` method
-returning a DecodedMessage dict of DF-specific fields.
+returning a Decoded dict of DF-specific fields.
 """
 
 from __future__ import annotations
 
-from pymodes.message import DecodedMessage
+from pymodes.message import Decoded
 
 
 class DecoderBase:
@@ -23,8 +23,8 @@ class DecoderBase:
         self._df = df
         self._icao = icao
 
-    def decode(self) -> DecodedMessage:  # pragma: no cover - abstract
-        """Return a DecodedMessage with DF-specific fields.
+    def decode(self) -> Decoded:  # pragma: no cover - abstract
+        """Return a Decoded with DF-specific fields.
 
         Subclasses override this. The returned dict should contain
         only fields specific to this decoder — df, icao, and crc_valid

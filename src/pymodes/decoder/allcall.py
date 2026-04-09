@@ -13,7 +13,7 @@ from __future__ import annotations
 from pymodes._bits import extract_field
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.message import DecodedMessage
+from pymodes.message import Decoded
 
 # Capability descriptions per ICAO Annex 10 Volume IV
 _CAPABILITY_TEXT = {
@@ -32,9 +32,9 @@ _CAPABILITY_TEXT = {
 class AllCallReply(DecoderBase):
     """Decoder for DF11 all-call reply messages."""
 
-    def decode(self) -> DecodedMessage:
+    def decode(self) -> Decoded:
         ca = extract_field(self._n, 5, 3, 56)
-        return DecodedMessage(
+        return Decoded(
             {
                 "capability": ca,
                 "capability_text": _CAPABILITY_TEXT.get(ca, "Unknown"),

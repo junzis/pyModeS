@@ -15,7 +15,7 @@ from pymodes._bits import extract_field
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.message import DecodedMessage
+from pymodes.message import Decoded
 
 _FLIGHT_STATUS_TEXT = {
     0: "No alert, no SPI, airborne",
@@ -33,8 +33,8 @@ _FLIGHT_STATUS_TEXT = {
 class SurvReply(DecoderBase):
     """Decoder for DF4 surveillance altitude replies and DF5 identity replies."""
 
-    def decode(self) -> DecodedMessage:
-        result: DecodedMessage = DecodedMessage()
+    def decode(self) -> Decoded:
+        result: Decoded = Decoded()
 
         # Flight status: bits 5-7
         fs = extract_field(self._n, 5, 3, 56)

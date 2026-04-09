@@ -6,13 +6,13 @@ import pytest
 
 from pymodes import decode
 from pymodes.errors import InvalidHexError, InvalidLengthError
-from pymodes.message import DecodedMessage
+from pymodes.message import Decoded
 
 
 class TestDecodeSingleMessage:
     def test_returns_decoded_message(self):
         result = decode("8D406B902015A678D4D220AA4BDA")
-        assert isinstance(result, DecodedMessage)
+        assert isinstance(result, Decoded)
 
     def test_includes_df_and_icao(self):
         result = decode("8D406B902015A678D4D220AA4BDA")

@@ -1,8 +1,8 @@
-"""Message base class and DecodedMessage return type for pymodes v3.
+"""Message base class and Decoded return type for pymodes v3.
 
 This module defines two public types:
 
-- DecodedMessage: the dict subclass returned by decode() calls. Adds
+- Decoded: the dict subclass returned by decode() calls. Adds
   attribute access and a to_json() helper while behaving as a plain
   dict for json.dumps, pandas, iteration, and all dict operations.
 
@@ -26,7 +26,7 @@ _VALID_LENGTHS = (56, 112)
 _HEX_LENGTHS = (14, 28)
 
 
-class DecodedMessage(dict[str, Any]):
+class Decoded(dict[str, Any]):
     """A decoded Mode-S message.
 
     Behaves as a plain dict in every way that matters: JSON-serializable
@@ -195,17 +195,17 @@ class Message:
             return None
         return extract_field(self._n, 32, 5, self._length)
 
-    def decode(self) -> DecodedMessage:
+    def decode(self) -> Decoded:
         """Decode every field of this message.
 
-        Returns a DecodedMessage dict containing df, icao, crc_valid,
+        Returns a Decoded dict containing df, icao, crc_valid,
         and whatever DF-specific fields the appropriate decoder class
         extracts.
         """
         # Import locally to avoid circular import at module load time
         from pymodes.decoder import _DECODERS
 
-        result: DecodedMessage = DecodedMessage(
+        result: Decoded = Decoded(
             {
                 "df": self.df,
                 "icao": self.icao,

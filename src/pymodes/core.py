@@ -1,7 +1,7 @@
 """Top-level pymodes.decode() function.
 
 This is the primary public API. It accepts a hex string (or ME field
-with explicit header) and returns a DecodedMessage dict with every
+with explicit header) and returns a Decoded dict with every
 decodable field populated.
 
 Phase 1 ships only the single-message path with minimal fields (df,
@@ -11,7 +11,7 @@ dispatch table in pymodes.decoder.
 
 from __future__ import annotations
 
-from pymodes.message import DecodedMessage, Message
+from pymodes.message import Decoded, Message
 
 
 def decode(
@@ -20,7 +20,7 @@ def decode(
     me: str | None = None,
     df: int | None = None,
     icao: str | None = None,
-) -> DecodedMessage:
+) -> Decoded:
     """Decode a single Mode-S message.
 
     Args:
@@ -34,7 +34,7 @@ def decode(
             out of band (see spec §11.4).
 
     Returns:
-        A DecodedMessage dict with at least `df`, `icao`, and `crc_valid`.
+        A Decoded dict with at least `df`, `icao`, and `crc_valid`.
         Additional fields are added by the decoder class dispatched
         based on DF (see phases 2-4).
 

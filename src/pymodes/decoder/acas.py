@@ -30,15 +30,15 @@ from pymodes._altcode import altcode_to_altitude
 from pymodes._bits import extract_field
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.message import DecodedMessage
+from pymodes.message import Decoded
 
 
 @register(0, 16)
 class ACAS(DecoderBase):
     """Decoder for DF0 and DF16 air-air surveillance messages."""
 
-    def decode(self) -> DecodedMessage:
-        result: DecodedMessage = DecodedMessage()
+    def decode(self) -> Decoded:
+        result: Decoded = Decoded()
 
         # Determine length based on DF
         length = 56 if self._df == 0 else 112
