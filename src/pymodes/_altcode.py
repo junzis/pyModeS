@@ -40,13 +40,11 @@ def altcode_to_altitude(ac: int) -> int | None:
     q_bit = (ac >> 4) & 0x1  # 12 - 8 = 4
 
     if m_bit == 0 and q_bit == 1:
-        # 25-foot interval, linear encoding.
-        # Drop M (pos 6) and Q (pos 8); the remaining 11 bits form the value.
-        # 11 data bit positions (MSB first): 0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 12
-        n = 0
-        for pos in (0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 12):
-            bit = (ac >> (12 - pos)) & 0x1
-            n = (n << 1) | bit
+        # 25-foot interval, linear encoding. Drop M (LSB bit 6) and
+        # Q (LSB bit 4); the remaining 11 bits form the linear value.
+        # The bits below M and above Q (LSB bits 7..12) shift right by 2,
+        # B1 (LSB bit 5) shifts right by 1, and D4..B2 (LSB bits 0..3) stay.
+        n = ((ac >> 2) & 0x7E0) | ((ac >> 1) & 0x10) | (ac & 0xF)
         return n * 25 - 1000
 
     # Q = 0 (Gillham gray code) — not yet implemented in phase 1.
