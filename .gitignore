@@ -53,6 +53,9 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Local planning / brainstorming artifacts (not for publication)
+docs/superpowers/
+
 # PyBuilder
 target/
 
