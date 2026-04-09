@@ -122,3 +122,27 @@ def test_is_icao_assigned_boundaries_c_common(lo, hi, name):
     c_common = pytest.importorskip("pyModeS.c_common")
     assert c_common.is_icao_assigned(f"{lo:06X}") is False
     assert c_common.is_icao_assigned(f"{hi:06X}") is False
+
+
+def test_um_all_ids_values():
+    """py_common.um must return a valid (iis, ids, ids_text) tuple for all
+    four values of ids (0, 1, 2, 3) without raising UnboundLocalError.
+
+    Regression gate for the `if/if/if/if` chain that happened to work
+    because each branch assigned unconditionally, but was fragile — any
+    future edit that added a fall-through path could leave ids_text unbound.
+    Now an elif chain with an else fallback.
+    """
+    for ids_value in (0, 1, 2, 3):
+        bits = ["0"] * 56
+        ids_bin = format(ids_value, "02b")
+        bits[17] = ids_bin[0]
+        bits[18] = ids_bin[1]
+        binstr = "".join(bits)
+        msg = format(int(binstr, 2), "014X")
+        iis, ids, ids_text = py_common.um(msg)
+        assert ids == ids_value, f"ids decode mismatch for value {ids_value}"
+        if ids_value == 0:
+            assert ids_text is None
+        else:
+            assert isinstance(ids_text, str)

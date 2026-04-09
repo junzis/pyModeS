@@ -479,10 +479,12 @@ def um(msg):
     ids = bin2int(msgbin[17:19])
     if ids == 0:
         ids_text = None
-    if ids == 1:
+    elif ids == 1:
         ids_text = "Comm-B interrogator identifier code"
-    if ids == 2:
+    elif ids == 2:
         ids_text = "Comm-C interrogator identifier code"
-    if ids == 3:
+    elif ids == 3:
         ids_text = "Comm-D interrogator identifier code"
+    else:
+        ids_text = None
     return iis, ids, ids_text
