@@ -1,7 +1,7 @@
 """Unit tests for Comm-B BDS register decoders (bds10 through bds60)."""
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10
+from pymodes.decoder.bds import bds10, bds17
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -66,3 +66,56 @@ class TestCommBRoutesToBds10:
         assert result["acas_operational"] is True
         assert result["mode_s_subnetwork_version"] == 0
         assert result["dte_status"] == 0
+
+
+class TestBds17Validator:
+    def test_valid_bds17_accepts(self):
+        mb = mb_of("A0000638FA81C10000000081A92F")
+        assert bds17.is_bds17(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds17.is_bds17(0) is False
+
+    def test_bds20_bit_required(self):
+        # Take a valid BDS17 MB and clear MB bit 6 (the BDS20 flag at
+        # cap-map index 6). Spec says BDS20 capability is mandatory for
+        # aircraft emitting BDS17, so clearing it must fail validation.
+        mb = mb_of("A0000638FA81C10000000081A92F")
+        mb_bad = mb & ~(1 << (55 - 6))
+        assert bds17.is_bds17(mb_bad) is False
+
+    def test_trailing_nonzero_rejected(self):
+        # v2's stricter heuristic: MB bits 24-55 must all be zero
+        # (32 trailing zero bits). Set bit 24 to fail.
+        mb = mb_of("A0000638FA81C10000000081A92F")
+        mb_bad = mb | (1 << (55 - 24))
+        assert bds17.is_bds17(mb_bad) is False
+
+
+class TestBds17Decoder:
+    def test_full_capability_list(self):
+        mb = mb_of("A0000638FA81C10000000081A92F")
+        result = bds17.decode_bds17(mb)
+        assert result == {
+            "supported_bds": [
+                "0,5",
+                "0,6",
+                "0,7",
+                "0,8",
+                "0,9",
+                "2,0",
+                "4,0",
+                "5,0",
+                "5,1",
+                "5,2",
+                "6,0",
+            ],
+        }
+
+
+class TestCommBRoutesToBds17:
+    def test_df20_bds17_end_to_end(self):
+        result = decode("A0000638FA81C10000000081A92F")
+        assert result["df"] == 20
+        assert result["bds"] == "1,7"
+        assert "2,0" in result["supported_bds"]

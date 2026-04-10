@@ -12,12 +12,13 @@ inside CommB.decode() with a single call to `infer()` defined here.
 
 from collections.abc import Callable
 
-from pymodes.decoder.bds import bds10
+from pymodes.decoder.bds import bds10, bds17
 
 # BDS code -> validator. Populated by each BDS task as it lands, in the
 # same order validators are tried during inference.
 _VALIDATORS: dict[str, Callable[[int], bool]] = {
     "1,0": bds10.is_bds10,
+    "1,7": bds17.is_bds17,
 }
 
 
