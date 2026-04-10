@@ -9,17 +9,14 @@ from pymodes.errors import InvalidHexError
 class TestCommBHeaderDecoding:
     def test_df20_header_altitude(self):
         # DF20 Comm-B altitude reply. The AC13 field lives at bits 19-31
-        # of the full 112-bit message, same layout as DF4. MB payload
-        # here is BDS20 (aircraft identification), but Task 1 only
-        # exposes the header; we assert altitude + absence of any
-        # bds/callsign fields.
+        # of the full 112-bit message, same layout as DF4. The MB payload
+        # here is BDS20 (aircraft identification); once Task 4 wires up
+        # BDS20 dispatch this message also carries a callsign alongside
+        # the header altitude.
         result = decode("A000083E202CC371C31DE0AA1CCF")
         assert result["df"] == 20
         assert "altitude" in result
         assert isinstance(result["altitude"], int)
-        # No BDS dispatch yet in Task 1.
-        assert "bds" not in result
-        assert "callsign" not in result
 
     def test_df21_header_squawk(self):
         # DF21 Comm-B identity reply. The ID13 field lives at bits 19-31.

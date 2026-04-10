@@ -1,7 +1,7 @@
 """Unit tests for Comm-B BDS register decoders (bds10 through bds60)."""
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17
+from pymodes.decoder.bds import bds10, bds17, bds20
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -119,3 +119,47 @@ class TestCommBRoutesToBds17:
         assert result["df"] == 20
         assert result["bds"] == "1,7"
         assert "2,0" in result["supported_bds"]
+
+
+class TestBds20Validator:
+    def test_valid_bds20_accepts(self):
+        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds20.is_bds20(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds20.is_bds20(0) is False
+
+    def test_wrong_bds_id_rejected(self):
+        # BDS10 MB has prefix 0x10, not 0x20.
+        mb = mb_of("A800178D10010080F50000D5893C")
+        assert bds20.is_bds20(mb) is False
+
+    def test_hash_char_rejected(self):
+        # A forged MB with BDS ID 0x20 and all-zero callsign bits.
+        # Character index 0 is '#' in the _CALLSIGN_CHARS table, so
+        # every one of the 8 six-bit slots would decode to '#' and
+        # the validator must reject.
+        mb = 0x20 << 48  # prefix 0x20, callsign bits all zero
+        assert bds20.is_bds20(mb) is False
+
+
+class TestBds20Decoder:
+    def test_decodes_callsign(self):
+        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds20.decode_bds20(mb) == {"callsign": "KLM1017_"}
+
+    def test_decodes_second_callsign(self):
+        mb = mb_of("A0001993202422F2E37CE038738E")
+        assert bds20.decode_bds20(mb) == {"callsign": "IBK2873_"}
+
+    def test_decodes_padded_callsign(self):
+        mb = mb_of("A0001838201584F23468207CDFA5")
+        assert bds20.decode_bds20(mb) == {"callsign": "EXS2MF__"}
+
+
+class TestCommBRoutesToBds20:
+    def test_df20_bds20_end_to_end(self):
+        result = decode("A000083E202CC371C31DE0AA1CCF")
+        assert result["df"] == 20
+        assert result["bds"] == "2,0"
+        assert result["callsign"] == "KLM1017_"
