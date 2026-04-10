@@ -191,6 +191,36 @@ def airborne_position_pair(
     return lat, lon
 
 
+def surface_position_with_ref(
+    cpr_format: int,
+    cpr_lat_raw: int,
+    cpr_lon_raw: int,
+    lat_ref: float,
+    lon_ref: float,
+) -> tuple[float, float]:
+    """Resolve a surface CPR frame against a nearby reference.
+
+    Per DO-260B §A.1.7.6. Reference must lie within 45 NM.
+    Surface CPR uses a 90° latitude zone span (versus 360° for
+    airborne), so resolution is per-quadrant — callers must ensure
+    the reference is close enough to the true position.
+    """
+    cpr_lat = cpr_lat_raw / _CPR_DENOM
+    cpr_lon = cpr_lon_raw / _CPR_DENOM
+    d_lat = 90.0 / 59 if cpr_format else 90.0 / 60
+
+    j = floor(0.5 + lat_ref / d_lat - cpr_lat)
+    lat = d_lat * (j + cpr_lat)
+
+    ni = cprNL(lat) - cpr_format
+    d_lon = 90.0 / ni if ni > 0 else 90.0
+
+    m = floor(0.5 + lon_ref / d_lon - cpr_lon)
+    lon = d_lon * (m + cpr_lon)
+
+    return lat, lon
+
+
 if __name__ == "__main__":
     # Regeneration recipe — run this file directly to reprint the
     # _NL_BOUNDARIES table. Formula per DO-260B §A.1.7.2 with nz=15:

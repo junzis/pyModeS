@@ -160,3 +160,24 @@ class TestAirbornePositionPair:
 
         result = airborne_position_pair(8192, 0, 114688, 0, even_is_newer=True)
         assert result is None
+
+
+class TestSurfacePositionWithRef:
+    @staticmethod
+    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
+        n = int(hex_msg, 16)
+        payload = (n >> 24) & ((1 << 56) - 1)
+        return (
+            (payload >> 34) & 0x1,
+            (payload >> 17) & 0x1FFFF,
+            payload & 0x1FFFF,
+        )
+
+    def test_christchurch_surface(self):
+        """Matches v2 tests/test_adsb.py::test_adsb_surface_position_with_ref."""
+        from pymodes.position._cpr import surface_position_with_ref
+
+        fmt, lat_cpr, lon_cpr = self._cpr_fields("8FC8200A3AB8F5F893096B000000")
+        lat, lon = surface_position_with_ref(fmt, lat_cpr, lon_cpr, -43.5, 172.5)
+        assert lat == pytest.approx(-43.48564, abs=0.001)
+        assert lon == pytest.approx(172.53942, abs=0.001)
