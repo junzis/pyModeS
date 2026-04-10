@@ -149,8 +149,112 @@ class PipeDecoder:
         elif message.df in (20, 21) and icao in self._trusted_icaos:
             result["icao_verified"] = True
 
+        self._handle_cpr_pair(result, icao, timestamp)
         self._update_state(icao, result, timestamp)
         return result
+
+    def _handle_cpr_pair(
+        self,
+        result: Decoded,
+        icao: str,
+        timestamp: float | None,
+    ) -> None:
+        """Resolve a CPR pair if the opposite parity frame is pending.
+
+        Stores this frame as pending if no opposite is available.
+        Skips entirely without a timestamp (pair matching needs a clock).
+        """
+        bds = result.get("bds")
+        if bds not in ("0,5", "0,6") or "cpr_format" not in result:
+            return
+        if timestamp is None:
+            return  # cannot pair without timestamps
+
+        cpr_format = result["cpr_format"]
+        cpr_lat = result["cpr_lat"]
+        cpr_lon = result["cpr_lon"]
+
+        # Pick which dict this frame goes into and which holds the opposite
+        if cpr_format == 0:
+            this_pending = self._pending_even
+            other_pending = self._pending_odd
+        else:
+            this_pending = self._pending_odd
+            other_pending = self._pending_even
+
+        opposite = other_pending.get(icao)
+        if opposite is not None:
+            opp_t, opp_lat, opp_lon = opposite
+            if abs(timestamp - opp_t) <= self._pair_window:
+                # Pair found — resolve and pop
+                self._resolve_pair(
+                    result,
+                    bds,
+                    cpr_format,
+                    cpr_lat,
+                    cpr_lon,
+                    opp_lat,
+                    opp_lon,
+                )
+                other_pending.pop(icao, None)
+                self._stats["pending_pairs"] = max(0, self._stats["pending_pairs"] - 1)
+                return
+
+        # No pair (or out of window) — store this frame as pending
+        if icao not in this_pending:
+            self._stats["pending_pairs"] += 1
+        this_pending[icao] = (timestamp, cpr_lat, cpr_lon)
+
+    def _resolve_pair(
+        self,
+        result: Decoded,
+        bds: str,
+        cpr_format: int,
+        cpr_lat: int,
+        cpr_lon: int,
+        other_lat: int,
+        other_lon: int,
+    ) -> None:
+        """Call the appropriate pair resolver and merge lat/lon in place."""
+        from pymodes.position import (
+            airborne_position_pair,
+            resolve_surface_ref,
+            surface_position_pair,
+        )
+
+        # The current frame is the newer one (we just received it).
+        # cpr_format == 0 means we're the even, opposite is odd,
+        # so even is newer.
+        if cpr_format == 0:
+            elat, elon = cpr_lat, cpr_lon
+            olat, olon = other_lat, other_lon
+            even_is_newer = True
+        else:
+            elat, elon = other_lat, other_lon
+            olat, olon = cpr_lat, cpr_lon
+            even_is_newer = False
+
+        resolved: tuple[float, float] | None
+        if bds == "0,5":
+            resolved = airborne_position_pair(
+                elat, elon, olat, olon, even_is_newer=even_is_newer
+            )
+        else:  # 0,6
+            if self._surface_ref is None:
+                return
+            lat_ref, lon_ref = resolve_surface_ref(self._surface_ref)
+            resolved = surface_position_pair(
+                elat,
+                elon,
+                olat,
+                olon,
+                lat_ref=lat_ref,
+                lon_ref=lon_ref,
+                even_is_newer=even_is_newer,
+            )
+
+        if resolved is not None:
+            result["latitude"], result["longitude"] = resolved
 
     def _update_state(
         self,

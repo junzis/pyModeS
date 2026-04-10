@@ -232,3 +232,69 @@ class TestIcaoVerification:
         assert "406B90" in pipe._trusted_icaos
         pipe.reset()
         assert "406B90" not in pipe._trusted_icaos
+
+
+class TestCprPairAccumulation:
+    def test_airborne_pair_resolves_lat_lon(self):
+        pipe = PipeDecoder()
+        # v2 test vector pair from tests/test_cpr.py
+        pipe.decode(
+            "8D40058B58C901375147EFD09357",  # even
+            timestamp=1446332400.0,
+        )
+        result = pipe.decode(
+            "8D40058B58C904A87F402D3B8C59",  # odd, 5s later
+            timestamp=1446332405.0,
+        )
+        assert result["latitude"] == pytest.approx(49.81755, abs=0.001)
+        assert result["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_pair_outside_window_not_resolved(self):
+        pipe = PipeDecoder(pair_window=2.0)
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        result = pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1010.0)
+        # 10s gap > 2s window — no pair resolution
+        assert "latitude" not in result
+
+    def test_single_frame_no_pair_keeps_raw_cpr(self):
+        pipe = PipeDecoder()
+        result = pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        assert "latitude" not in result
+        assert "cpr_lat" in result
+        assert pipe.stats["pending_pairs"] == 1
+
+    def test_pair_resolution_decrements_pending_pairs(self):
+        pipe = PipeDecoder()
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        assert pipe.stats["pending_pairs"] == 1
+        pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1003.0)
+        assert pipe.stats["pending_pairs"] == 0
+
+    def test_pair_without_timestamp_no_resolution(self):
+        pipe = PipeDecoder()
+        # No timestamp on either decode — pair logic must skip
+        pipe.decode("8D40058B58C901375147EFD09357")
+        result = pipe.decode("8D40058B58C904A87F402D3B8C59")
+        assert "latitude" not in result
+        assert pipe.stats["pending_pairs"] == 0  # nothing stored either
+
+    def test_surface_pair_with_surface_ref(self):
+        pipe = PipeDecoder(surface_ref="NZCH")
+        # First frame (even) — surface_ref already resolves it via
+        # single-message path, so latitude is set after this call.
+        # The pair logic stores it as pending anyway for the next.
+        pipe.decode("8CC8200A3AC8F009BCDEF2000000", timestamp=0.0)
+        # Second frame (odd) — single-message also resolves via
+        # surface_ref, but the pair would also resolve it.
+        result = pipe.decode("8FC8200A3AB8F5F893096B000000", timestamp=2.0)
+        # Either path should yield the same lat/lon
+        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
+        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+
+    def test_same_parity_overwrites_pending(self):
+        pipe = PipeDecoder()
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        # Decode another even frame from the same ICAO — should
+        # overwrite the older pending entry, not add a second
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1001.0)
+        assert pipe.stats["pending_pairs"] == 1
