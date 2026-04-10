@@ -105,7 +105,9 @@ class Message:
         # Optional out-of-band ICAO hint for DF20/21 (and other
         # CRC-ICAO formats). Stored so `icao` can prefer it over the
         # CRC-derived value, and so `decode()` can set `icao_verified`.
-        self._icao_hint = icao_hint.upper() if icao_hint is not None else None
+        self._icao_hint = (
+            self._normalize_icao(icao_hint) if icao_hint is not None else None
+        )
 
     @staticmethod
     def _parse_hex(hexstr: str) -> tuple[int, int]:
@@ -115,6 +117,13 @@ class Message:
         if len(hexstr) not in _HEX_LENGTHS:
             raise InvalidLengthError(actual=len(hexstr), expected=_HEX_LENGTHS)
         return int(hexstr, 16), len(hexstr) * 4
+
+    @staticmethod
+    def _normalize_icao(icao: str) -> str:
+        """Validate and uppercase a 6-character hex ICAO address."""
+        if len(icao) != 6 or not all(c in _HEX_CHARS for c in icao):
+            raise InvalidHexError(icao)
+        return icao.upper()
 
     @classmethod
     def from_me(cls, me: str, *, df: int, icao: str) -> Self:
@@ -136,8 +145,7 @@ class Message:
         """
         if len(me) != 14 or not all(c in _HEX_CHARS for c in me):
             raise InvalidLengthError(actual=len(me), expected=(14,))
-        if len(icao) != 6 or not all(c in _HEX_CHARS for c in icao):
-            raise InvalidHexError(icao)
+        icao = cls._normalize_icao(icao)
         if df < 0 or df > 31:
             raise UnknownDFError(df)
 

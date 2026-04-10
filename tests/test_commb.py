@@ -1,6 +1,9 @@
 """Tests for pymodes.decoder.commb — CommB class for DF20/21."""
 
+import pytest
+
 from pymodes import decode
+from pymodes.errors import InvalidHexError
 
 
 class TestCommBHeaderDecoding:
@@ -62,3 +65,22 @@ class TestCommBDoesNotAffectOtherDFs:
         assert result["df"] == 17
         assert result["icao"] == "406B90"
         assert "icao_verified" not in result
+
+
+class TestCommBIcaoHintValidation:
+    def test_short_hint_rejected(self):
+        with pytest.raises(InvalidHexError):
+            decode("A000083E202CC371C31DE0AA1CCF", icao="ABC")
+
+    def test_long_hint_rejected(self):
+        with pytest.raises(InvalidHexError):
+            decode("A000083E202CC371C31DE0AA1CCF", icao="ABCDEFG")
+
+    def test_non_hex_hint_rejected(self):
+        with pytest.raises(InvalidHexError):
+            decode("A000083E202CC371C31DE0AA1CCF", icao="ZZZZZZ")
+
+    def test_lowercase_hint_normalised(self):
+        result = decode("A000083E202CC371C31DE0AA1CCF", icao="aabbcc")
+        assert result["icao"] == "AABBCC"
+        assert result["icao_verified"] is True

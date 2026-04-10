@@ -32,6 +32,7 @@ from pymodes._altcode import altcode_to_altitude
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
+from pymodes.decoder.bds import _infer
 from pymodes.message import Decoded
 
 # BDS code -> decoder. Populated by each BDS task as it lands.
@@ -59,10 +60,6 @@ class CommB(DecoderBase):
         # grows one register at a time in Tasks 2-10. Task 11 replaces
         # this inline scan with a call into decoder/bds/_infer.infer().
         for bds_code, decoder in _COMMB_DISPATCH.items():
-            # Import the matching validator lazily to avoid import
-            # cycles at module load time.
-            from pymodes.decoder.bds import _infer
-
             if _infer.matches(bds_code, self._me):
                 result["bds"] = bds_code
                 result.update(decoder(self._me))
