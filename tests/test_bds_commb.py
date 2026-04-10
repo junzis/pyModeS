@@ -498,8 +498,8 @@ class TestBds50Decoder:
 
     def test_track_signed_and_normalised(self):
         # Track with sign=1 mag=0 -> -90 deg (raw x 90/512 where
-        # _signed(0, 10, 1) = -1024, times 90/512 = -180.0), then
-        # normalised to 180.0 via _normalise_angle's % 360 wrap.
+        # signed(0, 10, 1) = -1024, times 90/512 = -180.0), then
+        # normalised to 180.0 via normalise_angle's % 360 wrap.
         # This is the only test that exercises the signed track path
         # AND the non-trivial normalisation branch.
         mb = (
@@ -511,7 +511,7 @@ class TestBds50Decoder:
         assert result["true_track"] == pytest.approx(180.0, abs=0.001)
 
     def test_track_rate_signed_minimum_matches_v2(self):
-        # v2-parity pin: _signed(0, 9, sign=1) = -512, x 8/256 = -16.0.
+        # v2-parity pin: signed(0, 9, sign=1) = -512, x 8/256 = -16.0.
         # This is physically implausible (aircraft cannot turn at
         # 16 deg/s sustained) but matches v2 byte-for-byte. Document
         # the behaviour as a test so a future reviewer doesn't
@@ -542,16 +542,62 @@ class TestBds60Validator:
     def test_all_zeros_rejected(self):
         assert bds60.is_bds60(0) is False
 
+    def test_hdg_status_clear_but_sign_set_rejected(self):
+        # Stricter than v2: status=0 sign=1 is suspicious. Pins the
+        # first wrongstatus check in is_bds60.
+        mb = 1 << (55 - 1)  # only the heading sign bit set
+        assert bds60.is_bds60(mb) is False
+
+    def test_ias_above_500_rejected(self):
+        # Range check: indicated airspeed > 500 kt rejects.
+        # Set ias status + raw = 501 (raw is unsigned, <= 1023 max).
+        mb = (1 << (55 - 12)) | (501 << (55 - 22))
+        assert bds60.is_bds60(mb) is False
+
+    def test_mach_exactly_one_accepted(self):
+        # Mach = 1.0 is physically meaningful (sonic flight) and must
+        # be accepted. Raw 250 * 2.048/512 = 1.0 exactly. Pins the
+        # `> 1.0` vs `>= 1.0` boundary decision.
+        mb = (1 << (55 - 23)) | (250 << (55 - 33))
+        assert bds60.is_bds60(mb) is True
+
+    def test_mach_above_one_rejected(self):
+        # Range check: Mach > 1.0 rejects. Raw 251 * 2.048/512 ~= 1.004.
+        mb = (1 << (55 - 23)) | (251 << (55 - 33))
+        assert bds60.is_bds60(mb) is False
+
 
 class TestBds60Decoder:
     def test_golden_full_vector(self):
         mb = mb_of("A00004128F39F91A7E27C46ADC21")
         result = bds60.decode_bds60(mb)
-        assert result["heading_magnetic"] == pytest.approx(42.715, abs=0.01)
+        assert result["magnetic_heading"] == pytest.approx(42.715, abs=0.01)
         assert result["indicated_airspeed"] == 252
         assert result["mach"] == pytest.approx(0.42, abs=0.005)
-        assert result["vertical_rate_baro"] == -1920
-        assert result["vertical_rate_inertial"] == -1920
+        assert result["baro_vertical_rate"] == -1920
+        assert result["inertial_vertical_rate"] == -1920
+
+    def test_heading_signed_and_normalised(self):
+        # Heading with sign=1 mag=0 -> signed(0, 10, 1) = -1024, times
+        # 90/512 = -180.0, normalised via % 360.0 -> 180.0 exactly.
+        # Exercises the only bds60 code path that hits normalise_angle.
+        mb = (1 << (55 - 0)) | (1 << (55 - 1))
+        result = bds60.decode_bds60(mb)
+        assert result["magnetic_heading"] == pytest.approx(180.0, abs=0.001)
+
+    def test_vertical_rate_signed_negative(self):
+        # Baro vr with sign=1 mag=0 -> -512 * 32 = -16384 ft/min, which
+        # exceeds the |vr| <= 6000 range check and would reject.
+        # So use mag = 500: signed(500, 9, 1) = -12, * 32 = -384 ft/min.
+        # Pins the signed-vr-baro decode path independent of the
+        # golden vector.
+        mb = (
+            (1 << (55 - 34))  # vrb status
+            | (1 << (55 - 35))  # vrb sign
+            | (500 << (55 - 44))  # vrb mag 500
+        )
+        result = bds60.decode_bds60(mb)
+        assert result["baro_vertical_rate"] == -384
 
 
 class TestCommBRoutesToBds60:

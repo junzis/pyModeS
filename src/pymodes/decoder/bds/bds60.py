@@ -23,8 +23,8 @@ MB field layout (56 bits, 0-indexed from MB MSB):
 Validator range checks:
     indicated_airspeed <= 500 kt
     mach <= 1
-    |vertical_rate_baro| <= 6000 ft/min
-    |vertical_rate_inertial| <= 6000 ft/min
+    |baro_vertical_rate| <= 6000 ft/min
+    |inertial_vertical_rate| <= 6000 ft/min
 
 The v2 DF20-specific altitude-based IAS-vs-Mach cross-check is NOT
 implemented — it requires access to the full Mode-S header from the
@@ -92,7 +92,7 @@ def decode_bds60(mb: int) -> dict[str, Any]:
         sign = (mb >> (55 - 1)) & 0x1
         raw = (mb >> (55 - 11)) & 0x3FF
         deg = signed(raw, 10, sign) * 90.0 / 512.0
-        result["heading_magnetic"] = normalise_angle(deg)
+        result["magnetic_heading"] = normalise_angle(deg)
 
     if (mb >> (55 - 12)) & 0x1:
         result["indicated_airspeed"] = (mb >> (55 - 22)) & 0x3FF
@@ -103,11 +103,11 @@ def decode_bds60(mb: int) -> dict[str, Any]:
     if (mb >> (55 - 34)) & 0x1:
         sign = (mb >> (55 - 35)) & 0x1
         mag = (mb >> (55 - 44)) & 0x1FF
-        result["vertical_rate_baro"] = signed(mag, 9, sign) * 32
+        result["baro_vertical_rate"] = signed(mag, 9, sign) * 32
 
     if (mb >> (55 - 45)) & 0x1:
         sign = (mb >> (55 - 46)) & 0x1
         mag = (mb >> (55 - 55)) & 0x1FF
-        result["vertical_rate_inertial"] = signed(mag, 9, sign) * 32
+        result["inertial_vertical_rate"] = signed(mag, 9, sign) * 32
 
     return result
