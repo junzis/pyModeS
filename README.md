@@ -114,7 +114,7 @@ Reproduce with `scripts/benchmark_decode.py`.
 pymodes 3 is **not backwards-compatible** with pyModeS 2.x. The
 function-per-field API (`pms.adsb.callsign(msg)`, ...) is replaced
 by a single `decode()` returning a dict. See the [migration
-guide](https://pymodes.readthedocs.io/en/latest/migration/) for the full equivalence table.
+guide](https://github.com/junzis/pyModeS/blob/main/docs/migration.md) for the full equivalence table.
 
 If you aren't ready to migrate:
 
