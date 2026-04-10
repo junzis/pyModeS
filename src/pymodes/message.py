@@ -215,7 +215,7 @@ class Message:
         self,
         *,
         reference: tuple[float, float] | None = None,
-        airport: str | tuple[float, float] | None = None,
+        surface_ref: str | tuple[float, float] | None = None,
     ) -> Decoded:
         """Decode every field of this message.
 
@@ -227,14 +227,17 @@ class Message:
 
         Args:
             reference: Optional (lat, lon) for single-message airborne
-                CPR resolution. Must be within 180 NM of the true
-                position. If provided and the decoded message is a
-                BDS 0,5 airborne position, the result dict gains
-                `latitude` and `longitude` fields.
-            airport: Optional airport ICAO code or (lat, lon) tuple for
-                surface CPR (BDS 0,6) resolution. Required for surface
-                position decoding; if omitted, only raw CPR fields are
-                returned. Unknown airport codes raise ValueError.
+                CPR resolution (BDS 0,5). Must be within 180 NM of the
+                true position. If provided and the decoded message is
+                an airborne position, the result dict gains `latitude`
+                and `longitude` fields.
+            surface_ref: Optional reference for surface CPR (BDS 0,6)
+                resolution. Either an ICAO airport code (e.g. "EHAM")
+                looked up in the shipped database, or an explicit
+                (lat, lon) tuple (typically the receiver location).
+                Must be within 45 NM of the true position. If omitted,
+                only raw CPR fields are returned. Unknown airport
+                codes raise ValueError.
         """
         # Import locally to avoid circular import at module load time
         from pymodes.decoder import _DECODERS
@@ -257,7 +260,7 @@ class Message:
             )
             result.update(decoder.decode())
 
-        self._resolve_position(result, reference=reference, airport=airport)
+        self._resolve_position(result, reference=reference, surface_ref=surface_ref)
 
         return result
 
@@ -266,12 +269,12 @@ class Message:
         result: Decoded,
         *,
         reference: tuple[float, float] | None,
-        airport: str | tuple[float, float] | None,
+        surface_ref: str | tuple[float, float] | None,
     ) -> None:
         """Resolve single-msg CPR lat/lon in-place.
 
         Only runs for BDS 0,5 (airborne, needs `reference`) or BDS 0,6
-        (surface, needs `airport`). Pair resolution is handled by
+        (surface, needs `surface_ref`). Pair resolution is handled by
         PipeDecoder in phase 9.
         """
         bds = result.get("bds")
@@ -283,7 +286,7 @@ class Message:
         # Import locally to avoid loading position module at import time
         from pymodes.position import (
             airborne_position_with_ref,
-            resolve_airport,
+            resolve_surface_ref,
             surface_position_with_ref,
         )
 
@@ -299,9 +302,9 @@ class Message:
                 cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
             )
         else:  # 0,6
-            if airport is None:
+            if surface_ref is None:
                 return
-            lat_ref, lon_ref = resolve_airport(airport)
+            lat_ref, lon_ref = resolve_surface_ref(surface_ref)
             lat, lon = surface_position_with_ref(
                 cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
             )

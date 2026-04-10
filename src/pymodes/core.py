@@ -15,7 +15,7 @@ def decode(
     df: int | None = None,
     icao: str | None = None,
     reference: tuple[float, float] | None = None,
-    airport: str | tuple[float, float] | None = None,
+    surface_ref: str | tuple[float, float] | None = None,
 ) -> Decoded:
     """Decode a single Mode-S message.
 
@@ -32,10 +32,12 @@ def decode(
             position decoding (BDS 0,5). Must be within 180 NM of
             the true position. If omitted, only raw CPR fields are
             returned.
-        airport: ICAO airport code (string) or (lat, lon) tuple for
-            surface CPR (BDS 0,6) position decoding. Required for
-            surface position; if omitted, only raw CPR fields are
-            returned. Unknown airport codes raise ValueError.
+        surface_ref: Reference for surface CPR (BDS 0,6) decoding.
+            Either an ICAO airport code (e.g. "EHAM") looked up in
+            the shipped database, or an explicit (lat, lon) tuple
+            (typically the receiver location). Must be within 45 NM
+            of the true position. If omitted, only raw CPR fields
+            are returned. Unknown airport codes raise ValueError.
 
     Returns:
         A Decoded dict with at least `df`, `icao`, `crc_valid`. For
@@ -47,7 +49,7 @@ def decode(
         InvalidLengthError: if the input length is wrong.
         ValueError: if both or neither of msg/payload is provided,
             if `payload` is given without `df`/`icao`, or if
-            `airport` is an unknown ICAO code.
+            `surface_ref` is an unknown ICAO airport code.
     """
     if msg is None and payload is None:
         raise ValueError("exactly one of msg or payload must be provided")
@@ -62,4 +64,4 @@ def decode(
         assert msg is not None
         message = Message(msg, icao_hint=icao)
 
-    return message.decode(reference=reference, airport=airport)
+    return message.decode(reference=reference, surface_ref=surface_ref)
