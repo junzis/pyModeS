@@ -1,8 +1,9 @@
-"""One-shot snapshot of pyModeS 2.22.0 output over the tests/data/ corpus.
+"""One-shot snapshot of pyModeS 2.21.1 output over the tests/data/ corpus.
 
-Run with pyModeS 2.22.0 in a transient virtualenv:
+Run with pyModeS 2.21.1 in a transient virtualenv (2.22.0 is not
+published on PyPI; 2.21.1 is the latest v2 release):
 
-    uv run --with pyModeS==2.22.0 python scripts/snapshot_v2.py
+    uv run --no-project --with pyModeS==2.21.1 python scripts/snapshot_v2.py
 
 Reads the three CSVs under tests/data/, dedups by hex, caps each DF
 bucket at 200 messages, dispatches to v2 functions based on DF/TC/BDS,
@@ -24,9 +25,10 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-# v2 imports — only valid under `uv run --with pyModeS==2.22.0`.
-# We keep these as plain imports and let the script crash loudly if
-# the wrong env is used.
+# v2 imports — only valid under
+# `uv run --no-project --with pyModeS==2.21.1`. We keep these as
+# plain imports and let the script crash loudly if the wrong env
+# is used.
 from pyModeS import adsb, allcall, bds, commb, common  # type: ignore[import-not-found]
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -41,6 +43,31 @@ CSV_FILES = [
 ]
 
 
+def _extract_hex_msg(row: list[str]) -> str | None:
+    """Pick the Mode-S message cell from a CSV row.
+
+    The three CSVs have inconsistent column layouts:
+    - sample_data_adsb.csv:        timestamp, hex, icao, tc
+    - sample_data_commb_df20.csv:  timestamp, icao, hex
+    - sample_data_commb_df21.csv:  timestamp, icao, hex
+    Mode-S long messages are 28 hex chars and short are 14, while
+    ICAO addresses are always 6. Picking the longest all-hex cell
+    reliably distinguishes them regardless of column order.
+    """
+    best: str | None = None
+    for cell in row:
+        s = cell.strip().lower().lstrip("\ufeff")
+        if len(s) not in (14, 28):
+            continue
+        try:
+            int(s, 16)
+        except ValueError:
+            continue
+        if best is None or len(s) > len(best):
+            best = s
+    return best
+
+
 def _load_corpus() -> list[str]:
     """Load hex strings from all three CSVs, dedup, cap per DF."""
     seen: set[str] = set()
@@ -52,7 +79,7 @@ def _load_corpus() -> list[str]:
             for row in reader:
                 if len(row) < 2:
                     continue
-                hex_msg = row[1].strip().lower()
+                hex_msg = _extract_hex_msg(row)
                 if not hex_msg or hex_msg in seen:
                     continue
                 seen.add(hex_msg)
