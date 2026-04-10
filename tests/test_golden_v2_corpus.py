@@ -46,14 +46,40 @@ def _load_golden() -> dict[str, dict[str, Any]]:
     return data
 
 
-def _bds_normalize(v2_bds: str | None) -> str | None:
-    """Map v2's 'BDS10' style to v3's '1,0' style."""
-    if not v2_bds or not v2_bds.startswith("BDS"):
+def _bds_one(token: str) -> str:
+    """Convert a single 'BDSxy' token to v3's 'x,y' style."""
+    if token.startswith("BDS") and len(token) == 5:
+        return f"{token[3]},{token[4]}"
+    return token
+
+
+def _bds_normalize(v2_bds: str | None) -> str | set[str] | None:
+    """Map v2's BDS value to v3's style.
+
+    v2 may return a single 'BDS10'-style code or, when its
+    heuristic infer() can't pick a winner, a comma-separated
+    list like 'BDS17,BDS45'. v3 always picks a single winner
+    via the two-phase dispatch, so a match means the v3 code
+    is *one of* v2's candidates. Return a set in the multi
+    case so the comparison can use ``in`` semantics.
+    """
+    if not v2_bds or not isinstance(v2_bds, str):
         return v2_bds
-    tail = v2_bds[3:]
-    if len(tail) != 2:
-        return v2_bds
-    return f"{tail[0]},{tail[1]}"
+    if "," in v2_bds:
+        return {_bds_one(tok) for tok in v2_bds.split(",")}
+    return _bds_one(v2_bds)
+
+
+def _callsign_normalize(val: Any) -> Any:
+    """Strip v2's '_' pad characters from trailing callsign slots.
+
+    v2 emitted '_' for unused 6-bit slots beyond the callsign;
+    v3 strips whitespace and never emits '_' pads, so we trim
+    them from the v2 side for comparison.
+    """
+    if isinstance(val, str):
+        return val.rstrip("_")
+    return val
 
 
 def _icao_normalize(val: Any) -> Any:
@@ -92,13 +118,19 @@ def test_v3_matches_v2_golden(msg: str) -> None:
             v2_value = _bds_normalize(v2_value)
         if v2_key == "icao":
             v2_value = _icao_normalize(v2_value)
+        if v2_key == "callsign":
+            v2_value = _callsign_normalize(v2_value)
 
         v3_value = v3_output.get(v3_key)
         if v2_key == "icao":
             v3_value = _icao_normalize(v3_value)
         tol = V2_VALUE_TOLERANCE.get(v3_key)
 
-        if (
+        if isinstance(v2_value, set):
+            # bds: v2 emitted a candidate list, v3 picked one; match
+            # if v3's single winner is one of v2's candidates.
+            assert v3_value in v2_value, _mismatch(msg, v2_key, v2_value, v3_value)
+        elif (
             tol is not None
             and isinstance(v3_value, (int, float))
             and isinstance(v2_value, (int, float))
