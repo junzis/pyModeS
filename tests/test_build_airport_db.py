@@ -27,21 +27,18 @@ def test_filter_drops_small_airports():
     rows = [
         {
             "ident": "EHAM",
-            "name": "Schiphol",
             "type": "large_airport",
             "latitude_deg": "52.30806",
             "longitude_deg": "4.76417",
         },
         {
             "ident": "ZZZZ",
-            "name": "Private strip",
             "type": "small_airport",
             "latitude_deg": "1.0",
             "longitude_deg": "2.0",
         },
         {
             "ident": "KLAX",
-            "name": "Los Angeles Intl",
             "type": "medium_airport",
             "latitude_deg": "33.9425",
             "longitude_deg": "-118.40801",
@@ -58,7 +55,6 @@ def test_filter_drops_non_icao_idents():
         # Real 4-letter ICAO — keep
         {
             "ident": "EHAM",
-            "name": "Schiphol",
             "type": "large_airport",
             "latitude_deg": "52.3",
             "longitude_deg": "4.76",
@@ -66,21 +62,18 @@ def test_filter_drops_non_icao_idents():
         # Surrogate IDs OurAirports issues when no ICAO exists — drop
         {
             "ident": "5A8",
-            "name": "Aleknagik",
             "type": "medium_airport",
             "latitude_deg": "59.28",
             "longitude_deg": "-158.61",
         },
         {
             "ident": "07FA",
-            "name": "Ocean Reef",
             "type": "medium_airport",
             "latitude_deg": "25.32",
             "longitude_deg": "-80.27",
         },
         {
             "ident": "AE-0221",
-            "name": "Al Bateen Executive",
             "type": "medium_airport",
             "latitude_deg": "24.44",
             "longitude_deg": "54.51",
@@ -88,7 +81,6 @@ def test_filter_drops_non_icao_idents():
         # Lowercase — drop (ICAO codes are canonically uppercase)
         {
             "ident": "eham",
-            "name": "lowercase",
             "type": "large_airport",
             "latitude_deg": "52.3",
             "longitude_deg": "4.76",
@@ -96,6 +88,8 @@ def test_filter_drops_non_icao_idents():
     ]
     out = mod.filter_and_sort(rows)  # type: ignore[attr-defined]
     assert [r["icao"] for r in out] == ["EHAM"]
+    # Output rows should not carry the airport name
+    assert "name" not in out[0]
 
 
 def test_filter_drops_invalid_coords():
@@ -103,14 +97,12 @@ def test_filter_drops_invalid_coords():
     rows = [
         {
             "ident": "OKAY",
-            "name": "Good",
             "type": "large_airport",
             "latitude_deg": "1.0",
             "longitude_deg": "2.0",
         },
         {
             "ident": "BAD1",
-            "name": "Missing lat",
             "type": "large_airport",
             "latitude_deg": "",
             "longitude_deg": "2.0",
@@ -125,14 +117,14 @@ def test_write_module_produces_importable_file(tmp_path, monkeypatch):
     target = tmp_path / "airports.py"
     monkeypatch.setattr(mod, "OUTPUT", target)
     rows = [
-        {"icao": "AAAA", "name": 'Quote"Name', "lat": 1.0, "lon": 2.0},
-        {"icao": "BBBB", "name": "Plain", "lat": 3.5, "lon": 4.25},
+        {"icao": "AAAA", "lat": 1.0, "lon": 2.0},
+        {"icao": "BBBB", "lat": 3.5, "lon": 4.25},
     ]
     mod.write_module(rows)  # type: ignore[attr-defined]
     text = target.read_text()
     assert '"AAAA": (1.00000, 2.00000)' in text
     assert '"BBBB": (3.50000, 4.25000)' in text
-    # Escaped quote in name
-    assert '"Quote\\"Name"' in text
-    # Second dict present
-    assert "AIRPORT_NAMES" in text
+    # Generated file should NOT contain a names dict
+    assert "AIRPORT_NAMES" not in text
+    # Compile the generated file as a sanity check
+    compile(text, str(target), "exec")

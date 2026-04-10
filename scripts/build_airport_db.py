@@ -64,20 +64,9 @@ def filter_and_sort(rows: list[dict[str, str]]) -> list[dict[str, object]]:
             lon = float(row["longitude_deg"])
         except (KeyError, ValueError):
             continue
-        out.append(
-            {
-                "icao": row["ident"],
-                "name": row["name"],
-                "lat": lat,
-                "lon": lon,
-            }
-        )
+        out.append({"icao": row["ident"], "lat": lat, "lon": lon})
     out.sort(key=lambda r: r["icao"])  # type: ignore[arg-type,return-value]
     return out
-
-
-def _escape_name(name: str) -> str:
-    return name.replace("\\", "\\\\").replace('"', '\\"')
 
 
 def write_module(rows: list[dict[str, object]]) -> None:
@@ -86,11 +75,6 @@ def write_module(rows: list[dict[str, object]]) -> None:
         f.write(HEADER)
         for row in rows:
             f.write(f'    "{row["icao"]}": ({row["lat"]:.5f}, {row["lon"]:.5f}),\n')
-        f.write("}\n\n")
-        f.write("AIRPORT_NAMES: dict[str, str] = {\n")
-        for row in rows:
-            name = _escape_name(str(row["name"]))
-            f.write(f'    "{row["icao"]}": "{name}",\n')
         f.write("}\n")
 
 
