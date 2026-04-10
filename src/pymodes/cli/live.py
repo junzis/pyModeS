@@ -148,7 +148,7 @@ def _build_sink(args: argparse.Namespace) -> Any:
         # Lazy-import _tui.py so we only pay the rich import cost
         # when the user actually asks for the TUI.
         try:
-            from pymodes.cli._tui import TuiSink  # type: ignore[import-not-found]
+            from pymodes.cli._tui import TuiSink
         except ImportError as e:
             raise _TuiImportError(
                 "modes live: error: --tui requires the optional `rich` package.\n"
