@@ -3,7 +3,7 @@
 import pytest
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17, bds20, bds30
+from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -349,3 +349,54 @@ class TestCommBRoutesToBds30:
         assert result["bds"] == "3,0"
         assert result["issued_ra"] is True
         assert result["threat_type_indicator"] == 0
+
+
+class TestBds40Validator:
+    def test_valid_bds40_accepts(self):
+        mb = mb_of("A000029C85E42F313000007047D3")
+        assert bds40.is_bds40(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds40.is_bds40(0) is False
+
+    def test_reserved_bits_39_46_nonzero_rejected(self):
+        # Set one of the reserved bits (MB bit 39) in the valid vector.
+        mb = mb_of("A000029C85E42F313000007047D3")
+        mb_bad = mb | (1 << (55 - 39))
+        assert bds40.is_bds40(mb_bad) is False
+
+    def test_reserved_bits_51_52_nonzero_rejected(self):
+        mb = mb_of("A000029C85E42F313000007047D3")
+        mb_bad = mb | (1 << (55 - 51))
+        assert bds40.is_bds40(mb_bad) is False
+
+
+class TestBds40Decoder:
+    def test_golden_vector(self):
+        mb = mb_of("A000029C85E42F313000007047D3")
+        result = bds40.decode_bds40(mb)
+        assert result["selected_altitude_mcp"] == 3008
+        assert result["selected_altitude_fms"] == 3008
+        assert result["baro_pressure_setting"] == pytest.approx(1020.0)
+
+    def test_all_statuses_absent(self):
+        # MB with every status bit cleared — every gated field should
+        # be absent from the result dict. (Note: this MB would be
+        # rejected by is_bds40 because it's all-zero, but decode_bds40
+        # assumes its caller already validated. We exercise the
+        # "no statuses set" path of decode_bds40 directly here.)
+        result = bds40.decode_bds40(0)
+        assert "selected_altitude_mcp" not in result
+        assert "selected_altitude_fms" not in result
+        assert "baro_pressure_setting" not in result
+        assert "vnav_mode" not in result
+        assert "target_altitude_source" not in result
+
+
+class TestCommBRoutesToBds40:
+    def test_df20_bds40_end_to_end(self):
+        result = decode("A000029C85E42F313000007047D3")
+        assert result["df"] == 20
+        assert result["bds"] == "4,0"
+        assert result["selected_altitude_mcp"] == 3008
+        assert result["baro_pressure_setting"] == pytest.approx(1020.0)
