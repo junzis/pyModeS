@@ -298,3 +298,46 @@ class TestCprPairAccumulation:
         # overwrite the older pending entry, not add a second
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=1001.0)
         assert pipe.stats["pending_pairs"] == 1
+
+
+class TestEviction:
+    def test_old_pending_pair_evicted(self):
+        pipe = PipeDecoder(eviction_ttl=10.0, pair_window=10.0)
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=0.0)
+        assert pipe.stats["pending_pairs"] == 1
+        # 100s later, decode an unrelated message — eviction runs
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=100.0)
+        # Old pending entry should have been evicted
+        assert pipe.stats["pending_pairs"] == 0
+
+    def test_old_state_evicted(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe.decode("8D485020994409940838175B284F", timestamp=0.0)
+        assert "485020" in pipe._state
+        # 100s later, decode an unrelated ICAO
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=100.0)
+        # 485020's state is older than eviction_ttl → dropped
+        assert "485020" not in pipe._state
+
+    def test_recent_state_not_evicted(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe.decode("8D485020994409940838175B284F", timestamp=0.0)
+        # 5s later — within eviction window
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=5.0)
+        assert "485020" in pipe._state
+
+    def test_eviction_skipped_without_timestamp(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe.decode("8D485020994409940838175B284F", timestamp=0.0)
+        # Decoding without timestamp shouldn't trigger eviction
+        pipe.decode("8D406B902015A678D4D220AA4BDA")
+        assert "485020" in pipe._state
+
+    def test_trusted_icaos_not_evicted(self):
+        # The trusted set is permanent — no TTL applied
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=0.0)
+        assert "406B90" in pipe._trusted_icaos
+        # 1000s later
+        pipe.decode("8D485020994409940838175B284F", timestamp=1000.0)
+        assert "406B90" in pipe._trusted_icaos

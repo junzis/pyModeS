@@ -104,6 +104,8 @@ class PipeDecoder:
         decode returns, tracked fields in the result are merged back
         into state for future calls.
         """
+        if timestamp is not None:
+            self._evict_expired(timestamp)
         self._stats["total"] += 1
 
         try:
@@ -152,6 +154,35 @@ class PipeDecoder:
         self._handle_cpr_pair(result, icao, timestamp)
         self._update_state(icao, result, timestamp)
         return result
+
+    def _evict_expired(self, now: float) -> None:
+        """Drop state and pending CPR entries older than eviction_ttl.
+
+        Runs lazily at the start of each decode() call when a timestamp
+        is provided. The trusted ICAO set is intentionally NOT evicted —
+        once a plain-text DF17/18 has been seen for an ICAO, it remains
+        trusted for the lifetime of the PipeDecoder (until reset()).
+        """
+        cutoff = now - self._eviction_ttl
+
+        # Evict pending CPR frames (and decrement the stat)
+        for pending in (self._pending_even, self._pending_odd):
+            stale = [icao for icao, (t, _, _) in pending.items() if t < cutoff]
+            for icao in stale:
+                pending.pop(icao, None)
+                self._stats["pending_pairs"] = max(0, self._stats["pending_pairs"] - 1)
+
+        # Evict per-ICAO state. Only entries with a _last_seen timestamp
+        # are evictable; entries without (decoded with timestamp=None)
+        # never expire — but in practice they always have _last_seen
+        # because state is only written from a decode call.
+        stale_icaos = [
+            icao
+            for icao, st in self._state.items()
+            if st.get("_last_seen", float("inf")) < cutoff
+        ]
+        for icao in stale_icaos:
+            self._state.pop(icao, None)
 
     def _handle_cpr_pair(
         self,
