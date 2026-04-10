@@ -447,6 +447,39 @@ class TestBds50Validator:
     def test_all_zeros_rejected(self):
         assert bds50.is_bds50(0) is False
 
+    def test_roll_status_clear_but_sign_set_rejected(self):
+        # Stricter than v2: v2 skips the sign bit in its wrongstatus
+        # check, but v3 includes it because status=0/sign=1 is
+        # suspicious. Pin this divergence so a future refactor cannot
+        # silently restore v2's looser behavior.
+        mb = 1 << (55 - 1)  # Only the roll sign bit set; roll status = 0.
+        assert bds50.is_bds50(mb) is False
+
+    def test_gs_status_clear_but_raw_nonzero_rejected(self):
+        # Plain unsigned wrongstatus: gs status (bit 23) = 0 but gs
+        # raw (bits 24-33) = 100 → inconsistent, must reject.
+        mb = 100 << (55 - 33)  # gs raw = 100, status bit unset
+        assert bds50.is_bds50(mb) is False
+
+    def test_groundspeed_above_600_rejected(self):
+        # Range check: gs > 600 kt rejected. gs scale is x2, so
+        # raw = 301 -> 602 kt which must fail. Set gs status + raw.
+        mb = (1 << (55 - 23)) | (301 << (55 - 33))
+        assert bds50.is_bds50(mb) is False
+
+    def test_tas_minus_gs_above_200_rejected(self):
+        # Cross-field check: |tas - gs| > 200 kt rejected. Set gs=300
+        # (raw 150) and tas=600 (raw 300), delta=300. Both status bits
+        # and both values within their own ranges, so only the
+        # cross-field check fires.
+        mb = (
+            (1 << (55 - 23))  # gs status
+            | (150 << (55 - 33))  # gs raw = 150 → 300 kt
+            | (1 << (55 - 45))  # tas status
+            | (300 << (55 - 55))  # tas raw = 300 → 600 kt
+        )
+        assert bds50.is_bds50(mb) is False
+
 
 class TestBds50Decoder:
     def test_golden_full_vector(self):
@@ -462,6 +495,34 @@ class TestBds50Decoder:
         mb = mb_of("A0001691FFD263377FFCE02B2BF9")
         result = bds50.decode_bds50(mb)
         assert result["roll"] == pytest.approx(-0.35, abs=0.05)
+
+    def test_track_signed_and_normalised(self):
+        # Track with sign=1 mag=0 -> -90 deg (raw x 90/512 where
+        # _signed(0, 10, 1) = -1024, times 90/512 = -180.0), then
+        # normalised to 180.0 via _normalise_angle's % 360 wrap.
+        # This is the only test that exercises the signed track path
+        # AND the non-trivial normalisation branch.
+        mb = (
+            (1 << (55 - 11))  # track status
+            | (1 << (55 - 12))  # track sign bit
+            # track raw bits 13-22 remain 0
+        )
+        result = bds50.decode_bds50(mb)
+        assert result["true_track"] == pytest.approx(180.0, abs=0.001)
+
+    def test_track_rate_signed_minimum_matches_v2(self):
+        # v2-parity pin: _signed(0, 9, sign=1) = -512, x 8/256 = -16.0.
+        # This is physically implausible (aircraft cannot turn at
+        # 16 deg/s sustained) but matches v2 byte-for-byte. Document
+        # the behaviour as a test so a future reviewer doesn't
+        # "fix" it without understanding the v2 parity constraint.
+        mb = (
+            (1 << (55 - 34))  # track_rate status
+            | (1 << (55 - 35))  # track_rate sign bit
+            # track_rate magnitude bits 36-44 remain 0
+        )
+        result = bds50.decode_bds50(mb)
+        assert result["track_rate"] == pytest.approx(-16.0, abs=0.001)
 
 
 class TestCommBRoutesToBds50:
