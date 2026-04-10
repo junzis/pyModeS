@@ -106,3 +106,57 @@ class TestAirbornePositionWithRef:
         lat, lon = airborne_position_with_ref(fmt, lat_cpr, lon_cpr, lat_ref, lon_ref)
         assert lat == pytest.approx(30.50540, abs=0.001)
         assert lon == pytest.approx(33.44787, abs=0.001)
+
+
+class TestAirbornePositionPair:
+    @staticmethod
+    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
+        n = int(hex_msg, 16)
+        payload = (n >> 24) & ((1 << 56) - 1)
+        return (
+            (payload >> 34) & 0x1,
+            (payload >> 17) & 0x1FFFF,
+            payload & 0x1FFFF,
+        )
+
+    def test_pair_odd_newer(self):
+        """Matches v2 tests/test_adsb.py::test_adsb_position — odd frame is newer."""
+        from pymodes.position._cpr import airborne_position_pair
+
+        _, elat, elon = self._cpr_fields("8D40058B58C901375147EFD09357")
+        _, olat, olon = self._cpr_fields("8D40058B58C904A87F402D3B8C59")
+        result = airborne_position_pair(elat, elon, olat, olon, even_is_newer=False)
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(49.81755, abs=0.001)
+        assert lon == pytest.approx(6.08442, abs=0.001)
+
+    def test_pair_even_is_newer(self):
+        """Same CPR pair, but reverse the newer flag.
+
+        With even newer, the algorithm uses the even-frame latitude zone
+        and the result is slightly different from the odd-newer case.
+        Expected values computed by running the same formula with
+        even_is_newer=True.
+        """
+        from pymodes.position._cpr import airborne_position_pair
+
+        _, elat, elon = self._cpr_fields("8D40058B58C901375147EFD09357")
+        _, olat, olon = self._cpr_fields("8D40058B58C904A87F402D3B8C59")
+        result = airborne_position_pair(elat, elon, olat, olon, even_is_newer=True)
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(49.82410, abs=0.001)
+        assert lon == pytest.approx(6.06785, abs=0.001)
+
+    def test_pair_zone_mismatch_returns_none(self):
+        """CPR pair whose resolved latitudes fall in different NL zones.
+
+        cpr_lat_even=8192 → lat≈66.38° (NL=23)
+        cpr_lat_odd=114688 → lat≈66.36° (NL=24)
+        Found by grid search over the NL formula.
+        """
+        from pymodes.position._cpr import airborne_position_pair
+
+        result = airborne_position_pair(8192, 0, 114688, 0, even_is_newer=True)
+        assert result is None

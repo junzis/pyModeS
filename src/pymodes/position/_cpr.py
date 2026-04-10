@@ -136,6 +136,61 @@ def airborne_position_with_ref(
     return lat, lon
 
 
+def airborne_position_pair(
+    cpr_lat_even_raw: int,
+    cpr_lon_even_raw: int,
+    cpr_lat_odd_raw: int,
+    cpr_lon_odd_raw: int,
+    *,
+    even_is_newer: bool,
+) -> tuple[float, float] | None:
+    """Resolve absolute lat/lon from an even/odd CPR pair.
+
+    Per DO-260B §A.1.7.3. Caller must pass the even CPR fields in
+    the even_* parameters and the odd CPR fields in the odd_*
+    parameters. `even_is_newer` selects which frame's latitude zone
+    to use (the newer message defines the reported position).
+
+    Returns (lat, lon) if both frames fall in the same latitude
+    zone (cprNL equal), otherwise None.
+    """
+    cprlat_even = cpr_lat_even_raw / _CPR_DENOM
+    cprlon_even = cpr_lon_even_raw / _CPR_DENOM
+    cprlat_odd = cpr_lat_odd_raw / _CPR_DENOM
+    cprlon_odd = cpr_lon_odd_raw / _CPR_DENOM
+
+    j = floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
+
+    lat_even = (360.0 / 60) * (j % 60 + cprlat_even)
+    lat_odd = (360.0 / 59) * (j % 59 + cprlat_odd)
+
+    if lat_even >= 270:
+        lat_even -= 360
+    if lat_odd >= 270:
+        lat_odd -= 360
+
+    if cprNL(lat_even) != cprNL(lat_odd):
+        return None
+
+    if even_is_newer:
+        lat = lat_even
+        nl = cprNL(lat)
+        ni = max(nl, 1)
+        m = floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
+        lon = (360.0 / ni) * (m % ni + cprlon_even)
+    else:
+        lat = lat_odd
+        nl = cprNL(lat)
+        ni = max(nl - 1, 1)
+        m = floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
+        lon = (360.0 / ni) * (m % ni + cprlon_odd)
+
+    if lon > 180:
+        lon -= 360
+
+    return lat, lon
+
+
 if __name__ == "__main__":
     # Regeneration recipe — run this file directly to reprint the
     # _NL_BOUNDARIES table. Formula per DO-260B §A.1.7.2 with nz=15:
