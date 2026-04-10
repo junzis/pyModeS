@@ -64,6 +64,7 @@ class PipeDecoder:
         "_state",
         "_stats",
         "_surface_ref",
+        "_trusted_icaos",
     )
 
     def __init__(
@@ -81,6 +82,7 @@ class PipeDecoder:
         self._state: dict[str, dict[str, Any]] = {}
         self._pending_even: dict[str, tuple[float, int, int]] = {}
         self._pending_odd: dict[str, tuple[float, int, int]] = {}
+        self._trusted_icaos: set[str] = set()
         self._stats: dict[str, int] = {
             "total": 0,
             "decoded": 0,
@@ -132,6 +134,15 @@ class PipeDecoder:
         if result.get("crc_valid") is False:
             self._stats["crc_fail"] += 1
 
+        # Promote ICAO to trusted set if this message has a plain-text
+        # ICAO (DF11/17/18) and CRC validated. Subsequent DF20/21
+        # decodes for the same ICAO get icao_verified=True because the
+        # CRC-derived ICAO matches one we've seen in plain text.
+        if message.df in (11, 17, 18) and result.get("crc_valid") is True:
+            self._trusted_icaos.add(icao)
+        elif message.df in (20, 21) and icao in self._trusted_icaos:
+            result["icao_verified"] = True
+
         self._update_state(icao, result, timestamp)
         return result
 
@@ -177,5 +188,6 @@ class PipeDecoder:
         self._state.clear()
         self._pending_even.clear()
         self._pending_odd.clear()
+        self._trusted_icaos.clear()
         for k in self._stats:
             self._stats[k] = 0

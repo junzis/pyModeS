@@ -194,3 +194,41 @@ class TestEndToEndDisambiguation:
         assert state.get("tas") == 375
         # And NOT to known["ias"]
         assert "ias" not in state
+
+
+class TestIcaoVerification:
+    def test_df20_unverified_without_prior_observation(self):
+        pipe = PipeDecoder()
+        # No DF11/17/18 has been seen for this ICAO yet
+        result = pipe.decode("a000029cffbaa11e2004727281f1")
+        assert result.get("icao_verified") is False
+
+    def test_df20_verified_after_synthetic_trusted_observation(self):
+        pipe = PipeDecoder()
+        # Force-trust ICAO 4243D0 directly (the ICAO encoded in the
+        # DF20 vector below). This avoids needing a paired real DF17
+        # vector — we're testing the verification logic, not the
+        # population logic, which is covered by the next test.
+        pipe._trusted_icaos.add("4243D0")
+        result = pipe.decode("a000029cffbaa11e2004727281f1", timestamp=1001.0)
+        assert result["icao_verified"] is True
+
+    def test_trusted_set_populated_by_df17(self):
+        pipe = PipeDecoder()
+        # Any clean DF17 message populates the trusted set with its ICAO
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
+        assert "406B90" in pipe._trusted_icaos
+
+    def test_trusted_set_not_populated_by_failing_crc(self):
+        pipe = PipeDecoder()
+        # Flip a bit in the DF17 to break the CRC
+        n = int("8D406B902015A678D4D220AA4BDA", 16) ^ (1 << 50)
+        pipe.decode(f"{n:028X}", timestamp=1000.0)
+        assert "406B90" not in pipe._trusted_icaos
+
+    def test_reset_clears_trusted_set(self):
+        pipe = PipeDecoder()
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
+        assert "406B90" in pipe._trusted_icaos
+        pipe.reset()
+        assert "406B90" not in pipe._trusted_icaos
