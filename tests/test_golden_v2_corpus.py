@@ -1,0 +1,87 @@
+"""Golden-file oracle test: v3 decode output must match pyModeS 2.22.0.
+
+Loads tests/fixtures/golden_v2.json (a deduplicated + per-DF-capped
+snapshot of pyModeS 2.22.0 output on tests/data/*.csv) and asserts
+that pymodes.decode() produces matching values for every v2-emitted
+key.
+
+Renamed keys are mapped via pymodes._v2_compat.V2_DEPRECATED_KEYS.
+Numeric fields with known small divergence use absolute tolerances
+from V2_VALUE_TOLERANCE. Unknown mismatches fail the test with a
+precise message identifying the hex and the mismatched key.
+
+If the snapshot itself recorded a v2 error for a given message
+(``_v2_error`` key), the comparison is skipped for that message.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from pymodes import decode
+from pymodes._v2_compat import V2_DEPRECATED_KEYS, V2_VALUE_TOLERANCE
+
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_v2.json"
+
+
+def _load_golden() -> dict[str, dict[str, Any]]:
+    with FIXTURE_PATH.open() as f:
+        data = json.load(f)
+    return data
+
+
+def _bds_normalize(v2_bds: str | None) -> str | None:
+    """Map v2's 'BDS10' style to v3's '1,0' style."""
+    if not v2_bds or not v2_bds.startswith("BDS"):
+        return v2_bds
+    tail = v2_bds[3:]
+    if len(tail) != 2:
+        return v2_bds
+    return f"{tail[0]},{tail[1]}"
+
+
+def _mismatch(msg: str, key: str, v2_value: Any, v3_value: Any) -> str:
+    return f"mismatch on {msg[:16]}... key={key!r}: v2={v2_value!r} v3={v3_value!r}"
+
+
+GOLDEN = _load_golden()
+
+
+@pytest.mark.parametrize("msg", sorted(GOLDEN.keys()))
+def test_v3_matches_v2_golden(msg: str) -> None:
+    v2_output = GOLDEN[msg]
+    if "_v2_error" in v2_output:
+        pytest.skip(f"v2 itself failed on {msg[:16]}: {v2_output['_v2_error']}")
+
+    v3_output = decode(msg)
+
+    for v2_key, v2_value in v2_output.items():
+        v3_key = V2_DEPRECATED_KEYS.get(v2_key, v2_key)
+
+        # Normalize the bds key v2↔v3 style difference in the test,
+        # not in the snapshot, so the snapshot stays faithful to v2.
+        if v2_key == "bds":
+            v2_value = _bds_normalize(v2_value)
+
+        v3_value = v3_output.get(v3_key)
+        tol = V2_VALUE_TOLERANCE.get(v3_key)
+
+        if (
+            tol is not None
+            and isinstance(v3_value, (int, float))
+            and isinstance(v2_value, (int, float))
+        ):
+            assert abs(v3_value - v2_value) < tol, _mismatch(
+                msg, v2_key, v2_value, v3_value
+            )
+        else:
+            assert v3_value == v2_value, _mismatch(msg, v2_key, v2_value, v3_value)
+
+
+def test_golden_fixture_has_entries() -> None:
+    """Fixture must not be empty (catches accidental wipe of golden_v2.json)."""
+    assert len(GOLDEN) >= 100, f"golden fixture only has {len(GOLDEN)} entries"
