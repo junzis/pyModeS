@@ -7,9 +7,13 @@ from pymodes.position._airports import resolve_airport
 
 class TestResolveAirport:
     def test_known_code(self):
+        # Tolerance ~100 m — the shipped dataset is refreshed from
+        # OurAirports, whose coordinates may drift slightly between
+        # releases. The test just needs to confirm a plausible
+        # position for a well-known airport.
         lat, lon = resolve_airport("EHAM")
-        assert lat == pytest.approx(52.30806)
-        assert lon == pytest.approx(4.76417)
+        assert lat == pytest.approx(52.308, abs=0.01)
+        assert lon == pytest.approx(4.764, abs=0.01)
 
     def test_tuple_passthrough(self):
         assert resolve_airport((49.0, 6.0)) == (49.0, 6.0)
@@ -18,8 +22,8 @@ class TestResolveAirport:
         with pytest.raises(ValueError, match="unknown airport code"):
             resolve_airport("ZZZZ")
 
-    def test_seed_contains_expected_airports(self):
+    def test_dataset_contains_expected_airports(self):
         from pymodes.data.airports import AIRPORTS
 
-        for code in ("EHAM", "KJFK", "NZCH", "LFPG"):
+        for code in ("EHAM", "KJFK", "NZCH", "LFPG", "EGLL", "RJTT"):
             assert code in AIRPORTS

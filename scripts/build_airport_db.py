@@ -6,6 +6,7 @@ to the repo so users don't pay download cost on install.
 
 Usage:
     uv run scripts/build_airport_db.py
+    uv run ruff format src/pymodes/data/airports.py
 """
 
 from __future__ import annotations
@@ -19,7 +20,8 @@ SOURCE = "https://davidmegginson.github.io/ourairports-data/airports.csv"
 OUTPUT = Path(__file__).parent.parent / "src" / "pymodes" / "data" / "airports.py"
 ALLOWED_TYPES = ("large_airport", "medium_airport")
 
-HEADER = '''"""Curated airport database.
+HEADER = '''# ruff: noqa: E501, RUF001
+"""Curated airport database.
 
 Generated from OurAirports dataset by scripts/build_airport_db.py.
 Source: https://davidmegginson.github.io/ourairports-data/airports.csv
