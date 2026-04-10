@@ -135,10 +135,16 @@ class PipeDecoder:
             self._stats["crc_fail"] += 1
 
         # Promote ICAO to trusted set if this message has a plain-text
-        # ICAO (DF11/17/18) and CRC validated. Subsequent DF20/21
-        # decodes for the same ICAO get icao_verified=True because the
+        # ICAO (DF17/18) and CRC validated. Subsequent DF20/21 decodes
+        # for the same ICAO get icao_verified=True because the
         # CRC-derived ICAO matches one we've seen in plain text.
-        if message.df in (11, 17, 18) and result.get("crc_valid") is True:
+        #
+        # DF11 is intentionally excluded: Message.crc_valid for DF11 is
+        # hardcoded True (no actual II/SI syndrome check), so a corrupt
+        # DF11 with a garbage ICAO would pollute the trusted set. When
+        # full DF11 II/SI handling lands in a future plan, DF11 can join
+        # the promotion list.
+        if message.df in (17, 18) and result.get("crc_valid") is True:
             self._trusted_icaos.add(icao)
         elif message.df in (20, 21) and icao in self._trusted_icaos:
             result["icao_verified"] = True
