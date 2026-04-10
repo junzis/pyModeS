@@ -11,7 +11,7 @@ class TestAdsbDispatchIdentification:
         assert result["icao"] == "406B90"
         assert result["typecode"] == 4
         assert result["bds"] == "0,8"
-        assert result["callsign"] == "EZY85MH_"
+        assert result["callsign"] == "EZY85MH"
         assert result["category"] == 0
 
     def test_df18_routes_to_same_dispatch(self):

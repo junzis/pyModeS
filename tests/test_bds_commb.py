@@ -136,16 +136,16 @@ class TestBds20Validator:
 
     def test_hash_char_rejected(self):
         # A forged MB with BDS ID 0x20 and all-zero callsign bits.
-        # Character index 0 is '#' in the _CALLSIGN_CHARS table, so
-        # every one of the 8 six-bit slots would decode to '#' and
-        # the validator must reject.
+        # Character index 0 maps to '#' (invalid) in the ASCII-derived
+        # callsign table, so every one of the 8 six-bit slots would
+        # decode to '#' and the validator must reject.
         mb = 0x20 << 48  # prefix 0x20, callsign bits all zero
         assert bds20.is_bds20(mb) is False
 
     def test_mid_range_hash_char_rejected(self):
-        # Indices 33-36 also map to '#' in _CALLSIGN_CHARS but the
-        # original v2 heuristic missed them. Force MB prefix 0x20 with
-        # all 8 callsign slots at index 33 — validator must reject.
+        # Indices 33-36 also map to '#' (invalid) but the original v2
+        # heuristic missed them. Force MB prefix 0x20 with all 8
+        # callsign slots at index 33 — validator must reject.
         cs = 0
         for _ in range(8):
             cs = (cs << 6) | 33
@@ -153,29 +153,32 @@ class TestBds20Validator:
         assert bds20.is_bds20(mb) is False
 
     def test_all_space_callsign_accepted(self):
-        # Index 32 ('_') is the ASCII space in the v2 table and is a
-        # valid (if blank) callsign character. Pin the boundary so a
-        # future edit to the invalid set cannot over-reject index 32.
+        # Index 32 is ASCII space and is a valid (if blank) callsign
+        # character. Pin the boundary so a future edit to the invalid
+        # set cannot over-reject index 32. The decoder strips leading
+        # and trailing whitespace, so an all-space callsign returns "".
         cs = 0
         for _ in range(8):
             cs = (cs << 6) | 32
         mb = (0x20 << 48) | cs
         assert bds20.is_bds20(mb) is True
-        assert bds20.decode_bds20(mb) == {"callsign": "________"}
+        assert bds20.decode_bds20(mb) == {"callsign": ""}
 
 
 class TestBds20Decoder:
     def test_decodes_callsign(self):
         mb = mb_of("A000083E202CC371C31DE0AA1CCF")
-        assert bds20.decode_bds20(mb) == {"callsign": "KLM1017_"}
+        assert bds20.decode_bds20(mb) == {"callsign": "KLM1017"}
 
     def test_decodes_second_callsign(self):
         mb = mb_of("A0001993202422F2E37CE038738E")
-        assert bds20.decode_bds20(mb) == {"callsign": "IBK2873_"}
+        assert bds20.decode_bds20(mb) == {"callsign": "IBK2873"}
 
     def test_decodes_padded_callsign(self):
+        # v2 display was "EXS2MF__" (two trailing underscores as the
+        # space placeholder). v3 strips trailing whitespace.
         mb = mb_of("A0001838201584F23468207CDFA5")
-        assert bds20.decode_bds20(mb) == {"callsign": "EXS2MF__"}
+        assert bds20.decode_bds20(mb) == {"callsign": "EXS2MF"}
 
 
 class TestCommBRoutesToBds20:
@@ -183,4 +186,4 @@ class TestCommBRoutesToBds20:
         result = decode("A000083E202CC371C31DE0AA1CCF")
         assert result["df"] == 20
         assert result["bds"] == "2,0"
-        assert result["callsign"] == "KLM1017_"
+        assert result["callsign"] == "KLM1017"

@@ -7,11 +7,12 @@ from pymodes.decoder.bds.bds08 import decode_bds08
 class TestBds08CallsignAndCategory:
     def test_ezy85mh_from_v2_corpus(self):
         # Golden from v2 test_adsb_callsign + test_adsb_category:
-        # msg = "8D406B902015A678D4D220AA4BDA", callsign EZY85MH_, category 0
+        # msg = "8D406B902015A678D4D220AA4BDA", callsign "EZY85MH "
+        # (one trailing space which the decoder strips), category 0
         # ME = msg[8:22] as int
         me = 0x2015A678D4D220
         result = decode_bds08(me)
-        assert result["callsign"] == "EZY85MH_"
+        assert result["callsign"] == "EZY85MH"
         assert result["category"] == 0
 
     def test_category_no_info_wake_vortex(self):
@@ -31,7 +32,7 @@ class TestBds08EndToEnd:
         assert result["icao"] == "406B90"
         assert result["typecode"] == 4
         assert result["bds"] == "0,8"
-        assert result["callsign"] == "EZY85MH_"
+        assert result["callsign"] == "EZY85MH"
         assert result["category"] == 0
         assert result["wake_vortex"] == "No category information"
 
