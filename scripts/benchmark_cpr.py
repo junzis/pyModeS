@@ -49,7 +49,7 @@ def v2_airborne_with_ref(
     return lat, lon
 
 
-def bench(name: str, fn: Callable[[], None], n: int) -> float:
+def bench(name: str, fn: Callable[[], object], n: int) -> float:
     t0 = time.perf_counter_ns()
     for _ in range(n):
         fn()
