@@ -211,7 +211,12 @@ class Message:
             return None
         return extract_unsigned(self._n, 32, 5, self._length)
 
-    def decode(self) -> Decoded:
+    def decode(
+        self,
+        *,
+        reference: tuple[float, float] | None = None,
+        airport: str | tuple[float, float] | None = None,
+    ) -> Decoded:
         """Decode every field of this message.
 
         Returns a Decoded dict containing df, icao, crc_valid, and
@@ -219,6 +224,17 @@ class Message:
         extracts. For DF20/21 the dict also includes `icao_verified`
         (True when an `icao_hint` was supplied at construction time,
         False when the ICAO was derived from the CRC remainder).
+
+        Args:
+            reference: Optional (lat, lon) for single-message airborne
+                CPR resolution. Must be within 180 NM of the true
+                position. If provided and the decoded message is a
+                BDS 0,5 airborne position, the result dict gains
+                `latitude` and `longitude` fields.
+            airport: Optional airport ICAO code or (lat, lon) tuple for
+                surface CPR (BDS 0,6) resolution. Required for surface
+                position decoding; if omitted, only raw CPR fields are
+                returned. Unknown airport codes raise ValueError.
         """
         # Import locally to avoid circular import at module load time
         from pymodes.decoder import _DECODERS
@@ -241,4 +257,54 @@ class Message:
             )
             result.update(decoder.decode())
 
+        self._resolve_position(result, reference=reference, airport=airport)
+
         return result
+
+    @staticmethod
+    def _resolve_position(
+        result: Decoded,
+        *,
+        reference: tuple[float, float] | None,
+        airport: str | tuple[float, float] | None,
+    ) -> None:
+        """Resolve single-msg CPR lat/lon in-place.
+
+        Only runs for BDS 0,5 (airborne, needs `reference`) or BDS 0,6
+        (surface, needs `airport`). Pair resolution is handled by
+        PipeDecoder in phase 9.
+        """
+        bds = result.get("bds")
+        if bds not in ("0,5", "0,6"):
+            return
+        if "cpr_format" not in result:
+            return
+
+        # Import locally to avoid loading position module at import time
+        from pymodes.position import (
+            airborne_position_with_ref,
+            resolve_airport,
+            surface_position_with_ref,
+        )
+
+        cpr_format = result["cpr_format"]
+        cpr_lat = result["cpr_lat"]
+        cpr_lon = result["cpr_lon"]
+
+        if bds == "0,5":
+            if reference is None:
+                return
+            lat_ref, lon_ref = reference
+            lat, lon = airborne_position_with_ref(
+                cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
+            )
+        else:  # 0,6
+            if airport is None:
+                return
+            lat_ref, lon_ref = resolve_airport(airport)
+            lat, lon = surface_position_with_ref(
+                cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
+            )
+
+        result["latitude"] = lat
+        result["longitude"] = lon
