@@ -458,6 +458,58 @@ class TestBds44Validator:
         mb_bad = (mb & ~(0xF << (55 - 3))) | (0b0101 << (55 - 3))
         assert bds44.is_bds44(mb_bad) is False
 
+    def test_wind_speed_above_250_rejected(self):
+        # Force wind_speed = 251 with valid FOM (≤ 4) and wind_status=1.
+        # All other fields zero. Validator must reject on the range check.
+        mb = (
+            (1 << (55 - 3))  # FOM = 1 (MB bit 3 = LSB of 4-bit FOM)
+            | (1 << (55 - 4))  # wind status
+            | (251 << (55 - 13))  # wind speed raw 251
+        )
+        assert bds44.is_bds44(mb) is False
+
+    def test_temperature_above_60_rejected(self):
+        # Force wind valid (so the wind_status and wind range pass)
+        # and temperature raw = 241 → +60.25 °C → reject.
+        mb = (
+            (1 << (55 - 3))
+            | (1 << (55 - 4))
+            | (50 << (55 - 13))  # wind speed 50 kt
+            | (241 << (55 - 33))  # temperature raw = 241, sign=0 → +60.25 °C
+        )
+        assert bds44.is_bds44(mb) is False
+
+    def test_temperature_below_minus_80_rejected(self):
+        # Sign=1 magnitude=703 → signed = 703 - 1024 = -321 → -80.25 °C.
+        mb = (
+            (1 << (55 - 3))
+            | (1 << (55 - 4))
+            | (50 << (55 - 13))  # wind speed 50 kt
+            | (1 << (55 - 23))  # temperature sign bit
+            | (703 << (55 - 33))  # magnitude
+        )
+        assert bds44.is_bds44(mb) is False
+
+    def test_all_zero_meteo_rejected(self):
+        # Valid FOM, wind_status=1, but wind_speed=wind_dir=temp=0.
+        # The compound check on the last line of is_bds44 must fire
+        # (NOT the mb==0 early return, because FOM bit and wind status
+        # bit make mb != 0).
+        mb = (1 << (55 - 3)) | (1 << (55 - 4))
+        assert bds44.is_bds44(mb) is False
+
+    def test_pressure_status_clear_but_raw_nonzero_rejected(self):
+        # Valid wind + non-zero temperature to clear upstream checks.
+        # Pressure status=0, pressure raw = 1 → wrong_status rejects.
+        mb = (
+            (1 << (55 - 3))
+            | (1 << (55 - 4))
+            | (50 << (55 - 13))  # wind speed 50 kt
+            | (100 << (55 - 33))  # temperature raw = 100 → +25 °C
+            | (1 << (55 - 45))  # pressure raw bit 45 set, status bit 34 is 0
+        )
+        assert bds44.is_bds44(mb) is False
+
 
 class TestBds44Decoder:
     def test_golden_vector(self):
@@ -466,8 +518,33 @@ class TestBds44Decoder:
         assert result["wind_speed"] == 22
         assert result["wind_direction"] == pytest.approx(344.5, abs=0.5)
         assert result["static_air_temperature"] == pytest.approx(-48.75, abs=0.1)
+        assert result["figure_of_merit"] == 1
         assert "static_pressure" not in result
         assert "humidity" not in result
+
+    def test_multi_field_decode(self):
+        # Exercise the pressure/turbulence/humidity branches that the
+        # golden vector leaves empty. All three status bits set, with
+        # representative raw values.
+        mb = (
+            (1 << (55 - 3))  # FOM = 1
+            | (1 << (55 - 4))  # wind status
+            | (50 << (55 - 13))  # wind speed 50 kt
+            | (256 << (55 - 22))  # wind direction raw 256 → 180.0 deg
+            | (1 << (55 - 34))  # pressure status
+            | (1013 << (55 - 45))  # pressure 1013 hPa
+            | (1 << (55 - 46))  # turbulence status
+            | (0b10 << (55 - 48))  # turbulence level 2 (Moderate)
+            | (1 << (55 - 49))  # humidity status
+            | (32 << (55 - 55))  # humidity raw 32 → 50.0%
+        )
+        result = bds44.decode_bds44(mb)
+        assert result["figure_of_merit"] == 1
+        assert result["wind_speed"] == 50
+        assert result["wind_direction"] == pytest.approx(180.0, abs=0.01)
+        assert result["static_pressure"] == 1013
+        assert result["turbulence"] == 2
+        assert result["humidity"] == pytest.approx(50.0, abs=0.01)
 
 
 class TestCommBRoutesToBds44:

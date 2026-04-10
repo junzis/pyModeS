@@ -24,7 +24,7 @@ MB field layout (56 bits, 0-indexed from MB MSB):
 
 from typing import Any
 
-from pymodes.decoder.bds._helpers import wrong_status
+from pymodes.decoder.bds._helpers import signed, wrong_status
 
 
 def is_bds44(mb: int) -> bool:
@@ -84,8 +84,7 @@ def decode_bds44(mb: int) -> dict[str, Any]:
     # actually the sign bit in this layout).
     temp_sign = (mb >> (55 - 23)) & 0x1
     temp_raw = (mb >> (55 - 33)) & 0x3FF
-    temp_signed = temp_raw - 1024 if temp_sign else temp_raw
-    result["static_air_temperature"] = temp_signed * 0.25
+    result["static_air_temperature"] = signed(temp_raw, 10, temp_sign) * 0.25
 
     if (mb >> (55 - 34)) & 0x1:
         result["static_pressure"] = (mb >> (55 - 45)) & 0x7FF
