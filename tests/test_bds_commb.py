@@ -214,6 +214,12 @@ class TestBds30Validator:
         mb = 0x30_80_00_00_00_00_00 | (48 << (55 - 21))
         assert bds30.is_bds30(mb) is False
 
+    def test_ara_reserved_47_accepted(self):
+        # Boundary: ARA reserved = 47 is the maximum accepted value.
+        # Paired with test_ara_reserved_ge_48_rejected to pin the band.
+        mb = 0x30_80_00_00_00_00_00 | (47 << (55 - 21))
+        assert bds30.is_bds30(mb) is True
+
 
 class TestBds30Decoder:
     def test_minimal_ra_no_threat(self):
@@ -267,6 +273,67 @@ class TestBds30Decoder:
         assert result["threat_bearing"] == 15
         # Altitude raw == 0 → altcode_to_altitude returns None.
         assert result["threat_altitude"] is None
+
+    def test_multi_flag_decode(self):
+        # Set issued_ra (bit 8), corrective (bit 9), sense_reversal (bit 12),
+        # no_above (bit 23), and multiple_threat (bit 27). The full dict
+        # assertion pins every shift constant in decode_bds30 so a future
+        # off-by-one in any ARA/RAC/terminal bit is caught immediately.
+        mb = (
+            0x30_00_00_00_00_00_00
+            | (1 << (55 - 8))  # issued_ra
+            | (1 << (55 - 9))  # corrective
+            | (1 << (55 - 12))  # sense_reversal
+            | (1 << (55 - 23))  # no_above
+            | (1 << (55 - 27))  # multiple_threat
+        )
+        result = bds30.decode_bds30(mb)
+        assert result == {
+            "threat_type_indicator": 0,
+            "issued_ra": True,
+            "corrective": True,
+            "downward_sense": False,
+            "increased_rate": False,
+            "sense_reversal": True,
+            "altitude_crossing": False,
+            "positive": False,
+            "no_below": False,
+            "no_above": True,
+            "no_left": False,
+            "no_right": False,
+            "ra_terminated": False,
+            "multiple_threat": True,
+        }
+
+    def test_tti_2_altitude_delegates_to_altcode(self):
+        # Non-zero AC13 exercises the altcode_to_altitude delegation
+        # (the zero-AC13 path in test_tti_2_altitude_range_bearing
+        # short-circuits before any real decoding). AC13 = 0x1010
+        # takes the Q=1 linear branch and decodes to 24600 ft; the
+        # exact value matters less than proving a non-None int flows
+        # through the delegation, pinning the bit-30..42 extraction.
+        tti2 = 0b10 << (55 - 29)
+        ac13 = 0x1010
+        mb = 0x30_80_00_00_00_00_00 | tti2 | (ac13 << 13)
+        result = bds30.decode_bds30(mb)
+        assert result["threat_type_indicator"] == 2
+        assert isinstance(result["threat_altitude"], int)
+        assert result["threat_altitude"] == 24600
+
+    def test_tti_2_range_and_bearing_none_sentinel(self):
+        # TTI=2 with range_raw=0 and bearing_raw=0 → both decode to None
+        # (the "value not available" sentinel). Verifies the > 0 else None
+        # branch for both fields.
+        mb = 0x30_80_00_00_00_00_00 | (0b10 << (55 - 29))
+        # All TID bits zero by default; the raw fields are:
+        #   altitude AC13 = 0 → None (via altcode_to_altitude)
+        #   range = 0 → None
+        #   bearing = 0 → None
+        result = bds30.decode_bds30(mb)
+        assert result["threat_type_indicator"] == 2
+        assert result["threat_altitude"] is None
+        assert result["threat_range"] is None
+        assert result["threat_bearing"] is None
 
 
 class TestCommBRoutesToBds30:
