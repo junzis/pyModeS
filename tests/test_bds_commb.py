@@ -3,7 +3,7 @@
 import pytest
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40, bds50
+from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40, bds50, bds60
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -532,3 +532,31 @@ class TestCommBRoutesToBds50:
         assert result["bds"] == "5,0"
         assert result["groundspeed"] == 438
         assert result["true_airspeed"] == 424
+
+
+class TestBds60Validator:
+    def test_valid_bds60_accepts(self):
+        mb = mb_of("A00004128F39F91A7E27C46ADC21")
+        assert bds60.is_bds60(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds60.is_bds60(0) is False
+
+
+class TestBds60Decoder:
+    def test_golden_full_vector(self):
+        mb = mb_of("A00004128F39F91A7E27C46ADC21")
+        result = bds60.decode_bds60(mb)
+        assert result["heading_magnetic"] == pytest.approx(42.715, abs=0.01)
+        assert result["indicated_airspeed"] == 252
+        assert result["mach"] == pytest.approx(0.42, abs=0.005)
+        assert result["vertical_rate_baro"] == -1920
+        assert result["vertical_rate_inertial"] == -1920
+
+
+class TestCommBRoutesToBds60:
+    def test_df20_bds60_end_to_end(self):
+        result = decode("A00004128F39F91A7E27C46ADC21")
+        assert result["df"] == 20
+        assert result["bds"] == "6,0"
+        assert result["indicated_airspeed"] == 252
