@@ -134,7 +134,7 @@ class TestStateTracking:
         gs_after = pipe._state["485020"].get("groundspeed")
         assert gs_after == gs_before
 
-    def test_state_updates_on_new_field(self):
+    def test_last_seen_refreshed_on_repeat_decode(self):
         pipe = PipeDecoder()
         pipe.decode("8D485020994409940838175B284F", timestamp=1000.0)
         # Decoding the same message again at a later timestamp
@@ -142,3 +142,55 @@ class TestStateTracking:
         pipe.decode("8D485020994409940838175B284F", timestamp=2000.0)
         state = pipe._state["485020"]
         assert state.get("_last_seen") == 2000.0
+
+
+class TestEndToEndDisambiguation:
+    """End-to-end test: a BDS 0,9 velocity report from an aircraft
+    populates per-ICAO state, and a subsequent ambiguous BDS 5,0/6,0
+    Comm-B from the same ICAO is correctly disambiguated by Phase 3.
+
+    The first part of this test would catch a regression where the
+    `_DECODED_TO_KNOWN` mapping is wrong (missing keys, wrong target),
+    or where the `known=` forwarding chain breaks anywhere between
+    PipeDecoder and `_infer.infer()`.
+    """
+
+    def test_velocity_then_ambiguous_commb_picks_bds60(self):
+        from pymodes.decoder.bds._infer import infer
+
+        # The ambiguous payload (from tests/test_bds_commb.py) decodes
+        # plausibly as both BDS 5,0 (groundspeed=240) and BDS 6,0
+        # (magnetic_heading=359°). Without `known`, the heuristic
+        # dispatch order returns 5,0 first.
+        ambiguous_payload = 0xFFBAA11E200472
+        # Sanity-check: bare infer with no known returns 5,0 first
+        assert infer(ambiguous_payload)[0] == "5,0"
+
+        # Pre-populate state for the ICAO this Comm-B is from. The
+        # Comm-B vector "a000029cffbaa11e2004727281f1" CRC-derives
+        # ICAO 4243D0. Set known heading near the BDS 6,0 value (359°)
+        # so Phase 3 reorders the candidates.
+        pipe = PipeDecoder()
+        pipe._state["4243D0"] = {"heading": 359.0, "_last_seen": 1000.0}
+
+        result = pipe.decode("a000029cffbaa11e2004727281f1", timestamp=1001.0)
+
+        # Phase 3 should have reordered the candidates so 6,0 comes first.
+        assert result.get("bds") == "6,0"
+        # Magnetic heading from BDS 6,0 decode should be present
+        assert "magnetic_heading" in result
+
+    def test_bds09_subtype_airspeed_routes_correctly(self):
+        # BDS 0,9 subtype 3/4 emits `airspeed` + `airspeed_type`
+        # ("IAS"/"TAS"). _update_state must route to known["ias"]
+        # or known["tas"] correctly.
+        # Real subtype-3 vector from v2 tests: "8DA05F219B06B6AF189400CBC33F"
+        # decodes with airspeed_type="TAS", airspeed=375
+        pipe = PipeDecoder()
+        pipe.decode("8DA05F219B06B6AF189400CBC33F", timestamp=1000.0)
+        state = pipe._state.get("A05F21")
+        assert state is not None
+        # Vector has airspeed_type="TAS" so airspeed routes to known["tas"]
+        assert state.get("tas") == 375
+        # And NOT to known["ias"]
+        assert "ias" not in state

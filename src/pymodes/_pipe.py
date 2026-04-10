@@ -148,6 +148,17 @@ class PipeDecoder:
             if val is not None:
                 new_fields[known_key] = val
 
+        # BDS 0,9 subtype 3/4 emits a polymorphic `airspeed` field
+        # discriminated by `airspeed_type` ("IAS" or "TAS"). Route to
+        # the appropriate known-state slot so Phase 3 disambiguation
+        # can use it for downstream BDS 5,0/6,0 ambiguous Comm-B.
+        airspeed = result.get("airspeed")
+        airspeed_type = result.get("airspeed_type")
+        if airspeed is not None and airspeed_type == "IAS":
+            new_fields["ias"] = airspeed
+        elif airspeed is not None and airspeed_type == "TAS":
+            new_fields["tas"] = airspeed
+
         if not new_fields and timestamp is None:
             return
 
