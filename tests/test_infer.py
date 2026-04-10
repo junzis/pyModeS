@@ -75,3 +75,55 @@ class TestInferEmptyAndAmbiguous:
             result = decode("A8001EBCFFFB23286004A73F6A5B")
             assert "bds_candidates" in result
             assert set(result["bds_candidates"]) == set(candidates)
+
+
+class TestInferPhase3Disambiguation:
+    """Tests for the known-state disambiguation in infer() Phase 3.
+
+    The ambiguous payload was found by searching the test corpus
+    for messages where both bds50.is_bds50() and bds60.is_bds60()
+    return True. Source hex: "a000029cffbaa11e2004727281f1" from
+    tests/test_bds_commb.py.
+
+    Decoded as BDS 5,0: groundspeed=240, true_track=239, tas=228
+    Decoded as BDS 6,0: magnetic_heading=359, ias=336, mach=0.48
+    """
+
+    AMBIGUOUS_PAYLOAD = 0xFFBAA11E200472
+
+    def test_ambiguous_no_known_preserves_phase2_order(self):
+        from pymodes.decoder.bds._infer import infer
+
+        result = infer(self.AMBIGUOUS_PAYLOAD)
+        # Phase 2 dispatch order is _HEURISTIC = [4,0, 5,0, 6,0]
+        # so the result should have both 5,0 and 6,0 in that order
+        # (4,0 doesn't match this payload).
+        assert result == ["5,0", "6,0"]
+
+    def test_ambiguous_known_groundspeed_picks_bds50(self):
+        from pymodes.decoder.bds._infer import infer
+
+        # known carries a groundspeed near the BDS 5,0 decoded value (240).
+        # Score for 5,0: |240 - 240| / 50 = 0.0 (other fields not in known)
+        # Score for 6,0: no fields match known -> inf
+        # 5,0 wins.
+        result = infer(self.AMBIGUOUS_PAYLOAD, known={"groundspeed": 240})
+        assert result[0] == "5,0"
+
+    def test_ambiguous_known_heading_picks_bds60(self):
+        from pymodes.decoder.bds._infer import infer
+
+        # known carries a heading near the BDS 6,0 decoded value (359).
+        # Score for 6,0: |359 - 359.12| / 30 ~= 0.004 (close to 0)
+        # Score for 5,0: no fields match known -> inf
+        # 6,0 wins.
+        result = infer(self.AMBIGUOUS_PAYLOAD, known={"heading": 359})
+        assert result[0] == "6,0"
+
+    def test_ambiguous_known_neither_field_unchanged(self):
+        from pymodes.decoder.bds._infer import infer
+
+        # known carries an irrelevant field; both candidates score inf
+        # and Phase 2 order is preserved.
+        result = infer(self.AMBIGUOUS_PAYLOAD, known={"altitude": 35000})
+        assert result == ["5,0", "6,0"]

@@ -70,6 +70,50 @@ _HEURISTIC_METEO: list[tuple[str, Callable[[int], bool]]] = [
     ("4,5", bds45.is_bds45),
 ]
 
+# Field-by-field scoring config for Phase 3 disambiguation.
+# Each tuple: (decoded_key, known_key, scale). Lower normalized
+# distance = better match against the caller-supplied aircraft state.
+_SCORE_FIELDS_BDS50: list[tuple[str, str, float]] = [
+    ("groundspeed", "groundspeed", 50.0),
+    ("true_track", "track", 30.0),
+    ("true_airspeed", "tas", 50.0),
+]
+_SCORE_FIELDS_BDS60: list[tuple[str, str, float]] = [
+    ("magnetic_heading", "heading", 30.0),
+    ("indicated_airspeed", "ias", 50.0),
+    ("mach", "mach", 0.1),
+]
+
+
+def _score_candidate(bds_code: str, payload: int, known: dict[str, Any]) -> float:
+    """Score how well a candidate matches the known aircraft state.
+
+    Lower score = better match. Returns inf if no fields could be
+    compared (i.e., `known` doesn't carry any of the fields this BDS
+    register would emit).
+    """
+    if bds_code == "5,0":
+        decoded = bds50.decode_bds50(payload)
+        fields = _SCORE_FIELDS_BDS50
+    elif bds_code == "6,0":
+        decoded = bds60.decode_bds60(payload)
+        fields = _SCORE_FIELDS_BDS60
+    else:
+        return float("inf")
+
+    score = 0.0
+    matched = 0
+    for decoded_key, known_key, scale in fields:
+        d_val = decoded.get(decoded_key)
+        k_val = known.get(known_key)
+        if d_val is None or k_val is None:
+            continue
+        score += abs(float(d_val) - float(k_val)) / scale
+        matched += 1
+
+    return score if matched > 0 else float("inf")
+
+
 # Validators keyed by BDS code, used by `matches()` for third-party
 # callers that only want a single-register check. Task 11 promoted the
 # primary dispatch path to `infer()` below.
@@ -106,15 +150,15 @@ def infer(
             validators. Defaults to False because these share bit
             patterns with non-meteorological traffic.
         known: Optional aircraft state for reference-assisted
-            disambiguation. Accepted but not used in Plan 3 -- reserved
-            for a future plan.
+            disambiguation. When multiple heuristic candidates
+            (BDS 5,0 / 6,0) survive Phase 2, each is scored against
+            the known state and the best match is moved to the front
+            of the heuristic block.
 
     Returns:
         A list of BDS code strings (e.g. "1,0", "5,0"). Empty list if
         nothing plausible matched or `payload == 0`.
     """
-    _ = known  # reserved for future reference disambiguation
-
     if payload == 0:
         return []
 
@@ -143,5 +187,28 @@ def infer(
         for code, validator in _HEURISTIC_METEO:
             if validator(payload):
                 candidates.append(code)
+
+    # Phase 3 -- known-state disambiguation.
+    # When multiple candidates survive AND the caller gave us a
+    # reference state, re-rank only the 5,0 / 6,0 heuristic block.
+    # Format-ID candidates (1,0 / 1,7 / 2,0 / 3,0) are mutually
+    # exclusive and keep their leading position. Meteo candidates
+    # (4,4 / 4,5) aren't scored and stay at the back in their
+    # original order.
+    if known and len(candidates) > 1:
+        heuristic_candidates = [c for c in candidates if c in ("5,0", "6,0")]
+        if len(heuristic_candidates) > 1:
+            scored = sorted(
+                heuristic_candidates,
+                key=lambda c: _score_candidate(c, payload, known),
+            )
+            first_heuristic_idx = next(
+                i for i, c in enumerate(candidates) if c in ("5,0", "6,0")
+            )
+            pre = candidates[:first_heuristic_idx]
+            tail = [
+                c for c in candidates[first_heuristic_idx:] if c not in ("5,0", "6,0")
+            ]
+            candidates = pre + scored + tail
 
     return candidates
