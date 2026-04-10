@@ -32,11 +32,13 @@ from pymodes._altcode import altcode_to_altitude
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
-from pymodes.decoder.bds import _infer
+from pymodes.decoder.bds import _infer, bds10
 from pymodes.message import Decoded
 
 # BDS code -> decoder. Populated by each BDS task as it lands.
-_COMMB_DISPATCH: dict[str, Callable[[int], dict[str, Any]]] = {}
+_COMMB_DISPATCH: dict[str, Callable[[int], dict[str, Any]]] = {
+    "1,0": bds10.decode_bds10,
+}
 
 
 @register(20, 21)
