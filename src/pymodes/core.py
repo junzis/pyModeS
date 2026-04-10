@@ -16,6 +16,7 @@ def decode(
     icao: str | None = None,
     reference: tuple[float, float] | None = None,
     surface_ref: str | tuple[float, float] | None = None,
+    full_dict: bool = False,
 ) -> Decoded:
     """Decode a single Mode-S message.
 
@@ -38,6 +39,10 @@ def decode(
             (typically the receiver location). Must be within 45 NM
             of the true position. If omitted, only raw CPR fields
             are returned. Unknown airport codes raise ValueError.
+        full_dict: When True, the result dict is augmented with
+            every key from `_FULL_SCHEMA`, defaulting missing keys
+            to `None`. Useful for pandas/parquet workflows that
+            need a uniform shape across messages.
 
     Returns:
         A Decoded dict with at least `df`, `icao`, `crc_valid`. For
@@ -64,4 +69,8 @@ def decode(
         assert msg is not None
         message = Message(msg, icao_hint=icao)
 
-    return message.decode(reference=reference, surface_ref=surface_ref)
+    return message.decode(
+        reference=reference,
+        surface_ref=surface_ref,
+        full_dict=full_dict,
+    )

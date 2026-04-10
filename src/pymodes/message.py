@@ -216,6 +216,7 @@ class Message:
         *,
         reference: tuple[float, float] | None = None,
         surface_ref: str | tuple[float, float] | None = None,
+        full_dict: bool = False,
     ) -> Decoded:
         """Decode every field of this message.
 
@@ -238,6 +239,10 @@ class Message:
                 Must be within 45 NM of the true position. If omitted,
                 only raw CPR fields are returned. Unknown airport
                 codes raise ValueError.
+            full_dict: When True, the result dict is augmented with
+                every key from `_FULL_SCHEMA`, defaulting missing
+                keys to `None`. Useful for pandas/parquet workflows
+                that need a uniform shape across messages.
         """
         # Import locally to avoid circular import at module load time
         from pymodes.decoder import _DECODERS
@@ -262,7 +267,19 @@ class Message:
 
         self._resolve_position(result, reference=reference, surface_ref=surface_ref)
 
+        if full_dict:
+            self._populate_full_dict(result)
+
         return result
+
+    @staticmethod
+    def _populate_full_dict(result: Decoded) -> None:
+        """Fill missing _FULL_SCHEMA keys with None in place."""
+        from pymodes._schema import _FULL_SCHEMA
+
+        for key in _FULL_SCHEMA:
+            if key not in result:
+                result[key] = None
 
     @staticmethod
     def _resolve_position(
