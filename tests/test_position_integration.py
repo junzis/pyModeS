@@ -33,7 +33,6 @@ class TestMessageDecodeDirect:
         assert "cpr_lat" in result
 
 
-@pytest.mark.skip(reason="requires Task 10 core.decode() kwarg forwarding")
 class TestAirborneReference:
     def test_reference_returns_latlon(self):
         result = decode(
@@ -54,7 +53,6 @@ class TestAirborneReference:
         assert "cpr_lat" in result
 
 
-@pytest.mark.skip(reason="requires Task 10 core.decode() kwarg forwarding")
 class TestSurfaceAirport:
     def test_airport_code_returns_latlon(self):
         # Surface CPR vector from v2 tests

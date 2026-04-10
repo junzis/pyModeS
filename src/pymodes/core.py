@@ -3,10 +3,6 @@
 This is the primary public API. It accepts a hex string (or the
 56-bit payload with explicit header) and returns a Decoded dict
 with every decodable field populated.
-
-Phase 1 ships only the single-message path with minimal fields (df,
-icao, crc_valid). Later phases plug in the decoder classes via the
-dispatch table in pymodes.decoder.
 """
 
 from pymodes.message import Decoded, Message
@@ -18,32 +14,40 @@ def decode(
     payload: str | None = None,
     df: int | None = None,
     icao: str | None = None,
+    reference: tuple[float, float] | None = None,
+    airport: str | tuple[float, float] | None = None,
 ) -> Decoded:
     """Decode a single Mode-S message.
 
     Args:
-        msg: Full Mode-S message as a hex string. Either 14 chars (short,
-            56 bits) or 28 chars (long, 112 bits).
-        payload: Alternative input path - the 56-bit payload (ADS-B ME
-            or Comm-B MB) alone as 14 hex chars. Requires `df` and
-            `icao` to be provided.
-        df: Downlink format override, used only when `payload` is
-            provided.
-        icao: ICAO address hint. For the `payload=` path it is required.
-            For the `msg=` path it is optional: if provided for DF20/21
-            it overrides the CRC-derived ICAO and sets
-            `icao_verified=True` in the result (see spec 11.4).
+        msg: Full Mode-S message as a hex string. Either 14 chars
+            (short, 56 bits) or 28 chars (long, 112 bits).
+        payload: Alternative input path — the 56-bit payload alone
+            as 14 hex chars. Requires `df` and `icao`.
+        df: Downlink format override, used only with `payload`.
+        icao: ICAO address hint. Optional for `msg=`; required for
+            `payload=`. For the `msg=` path with DF20/21 it overrides
+            the CRC-derived ICAO and sets `icao_verified=True`.
+        reference: (lat, lon) for single-message airborne CPR
+            position decoding (BDS 0,5). Must be within 180 NM of
+            the true position. If omitted, only raw CPR fields are
+            returned.
+        airport: ICAO airport code (string) or (lat, lon) tuple for
+            surface CPR (BDS 0,6) position decoding. Required for
+            surface position; if omitted, only raw CPR fields are
+            returned. Unknown airport codes raise ValueError.
 
     Returns:
-        A Decoded dict with at least `df`, `icao`, and `crc_valid`.
-        Additional fields are added by the decoder class dispatched
-        based on DF.
+        A Decoded dict with at least `df`, `icao`, `crc_valid`. For
+        airborne/surface positions, `latitude` and `longitude` are
+        added when sufficient context is provided.
 
     Raises:
         InvalidHexError: if the input is not valid hex.
         InvalidLengthError: if the input length is wrong.
-        ValueError: if both or neither of msg/payload is provided, or
-            if `payload` is given without `df`/`icao`.
+        ValueError: if both or neither of msg/payload is provided,
+            if `payload` is given without `df`/`icao`, or if
+            `airport` is an unknown ICAO code.
     """
     if msg is None and payload is None:
         raise ValueError("exactly one of msg or payload must be provided")
@@ -58,4 +62,4 @@ def decode(
         assert msg is not None
         message = Message(msg, icao_hint=icao)
 
-    return message.decode()
+    return message.decode(reference=reference, airport=airport)
