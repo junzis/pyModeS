@@ -1,4 +1,3 @@
-# ruff: noqa: E501, RUF001
 """Curated airport database.
 
 Generated from OurAirports dataset by scripts/build_airport_db.py.

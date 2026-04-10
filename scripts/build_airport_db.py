@@ -20,8 +20,7 @@ SOURCE = "https://davidmegginson.github.io/ourairports-data/airports.csv"
 OUTPUT = Path(__file__).parent.parent / "src" / "pymodes" / "data" / "airports.py"
 ALLOWED_TYPES = ("large_airport", "medium_airport")
 
-HEADER = '''# ruff: noqa: E501, RUF001
-"""Curated airport database.
+HEADER = '''"""Curated airport database.
 
 Generated from OurAirports dataset by scripts/build_airport_db.py.
 Source: https://davidmegginson.github.io/ourairports-data/airports.csv
