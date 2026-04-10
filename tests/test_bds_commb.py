@@ -1,7 +1,9 @@
 """Unit tests for Comm-B BDS register decoders (bds10 through bds60)."""
 
+import pytest
+
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17, bds20
+from pymodes.decoder.bds import bds10, bds17, bds20, bds30
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -187,3 +189,96 @@ class TestCommBRoutesToBds20:
         assert result["df"] == 20
         assert result["bds"] == "2,0"
         assert result["callsign"] == "KLM1017"
+
+
+class TestBds30Validator:
+    def test_valid_bds30_accepts(self):
+        mb = 0x30_80_00_00_00_00_00
+        assert bds30.is_bds30(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds30.is_bds30(0) is False
+
+    def test_wrong_bds_id_rejected(self):
+        # BDS20 prefix 0x20.
+        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds30.is_bds30(mb) is False
+
+    def test_tti_three_rejected(self):
+        # Set TTI to 0b11 (reserved) — must reject.
+        mb = 0x30_80_00_00_00_00_00 | (0b11 << (55 - 29))
+        assert bds30.is_bds30(mb) is False
+
+    def test_ara_reserved_ge_48_rejected(self):
+        # Set ARA reserved bits (MB 15-21, 7 bits) to 48 = 0b0110000.
+        mb = 0x30_80_00_00_00_00_00 | (48 << (55 - 21))
+        assert bds30.is_bds30(mb) is False
+
+
+class TestBds30Decoder:
+    def test_minimal_ra_no_threat(self):
+        mb = 0x30_80_00_00_00_00_00
+        result = bds30.decode_bds30(mb)
+        assert result == {
+            "threat_type_indicator": 0,
+            "issued_ra": True,
+            "corrective": False,
+            "downward_sense": False,
+            "increased_rate": False,
+            "sense_reversal": False,
+            "altitude_crossing": False,
+            "positive": False,
+            "no_below": False,
+            "no_above": False,
+            "no_left": False,
+            "no_right": False,
+            "ra_terminated": False,
+            "multiple_threat": False,
+        }
+
+    def test_tti_1_icao_threat(self):
+        # TTI=1 with a threat ICAO of 0xABCDEF in bits 30-53.
+        # The ICAO occupies only bits 30-53 (24 bits); bits 54-55 are zero.
+        tid = 0xABCDEF << 2  # shift into bits 30-53 of the 26-bit TID field
+        mb = (
+            0x30_80_00_00_00_00_00
+            | (1 << (55 - 29))  # TTI = 0b01
+            | tid  # TID in bits 30-55
+        )
+        result = bds30.decode_bds30(mb)
+        assert result["threat_type_indicator"] == 1
+        assert result["threat_icao"] == "ABCDEF"
+
+    def test_tti_2_altitude_range_bearing(self):
+        # TTI=2: MB bits 30-42 = AC13 altitude, bits 43-49 = 7-bit range,
+        # bits 50-55 = 6-bit bearing. We use:
+        #   altitude raw = 0x000 (decoded by altcode_to_altitude → None)
+        #   range raw = 10 → (10 - 1) / 10 = 0.9 NM
+        #   bearing raw = 3 → 6 * (3 - 1) + 3 = 15 degrees
+        mb = (
+            0x30_80_00_00_00_00_00
+            | (0b10 << (55 - 29))  # TTI = 0b10
+            | (10 << (55 - 49))  # range field, 7 bits ending at bit 49
+            | (3 << (55 - 55))  # bearing field, 6 bits ending at bit 55
+        )
+        result = bds30.decode_bds30(mb)
+        assert result["threat_type_indicator"] == 2
+        assert result["threat_range"] == pytest.approx(0.9)
+        assert result["threat_bearing"] == 15
+        # Altitude raw == 0 → altcode_to_altitude returns None.
+        assert result["threat_altitude"] is None
+
+
+class TestCommBRoutesToBds30:
+    def test_commb_bds30_end_to_end(self):
+        # Synthetic DF20 message: wrap the minimal BDS30 MB into a
+        # 112-bit frame. Header bits are zero; the decoder only reads
+        # the header altcode (bits 19-31), so altitude = altcode_to_altitude(0) = None.
+        mb = 0x30_80_00_00_00_00_00
+        n = (20 << 107) | (mb << 24)
+        msg_hex = f"{n:028X}"
+        result = decode(msg_hex)
+        assert result["df"] == 20
+        assert result["bds"] == "3,0"
+        assert result["issued_ra"] is True
+        assert result["threat_type_indicator"] == 0
