@@ -370,6 +370,26 @@ class TestBds40Validator:
         mb_bad = mb | (1 << (55 - 51))
         assert bds40.is_bds40(mb_bad) is False
 
+    def test_mcp_status_clear_but_altitude_nonzero_rejected(self):
+        # Pin the wrong(0, 1, 12) call: status bit 0 clear but MCP
+        # altitude raw (bits 1-12) nonzero → reject. Exercises the
+        # 12-bit-width status-gate arithmetic path.
+        mb = mb_of("A000029C85E42F313000007047D3")
+        # Clear MCP status bit (bit 0). The altitude raw bits 1-12 are
+        # already nonzero in the valid vector (raw = 188 = 3008 ft),
+        # so the result is an inconsistent status=0/value=188 MB.
+        mb_bad = mb & ~(1 << (55 - 0))
+        assert bds40.is_bds40(mb_bad) is False
+
+    def test_target_altitude_source_status_clear_but_value_set_rejected(self):
+        # Pin the wrong(53, 54, 2) call: status bit 53 clear but
+        # source value bits 54-55 nonzero → reject. Exercises the
+        # 2-bit-width status-gate arithmetic path.
+        # Start from all-zero MB then set source value = 3 (bits 54-55 = 0b11)
+        # with status bit 53 left at 0. is_bds40 must reject.
+        mb_bad = 0b11 << (55 - 55)  # bits 54-55 = 0b11
+        assert bds40.is_bds40(mb_bad) is False
+
 
 class TestBds40Decoder:
     def test_golden_vector(self):
@@ -380,17 +400,30 @@ class TestBds40Decoder:
         assert result["baro_pressure_setting"] == pytest.approx(1020.0)
 
     def test_all_statuses_absent(self):
-        # MB with every status bit cleared — every gated field should
-        # be absent from the result dict. (Note: this MB would be
-        # rejected by is_bds40 because it's all-zero, but decode_bds40
-        # assumes its caller already validated. We exercise the
-        # "no statuses set" path of decode_bds40 directly here.)
-        result = bds40.decode_bds40(0)
-        assert "selected_altitude_mcp" not in result
-        assert "selected_altitude_fms" not in result
-        assert "baro_pressure_setting" not in result
-        assert "vnav_mode" not in result
-        assert "target_altitude_source" not in result
+        # decode_bds40 on an all-zero MB returns an empty dict because
+        # every gated branch short-circuits. (is_bds40 rejects this MB
+        # upstream; we exercise decode_bds40 in isolation.)
+        assert bds40.decode_bds40(0) == {}
+
+    def test_mode_bits_and_target_source_decode(self):
+        # Set MCP mode status (bit 47) + vnav (48) + approach (50),
+        # and target alt source status (bit 53) + value 3 (bits 54-55 = 0b11).
+        # Pins the last two gated branches of decode_bds40 and
+        # exercises _ALT_SOURCE[3] = "fms".
+        mb = (
+            (1 << (55 - 47))  # MCP mode status
+            | (1 << (55 - 48))  # vnav_mode = True
+            | (1 << (55 - 50))  # approach_mode = True
+            | (1 << (55 - 53))  # target alt source status
+            | (0b11 << (55 - 55))  # source value = 3 = "fms"
+        )
+        result = bds40.decode_bds40(mb)
+        assert result == {
+            "vnav_mode": True,
+            "altitude_hold_mode": False,
+            "approach_mode": True,
+            "target_altitude_source": "fms",
+        }
 
 
 class TestCommBRoutesToBds40:
