@@ -10,11 +10,23 @@ calls so that:
 - Even/odd CPR frame pairs can be matched within a configurable
   time window to resolve absolute lat/lon without a reference.
 
-Not thread-safe by default. Wrap with threading.Lock if concurrent
-access is needed.
+Not thread-safe. Every `decode()` call mutates `_state`,
+`_pending_even`, `_pending_odd`, `_trusted_icaos`, and `_stats`
+without locking. Wrap the instance with a lock if multiple threads
+feed it concurrently::
 
-This file is the Plan 4b Task 4 skeleton: state tracking, pair
-accumulation, and TTL eviction land in subsequent tasks.
+    import threading
+    from pymodes import PipeDecoder
+
+    pipe = PipeDecoder()
+    lock = threading.Lock()
+
+    def decode_one(msg: str, ts: float):
+        with lock:
+            return pipe.decode(msg, timestamp=ts)
+
+For single-producer pipelines (one reader thread draining a socket)
+no locking is needed -- just don't share the decoder across threads.
 """
 
 from __future__ import annotations

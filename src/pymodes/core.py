@@ -176,6 +176,9 @@ def _decode_batch(
     """Run ``msgs`` through a transient PipeDecoder and return results."""
     from pymodes import PipeDecoder
 
+    if not msgs:
+        return []
+
     if timestamps is None:
         _log.warning(
             "decode(list[str]) called without timestamps; "

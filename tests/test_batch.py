@@ -82,3 +82,9 @@ class TestBatchDecode:
                 ["8D406B902015A678D4D220AA4BDA", "8D485020994409940838175B284F"],
                 timestamps=[1.0],  # only 1 timestamp for 2 messages
             )
+
+    def test_batch_empty_list(self):
+        # Empty batch should return an empty list without spinning up
+        # a decoder or logging a warning about missing timestamps.
+        assert decode([]) == []
+        assert decode([], timestamps=[]) == []

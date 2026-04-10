@@ -52,3 +52,30 @@ class TestDecodeSingleMessage:
         result = decode("8D406B902015A678D4D220AA4BDA")
         text = json.dumps(result)
         assert "406B90" in text
+
+
+class TestDecodeInputValidation:
+    def test_neither_msg_nor_payload_raises(self):
+        with pytest.raises(ValueError, match="exactly one"):
+            decode()
+
+    def test_both_msg_and_payload_raises(self):
+        with pytest.raises(ValueError, match="exactly one"):
+            decode("8D406B902015A678D4D220AA4BDA", payload="2015A678D4D220")
+
+    def test_payload_without_df_raises(self):
+        with pytest.raises(ValueError, match="df and icao"):
+            decode(payload="2015A678D4D220", icao="406B90")
+
+    def test_payload_without_icao_raises(self):
+        with pytest.raises(ValueError, match="df and icao"):
+            decode(payload="2015A678D4D220", df=17)
+
+    def test_payload_path_success(self):
+        result = decode(payload="2015A678D4D220", df=17, icao="406B90")
+        assert result["df"] == 17
+        assert result["icao"] == "406B90"
+
+    def test_timestamps_in_single_mode_raises(self):
+        with pytest.raises(TypeError, match="batch mode"):
+            decode("8D406B902015A678D4D220AA4BDA", timestamps=[1.0])
