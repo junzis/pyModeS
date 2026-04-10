@@ -6,19 +6,29 @@
 import pymodes
 
 result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
-print(result["df"])         # 17
-print(result["icao"])       # '406B90'
-print(result["typecode"])   # 4
-print(result["callsign"])   # 'EZY85MH_'
+print(result)
+# {
+#     'df': 17,
+#     'icao': '406B90',
+#     'crc_valid': True,
+#     'typecode': 4,
+#     'bds': '0,8',
+#     'callsign': 'EZY85MH',
+#     'category': 0,
+#     'wake_vortex': 'No category information',
+# }
 ```
 
 The returned object is a `Decoded` — a subclass of `dict` with
 attribute-style access, JSON serialization, and pandas/parquet
-compatibility.
+compatibility. Read individual fields either by key or as an
+attribute:
 
 ```python
-print(result.df)       # 17 — same as result["df"]
-print(result.callsign) # 'EZY85MH_'
+result["icao"]      # '406B90'
+result.icao         # '406B90' — same thing
+result["callsign"]  # 'EZY85MH'
+result.get("altitude")  # None — missing keys are safe via .get()
 ```
 
 ## Batch decode
