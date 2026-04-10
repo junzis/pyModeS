@@ -1,10 +1,19 @@
 """CPR position decoding primitives.
 
-Ported verbatim from pyModeS v2 (git 70cb484^:
-src/pyModeS/decoder/bds/bds05.py, bds06.py, py_common.py).
-Numerical logic is unchanged; performance is improved by
-using stdlib math instead of numpy and a hardcoded NL(lat)
-boundary table for O(log n) bisect lookup.
+Consolidates three concerns from the pyModeS v2 tree into one
+module (git 70cb484^ as the reference revision):
+
+- ``cprNL`` — from ``py_common.py``. The v2 trig formula is
+  replaced here by a bisect over a precomputed NL(lat) boundary
+  table for O(log n) lookup without numpy.
+- ``airborne_position_*`` — from ``bds05.py``. Numerical logic
+  unchanged; ``numpy`` calls are swapped for stdlib ``math``.
+- ``surface_position_*`` — from ``bds06.py``. Same port shape
+  as airborne.
+
+Boundary table, wrapping rules, and zone-check semantics match
+v2 byte-for-byte; the v3 speedup comes from dropping numpy and
+the per-call trig evaluation in ``cprNL``.
 """
 
 from bisect import bisect_right
@@ -150,6 +159,17 @@ def airborne_position_pair(
     the even_* parameters and the odd CPR fields in the odd_*
     parameters. `even_is_newer` selects which frame's latitude zone
     to use (the newer message defines the reported position).
+
+    Preconditions:
+        The two frames must be close enough in time for the aircraft
+        to have stayed in the same latitude zone. In practice, the
+        pair must be ≤ 10 seconds apart — ADS-B airborne position
+        messages broadcast at ~2 Hz, and a pair older than that may
+        straddle a cprNL boundary even for slow-moving aircraft. The
+        caller is responsible for enforcing this window; this function
+        performs a cprNL-equality check as a lightweight sanity guard
+        but cannot detect same-zone false positives caused by wide
+        time gaps.
 
     Returns (lat, lon) if both frames fall in the same latitude
     zone (cprNL equal), otherwise None.
