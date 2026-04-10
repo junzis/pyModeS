@@ -5,6 +5,7 @@ Version 3.0: ground-up rewrite of pyModeS.
 
 from importlib.metadata import version as _version
 
+from pymodes._pipe import PipeDecoder
 from pymodes.core import decode
 from pymodes.errors import (
     DecodeError,
@@ -22,6 +23,7 @@ __all__ = [
     "InvalidHexError",
     "InvalidLengthError",
     "Message",
+    "PipeDecoder",
     "UnknownDFError",
     "__version__",
     "decode",
