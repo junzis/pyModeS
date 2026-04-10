@@ -49,11 +49,11 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "capability": "int | None",
     "capability_text": "str | None",
     # ACAS (DF0/16)
-    "vertical_status": "int | None",
+    "vertical_status": "str | None",
     "sensitivity_level": "int | None",
     "reply_information": "int | None",
     "cross_link_capability": "int | None",
-    "mv": "int | None",
+    "mv": "str | None",
     # BDS 0,5 / 0,6 raw CPR
     "cpr_format": "int | None",
     "cpr_lat": "int | None",

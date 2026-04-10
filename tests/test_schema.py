@@ -1,6 +1,6 @@
 """Tests for pymodes._schema."""
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from pymodes._schema import _FULL_SCHEMA
 
@@ -35,7 +35,7 @@ class TestSchemaDriftDetection:
     # Hand-curated representative corpus, one or two per BDS register
     # and one per supported DF. (hex_msg, decode_kwargs) tuples.
     # Synthetic 56-bit / 112-bit messages carry pre-computed CRC parity.
-    _CORPUS: ClassVar[list[tuple[str, dict]]] = [
+    _CORPUS: ClassVar[list[tuple[str, dict[str, Any]]]] = [
         # Short surveillance and all-call
         ("0061103063A012", {}),  # DF0  ACAS short (synthetic)
         ("22001030766CD1", {}),  # DF4  altitude reply (synthetic)
@@ -74,12 +74,21 @@ class TestSchemaDriftDetection:
         from pymodes import decode
 
         emitted: set[str] = set()
+        decoded_count = 0
         for hex_msg, kwargs in self._CORPUS:
-            try:
-                result = decode(hex_msg, **kwargs)
-            except Exception:
-                continue  # malformed test vector — skip
+            result = decode(hex_msg, **kwargs)  # let exceptions surface
             emitted.update(result.keys())
+            decoded_count += 1
+
+        # Floor: every corpus entry must produce a result, and the
+        # combined emitted-key set must cover at least 50 distinct
+        # fields. A regression that mass-skips entries (or that
+        # collapses decoder output to nothing) trips this floor.
+        assert decoded_count == len(self._CORPUS)
+        assert len(emitted) >= 50, (
+            f"corpus only emitted {len(emitted)} distinct keys; "
+            f"expected >= 50 (mass-skip regression?)"
+        )
 
         undeclared = emitted - set(_FULL_SCHEMA.keys())
         assert not undeclared, (
