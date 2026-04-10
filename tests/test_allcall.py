@@ -56,3 +56,19 @@ class TestDf11Basic:
         result = decode(msg)
         assert result["capability"] == 1
         assert result["capability_text"] == "Reserved"
+
+
+class TestV2VectorSurvey:
+    """Plan 5 Task 3: vector lifted from pyModeS v2.21.1's
+    tests/test_allcall.py. v2 asserts icao=="484FDE", capability==5,
+    and interrogator()=="SI6". v3 decodes the ICAO and capability;
+    the II/SI interrogator code decode is intentionally deferred
+    (see pymodes._pipe comment on DF11 trust-set exclusion).
+    """
+
+    def test_v2_df11_icao_484fde(self):
+        result = decode("5D484FDEA248F5")
+        assert result["df"] == 11
+        assert result["icao"] == "484FDE"
+        assert result["capability"] == 5
+        assert result["capability_text"] == "Level 2+, airborne"

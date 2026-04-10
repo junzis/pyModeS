@@ -286,3 +286,29 @@ class TestSurfacePositionPair:
             even_is_newer=True,
         )
         assert result is None
+
+    def test_sao_paulo_pair_from_v2_bds_inference(self):
+        """Plan 5 Task 3: v2 tests/test_bds_inference.py::test_surface_position.
+
+        v2 pair from São Paulo (Southern Hemisphere, negative longitude),
+        distinct from the Christchurch pair already covered above. The v2
+        assertion was ``abs(lon_ref - lon) < 0.05``.
+        """
+        from pymodes.position._cpr import surface_position_pair
+
+        # msg0 (even, t=1565608663102), msg1 (odd, t=1565608666214) → odd is newer
+        _, elat, elon = _cpr_fields("8FE48C033A9FA184B934E744C6FD")
+        _, olat, olon = _cpr_fields("8FE48C033A9FA68F7C3D39B1C2F0")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=-23.4265448,
+            lon_ref=-46.4816258,
+            even_is_newer=False,
+        )
+        assert result is not None
+        lat, lon = result
+        assert abs(lon - (-46.4816258)) < 0.05
+        assert abs(lat - (-23.4265448)) < 0.05

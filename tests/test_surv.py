@@ -71,3 +71,35 @@ class TestDf5Identity:
         msg = _build_surv_msg(header, icao=0x400940)
         result = decode(msg)
         assert result["squawk"] == "7500"
+
+
+class TestV2VectorSurvey:
+    """Plan 5 Task 3: real-world vectors lifted from pyModeS v2.21.1's
+    tests/test_surv.py. The v2 tests call the low-level surv.altitude /
+    surv.fs / surv.um / surv.identity helpers on these hexes; v3 goes
+    through pymodes.decode(). These are the only live DF4/DF5 vectors
+    v2 shipped, so we keep them as a coverage anchor here.
+    """
+
+    def test_v2_df4_altitude_36000(self):
+        # v2: surv.altitude("20001718029FCD") == 36000
+        result = decode("20001718029FCD")
+        assert result["df"] == 4
+        assert result["altitude"] == 36000
+
+    def test_v2_df4_utility_message_iis9_ids1(self):
+        # v2: surv.um("200CBE4ED80137") == (IIS=9, IDS=1, "Comm-B ...")
+        # v3 stores the raw 6-bit UM field; IIS occupies the top 4 bits
+        # and IDS the low 2, so 9 << 2 | 1 == 37.
+        result = decode("200CBE4ED80137")
+        assert result["df"] == 4
+        assert result["downlink_request"] == 1
+        assert result["utility_message"] == (9 << 2) | 1
+
+    def test_v2_df5_identity_0356(self):
+        # v2: surv.fs(...)==2, surv.dr(...)==0, surv.identity(...)=="0356"
+        result = decode("2A00516D492B80")
+        assert result["df"] == 5
+        assert result["flight_status"] == 2
+        assert result["downlink_request"] == 0
+        assert result["squawk"] == "0356"
