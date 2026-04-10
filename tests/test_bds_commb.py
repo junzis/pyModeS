@@ -3,7 +3,16 @@
 import pytest
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40, bds50, bds60
+from pymodes.decoder.bds import (
+    bds10,
+    bds17,
+    bds20,
+    bds30,
+    bds40,
+    bds44,
+    bds50,
+    bds60,
+)
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -433,6 +442,44 @@ class TestCommBRoutesToBds40:
         assert result["bds"] == "4,0"
         assert result["selected_altitude_mcp"] == 3008
         assert result["baro_pressure_setting"] == pytest.approx(1020.0)
+
+
+class TestBds44Validator:
+    def test_valid_bds44_accepts(self):
+        mb = mb_of("A0001692185BD5CF400000DFC696")
+        assert bds44.is_bds44(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds44.is_bds44(0) is False
+
+    def test_fom_above_4_rejected(self):
+        # Force FOM (MB bits 0-3) to 5, exceeding the v2 heuristic max.
+        mb = mb_of("A0001692185BD5CF400000DFC696")
+        mb_bad = (mb & ~(0xF << (55 - 3))) | (0b0101 << (55 - 3))
+        assert bds44.is_bds44(mb_bad) is False
+
+
+class TestBds44Decoder:
+    def test_golden_vector(self):
+        mb = mb_of("A0001692185BD5CF400000DFC696")
+        result = bds44.decode_bds44(mb)
+        assert result["wind_speed"] == 22
+        assert result["wind_direction"] == pytest.approx(344.5, abs=0.5)
+        assert result["static_air_temperature"] == pytest.approx(-48.75, abs=0.1)
+        assert "static_pressure" not in result
+        assert "humidity" not in result
+
+
+class TestCommBRoutesToBds44:
+    def test_df20_bds44_end_to_end(self):
+        # Task 9 walking-skeleton: BDS44 is tried unconditionally
+        # alongside 4,0/5,0/6,0. Task 11 will gate it behind
+        # include_meteo=True at which point this test may need to
+        # be updated or dropped.
+        result = decode("A0001692185BD5CF400000DFC696")
+        assert result["df"] == 20
+        assert result["bds"] == "4,4"
+        assert result["wind_speed"] == 22
 
 
 class TestBds50Validator:
