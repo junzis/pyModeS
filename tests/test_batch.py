@@ -46,13 +46,15 @@ class TestBatchDecode:
         assert any("timestamps" in r.message for r in caplog.records)
 
     def test_batch_with_surface_ref(self):
+        # Real DF18 BDS 0,6 surface movement from jet1090 corpus
+        # (LFBO taxiway). Replaces the earlier synthetic NZCH vector.
         results = decode(
-            ["8FC8200A3AB8F5F893096B000000"],
+            ["903a23ff426a4e65f7487a775d17"],
             timestamps=[0.0],
-            surface_ref="NZCH",
+            surface_ref="LFBO",
         )
-        assert results[0]["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert results[0]["longitude"] == pytest.approx(172.53942, abs=0.001)
+        assert results[0]["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert results[0]["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_batch_rejects_single_msg_kwargs(self):
         with pytest.raises(TypeError, match="reference"):

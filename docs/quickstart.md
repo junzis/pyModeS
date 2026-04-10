@@ -24,15 +24,28 @@ print(result.callsign) # 'EZY85MH_'
 ## Batch decode
 
 Pass a list of messages plus timestamps to run them through a
-transient `PipeDecoder`:
+transient `PipeDecoder`. The batch can mix any downlink formats,
+typecodes, and Comm-B registers — the dispatcher picks the right
+decoder per message:
 
 ```python
 results = pymodes.decode(
-    ["8D40058B58C901375147EFD09357",
-     "8D40058B58C904A87F402D3B8C59"],
-    timestamps=[1446332400.0, 1446332405.0],
+    [
+        "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
+        "8D485020994409940838175B284F",  # DF17 BDS 0,9 airborne velocity
+        "8D40058B58C901375147EFD09357",  # DF17 BDS 0,5 airborne pos (even)
+        "8D40058B58C904A87F402D3B8C59",  # DF17 BDS 0,5 airborne pos (odd)
+        "A000178D10010080F50000D5893C",  # DF20 BDS 1,0 data link capability
+        "A8000D9FA55A032DBFFC000D8123",  # DF21 BDS 6,0 heading & speed
+    ],
+    timestamps=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
 )
-assert results[1]["latitude"] is not None  # CPR pair resolved
+
+assert results[0]["callsign"] == "EZY85MH"       # identification
+assert results[1]["groundspeed"] == 159          # velocity
+assert results[3]["latitude"] is not None        # CPR pair resolved
+assert results[4]["bds"] == "1,0"                # Comm-B capability
+assert results[5]["magnetic_heading"] is not None  # Comm-B BDS 6,0
 ```
 
 Errors in the batch become error-dicts (`{"error": ..., "raw_msg": ...}`)
@@ -67,12 +80,13 @@ an ICAO airport code (looked up in the shipped database) or an
 explicit `(lat, lon)` tuple:
 
 ```python
-# Airport code
-r = pymodes.decode("8FC8200A3AB8F5F893096B000000", surface_ref="NZCH")
-print(r["latitude"], r["longitude"])  # -43.48..., 172.54...
+# Airport code — real DF18 surface movement from the jet1090 corpus,
+# aircraft on LFBO (Toulouse-Blagnac) taxiway
+r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
+print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 
 # Explicit tuple (e.g., receiver location)
-r = pymodes.decode("8FC8200A3AB8F5F893096B000000", surface_ref=(-43.48, 172.53))
+r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref=(43.63, 1.37))
 ```
 
 ## Full-dict mode

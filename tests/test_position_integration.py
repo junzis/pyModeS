@@ -19,10 +19,11 @@ class TestMessageDecodeDirect:
     def test_message_decode_with_surface_ref(self):
         from pymodes import Message
 
-        msg = Message("8FC8200A3AB8F5F893096B000000")
-        result = msg.decode(surface_ref="NZCH")
-        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+        # Real DF18 surface movement from jet1090 corpus (LFBO taxiway).
+        msg = Message("903a23ff426a4e65f7487a775d17")
+        result = msg.decode(surface_ref="LFBO")
+        assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_message_decode_no_context(self):
         from pymodes import Message
@@ -54,23 +55,27 @@ class TestAirborneReference:
 
 
 class TestSurfaceRef:
+    # Real DF18 BDS 0,6 surface movement from the jet1090 corpus —
+    # ICAO 3A23FF on an LFBO taxiway. Replaces the earlier synthetic
+    # 000000-parity vector.
+    REAL_SURFACE_MSG = "903a23ff426a4e65f7487a775d17"
+
     def test_icao_code_returns_latlon(self):
-        # Surface CPR vector from v2 tests
-        result = decode("8FC8200A3AB8F5F893096B000000", surface_ref="NZCH")
-        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+        result = decode(self.REAL_SURFACE_MSG, surface_ref="LFBO")
+        assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_tuple_returns_latlon(self):
-        result = decode("8FC8200A3AB8F5F893096B000000", surface_ref=(-43.5, 172.5))
-        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+        result = decode(self.REAL_SURFACE_MSG, surface_ref=(43.63, 1.37))
+        assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_unknown_icao_raises(self):
         with pytest.raises(ValueError, match="unknown airport code"):
-            decode("8FC8200A3AB8F5F893096B000000", surface_ref="ZZZZ")
+            decode(self.REAL_SURFACE_MSG, surface_ref="ZZZZ")
 
     def test_no_surface_ref_keeps_raw_cpr_only(self):
-        result = decode("8FC8200A3AB8F5F893096B000000")
+        result = decode(self.REAL_SURFACE_MSG)
         assert "latitude" not in result
         assert "longitude" not in result
         assert "cpr_lat" in result

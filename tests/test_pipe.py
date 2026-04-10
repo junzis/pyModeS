@@ -57,10 +57,12 @@ class TestPipeDecoderSkeleton:
         }
 
     def test_surface_ref_propagates_to_decode(self):
-        pipe = PipeDecoder(surface_ref="NZCH")
-        result = pipe.decode("8FC8200A3AB8F5F893096B000000")
-        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+        # Real DF18 BDS 0,6 surface movement from jet1090 corpus
+        # (LFBO taxiway). Replaces the earlier synthetic NZCH vector.
+        pipe = PipeDecoder(surface_ref="LFBO")
+        result = pipe.decode("903a23ff426a4e65f7487a775d17")
+        assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_full_dict_propagates_to_decode(self):
         from pymodes._schema import _FULL_SCHEMA
@@ -361,17 +363,19 @@ class TestCprPairAccumulation:
         assert pipe.stats["pending_pairs"] == 0  # nothing stored either
 
     def test_surface_pair_with_surface_ref(self):
-        pipe = PipeDecoder(surface_ref="NZCH")
+        # Real DF18 even/odd surface pair from jet1090 corpus (LFBO
+        # taxiway). Replaces the earlier synthetic NZCH pair.
+        pipe = PipeDecoder(surface_ref="LFBO")
         # First frame (even) — surface_ref already resolves it via
         # single-message path, so latitude is set after this call.
         # The pair logic stores it as pending anyway for the next.
-        pipe.decode("8CC8200A3AC8F009BCDEF2000000", timestamp=0.0)
+        pipe.decode("903a23ff426a38565950432ebf95", timestamp=0.0)
         # Second frame (odd) — single-message also resolves via
         # surface_ref, but the pair would also resolve it.
-        result = pipe.decode("8FC8200A3AB8F5F893096B000000", timestamp=2.0)
+        result = pipe.decode("903a23ff426a4e65f7487a775d17", timestamp=2.0)
         # Either path should yield the same lat/lon
-        assert result["latitude"] == pytest.approx(-43.48564, abs=0.001)
-        assert result["longitude"] == pytest.approx(172.53942, abs=0.001)
+        assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
+        assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_same_parity_overwrites_pending(self):
         pipe = PipeDecoder()
@@ -410,8 +414,8 @@ class TestCprPairAccumulation:
         # is already absent because surface CPR requires the ref even
         # for single-message resolution.
         pipe = PipeDecoder()  # no surface_ref
-        pipe.decode("8CC8200A3AC8F009BCDEF2000000", timestamp=0.0)
-        result = pipe.decode("8FC8200A3AB8F5F893096B000000", timestamp=2.0)
+        pipe.decode("903a23ff426a38565950432ebf95", timestamp=0.0)
+        result = pipe.decode("903a23ff426a4e65f7487a775d17", timestamp=2.0)
         # No crash, and no lat/lon resolved
         assert "latitude" not in result
         assert "longitude" not in result

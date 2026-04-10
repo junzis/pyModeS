@@ -29,8 +29,12 @@ class TestBds06MovementRanges:
 
 
 class TestBds06CprAndTrack:
+    # Real DF18 BDS 0,6 surface movement from the jet1090 long_flight.csv
+    # corpus — ICAO 3A23FF on a taxiway at LFBO (Toulouse-Blagnac).
+    REAL_SURFACE_MSG = "903a23ff426a4e65f7487a775d17"
+
     def test_cpr_raw_fields_present(self):
-        result = decode("8FC8200A3AB8F5F893096B000000")
+        result = decode(self.REAL_SURFACE_MSG)
         assert result["df"] == 17 or result["df"] == 18
         assert result["bds"] == "0,6"
         assert "cpr_format" in result
@@ -39,7 +43,7 @@ class TestBds06CprAndTrack:
 
     def test_track_or_none(self):
         # Either track_status is 0 (track None) or it's a valid angle
-        result = decode("8FC8200A3AB8F5F893096B000000")
+        result = decode(self.REAL_SURFACE_MSG)
         assert "track_status" in result
         ts = result["track_status"]
         assert ts in (0, 1)
@@ -50,5 +54,5 @@ class TestBds06CprAndTrack:
 
     def test_no_altitude_field(self):
         # Surface position messages do NOT populate altitude
-        result = decode("8FC8200A3AB8F5F893096B000000")
+        result = decode(self.REAL_SURFACE_MSG)
         assert "altitude" not in result

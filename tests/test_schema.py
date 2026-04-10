@@ -49,9 +49,9 @@ class TestSchemaDriftDetection:
             {"reference": (49.0, 6.0)},
         ),  # BDS 0,5 airborne position (TC 11)
         (
-            "8FC8200A3AB8F5F893096B000000",
-            {"surface_ref": "NZCH"},
-        ),  # BDS 0,6 surface position (TC 7)
+            "903a23ff426a4e65f7487a775d17",
+            {"surface_ref": "LFBO"},
+        ),  # BDS 0,6 surface position (TC 8) — real LFBO taxi vector
         ("8D485020994409940838175B284F", {}),  # BDS 0,9 velocity sub 1
         ("8DA2C1B6E112B600000000760759", {}),  # BDS 6,1 aircraft status
         ("8DA05629EA21485CBF3F8CADAEEB", {}),  # BDS 6,2 target state and status
