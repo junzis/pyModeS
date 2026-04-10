@@ -40,6 +40,7 @@ dev = [
 [tool.ruff]
 target-version = "py311"
 line-length = 88
+extend-exclude = ["scripts/bench_pms_v2.py"]
 
 [tool.ruff.lint]
 select = [
