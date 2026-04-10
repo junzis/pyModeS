@@ -28,6 +28,8 @@ lossless, matches v2. jet1090 rounds to the nearest 100 ft; we do not.
 
 from typing import Any
 
+from pymodes.decoder.bds._helpers import wrong_status
+
 _ALT_SOURCE = {
     0: "unknown",
     1: "aircraft_altitude",
@@ -43,21 +45,15 @@ def is_bds40(mb: int) -> bool:
 
     # Status-bit consistency: if the status bit is 0, the gated value
     # field must also be 0.
-    def wrong(status_bit: int, value_start: int, value_width: int) -> bool:
-        status = (mb >> (55 - status_bit)) & 0x1
-        value_shift = 55 - (value_start + value_width - 1)
-        value = (mb >> value_shift) & ((1 << value_width) - 1)
-        return status == 0 and value != 0
-
-    if wrong(0, 1, 12):  # MCP altitude
+    if wrong_status(mb, 0, 1, 12):  # MCP altitude
         return False
-    if wrong(13, 14, 12):  # FMS altitude
+    if wrong_status(mb, 13, 14, 12):  # FMS altitude
         return False
-    if wrong(26, 27, 12):  # baro pressure
+    if wrong_status(mb, 26, 27, 12):  # baro pressure
         return False
-    if wrong(47, 48, 3):  # MCP mode bits (vnav, alt hold, approach)
+    if wrong_status(mb, 47, 48, 3):  # MCP mode bits (vnav, alt hold, approach)
         return False
-    if wrong(53, 54, 2):  # target altitude source
+    if wrong_status(mb, 53, 54, 2):  # target altitude source
         return False
 
     # Reserved bits 39-46 (8 bits) must be zero.

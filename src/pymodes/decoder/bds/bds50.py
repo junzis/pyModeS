@@ -29,7 +29,7 @@ Validator range checks:
 
 from typing import Any
 
-from pymodes.decoder.bds._helpers import normalise_angle, signed
+from pymodes.decoder.bds._helpers import normalise_angle, signed, wrong_status
 
 
 def is_bds50(mb: int) -> bool:
@@ -37,38 +37,32 @@ def is_bds50(mb: int) -> bool:
     if mb == 0:
         return False
 
-    # Decode each field (without sign handling) to range-check.
+    # wrongstatus checks (status = 0 but value field != 0). The value
+    # field widths include the sign bit where present, so e.g. the
+    # roll check spans MB bits 1-10 (sign + 9-bit magnitude). This is
+    # stricter than v2, which skips the sign bit — a status=0 sign=1
+    # MB is suspicious and we reject it.
+    if wrong_status(mb, 0, 1, 10):  # roll: sign + 9-bit magnitude
+        return False
+    if wrong_status(mb, 11, 12, 11):  # true track: sign + 10-bit raw
+        return False
+    if wrong_status(mb, 23, 24, 10):  # groundspeed: 10-bit raw
+        return False
+    if wrong_status(mb, 34, 35, 10):  # track rate: sign + 9-bit magnitude
+        return False
+    if wrong_status(mb, 45, 46, 10):  # true airspeed: 10-bit raw
+        return False
+
+    # Decode fields needed for range checks.
     roll_status = (mb >> (55 - 0)) & 0x1
     roll_sign = (mb >> (55 - 1)) & 0x1
     roll_mag = (mb >> (55 - 10)) & 0x1FF
 
-    track_status = (mb >> (55 - 11)) & 0x1
-    track_sign = (mb >> (55 - 12)) & 0x1
-    track_raw = (mb >> (55 - 22)) & 0x3FF
-
     gs_status = (mb >> (55 - 23)) & 0x1
     gs_raw = (mb >> (55 - 33)) & 0x3FF
 
-    rtrk_status = (mb >> (55 - 34)) & 0x1
-    rtrk_sign = (mb >> (55 - 35)) & 0x1
-    rtrk_mag = (mb >> (55 - 44)) & 0x1FF
-
     tas_status = (mb >> (55 - 45)) & 0x1
     tas_raw = (mb >> (55 - 55)) & 0x3FF
-
-    # wrongstatus checks (status = 0 but value field != 0).
-    # Roll: v2 uses msb=3 which skips the sign bit; we include the
-    # sign bit in our check because a status=0 sign=1 MB is suspicious.
-    if roll_status == 0 and (roll_sign or roll_mag):
-        return False
-    if track_status == 0 and (track_sign or track_raw):
-        return False
-    if gs_status == 0 and gs_raw:
-        return False
-    if rtrk_status == 0 and (rtrk_sign or rtrk_mag):
-        return False
-    if tas_status == 0 and tas_raw:
-        return False
 
     # Range checks (only for fields whose status is 1).
     if roll_status:

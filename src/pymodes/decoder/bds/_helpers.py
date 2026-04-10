@@ -47,3 +47,37 @@ def normalise_angle(deg: float) -> float:
     == 180.0`. Safe for any float argument.
     """
     return deg % 360.0
+
+
+def wrong_status(mb: int, status_bit: int, value_start: int, value_width: int) -> bool:
+    """Return True if a status-gated value field is inconsistent.
+
+    BDS registers with status-bit gates encode each field as a
+    status bit followed by a fixed-width value. When the status is
+    0, the entire value field (including any sign bit) must also be
+    0; a nonzero value with status=0 indicates either a corrupt
+    message or a non-BDS-X report that accidentally passed the
+    format-ID check.
+
+    Args:
+        mb: The 56-bit MB field as a Python int.
+        status_bit: 0-indexed position of the status bit from MB MSB.
+        value_start: 0-indexed position of the first value bit.
+        value_width: Number of bits in the value field (may include
+            a sign bit; the whole field is checked for non-zero).
+
+    Returns:
+        True if status == 0 and any bit in the value field is set,
+        False otherwise.
+
+    Example:
+        BDS 4,0 MCP altitude at MB bits 0 (status) and 1-12 (12-bit
+        altitude raw): `wrong_status(mb, 0, 1, 12)` returns True when
+        the status bit is clear but the altitude bits are not.
+    """
+    status = (mb >> (55 - status_bit)) & 0x1
+    if status != 0:
+        return False
+    value_shift = 55 - (value_start + value_width - 1)
+    value = (mb >> value_shift) & ((1 << value_width) - 1)
+    return value != 0

@@ -33,7 +33,7 @@ message, which would add coupling for marginal inference gain.
 
 from typing import Any
 
-from pymodes.decoder.bds._helpers import normalise_angle, signed
+from pymodes.decoder.bds._helpers import normalise_angle, signed, wrong_status
 
 
 def is_bds60(mb: int) -> bool:
@@ -41,10 +41,20 @@ def is_bds60(mb: int) -> bool:
     if mb == 0:
         return False
 
-    hdg_status = (mb >> (55 - 0)) & 0x1
-    hdg_sign = (mb >> (55 - 1)) & 0x1
-    hdg_raw = (mb >> (55 - 11)) & 0x3FF
+    # wrongstatus checks. Widths include sign bits where present, so
+    # e.g. the heading check spans MB bits 1-11 (sign + 10-bit raw).
+    if wrong_status(mb, 0, 1, 11):  # heading: sign + 10-bit raw
+        return False
+    if wrong_status(mb, 12, 13, 10):  # indicated airspeed: 10-bit raw
+        return False
+    if wrong_status(mb, 23, 24, 10):  # mach: 10-bit raw
+        return False
+    if wrong_status(mb, 34, 35, 10):  # baro vertical rate: sign + 9-bit mag
+        return False
+    if wrong_status(mb, 45, 46, 10):  # inertial vertical rate: sign + 9-bit mag
+        return False
 
+    # Decode fields needed for range checks.
     ias_status = (mb >> (55 - 12)) & 0x1
     ias_raw = (mb >> (55 - 22)) & 0x3FF
 
@@ -58,18 +68,6 @@ def is_bds60(mb: int) -> bool:
     vri_status = (mb >> (55 - 45)) & 0x1
     vri_sign = (mb >> (55 - 46)) & 0x1
     vri_mag = (mb >> (55 - 55)) & 0x1FF
-
-    # wrongstatus checks.
-    if hdg_status == 0 and (hdg_sign or hdg_raw):
-        return False
-    if ias_status == 0 and ias_raw:
-        return False
-    if mach_status == 0 and mach_raw:
-        return False
-    if vrb_status == 0 and (vrb_sign or vrb_mag):
-        return False
-    if vri_status == 0 and (vri_sign or vri_mag):
-        return False
 
     # Range checks.
     if ias_status and ias_raw > 500:
