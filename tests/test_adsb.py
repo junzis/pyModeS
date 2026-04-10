@@ -44,3 +44,36 @@ class TestAdsbDispatchIdentification:
         assert result["typecode"] == 0
         assert "bds" not in result
         assert "callsign" not in result
+
+
+class TestAdsbBds61Subtype2:
+    def test_subtype_2_wires_into_bds30(self):
+        # Synthetic ADS-B TC=28 subtype=2 message with minimal ACAS RA:
+        # issued_ra bit (ME bit 8) set, all other RA/RAC/TTI bits zero.
+        # Build the 56-bit ME:
+        #   TC      = 28            (5 bits)
+        #   subtype = 2             (3 bits)
+        #   issued  = 1             (1 bit — ME bit 8)
+        #   rest    = 0
+        me = (28 << 51) | (2 << 48) | (1 << 47)
+        # Wrap into a 112-bit DF17 message with ICAO = 406B90, zero CRC.
+        n = (17 << 107) | (0x406B90 << 80) | (me << 24)
+
+        # Fix up the CRC so crc_valid is True.
+        from pymodes._bits import crc_remainder
+
+        n_no_crc = n & ~0xFFFFFF
+        n_no_crc |= crc_remainder(n_no_crc, 112)
+        msg_hex = f"{n_no_crc:028X}"
+
+        result = decode(msg_hex)
+        assert result["df"] == 17
+        assert result["typecode"] == 28
+        assert result["bds"] == "6,1"
+        assert result["subtype"] == 2
+        # BDS30-derived fields:
+        assert result["issued_ra"] is True
+        assert result["corrective"] is False
+        assert result["threat_type_indicator"] == 0
+        # The legacy placeholder key must be gone.
+        assert "acas_ra_broadcast" not in result
