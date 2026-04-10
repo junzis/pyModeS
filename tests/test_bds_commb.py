@@ -142,6 +142,27 @@ class TestBds20Validator:
         mb = 0x20 << 48  # prefix 0x20, callsign bits all zero
         assert bds20.is_bds20(mb) is False
 
+    def test_mid_range_hash_char_rejected(self):
+        # Indices 33-36 also map to '#' in _CALLSIGN_CHARS but the
+        # original v2 heuristic missed them. Force MB prefix 0x20 with
+        # all 8 callsign slots at index 33 — validator must reject.
+        cs = 0
+        for _ in range(8):
+            cs = (cs << 6) | 33
+        mb = (0x20 << 48) | cs
+        assert bds20.is_bds20(mb) is False
+
+    def test_all_space_callsign_accepted(self):
+        # Index 32 ('_') is the ASCII space in the v2 table and is a
+        # valid (if blank) callsign character. Pin the boundary so a
+        # future edit to the invalid set cannot over-reject index 32.
+        cs = 0
+        for _ in range(8):
+            cs = (cs << 6) | 32
+        mb = (0x20 << 48) | cs
+        assert bds20.is_bds20(mb) is True
+        assert bds20.decode_bds20(mb) == {"callsign": "________"}
+
 
 class TestBds20Decoder:
     def test_decodes_callsign(self):

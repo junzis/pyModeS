@@ -10,14 +10,21 @@ bits 42-47). Since MB bits 8-55 are the bottom 48 bits of the 56-bit
 MB int, we mask with `(1 << 48) - 1`.
 
 Validator rejects all-zero MB, wrong BDS ID, and any 6-bit slot whose
-raw index maps to '#' in the v2 character table (indices 0, 27-31,
-37-47, 58-63). The '#' rejection is a v2 heuristic that improves
-inference precision on genuinely non-BDS20 traffic.
+raw index maps to '#' in the v2 character table. The invalid-index
+set is derived from _callsign._CALLSIGN_CHARS at import time so the
+two sources of truth cannot drift.
 """
 
 from typing import Any
 
-from pymodes._callsign import decode_callsign
+from pymodes._callsign import _CALLSIGN_CHARS, decode_callsign
+
+# Every 6-bit index whose character is the invalid-index sentinel '#'.
+# Derived from the character table so the set stays in sync with any
+# future change to _CALLSIGN_CHARS.
+_INVALID_CALLSIGN_IDX: frozenset[int] = frozenset(
+    i for i, c in enumerate(_CALLSIGN_CHARS) if c == "#"
+)
 
 
 def is_bds20(mb: int) -> bool:
@@ -29,14 +36,13 @@ def is_bds20(mb: int) -> bool:
     if (mb >> 48) & 0xFF != 0x20:
         return False
 
-    # Check the 8 six-bit slots directly for indices that map to '#'
-    # in _CALLSIGN_CHARS: {0, 27-31, 37-47, 58-63}. decode_callsign
-    # strips '#' from its output so we cannot detect invalid
-    # characters after the fact.
+    # Reject any 6-bit slot whose raw index is an invalid-callsign
+    # sentinel. decode_callsign strips '#' from its output, so we
+    # cannot detect these after the fact.
     cs_bits = mb & ((1 << 48) - 1)
     for i in range(8):
         idx = (cs_bits >> (42 - 6 * i)) & 0x3F
-        if _is_invalid_callsign_idx(idx):
+        if idx in _INVALID_CALLSIGN_IDX:
             return False
 
     return True
@@ -46,18 +52,3 @@ def decode_bds20(mb: int) -> dict[str, Any]:
     """Decode the 8-character callsign from a BDS 2,0 MB field."""
     cs_bits = mb & ((1 << 48) - 1)
     return {"callsign": decode_callsign(cs_bits)}
-
-
-def _is_invalid_callsign_idx(idx: int) -> bool:
-    """Return True if the 6-bit index maps to '#' in the v2 character table.
-
-    Invalid indices per the character table at _callsign._CALLSIGN_CHARS:
-      0, 27, 28, 29, 30, 31, 37..47 inclusive, 58..63 inclusive.
-    """
-    if idx == 0:
-        return True
-    if 27 <= idx <= 31:
-        return True
-    if 37 <= idx <= 47:
-        return True
-    return 58 <= idx <= 63
