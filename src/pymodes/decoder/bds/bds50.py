@@ -29,21 +29,7 @@ Validator range checks:
 
 from typing import Any
 
-
-def _signed(value: int, width: int, sign: int) -> int:
-    """Combine an unsigned magnitude and a separate sign bit into a signed int.
-
-    v2's convention: sign=0 means the value is its unsigned self; sign=1
-    means subtract 2**width (so -512..511 for width=9).
-    """
-    if sign:
-        return value - (1 << width)
-    return value
-
-
-def _normalise_angle(deg: float) -> float:
-    """Wrap an angle into the half-open interval [0, 360)."""
-    return deg % 360.0
+from pymodes.decoder.bds._helpers import normalise_angle, signed
 
 
 def is_bds50(mb: int) -> bool:
@@ -86,7 +72,7 @@ def is_bds50(mb: int) -> bool:
 
     # Range checks (only for fields whose status is 1).
     if roll_status:
-        roll_deg = _signed(roll_mag, 9, roll_sign) * 45.0 / 256.0
+        roll_deg = signed(roll_mag, 9, roll_sign) * 45.0 / 256.0
         if abs(roll_deg) > 50.0:
             return False
 
@@ -110,13 +96,13 @@ def decode_bds50(mb: int) -> dict[str, Any]:
     if (mb >> (55 - 0)) & 0x1:
         sign = (mb >> (55 - 1)) & 0x1
         mag = (mb >> (55 - 10)) & 0x1FF
-        result["roll"] = _signed(mag, 9, sign) * 45.0 / 256.0
+        result["roll"] = signed(mag, 9, sign) * 45.0 / 256.0
 
     if (mb >> (55 - 11)) & 0x1:
         sign = (mb >> (55 - 12)) & 0x1
         raw = (mb >> (55 - 22)) & 0x3FF
-        deg = _signed(raw, 10, sign) * 90.0 / 512.0
-        result["true_track"] = _normalise_angle(deg)
+        deg = signed(raw, 10, sign) * 90.0 / 512.0
+        result["true_track"] = normalise_angle(deg)
 
     if (mb >> (55 - 23)) & 0x1:
         result["groundspeed"] = ((mb >> (55 - 33)) & 0x3FF) * 2
@@ -124,7 +110,7 @@ def decode_bds50(mb: int) -> dict[str, Any]:
     if (mb >> (55 - 34)) & 0x1:
         sign = (mb >> (55 - 35)) & 0x1
         mag = (mb >> (55 - 44)) & 0x1FF
-        result["track_rate"] = _signed(mag, 9, sign) * 8.0 / 256.0
+        result["track_rate"] = signed(mag, 9, sign) * 8.0 / 256.0
 
     if (mb >> (55 - 45)) & 0x1:
         result["true_airspeed"] = ((mb >> (55 - 55)) & 0x3FF) * 2
