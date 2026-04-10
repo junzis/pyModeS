@@ -3,7 +3,7 @@
 import pytest
 
 from pymodes import decode
-from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40
+from pymodes.decoder.bds import bds10, bds17, bds20, bds30, bds40, bds50
 
 
 # MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
@@ -433,3 +433,41 @@ class TestCommBRoutesToBds40:
         assert result["bds"] == "4,0"
         assert result["selected_altitude_mcp"] == 3008
         assert result["baro_pressure_setting"] == pytest.approx(1020.0)
+
+
+class TestBds50Validator:
+    def test_valid_bds50_accepts(self):
+        mb = mb_of("A000139381951536E024D4CCF6B5")
+        assert bds50.is_bds50(mb) is True
+
+    def test_signed_roll_accepts(self):
+        mb = mb_of("A0001691FFD263377FFCE02B2BF9")
+        assert bds50.is_bds50(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds50.is_bds50(0) is False
+
+
+class TestBds50Decoder:
+    def test_golden_full_vector(self):
+        mb = mb_of("A000139381951536E024D4CCF6B5")
+        result = bds50.decode_bds50(mb)
+        assert result["roll"] == pytest.approx(2.1, abs=0.1)
+        assert result["true_track"] == pytest.approx(114.258, abs=0.01)
+        assert result["groundspeed"] == 438
+        assert result["track_rate"] == pytest.approx(0.125, abs=0.01)
+        assert result["true_airspeed"] == 424
+
+    def test_signed_roll(self):
+        mb = mb_of("A0001691FFD263377FFCE02B2BF9")
+        result = bds50.decode_bds50(mb)
+        assert result["roll"] == pytest.approx(-0.35, abs=0.05)
+
+
+class TestCommBRoutesToBds50:
+    def test_df20_bds50_end_to_end(self):
+        result = decode("A000139381951536E024D4CCF6B5")
+        assert result["df"] == 20
+        assert result["bds"] == "5,0"
+        assert result["groundspeed"] == 438
+        assert result["true_airspeed"] == 424
