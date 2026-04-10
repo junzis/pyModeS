@@ -4,7 +4,7 @@ version = "3.0.0.dev0"
 description = "Python Mode-S and ADS-B Decoder"
 authors = [{ name = "Junzi Sun", email = "git@junzis.com" }]
 license = { text = "GNU GPL v3" }
-readme = "README.rst"
+readme = "README.md"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -21,8 +21,12 @@ dependencies = [
     "numpy>=1.26",
 ]
 
+[project.scripts]
+modes = "pymodes.cli:main"
+
 [project.optional-dependencies]
 rtlsdr = ["pyrtlsdr>=0.2.93"]
+tui = ["rich>=13.0"]
 
 [project.urls]
 homepage = "https://mode-s.org"
@@ -95,7 +99,7 @@ packages = ["src/pymodes"]
 [tool.hatch.build.targets.sdist]
 include = [
     "src/pymodes",
-    "README.rst",
+    "README.md",
     "LICENSE",
     "pyproject.toml",
 ]
