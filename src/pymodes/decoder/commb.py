@@ -76,14 +76,17 @@ class CommB(DecoderBase):
         else:  # DF21
             result["squawk"] = idcode_to_squawk(ac_or_id)
 
-        # MB payload is already cached as self._me by DecoderBase.
-        # Walking-skeleton: the dispatch table is empty in Task 1 and
-        # grows one register at a time in Tasks 2-10. Task 11 replaces
-        # this inline scan with a call into decoder/bds/_infer.infer().
-        for bds_code, decoder in _COMMB_DISPATCH.items():
-            if _infer.matches(bds_code, self._me):
-                result["bds"] = bds_code
-                result.update(decoder(self._me))
-                break
+        # BDS inference. The Plan 3 walking-skeleton scan is replaced
+        # here with a single call to the two-phase infer() dispatch.
+        candidates = _infer.infer(self._me, include_meteo=False)
+        if not candidates:
+            return result
 
+        best = candidates[0]
+        result["bds"] = best
+        if len(candidates) > 1:
+            result["bds_candidates"] = candidates
+
+        decoder = _COMMB_DISPATCH[best]
+        result.update(decoder(self._me))
         return result

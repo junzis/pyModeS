@@ -548,16 +548,15 @@ class TestBds44Decoder:
         assert result["humidity"] == pytest.approx(50.0, abs=0.01)
 
 
-class TestCommBRoutesToBds44:
-    def test_df20_bds44_end_to_end(self):
-        # Task 9 walking-skeleton: BDS44 is tried unconditionally
-        # alongside 4,0/5,0/6,0. Task 11 will gate it behind
-        # include_meteo=True at which point this test may need to
-        # be updated or dropped.
+class TestCommBBds44RequiresIncludeMeteo:
+    def test_bds44_hidden_from_default_infer(self):
+        # BDS44 is meteorological and only appears when infer() is
+        # called with include_meteo=True. CommB.decode() does not
+        # enable this flag in Plan 3, so the register is not routed
+        # through pymodes.decode() directly.
         result = decode("A0001692185BD5CF400000DFC696")
         assert result["df"] == 20
-        assert result["bds"] == "4,4"
-        assert result["wind_speed"] == 22
+        assert result.get("bds") != "4,4"
 
 
 class TestBds50Validator:
@@ -820,12 +819,11 @@ class TestBds45Decoder:
         assert "static_air_temperature" not in result
 
 
-class TestCommBRoutesToBds45:
-    def test_df20_bds45_end_to_end(self):
-        # Walking-skeleton: BDS45 is tried unconditionally alongside
-        # the other heuristics. Task 11 will gate it behind
-        # include_meteo=True at which point this test may need update.
+class TestCommBBds45RequiresIncludeMeteo:
+    def test_bds45_hidden_from_default_infer(self):
+        # BDS45 is meteorological and only appears when infer() is
+        # called with include_meteo=True. CommB.decode() does not
+        # enable this flag in Plan 3.
         result = decode("A00004190001FB80000000000000")
         assert result["df"] == 20
-        assert result["bds"] == "4,5"
-        assert result["static_air_temperature"] == pytest.approx(-4.5, abs=0.1)
+        assert result.get("bds") != "4,5"

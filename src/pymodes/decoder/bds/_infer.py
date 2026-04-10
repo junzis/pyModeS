@@ -1,16 +1,39 @@
 """Two-phase BDS inference dispatch for Comm-B (DF20/21).
 
-Phase 1 (format-ID fast path) checks the top 4 bits of the MB field
-for the fixed BDS identifier of 1,0 / 1,7 / 2,0 / 3,0. Phase 2
-(heuristic slow path) runs range-and-status-bit validators for
-4,0 / 5,0 / 6,0 (and 4,4 / 4,5 when `include_meteo=True`).
+Phase 1 -- format-ID fast path
+    The top 8 bits of the MB field (MB bits 0-7) contain an explicit
+    BDS identifier for registers 1,0 / 2,0 / 3,0. We check these
+    first: the validator is still run so reserved-bit and field-range
+    checks apply, but the fast path terminates after the first format
+    match (a valid BDS1,0 message will never also match BDS2,0).
 
-This module starts as a near-empty stub in Task 1 and grows as each
-BDS register lands. Task 11 replaces the walking-skeleton dispatch
-inside CommB.decode() with a single call to `infer()` defined here.
+    BDS 1,7 also belongs conceptually to the fast path, but its MB
+    field has no fixed prefix byte -- bits 0-23 are a capability map.
+    Its entry uses ``None`` as the expected prefix and runs its
+    validator directly.
+
+Phase 2 -- heuristic slow path
+    Registers 4,0 / 5,0 / 6,0 have no format identifier and must be
+    detected by status-bit and range heuristics. Each heuristic
+    validator is run unconditionally and every match is added to the
+    candidate list.
+
+    BDS 4,4 and 4,5 (meteorological) are heuristic slow-path registers
+    too, but they share bit patterns with non-meteorological traffic
+    and produce false positives unless the caller opts in via
+    ``include_meteo=True``.
+
+Phase 3 -- reference-assisted disambiguation
+    When multiple candidates survive Phase 2 and the caller passes
+    ``known=`` aircraft state (altitude, groundspeed, track), the
+    candidates can be scored against the reference and the best
+    single match returned. Plan 3 defers this -- ``infer()`` returns
+    the raw candidate list and the CommB class exposes it as
+    ``bds_candidates`` so callers can choose.
 """
 
 from collections.abc import Callable
+from typing import Any
 
 from pymodes.decoder.bds import (
     bds10,
@@ -24,28 +47,101 @@ from pymodes.decoder.bds import (
     bds60,
 )
 
-# BDS code -> validator. Populated by each BDS task as it lands, in the
-# same order validators are tried during inference.
+# Format-ID registers. Each entry is (bds_code, expected_id_byte, validator).
+# BDS17 has no fixed prefix byte (its MB bits 0-23 are a capability map),
+# so its entry uses None and falls through to the validator directly.
+_FORMAT_ID: list[tuple[str, int | None, Callable[[int], bool]]] = [
+    ("1,0", 0x10, bds10.is_bds10),
+    ("1,7", None, bds17.is_bds17),
+    ("2,0", 0x20, bds20.is_bds20),
+    ("3,0", 0x30, bds30.is_bds30),
+]
+
+# Heuristic (non-format-ID) validators tried in order during Phase 2.
+_HEURISTIC: list[tuple[str, Callable[[int], bool]]] = [
+    ("4,0", bds40.is_bds40),
+    ("5,0", bds50.is_bds50),
+    ("6,0", bds60.is_bds60),
+]
+
+# Meteorological heuristics (opt-in via include_meteo=True).
+_HEURISTIC_METEO: list[tuple[str, Callable[[int], bool]]] = [
+    ("4,4", bds44.is_bds44),
+    ("4,5", bds45.is_bds45),
+]
+
+# Validators keyed by BDS code, used by `matches()` for third-party
+# callers that only want a single-register check. Task 11 promoted the
+# primary dispatch path to `infer()` below.
 _VALIDATORS: dict[str, Callable[[int], bool]] = {
-    "1,0": bds10.is_bds10,
-    "1,7": bds17.is_bds17,
-    "2,0": bds20.is_bds20,
-    "3,0": bds30.is_bds30,
-    "4,0": bds40.is_bds40,
-    "4,4": bds44.is_bds44,
-    "4,5": bds45.is_bds45,
-    "5,0": bds50.is_bds50,
-    "6,0": bds60.is_bds60,
+    code: fn for code, _id, fn in _FORMAT_ID
 }
+_VALIDATORS.update(dict(_HEURISTIC))
+_VALIDATORS.update(dict(_HEURISTIC_METEO))
 
 
 def matches(bds_code: str, mb: int) -> bool:
-    """Return True if the registered validator for `bds_code` accepts `mb`.
-
-    Returns False if `bds_code` has no registered validator (used during
-    the walking-skeleton phase before Task 11).
-    """
+    """Return True if the registered validator for `bds_code` accepts `mb`."""
     validator = _VALIDATORS.get(bds_code)
     if validator is None:
         return False
     return validator(mb)
+
+
+def infer(
+    mb: int,
+    *,
+    include_meteo: bool = False,
+    known: dict[str, Any] | None = None,
+) -> list[str]:
+    """Return plausible BDS codes for a Comm-B MB field.
+
+    The first element (when non-empty) is the best candidate -- either
+    the format-ID'd register (Phase 1) or the first heuristic match
+    (Phase 2). Any additional heuristic matches follow.
+
+    Args:
+        mb: The 56-bit Comm-B MB field as a Python int.
+        include_meteo: When True, also try BDS 4,4 and 4,5 heuristic
+            validators. Defaults to False because these share bit
+            patterns with non-meteorological traffic.
+        known: Optional aircraft state for reference-assisted
+            disambiguation. Accepted but not used in Plan 3 -- reserved
+            for a future plan.
+
+    Returns:
+        A list of BDS code strings (e.g. "1,0", "5,0"). Empty list if
+        nothing plausible matched or `mb == 0`.
+    """
+    _ = known  # reserved for future reference disambiguation
+
+    if mb == 0:
+        return []
+
+    candidates: list[str] = []
+
+    # Phase 1 -- format-ID fast path.
+    id_byte = (mb >> 48) & 0xFF
+    for code, expected, validator in _FORMAT_ID:
+        if expected is None:
+            # BDS17 has no fixed prefix byte; run its validator directly.
+            if validator(mb):
+                candidates.append(code)
+                break
+        elif id_byte == expected and validator(mb):
+            candidates.append(code)
+            # Format IDs are exclusive: a valid BDS1,0 can never also
+            # be a valid BDS2,0. Stop the fast path as soon as one hits.
+            break
+
+    # Phase 2 -- heuristic slow path.
+    for code, validator in _HEURISTIC:
+        if validator(mb):
+            candidates.append(code)
+
+    if include_meteo:
+        for code, validator in _HEURISTIC_METEO:
+            if validator(mb):
+                candidates.append(code)
+
+    return candidates
