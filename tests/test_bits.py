@@ -1,7 +1,7 @@
 """Tests for pymodes._bits bit-extraction primitives."""
 
 from pymodes._altcode import altcode_to_altitude
-from pymodes._bits import crc_remainder, extract_unsigned, extract_signed
+from pymodes._bits import crc_remainder, extract_signed, extract_unsigned
 from pymodes._idcode import idcode_to_squawk
 
 
