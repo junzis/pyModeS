@@ -61,11 +61,11 @@ def is_bds40(mb: int) -> bool:
         return False
 
     # Reserved bits 39-46 (8 bits) must be zero.
-    if (mb >> (55 - 46)) & 0xFF != 0:
+    if ((mb >> (55 - 46)) & 0xFF) != 0:
         return False
 
     # Reserved bits 51-52 (2 bits) must be zero.
-    return not (mb >> (55 - 52)) & 0x3
+    return ((mb >> (55 - 52)) & 0x3) == 0
 
 
 def decode_bds40(mb: int) -> dict[str, Any]:
