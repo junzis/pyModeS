@@ -6,7 +6,7 @@ pure Python. Ground-up v3 rewrite of `pyModeS` — 2.44× faster than
 Cython build, no numpy hard dependency, and a single unified `decode()`
 returning a plain dict.
 
-[![license](https://img.shields.io/badge/license-GPL--3.0-blue)](./LICENSE)
+[![license](https://img.shields.io/badge/license-GPL--3.0-blue)](https://github.com/junzis/pyModeS/blob/main/LICENSE)
 
 ## Install
 
@@ -114,7 +114,7 @@ Reproduce with `scripts/benchmark_decode.py`.
 pymodes 3 is **not backwards-compatible** with pyModeS 2.x. The
 function-per-field API (`pms.adsb.callsign(msg)`, ...) is replaced
 by a single `decode()` returning a dict. See the [migration
-guide](./docs/migration.md) for the full equivalence table.
+guide](https://pymodes.readthedocs.io/en/latest/migration/) for the full equivalence table.
 
 If you aren't ready to migrate:
 
@@ -128,7 +128,7 @@ names (`pyModeS` vs `pymodes`).
 ## Links
 
 - Source: https://github.com/junzis/pyModeS
-- Changelog: [CHANGELOG.md](./CHANGELOG.md)
+- Changelog: [CHANGELOG.md](https://github.com/junzis/pyModeS/blob/main/CHANGELOG.md)
 - Issues: https://github.com/junzis/pyModeS/issues
 - License: GPL-3.0 (see `LICENSE`)
 

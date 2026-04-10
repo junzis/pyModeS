@@ -1,0 +1,66 @@
+site_name: pymodes
+site_description: Fast, dictionary-first Python decoder for Mode-S and ADS-B
+site_url: https://pymodes.readthedocs.io
+repo_url: https://github.com/junzis/pyModeS
+repo_name: junzis/pyModeS
+copyright: Copyright &copy; Junzi Sun and pyModeS contributors
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_signature_annotations: true
+            docstring_style: google
+            members_order: source
+            filters:
+              - "!^_"
+
+exclude_docs: |
+  superpowers/
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - PipeDecoder: pipe.md
+  - Migration from v2: migration.md
+  - API Reference: api.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - toc:
+      permalink: true
