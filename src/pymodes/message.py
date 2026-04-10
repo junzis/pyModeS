@@ -111,12 +111,25 @@ class Message:
 
     @staticmethod
     def _parse_hex(hexstr: str) -> tuple[int, int]:
-        """Parse a hex string to (int value, bit length). Raises on error."""
-        if not all(c in _HEX_CHARS for c in hexstr):
-            raise InvalidHexError(hexstr)
+        """Parse a hex string to (int value, bit length). Raises on error.
+
+        Hex-char validation is delegated to ``int(hexstr, 16)`` rather than
+        a Python-level ``all(c in _HEX_CHARS for c in hexstr)`` loop. The
+        built-in parse is an order of magnitude faster and raises
+        ``ValueError`` on the first invalid character, which we translate
+        into :class:`InvalidHexError` for the public API.
+
+        Hex validity is checked before length so that an obviously-invalid
+        input like ``"XYZ"`` raises :class:`InvalidHexError` rather than
+        :class:`InvalidLengthError`, matching the pre-optimization contract.
+        """
+        try:
+            value = int(hexstr, 16)
+        except ValueError as e:
+            raise InvalidHexError(hexstr) from e
         if len(hexstr) not in _HEX_LENGTHS:
             raise InvalidLengthError(actual=len(hexstr), expected=_HEX_LENGTHS)
-        return int(hexstr, 16), len(hexstr) * 4
+        return value, len(hexstr) * 4
 
     @staticmethod
     def _normalize_icao(icao: str) -> str:

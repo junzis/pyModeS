@@ -164,7 +164,7 @@ def main() -> None:
         "| Decoder | Wall time (mean) | Throughput | vs pymodes v3 |",
         "|---|---|---|---|",
         (
-            f"| rs1090 (Rust, single-core) | {t_rs:.2f}s ± {s_rs:.2f} "
+            f"| rs1090 (single-core) | {t_rs:.2f}s ± {s_rs:.2f} "
             f"| {rate(t_rs):,} msg/s | {ratio(t_v3, t_rs):.2f}× |"
         ),
         (
