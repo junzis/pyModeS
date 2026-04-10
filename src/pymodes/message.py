@@ -16,7 +16,7 @@ import json
 from functools import cached_property
 from typing import Any, Self
 
-from pymodes._bits import crc_remainder, extract_field
+from pymodes._bits import crc_remainder, extract_unsigned
 from pymodes.errors import InvalidHexError, InvalidLengthError, UnknownDFError
 
 _HEX_CHARS = frozenset("0123456789abcdefABCDEF")
@@ -62,7 +62,7 @@ class Message:
 
     Stores the message as a Python int of 56 or 112 bits. Field
     accessors are lazy `cached_property`s that extract via
-    `pymodes._bits.extract_field`.
+    `pymodes._bits.extract_unsigned`.
 
     Construction:
         Message("8D406B902015A678D4D220AA4BDA")  # long from hex
@@ -163,7 +163,7 @@ class Message:
     @cached_property
     def df(self) -> int:
         """Downlink format (bits 0-4)."""
-        return extract_field(self._n, 0, 5, self._length)
+        return extract_unsigned(self._n, 0, 5, self._length)
 
     @cached_property
     def icao(self) -> str:
@@ -175,7 +175,7 @@ class Message:
         construction time, in which case the hint is used verbatim.
         """
         if self.df in (11, 17, 18):
-            return f"{extract_field(self._n, 8, 24, self._length):06X}"
+            return f"{extract_unsigned(self._n, 8, 24, self._length):06X}"
         if self._icao_hint is not None:
             return self._icao_hint
         # DF0, 4, 5, 16, 20, 21 - ICAO comes from CRC
@@ -209,7 +209,7 @@ class Message:
         """ADS-B type code (bits 32-36), only defined for DF17/18."""
         if self.df not in (17, 18):
             return None
-        return extract_field(self._n, 32, 5, self._length)
+        return extract_unsigned(self._n, 32, 5, self._length)
 
     def decode(self) -> Decoded:
         """Decode every field of this message.

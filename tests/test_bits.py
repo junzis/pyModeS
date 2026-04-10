@@ -1,57 +1,57 @@
 """Tests for pymodes._bits bit-extraction primitives."""
 
 from pymodes._altcode import altcode_to_altitude
-from pymodes._bits import crc_remainder, extract_field, extract_signed
+from pymodes._bits import crc_remainder, extract_unsigned, extract_signed
 from pymodes._idcode import idcode_to_squawk
 
 
-class TestExtractField:
+class TestExtractUnsigned:
     def test_first_bit_set(self):
         # 8-bit value 0b10000000 = 0x80; top bit extracted as width=1 should be 1
-        assert extract_field(0x80, 0, 1, 8) == 1
+        assert extract_unsigned(0x80, 0, 1, 8) == 1
 
     def test_first_bit_clear(self):
-        assert extract_field(0x00, 0, 1, 8) == 0
+        assert extract_unsigned(0x00, 0, 1, 8) == 0
 
     def test_last_bit(self):
         # 8-bit value 0b00000001 = 0x01; bottom bit at start=7 should be 1
-        assert extract_field(0x01, 7, 1, 8) == 1
+        assert extract_unsigned(0x01, 7, 1, 8) == 1
 
     def test_full_byte(self):
         # 8-bit 0x8D is 10001101 — extract the full 8 bits
-        assert extract_field(0x8D, 0, 8, 8) == 0x8D
+        assert extract_unsigned(0x8D, 0, 8, 8) == 0x8D
 
     def test_df_extraction(self):
         # DF is bits 0-4 (top 5 bits) of a 112-bit message
         # 0x8D406B90... starts with 10001101, so top 5 bits are 10001 = 17
         msg = int("8D406B902015A678D4D220AA4BDA", 16)
-        assert extract_field(msg, 0, 5, 112) == 17
+        assert extract_unsigned(msg, 0, 5, 112) == 17
 
     def test_icao_extraction(self):
         # ICAO is bits 8-31 (24 bits) of a DF17 message
         msg = int("8D406B902015A678D4D220AA4BDA", 16)
-        assert extract_field(msg, 8, 24, 112) == 0x406B90
+        assert extract_unsigned(msg, 8, 24, 112) == 0x406B90
 
     def test_typecode_extraction(self):
         # TC is bits 32-36 (5 bits) — first 5 bits of the ME field
         msg = int("8D406B902015A678D4D220AA4BDA", 16)
         # Byte 4 of the message is 0x20 = 00100000 → first 5 bits are 00100 = 4
-        assert extract_field(msg, 32, 5, 112) == 4
+        assert extract_unsigned(msg, 32, 5, 112) == 4
 
     def test_wide_field_near_end(self):
         # 14-bit value spanning most of a 56-bit short message
         # Value 0x12345 = 0b0001_0010_0011_0100_0101 (20 bits)
         # Place at position 10, width 20, total 56
         n = 0x12345 << (56 - 10 - 20)  # shift to position 10
-        assert extract_field(n, 10, 20, 56) == 0x12345
+        assert extract_unsigned(n, 10, 20, 56) == 0x12345
 
     def test_zero_field(self):
-        assert extract_field(0, 0, 5, 112) == 0
+        assert extract_unsigned(0, 0, 5, 112) == 0
 
     def test_all_ones_field(self):
         # 5 bits all set to 1 = 0b11111 = 31
         n = 0b11111 << (112 - 5)  # shift to position 0
-        assert extract_field(n, 0, 5, 112) == 31
+        assert extract_unsigned(n, 0, 5, 112) == 31
 
 
 class TestExtractSigned:

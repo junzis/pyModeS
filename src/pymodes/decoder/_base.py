@@ -7,7 +7,7 @@ unsigned bit fields from the full message, or use `self._payload`
 directly for payload-level positions.
 """
 
-from pymodes._bits import extract_field
+from pymodes._bits import extract_unsigned
 from pymodes.message import Decoded
 
 
@@ -39,14 +39,14 @@ class DecoderBase:
         self._length = length
         # For 112-bit messages, extract the 56-bit payload at bits
         # 32-87. Short messages have no such field; set to 0.
-        self._payload = extract_field(n, 32, 56, 112) if length == 112 else 0
+        self._payload = extract_unsigned(n, 32, 56, 112) if length == 112 else 0
 
     def _extract(self, start: int, width: int) -> int:
         """Extract an unsigned bit field from the full message int.
 
         Positions are 0-indexed from the message MSB.
         """
-        return extract_field(self._n, start, width, self._length)
+        return extract_unsigned(self._n, start, width, self._length)
 
     def decode(self) -> Decoded:  # pragma: no cover - abstract
         """Return a Decoded dict with DF-specific fields.

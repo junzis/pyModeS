@@ -7,13 +7,13 @@ bit of the message.
 
 This module provides three primitives used by every decoder:
 
-- extract_field(n, start, width, total_bits) — unsigned field extraction
+- extract_unsigned(n, start, width, total_bits) — unsigned field extraction
 - extract_signed(n, start, width, total_bits) — signed (two's complement) extraction
 - crc_remainder(n, length) — 24-bit Mode-S CRC computation
 """
 
 
-def extract_field(n: int, start: int, width: int, total_bits: int) -> int:
+def extract_unsigned(n: int, start: int, width: int, total_bits: int) -> int:
     """Extract `width` bits starting at bit `start` (MSB-first) from an
     `total_bits`-wide integer.
 
@@ -29,9 +29,9 @@ def extract_field(n: int, start: int, width: int, total_bits: int) -> int:
 
     Example:
         >>> msg = int("8D406B902015A678D4D220AA4BDA", 16)
-        >>> extract_field(msg, 0, 5, 112)   # DF (bits 0-4)
+        >>> extract_unsigned(msg, 0, 5, 112)   # DF (bits 0-4)
         17
-        >>> extract_field(msg, 8, 24, 112)  # ICAO (bits 8-31)
+        >>> extract_unsigned(msg, 8, 24, 112)  # ICAO (bits 8-31)
         4221840
     """
     shift = total_bits - start - width
@@ -41,7 +41,7 @@ def extract_field(n: int, start: int, width: int, total_bits: int) -> int:
 def extract_signed(n: int, start: int, width: int, total_bits: int) -> int:
     """Extract `width` bits as a signed two's-complement integer.
 
-    Same bit-positioning semantics as extract_field, but interprets the
+    Same bit-positioning semantics as extract_unsigned, but interprets the
     MSB of the extracted value as a sign bit.
 
     Args:
@@ -53,7 +53,7 @@ def extract_signed(n: int, start: int, width: int, total_bits: int) -> int:
     Returns:
         Signed integer in [-2**(width-1), 2**(width-1) - 1].
     """
-    raw = extract_field(n, start, width, total_bits)
+    raw = extract_unsigned(n, start, width, total_bits)
     sign_bit = 1 << (width - 1)
     if raw & sign_bit:
         raw -= 1 << width
