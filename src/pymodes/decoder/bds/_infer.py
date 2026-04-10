@@ -19,6 +19,7 @@ from pymodes.decoder.bds import (
     bds30,
     bds40,
     bds44,
+    bds45,
     bds50,
     bds60,
 )
@@ -32,6 +33,7 @@ _VALIDATORS: dict[str, Callable[[int], bool]] = {
     "3,0": bds30.is_bds30,
     "4,0": bds40.is_bds40,
     "4,4": bds44.is_bds44,
+    "4,5": bds45.is_bds45,
     "5,0": bds50.is_bds50,
     "6,0": bds60.is_bds60,
 }

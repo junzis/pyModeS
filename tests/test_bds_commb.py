@@ -10,6 +10,7 @@ from pymodes.decoder.bds import (
     bds30,
     bds40,
     bds44,
+    bds45,
     bds50,
     bds60,
 )
@@ -730,3 +731,101 @@ class TestCommBRoutesToBds60:
         assert result["df"] == 20
         assert result["bds"] == "6,0"
         assert result["indicated_airspeed"] == 252
+
+
+class TestBds45Validator:
+    def test_valid_bds45_accepts(self):
+        mb = mb_of("A00004190001FB80000000000000")
+        assert bds45.is_bds45(mb) is True
+
+    def test_all_zeros_rejected(self):
+        assert bds45.is_bds45(0) is False
+
+    def test_reserved_tail_nonzero_rejected(self):
+        mb = mb_of("A00004190001FB80000000000000")
+        mb_bad = mb | 0x1  # set lowest reserved bit
+        assert bds45.is_bds45(mb_bad) is False
+
+    def test_temperature_above_60_rejected(self):
+        # Force temp status + magnitude that exceeds 60 degC.
+        # Raw 241 * 0.25 = 60.25 degC (sign=0).
+        mb = (1 << (55 - 15)) | (241 << (55 - 25))
+        assert bds45.is_bds45(mb) is False
+
+    def test_temperature_below_minus_80_rejected(self):
+        # Sign=1 mag=191 -> signed -321 * 0.25 = -80.25 degC.
+        mb = (1 << (55 - 15)) | (1 << (55 - 16)) | (191 << (55 - 25))
+        assert bds45.is_bds45(mb) is False
+
+    def test_turbulence_status_clear_but_raw_nonzero_rejected(self):
+        # wrong_status: bit 0 clear but bits 1-2 nonzero.
+        mb = 0b01 << (55 - 2)
+        assert bds45.is_bds45(mb) is False
+
+    def test_pressure_status_clear_but_raw_nonzero_rejected(self):
+        # wrong_status: bit 26 clear but bits 27-37 nonzero.
+        mb = 1 << (55 - 37)
+        assert bds45.is_bds45(mb) is False
+
+
+class TestBds45Decoder:
+    def test_golden_temperature_only(self):
+        mb = mb_of("A00004190001FB80000000000000")
+        result = bds45.decode_bds45(mb)
+        assert result["static_air_temperature"] == pytest.approx(-4.5, abs=0.1)
+        assert "turbulence" not in result
+        assert "wind_shear" not in result
+        assert "microburst" not in result
+        assert "icing" not in result
+        assert "wake_vortex" not in result
+        assert "static_pressure" not in result
+        assert "radio_height" not in result
+
+    def test_temperature_gated_by_status_bit(self):
+        # Decision D (v2 bug fix): when MB bit 15 (temp status) is 0,
+        # the temperature must NOT appear in the result dict even if
+        # the magnitude bits are nonzero. Exercise decode_bds45
+        # directly since is_bds45 would reject this MB.
+        mb = 0b111111111 << (55 - 25)  # magnitude = 511, status bit 15 = 0
+        result = bds45.decode_bds45(mb)
+        assert "static_air_temperature" not in result
+
+    def test_multi_hazard_decode(self):
+        # Exercise the 5 hazard-level branches + pressure + radio
+        # height, which the golden vector leaves empty.
+        mb = (
+            (1 << (55 - 0))  # turbulence status
+            | (0b10 << (55 - 2))  # turbulence level 2
+            | (1 << (55 - 3))  # wind shear status
+            | (0b01 << (55 - 5))  # wind shear level 1
+            | (1 << (55 - 6))  # microburst status
+            | (0b11 << (55 - 8))  # microburst level 3
+            | (1 << (55 - 9))  # icing status
+            | (0b10 << (55 - 11))  # icing level 2
+            | (1 << (55 - 12))  # wake vortex status
+            | (0b01 << (55 - 14))  # wake vortex level 1
+            | (1 << (55 - 26))  # pressure status
+            | (1013 << (55 - 37))  # pressure 1013 hPa
+            | (1 << (55 - 38))  # radio height status
+            | (500 << (55 - 50))  # radio height raw 500 -> 8000 ft
+        )
+        result = bds45.decode_bds45(mb)
+        assert result["turbulence"] == 2
+        assert result["wind_shear"] == 1
+        assert result["microburst"] == 3
+        assert result["icing"] == 2
+        assert result["wake_vortex"] == 1
+        assert result["static_pressure"] == 1013
+        assert result["radio_height"] == 8000
+        assert "static_air_temperature" not in result
+
+
+class TestCommBRoutesToBds45:
+    def test_df20_bds45_end_to_end(self):
+        # Walking-skeleton: BDS45 is tried unconditionally alongside
+        # the other heuristics. Task 11 will gate it behind
+        # include_meteo=True at which point this test may need update.
+        result = decode("A00004190001FB80000000000000")
+        assert result["df"] == 20
+        assert result["bds"] == "4,5"
+        assert result["static_air_temperature"] == pytest.approx(-4.5, abs=0.1)

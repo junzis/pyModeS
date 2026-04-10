@@ -40,6 +40,7 @@ from pymodes.decoder.bds import (
     bds30,
     bds40,
     bds44,
+    bds45,
     bds50,
     bds60,
 )
@@ -53,6 +54,7 @@ _COMMB_DISPATCH: dict[str, Callable[[int], dict[str, Any]]] = {
     "3,0": bds30.decode_bds30,
     "4,0": bds40.decode_bds40,
     "4,4": bds44.decode_bds44,
+    "4,5": bds45.decode_bds45,
     "5,0": bds50.decode_bds50,
     "6,0": bds60.decode_bds60,
 }
