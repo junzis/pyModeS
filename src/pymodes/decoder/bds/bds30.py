@@ -6,7 +6,7 @@ the ARA bits (what RA is currently issued), the RAC bits (resolution
 advisory complement — which manoeuvres the aircraft must NOT take),
 and the identity of the threat.
 
-MB field layout (56 bits, 0-indexed from the MSB of MB):
+Payload layout (56 bits, 0-indexed from the MSB of the payload):
     bits  0- 7 : BDS identifier (fixed 0x30)
     bit   8    : ARA[0] — any RA active (issued_ra)
     bit   9    : ARA[1] — corrective
@@ -43,69 +43,71 @@ from typing import Any
 from pymodes._altcode import altcode_to_altitude
 
 
-def is_bds30(mb: int) -> bool:
-    """Return True if `mb` is a plausible BDS 3,0 ACAS RA report."""
-    if mb == 0:
+def is_bds30(payload: int) -> bool:
+    """Return True if `payload` is a plausible BDS 3,0 ACAS RA report."""
+    if payload == 0:
         return False
 
     # BDS identifier must be 0x30.
-    if (mb >> 48) & 0xFF != 0x30:
+    if (payload >> 48) & 0xFF != 0x30:
         return False
 
-    # ARA reserved-for-ACAS-III field (7 bits, MB 15-21) must be < 48
-    # per v2's heuristic (spec leaves these bits for future ACAS III use).
-    ara_reserved = (mb >> (55 - 21)) & 0x7F
+    # ARA reserved-for-ACAS-III field (7 bits, payload 15-21) must be
+    # < 48 per v2's heuristic (spec leaves these bits for future ACAS
+    # III use).
+    ara_reserved = (payload >> (55 - 21)) & 0x7F
     if ara_reserved >= 48:
         return False
 
-    # TTI (MB bits 28-29) must not be 0b11 (reserved value).
-    tti = (mb >> (55 - 29)) & 0x3
+    # TTI (payload bits 28-29) must not be 0b11 (reserved value).
+    tti = (payload >> (55 - 29)) & 0x3
     return tti != 0b11
 
 
-def decode_bds30(mb: int) -> dict[str, Any]:
+def decode_bds30(payload: int) -> dict[str, Any]:
     """Decode a BDS 3,0 ACAS Active RA report.
 
-    Assumes `is_bds30(mb)` is True. The returned dict always contains
-    the ARA/RAC flags plus `threat_type_indicator`. When TTI=1 the
-    dict also contains `threat_icao`; when TTI=2 it contains
-    `threat_altitude`, `threat_range`, `threat_bearing` (some of which
-    may be None if the raw field indicates "not available").
+    Assumes `is_bds30(payload)` is True. The returned dict always
+    contains the ARA/RAC flags plus `threat_type_indicator`. When
+    TTI=1 the dict also contains `threat_icao`; when TTI=2 it
+    contains `threat_altitude`, `threat_range`, `threat_bearing`
+    (some of which may be None if the raw field indicates "not
+    available").
     """
     result: dict[str, Any] = {
-        "threat_type_indicator": (mb >> (55 - 29)) & 0x3,
-        "issued_ra": bool((mb >> (55 - 8)) & 0x1),
-        "corrective": bool((mb >> (55 - 9)) & 0x1),
-        "downward_sense": bool((mb >> (55 - 10)) & 0x1),
-        "increased_rate": bool((mb >> (55 - 11)) & 0x1),
-        "sense_reversal": bool((mb >> (55 - 12)) & 0x1),
-        "altitude_crossing": bool((mb >> (55 - 13)) & 0x1),
-        "positive": bool((mb >> (55 - 14)) & 0x1),
-        "no_below": bool((mb >> (55 - 22)) & 0x1),
-        "no_above": bool((mb >> (55 - 23)) & 0x1),
-        "no_left": bool((mb >> (55 - 24)) & 0x1),
-        "no_right": bool((mb >> (55 - 25)) & 0x1),
-        "ra_terminated": bool((mb >> (55 - 26)) & 0x1),
-        "multiple_threat": bool((mb >> (55 - 27)) & 0x1),
+        "threat_type_indicator": (payload >> (55 - 29)) & 0x3,
+        "issued_ra": bool((payload >> (55 - 8)) & 0x1),
+        "corrective": bool((payload >> (55 - 9)) & 0x1),
+        "downward_sense": bool((payload >> (55 - 10)) & 0x1),
+        "increased_rate": bool((payload >> (55 - 11)) & 0x1),
+        "sense_reversal": bool((payload >> (55 - 12)) & 0x1),
+        "altitude_crossing": bool((payload >> (55 - 13)) & 0x1),
+        "positive": bool((payload >> (55 - 14)) & 0x1),
+        "no_below": bool((payload >> (55 - 22)) & 0x1),
+        "no_above": bool((payload >> (55 - 23)) & 0x1),
+        "no_left": bool((payload >> (55 - 24)) & 0x1),
+        "no_right": bool((payload >> (55 - 25)) & 0x1),
+        "ra_terminated": bool((payload >> (55 - 26)) & 0x1),
+        "multiple_threat": bool((payload >> (55 - 27)) & 0x1),
     }
 
     tti = result["threat_type_indicator"]
 
     if tti == 1:
         # 24-bit ICAO at bits 30-53 (24 bits). Shift = 55 - 53 = 2.
-        icao_int = (mb >> 2) & 0xFFFFFF
+        icao_int = (payload >> 2) & 0xFFFFFF
         result["threat_icao"] = f"{icao_int:06X}"
     elif tti == 2:
         # Altitude: 13-bit AC13 at bits 30-42. Shift = 55 - 42 = 13.
-        ac13 = (mb >> 13) & 0x1FFF
+        ac13 = (payload >> 13) & 0x1FFF
         result["threat_altitude"] = altcode_to_altitude(ac13)
 
         # Range: 7-bit at bits 43-49. Shift = 55 - 49 = 6.
-        range_raw = (mb >> 6) & 0x7F
+        range_raw = (payload >> 6) & 0x7F
         result["threat_range"] = (range_raw - 1) / 10 if range_raw > 0 else None
 
         # Bearing: 6-bit at bits 50-55. Shift = 0.
-        bearing_raw = mb & 0x3F
+        bearing_raw = payload & 0x3F
         result["threat_bearing"] = (
             6 * (bearing_raw - 1) + 3 if bearing_raw > 0 else None
         )

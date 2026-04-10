@@ -4,7 +4,7 @@ Two typecode ranges:
 - TC 9-18: barometric altitude (from the 12-bit altcode)
 - TC 20-22: GNSS altitude (12-bit integer meters converted to feet)
 
-ME field layout (56 bits, 0-indexed from MSB of ME):
+Payload layout (56 bits, 0-indexed from MSB of payload):
     bits 0-4:    TC
     bits 5-6:    SS (surveillance status)
     bit 7:       NIC_B / SAF (single antenna flag for v2)
@@ -26,11 +26,11 @@ from pymodes._altcode import altcode_to_altitude
 from pymodes._uncertainty import TC_NUCp_lookup
 
 
-def decode_bds05(me: int, *, tc: int) -> dict[str, Any]:
-    """Decode a BDS 0,5 ME field (ADS-B airborne position).
+def decode_bds05(payload: int, *, tc: int) -> dict[str, Any]:
+    """Decode a BDS 0,5 payload (ADS-B airborne position).
 
     Args:
-        me: The 56-bit ME field as an integer.
+        payload: The 56-bit payload as an integer.
         tc: The ADS-B typecode (9-18 for barometric, 20-22 for GNSS).
             Passed in by the ADSB class dispatcher because the altitude
             encoding differs across the two ranges.
@@ -39,12 +39,12 @@ def decode_bds05(me: int, *, tc: int) -> dict[str, Any]:
         Dict with altitude, surveillance_status, nic_b, cpr_format,
         cpr_lat, cpr_lon, nuc_p.
     """
-    ss = (me >> 49) & 0x3  # bits 5-6
-    nic_b = (me >> 48) & 0x1  # bit 7
-    ac = (me >> 36) & 0xFFF  # bits 8-19 (12 bits)
-    cpr_format = (me >> 34) & 0x1  # bit 21
-    cpr_lat = (me >> 17) & 0x1FFFF  # bits 22-38 (17 bits)
-    cpr_lon = me & 0x1FFFF  # bits 39-55 (17 bits)
+    ss = (payload >> 49) & 0x3  # bits 5-6
+    nic_b = (payload >> 48) & 0x1  # bit 7
+    ac = (payload >> 36) & 0xFFF  # bits 8-19 (12 bits)
+    cpr_format = (payload >> 34) & 0x1  # bit 21
+    cpr_lat = (payload >> 17) & 0x1FFFF  # bits 22-38 (17 bits)
+    cpr_lon = payload & 0x1FFFF  # bits 39-55 (17 bits)
 
     altitude: int | None
     if 9 <= tc <= 18:

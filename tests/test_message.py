@@ -198,15 +198,15 @@ class TestMessageDfIcaoCrc:
         assert first == second == 17
 
 
-class TestMessageFromMe:
-    def test_from_me_classmethod(self):
-        # ME field for "8D406B902015A678D4D220AA4BDA" is bits 32-87,
-        # which are hex chars 8-21 = "2015A678D4D220"
-        m = Message.from_me("2015A678D4D220", df=17, icao="406B90")
+class TestMessageFromPayload:
+    def test_from_payload_classmethod(self):
+        # Payload (ME field) for "8D406B902015A678D4D220AA4BDA" is bits
+        # 32-87, which are hex chars 8-21 = "2015A678D4D220"
+        m = Message.from_payload("2015A678D4D220", df=17, icao="406B90")
         assert m.df == 17
         assert m.icao == "406B90"
-        assert m.typecode == 4  # ME[0:5] = 00100 = 4
+        assert m.typecode == 4  # payload[0:5] = 00100 = 4
 
-    def test_from_me_wrong_length_raises(self):
+    def test_from_payload_wrong_length_raises(self):
         with pytest.raises(InvalidLengthError):
-            Message.from_me("2015A6", df=17, icao="406B90")
+            Message.from_payload("2015A6", df=17, icao="406B90")

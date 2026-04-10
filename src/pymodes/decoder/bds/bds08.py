@@ -1,6 +1,6 @@
 """BDS 0,8 — ADS-B aircraft identification and category (TC=1-4).
 
-ME field layout (56 bits, 0-indexed from MSB):
+Payload layout (56 bits, 0-indexed from MSB):
     bits 0-4:   TC (typecode, 5 bits)
     bits 5-7:   CAT (aircraft category, 3 bits)
     bits 8-55:  CS (callsign, 8 x 6-bit chars)
@@ -40,19 +40,19 @@ _WAKE_VORTEX: dict[tuple[int, int], str] = {
 }
 
 
-def decode_bds08(me: int) -> dict[str, Any]:
-    """Decode a BDS 0,8 ME field (ADS-B identification).
+def decode_bds08(payload: int) -> dict[str, Any]:
+    """Decode a BDS 0,8 payload (ADS-B identification).
 
     Args:
-        me: The 56-bit ME field as an integer.
+        payload: The 56-bit payload as an integer.
 
     Returns:
         A dict with keys: category, callsign, wake_vortex.
     """
-    tc = (me >> 51) & 0x1F  # bits 0-4
-    category = (me >> 48) & 0x7  # bits 5-7
-    # Callsign bits 8-55: bottom 48 bits of the 56-bit ME int.
-    cs_bits = me & ((1 << 48) - 1)
+    tc = (payload >> 51) & 0x1F  # bits 0-4
+    category = (payload >> 48) & 0x7  # bits 5-7
+    # Callsign bits 8-55: bottom 48 bits of the 56-bit payload.
+    cs_bits = payload & ((1 << 48) - 1)
 
     callsign = decode_callsign(cs_bits)
     if category == 0 or tc == 1:

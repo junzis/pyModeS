@@ -78,7 +78,7 @@ class CommB(DecoderBase):
 
         # BDS inference. The Plan 3 walking-skeleton scan is replaced
         # here with a single call to the two-phase infer() dispatch.
-        candidates = _infer.infer(self._me, include_meteo=False)
+        candidates = _infer.infer(self._payload, include_meteo=False)
         if not candidates:
             return result
 
@@ -88,5 +88,5 @@ class CommB(DecoderBase):
             result["bds_candidates"] = candidates
 
         decoder = _COMMB_DISPATCH[best]
-        result.update(decoder(self._me))
+        result.update(decoder(self._payload))
         return result

@@ -9,16 +9,16 @@ class TestBds08CallsignAndCategory:
         # Golden from v2 test_adsb_callsign + test_adsb_category:
         # msg = "8D406B902015A678D4D220AA4BDA", callsign "EZY85MH "
         # (one trailing space which the decoder strips), category 0
-        # ME = msg[8:22] as int
-        me = 0x2015A678D4D220
-        result = decode_bds08(me)
+        # payload = msg[8:22] as int
+        payload = 0x2015A678D4D220
+        result = decode_bds08(payload)
         assert result["callsign"] == "EZY85MH"
         assert result["category"] == 0
 
     def test_category_no_info_wake_vortex(self):
         # category=0 → "No category information" regardless of TC
-        me = 0x2015A678D4D220  # TC=4, cat=0
-        result = decode_bds08(me)
+        payload = 0x2015A678D4D220  # TC=4, cat=0
+        result = decode_bds08(payload)
         assert result["wake_vortex"] == "No category information"
 
 

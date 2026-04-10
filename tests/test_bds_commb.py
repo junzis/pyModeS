@@ -16,40 +16,40 @@ from pymodes.decoder.bds import (
 )
 
 
-# MB helper: for a 28-char (112-bit) hex message, the 56-bit MB
+# Payload helper: for a 28-char (112-bit) hex message, the 56-bit
 # payload is bytes 4..11 inclusive (bits 32..87 of the full message).
-def mb_of(hex_msg: str) -> int:
-    assert len(hex_msg) == 28
-    full = int(hex_msg, 16)
+def payload_of(frame_hex: str) -> int:
+    assert len(frame_hex) == 28
+    full = int(frame_hex, 16)
     return (full >> 24) & ((1 << 56) - 1)
 
 
 class TestBds10Validator:
     def test_valid_bds10_accepts(self):
-        mb = mb_of("A800178D10010080F50000D5893C")
-        assert bds10.is_bds10(mb) is True
+        payload = payload_of("A800178D10010080F50000D5893C")
+        assert bds10.is_bds10(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds10.is_bds10(0) is False
 
     def test_wrong_bds_id_rejected(self):
         # 0x20 prefix — that's BDS20, not BDS10.
-        mb = mb_of("A0001838201584F23468207CDFA5")
-        assert bds10.is_bds10(mb) is False
+        payload = payload_of("A0001838201584F23468207CDFA5")
+        assert bds10.is_bds10(payload) is False
 
     def test_reserved_bits_nonzero_rejected(self):
-        # Take the valid BDS10 MB and flip a bit in the reserved field
-        # (MB bits 9-13). Setting bit 9 gives 0x00_80_00_00_00_00_00 on
-        # top of the valid MB.
-        mb = mb_of("A800178D10010080F50000D5893C")
-        mb_bad = mb | (1 << (55 - 9))
-        assert bds10.is_bds10(mb_bad) is False
+        # Take the valid BDS10 payload and flip a bit in the reserved
+        # field (payload bits 9-13). Setting bit 9 gives
+        # 0x00_80_00_00_00_00_00 on top of the valid payload.
+        payload = payload_of("A800178D10010080F50000D5893C")
+        payload_bad = payload | (1 << (55 - 9))
+        assert bds10.is_bds10(payload_bad) is False
 
 
 class TestBds10Decoder:
     def test_full_field_decode(self):
-        mb = mb_of("A800178D10010080F50000D5893C")
-        result = bds10.decode_bds10(mb)
+        payload = payload_of("A800178D10010080F50000D5893C")
+        result = bds10.decode_bds10(payload)
         assert result == {
             "config": False,
             "overlay_command_capability": False,
@@ -82,32 +82,32 @@ class TestCommBRoutesToBds10:
 
 class TestBds17Validator:
     def test_valid_bds17_accepts(self):
-        mb = mb_of("A0000638FA81C10000000081A92F")
-        assert bds17.is_bds17(mb) is True
+        payload = payload_of("A0000638FA81C10000000081A92F")
+        assert bds17.is_bds17(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds17.is_bds17(0) is False
 
     def test_bds20_bit_required(self):
-        # Take a valid BDS17 MB and clear MB bit 6 (the BDS20 flag at
+        # Take a valid BDS17 payload and clear payload bit 6 (the BDS20 flag at
         # cap-map index 6). Spec says BDS20 capability is mandatory for
         # aircraft emitting BDS17, so clearing it must fail validation.
-        mb = mb_of("A0000638FA81C10000000081A92F")
-        mb_bad = mb & ~(1 << (55 - 6))
-        assert bds17.is_bds17(mb_bad) is False
+        payload = payload_of("A0000638FA81C10000000081A92F")
+        payload_bad = payload & ~(1 << (55 - 6))
+        assert bds17.is_bds17(payload_bad) is False
 
     def test_trailing_nonzero_rejected(self):
-        # v2's stricter heuristic: MB bits 24-55 must all be zero
+        # v2's stricter heuristic: payload bits 24-55 must all be zero
         # (32 trailing zero bits). Set bit 24 to fail.
-        mb = mb_of("A0000638FA81C10000000081A92F")
-        mb_bad = mb | (1 << (55 - 24))
-        assert bds17.is_bds17(mb_bad) is False
+        payload = payload_of("A0000638FA81C10000000081A92F")
+        payload_bad = payload | (1 << (55 - 24))
+        assert bds17.is_bds17(payload_bad) is False
 
 
 class TestBds17Decoder:
     def test_full_capability_list(self):
-        mb = mb_of("A0000638FA81C10000000081A92F")
-        result = bds17.decode_bds17(mb)
+        payload = payload_of("A0000638FA81C10000000081A92F")
+        result = bds17.decode_bds17(payload)
         assert result == {
             "supported_bds": [
                 "0,5",
@@ -135,34 +135,34 @@ class TestCommBRoutesToBds17:
 
 class TestBds20Validator:
     def test_valid_bds20_accepts(self):
-        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
-        assert bds20.is_bds20(mb) is True
+        payload = payload_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds20.is_bds20(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds20.is_bds20(0) is False
 
     def test_wrong_bds_id_rejected(self):
-        # BDS10 MB has prefix 0x10, not 0x20.
-        mb = mb_of("A800178D10010080F50000D5893C")
-        assert bds20.is_bds20(mb) is False
+        # BDS10 payload has prefix 0x10, not 0x20.
+        payload = payload_of("A800178D10010080F50000D5893C")
+        assert bds20.is_bds20(payload) is False
 
     def test_hash_char_rejected(self):
-        # A forged MB with BDS ID 0x20 and all-zero callsign bits.
+        # A forged payload with BDS ID 0x20 and all-zero callsign bits.
         # Character index 0 maps to '#' (invalid) in the ASCII-derived
         # callsign table, so every one of the 8 six-bit slots would
         # decode to '#' and the validator must reject.
-        mb = 0x20 << 48  # prefix 0x20, callsign bits all zero
-        assert bds20.is_bds20(mb) is False
+        payload = 0x20 << 48  # prefix 0x20, callsign bits all zero
+        assert bds20.is_bds20(payload) is False
 
     def test_mid_range_hash_char_rejected(self):
         # Indices 33-36 also map to '#' (invalid) but the original v2
-        # heuristic missed them. Force MB prefix 0x20 with all 8
+        # heuristic missed them. Force payload prefix 0x20 with all 8
         # callsign slots at index 33 — validator must reject.
         cs = 0
         for _ in range(8):
             cs = (cs << 6) | 33
-        mb = (0x20 << 48) | cs
-        assert bds20.is_bds20(mb) is False
+        payload = (0x20 << 48) | cs
+        assert bds20.is_bds20(payload) is False
 
     def test_all_space_callsign_accepted(self):
         # Index 32 is ASCII space and is a valid (if blank) callsign
@@ -172,25 +172,25 @@ class TestBds20Validator:
         cs = 0
         for _ in range(8):
             cs = (cs << 6) | 32
-        mb = (0x20 << 48) | cs
-        assert bds20.is_bds20(mb) is True
-        assert bds20.decode_bds20(mb) == {"callsign": ""}
+        payload = (0x20 << 48) | cs
+        assert bds20.is_bds20(payload) is True
+        assert bds20.decode_bds20(payload) == {"callsign": ""}
 
 
 class TestBds20Decoder:
     def test_decodes_callsign(self):
-        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
-        assert bds20.decode_bds20(mb) == {"callsign": "KLM1017"}
+        payload = payload_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds20.decode_bds20(payload) == {"callsign": "KLM1017"}
 
     def test_decodes_second_callsign(self):
-        mb = mb_of("A0001993202422F2E37CE038738E")
-        assert bds20.decode_bds20(mb) == {"callsign": "IBK2873"}
+        payload = payload_of("A0001993202422F2E37CE038738E")
+        assert bds20.decode_bds20(payload) == {"callsign": "IBK2873"}
 
     def test_decodes_padded_callsign(self):
         # v2 display was "EXS2MF__" (two trailing underscores as the
         # space placeholder). v3 strips trailing whitespace.
-        mb = mb_of("A0001838201584F23468207CDFA5")
-        assert bds20.decode_bds20(mb) == {"callsign": "EXS2MF"}
+        payload = payload_of("A0001838201584F23468207CDFA5")
+        assert bds20.decode_bds20(payload) == {"callsign": "EXS2MF"}
 
 
 class TestCommBRoutesToBds20:
@@ -203,38 +203,38 @@ class TestCommBRoutesToBds20:
 
 class TestBds30Validator:
     def test_valid_bds30_accepts(self):
-        mb = 0x30_80_00_00_00_00_00
-        assert bds30.is_bds30(mb) is True
+        payload = 0x30_80_00_00_00_00_00
+        assert bds30.is_bds30(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds30.is_bds30(0) is False
 
     def test_wrong_bds_id_rejected(self):
         # BDS20 prefix 0x20.
-        mb = mb_of("A000083E202CC371C31DE0AA1CCF")
-        assert bds30.is_bds30(mb) is False
+        payload = payload_of("A000083E202CC371C31DE0AA1CCF")
+        assert bds30.is_bds30(payload) is False
 
     def test_tti_three_rejected(self):
         # Set TTI to 0b11 (reserved) — must reject.
-        mb = 0x30_80_00_00_00_00_00 | (0b11 << (55 - 29))
-        assert bds30.is_bds30(mb) is False
+        payload = 0x30_80_00_00_00_00_00 | (0b11 << (55 - 29))
+        assert bds30.is_bds30(payload) is False
 
     def test_ara_reserved_ge_48_rejected(self):
-        # Set ARA reserved bits (MB 15-21, 7 bits) to 48 = 0b0110000.
-        mb = 0x30_80_00_00_00_00_00 | (48 << (55 - 21))
-        assert bds30.is_bds30(mb) is False
+        # Set ARA reserved bits (payload 15-21, 7 bits) to 48 = 0b0110000.
+        payload = 0x30_80_00_00_00_00_00 | (48 << (55 - 21))
+        assert bds30.is_bds30(payload) is False
 
     def test_ara_reserved_47_accepted(self):
         # Boundary: ARA reserved = 47 is the maximum accepted value.
         # Paired with test_ara_reserved_ge_48_rejected to pin the band.
-        mb = 0x30_80_00_00_00_00_00 | (47 << (55 - 21))
-        assert bds30.is_bds30(mb) is True
+        payload = 0x30_80_00_00_00_00_00 | (47 << (55 - 21))
+        assert bds30.is_bds30(payload) is True
 
 
 class TestBds30Decoder:
     def test_minimal_ra_no_threat(self):
-        mb = 0x30_80_00_00_00_00_00
-        result = bds30.decode_bds30(mb)
+        payload = 0x30_80_00_00_00_00_00
+        result = bds30.decode_bds30(payload)
         assert result == {
             "threat_type_indicator": 0,
             "issued_ra": True,
@@ -256,28 +256,28 @@ class TestBds30Decoder:
         # TTI=1 with a threat ICAO of 0xABCDEF in bits 30-53.
         # The ICAO occupies only bits 30-53 (24 bits); bits 54-55 are zero.
         tid = 0xABCDEF << 2  # shift into bits 30-53 of the 26-bit TID field
-        mb = (
+        payload = (
             0x30_80_00_00_00_00_00
             | (1 << (55 - 29))  # TTI = 0b01
             | tid  # TID in bits 30-55
         )
-        result = bds30.decode_bds30(mb)
+        result = bds30.decode_bds30(payload)
         assert result["threat_type_indicator"] == 1
         assert result["threat_icao"] == "ABCDEF"
 
     def test_tti_2_altitude_range_bearing(self):
-        # TTI=2: MB bits 30-42 = AC13 altitude, bits 43-49 = 7-bit range,
+        # TTI=2: payload bits 30-42 = AC13 altitude, bits 43-49 = 7-bit range,
         # bits 50-55 = 6-bit bearing. We use:
         #   altitude raw = 0x000 (decoded by altcode_to_altitude → None)
         #   range raw = 10 → (10 - 1) / 10 = 0.9 NM
         #   bearing raw = 3 → 6 * (3 - 1) + 3 = 15 degrees
-        mb = (
+        payload = (
             0x30_80_00_00_00_00_00
             | (0b10 << (55 - 29))  # TTI = 0b10
             | (10 << (55 - 49))  # range field, 7 bits ending at bit 49
             | (3 << (55 - 55))  # bearing field, 6 bits ending at bit 55
         )
-        result = bds30.decode_bds30(mb)
+        result = bds30.decode_bds30(payload)
         assert result["threat_type_indicator"] == 2
         assert result["threat_range"] == pytest.approx(0.9)
         assert result["threat_bearing"] == 15
@@ -289,7 +289,7 @@ class TestBds30Decoder:
         # no_above (bit 23), and multiple_threat (bit 27). The full dict
         # assertion pins every shift constant in decode_bds30 so a future
         # off-by-one in any ARA/RAC/terminal bit is caught immediately.
-        mb = (
+        payload = (
             0x30_00_00_00_00_00_00
             | (1 << (55 - 8))  # issued_ra
             | (1 << (55 - 9))  # corrective
@@ -297,7 +297,7 @@ class TestBds30Decoder:
             | (1 << (55 - 23))  # no_above
             | (1 << (55 - 27))  # multiple_threat
         )
-        result = bds30.decode_bds30(mb)
+        result = bds30.decode_bds30(payload)
         assert result == {
             "threat_type_indicator": 0,
             "issued_ra": True,
@@ -324,8 +324,8 @@ class TestBds30Decoder:
         # through the delegation, pinning the bit-30..42 extraction.
         tti2 = 0b10 << (55 - 29)
         ac13 = 0x1010
-        mb = 0x30_80_00_00_00_00_00 | tti2 | (ac13 << 13)
-        result = bds30.decode_bds30(mb)
+        payload = 0x30_80_00_00_00_00_00 | tti2 | (ac13 << 13)
+        result = bds30.decode_bds30(payload)
         assert result["threat_type_indicator"] == 2
         assert isinstance(result["threat_altitude"], int)
         assert result["threat_altitude"] == 24600
@@ -334,12 +334,12 @@ class TestBds30Decoder:
         # TTI=2 with range_raw=0 and bearing_raw=0 → both decode to None
         # (the "value not available" sentinel). Verifies the > 0 else None
         # branch for both fields.
-        mb = 0x30_80_00_00_00_00_00 | (0b10 << (55 - 29))
+        payload = 0x30_80_00_00_00_00_00 | (0b10 << (55 - 29))
         # All TID bits zero by default; the raw fields are:
         #   altitude AC13 = 0 → None (via altcode_to_altitude)
         #   range = 0 → None
         #   bearing = 0 → None
-        result = bds30.decode_bds30(mb)
+        result = bds30.decode_bds30(payload)
         assert result["threat_type_indicator"] == 2
         assert result["threat_altitude"] is None
         assert result["threat_range"] is None
@@ -348,11 +348,11 @@ class TestBds30Decoder:
 
 class TestCommBRoutesToBds30:
     def test_commb_bds30_end_to_end(self):
-        # Synthetic DF20 message: wrap the minimal BDS30 MB into a
+        # Synthetic DF20 message: wrap the minimal BDS30 payload into a
         # 112-bit frame. Header bits are zero; the decoder only reads
         # the header altcode (bits 19-31), so altitude = altcode_to_altitude(0) = None.
-        mb = 0x30_80_00_00_00_00_00
-        n = (20 << 107) | (mb << 24)
+        payload = 0x30_80_00_00_00_00_00
+        n = (20 << 107) | (payload << 24)
         msg_hex = f"{n:028X}"
         result = decode(msg_hex)
         assert result["df"] == 20
@@ -363,55 +363,55 @@ class TestCommBRoutesToBds30:
 
 class TestBds40Validator:
     def test_valid_bds40_accepts(self):
-        mb = mb_of("A000029C85E42F313000007047D3")
-        assert bds40.is_bds40(mb) is True
+        payload = payload_of("A000029C85E42F313000007047D3")
+        assert bds40.is_bds40(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds40.is_bds40(0) is False
 
     def test_reserved_bits_39_46_nonzero_rejected(self):
-        # Set one of the reserved bits (MB bit 39) in the valid vector.
-        mb = mb_of("A000029C85E42F313000007047D3")
-        mb_bad = mb | (1 << (55 - 39))
-        assert bds40.is_bds40(mb_bad) is False
+        # Set one of the reserved bits (payload bit 39) in the valid vector.
+        payload = payload_of("A000029C85E42F313000007047D3")
+        payload_bad = payload | (1 << (55 - 39))
+        assert bds40.is_bds40(payload_bad) is False
 
     def test_reserved_bits_51_52_nonzero_rejected(self):
-        mb = mb_of("A000029C85E42F313000007047D3")
-        mb_bad = mb | (1 << (55 - 51))
-        assert bds40.is_bds40(mb_bad) is False
+        payload = payload_of("A000029C85E42F313000007047D3")
+        payload_bad = payload | (1 << (55 - 51))
+        assert bds40.is_bds40(payload_bad) is False
 
     def test_mcp_status_clear_but_altitude_nonzero_rejected(self):
         # Pin the wrong(0, 1, 12) call: status bit 0 clear but MCP
         # altitude raw (bits 1-12) nonzero → reject. Exercises the
         # 12-bit-width status-gate arithmetic path.
-        mb = mb_of("A000029C85E42F313000007047D3")
+        payload = payload_of("A000029C85E42F313000007047D3")
         # Clear MCP status bit (bit 0). The altitude raw bits 1-12 are
         # already nonzero in the valid vector (raw = 188 = 3008 ft),
-        # so the result is an inconsistent status=0/value=188 MB.
-        mb_bad = mb & ~(1 << (55 - 0))
-        assert bds40.is_bds40(mb_bad) is False
+        # so the result is an inconsistent status=0/value=188 payload.
+        payload_bad = payload & ~(1 << (55 - 0))
+        assert bds40.is_bds40(payload_bad) is False
 
     def test_target_altitude_source_status_clear_but_value_set_rejected(self):
         # Pin the wrong(53, 54, 2) call: status bit 53 clear but
         # source value bits 54-55 nonzero → reject. Exercises the
         # 2-bit-width status-gate arithmetic path.
-        # Start from all-zero MB then set source value = 3 (bits 54-55 = 0b11)
+        # Start from all-zero payload then set source value = 3 (bits 54-55 = 0b11)
         # with status bit 53 left at 0. is_bds40 must reject.
-        mb_bad = 0b11 << (55 - 55)  # bits 54-55 = 0b11
-        assert bds40.is_bds40(mb_bad) is False
+        payload_bad = 0b11 << (55 - 55)  # bits 54-55 = 0b11
+        assert bds40.is_bds40(payload_bad) is False
 
 
 class TestBds40Decoder:
     def test_golden_vector(self):
-        mb = mb_of("A000029C85E42F313000007047D3")
-        result = bds40.decode_bds40(mb)
+        payload = payload_of("A000029C85E42F313000007047D3")
+        result = bds40.decode_bds40(payload)
         assert result["selected_altitude_mcp"] == 3008
         assert result["selected_altitude_fms"] == 3008
         assert result["baro_pressure_setting"] == pytest.approx(1020.0)
 
     def test_all_statuses_absent(self):
-        # decode_bds40 on an all-zero MB returns an empty dict because
-        # every gated branch short-circuits. (is_bds40 rejects this MB
+        # decode_bds40 on an all-zero payload returns an empty dict because
+        # every gated branch short-circuits. (is_bds40 rejects this payload
         # upstream; we exercise decode_bds40 in isolation.)
         assert bds40.decode_bds40(0) == {}
 
@@ -420,14 +420,14 @@ class TestBds40Decoder:
         # and target alt source status (bit 53) + value 3 (bits 54-55 = 0b11).
         # Pins the last two gated branches of decode_bds40 and
         # exercises _ALT_SOURCE[3] = "fms".
-        mb = (
+        payload = (
             (1 << (55 - 47))  # MCP mode status
             | (1 << (55 - 48))  # vnav_mode = True
             | (1 << (55 - 50))  # approach_mode = True
             | (1 << (55 - 53))  # target alt source status
             | (0b11 << (55 - 55))  # source value = 3 = "fms"
         )
-        result = bds40.decode_bds40(mb)
+        result = bds40.decode_bds40(payload)
         assert result == {
             "vnav_mode": True,
             "altitude_hold_mode": False,
@@ -447,75 +447,75 @@ class TestCommBRoutesToBds40:
 
 class TestBds44Validator:
     def test_valid_bds44_accepts(self):
-        mb = mb_of("A0001692185BD5CF400000DFC696")
-        assert bds44.is_bds44(mb) is True
+        payload = payload_of("A0001692185BD5CF400000DFC696")
+        assert bds44.is_bds44(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds44.is_bds44(0) is False
 
     def test_fom_above_4_rejected(self):
-        # Force FOM (MB bits 0-3) to 5, exceeding the v2 heuristic max.
-        mb = mb_of("A0001692185BD5CF400000DFC696")
-        mb_bad = (mb & ~(0xF << (55 - 3))) | (0b0101 << (55 - 3))
-        assert bds44.is_bds44(mb_bad) is False
+        # Force FOM (payload bits 0-3) to 5, exceeding the v2 heuristic max.
+        payload = payload_of("A0001692185BD5CF400000DFC696")
+        payload_bad = (payload & ~(0xF << (55 - 3))) | (0b0101 << (55 - 3))
+        assert bds44.is_bds44(payload_bad) is False
 
     def test_wind_speed_above_250_rejected(self):
         # Force wind_speed = 251 with valid FOM (≤ 4) and wind_status=1.
         # All other fields zero. Validator must reject on the range check.
-        mb = (
-            (1 << (55 - 3))  # FOM = 1 (MB bit 3 = LSB of 4-bit FOM)
+        payload = (
+            (1 << (55 - 3))  # FOM = 1 (payload bit 3 = LSB of 4-bit FOM)
             | (1 << (55 - 4))  # wind status
             | (251 << (55 - 13))  # wind speed raw 251
         )
-        assert bds44.is_bds44(mb) is False
+        assert bds44.is_bds44(payload) is False
 
     def test_temperature_above_60_rejected(self):
         # Force wind valid (so the wind_status and wind range pass)
         # and temperature raw = 241 → +60.25 °C → reject.
-        mb = (
+        payload = (
             (1 << (55 - 3))
             | (1 << (55 - 4))
             | (50 << (55 - 13))  # wind speed 50 kt
             | (241 << (55 - 33))  # temperature raw = 241, sign=0 → +60.25 °C
         )
-        assert bds44.is_bds44(mb) is False
+        assert bds44.is_bds44(payload) is False
 
     def test_temperature_below_minus_80_rejected(self):
         # Sign=1 magnitude=703 → signed = 703 - 1024 = -321 → -80.25 °C.
-        mb = (
+        payload = (
             (1 << (55 - 3))
             | (1 << (55 - 4))
             | (50 << (55 - 13))  # wind speed 50 kt
             | (1 << (55 - 23))  # temperature sign bit
             | (703 << (55 - 33))  # magnitude
         )
-        assert bds44.is_bds44(mb) is False
+        assert bds44.is_bds44(payload) is False
 
     def test_all_zero_meteo_rejected(self):
         # Valid FOM, wind_status=1, but wind_speed=wind_dir=temp=0.
         # The compound check on the last line of is_bds44 must fire
-        # (NOT the mb==0 early return, because FOM bit and wind status
-        # bit make mb != 0).
-        mb = (1 << (55 - 3)) | (1 << (55 - 4))
-        assert bds44.is_bds44(mb) is False
+        # (NOT the payload==0 early return, because FOM bit and wind status
+        # bit make payload != 0).
+        payload = (1 << (55 - 3)) | (1 << (55 - 4))
+        assert bds44.is_bds44(payload) is False
 
     def test_pressure_status_clear_but_raw_nonzero_rejected(self):
         # Valid wind + non-zero temperature to clear upstream checks.
         # Pressure status=0, pressure raw = 1 → wrong_status rejects.
-        mb = (
+        payload = (
             (1 << (55 - 3))
             | (1 << (55 - 4))
             | (50 << (55 - 13))  # wind speed 50 kt
             | (100 << (55 - 33))  # temperature raw = 100 → +25 °C
             | (1 << (55 - 45))  # pressure raw bit 45 set, status bit 34 is 0
         )
-        assert bds44.is_bds44(mb) is False
+        assert bds44.is_bds44(payload) is False
 
 
 class TestBds44Decoder:
     def test_golden_vector(self):
-        mb = mb_of("A0001692185BD5CF400000DFC696")
-        result = bds44.decode_bds44(mb)
+        payload = payload_of("A0001692185BD5CF400000DFC696")
+        result = bds44.decode_bds44(payload)
         assert result["wind_speed"] == 22
         assert result["wind_direction"] == pytest.approx(344.5, abs=0.5)
         assert result["static_air_temperature"] == pytest.approx(-48.75, abs=0.1)
@@ -527,7 +527,7 @@ class TestBds44Decoder:
         # Exercise the pressure/turbulence/humidity branches that the
         # golden vector leaves empty. All three status bits set, with
         # representative raw values.
-        mb = (
+        payload = (
             (1 << (55 - 3))  # FOM = 1
             | (1 << (55 - 4))  # wind status
             | (50 << (55 - 13))  # wind speed 50 kt
@@ -539,7 +539,7 @@ class TestBds44Decoder:
             | (1 << (55 - 49))  # humidity status
             | (32 << (55 - 55))  # humidity raw 32 → 50.0%
         )
-        result = bds44.decode_bds44(mb)
+        result = bds44.decode_bds44(payload)
         assert result["figure_of_merit"] == 1
         assert result["wind_speed"] == 50
         assert result["wind_direction"] == pytest.approx(180.0, abs=0.01)
@@ -561,12 +561,12 @@ class TestCommBBds44RequiresIncludeMeteo:
 
 class TestBds50Validator:
     def test_valid_bds50_accepts(self):
-        mb = mb_of("A000139381951536E024D4CCF6B5")
-        assert bds50.is_bds50(mb) is True
+        payload = payload_of("A000139381951536E024D4CCF6B5")
+        assert bds50.is_bds50(payload) is True
 
     def test_signed_roll_accepts(self):
-        mb = mb_of("A0001691FFD263377FFCE02B2BF9")
-        assert bds50.is_bds50(mb) is True
+        payload = payload_of("A0001691FFD263377FFCE02B2BF9")
+        assert bds50.is_bds50(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds50.is_bds50(0) is False
@@ -576,39 +576,39 @@ class TestBds50Validator:
         # check, but v3 includes it because status=0/sign=1 is
         # suspicious. Pin this divergence so a future refactor cannot
         # silently restore v2's looser behavior.
-        mb = 1 << (55 - 1)  # Only the roll sign bit set; roll status = 0.
-        assert bds50.is_bds50(mb) is False
+        payload = 1 << (55 - 1)  # Only the roll sign bit set; roll status = 0.
+        assert bds50.is_bds50(payload) is False
 
     def test_gs_status_clear_but_raw_nonzero_rejected(self):
         # Plain unsigned wrongstatus: gs status (bit 23) = 0 but gs
         # raw (bits 24-33) = 100 → inconsistent, must reject.
-        mb = 100 << (55 - 33)  # gs raw = 100, status bit unset
-        assert bds50.is_bds50(mb) is False
+        payload = 100 << (55 - 33)  # gs raw = 100, status bit unset
+        assert bds50.is_bds50(payload) is False
 
     def test_groundspeed_above_600_rejected(self):
         # Range check: gs > 600 kt rejected. gs scale is x2, so
         # raw = 301 -> 602 kt which must fail. Set gs status + raw.
-        mb = (1 << (55 - 23)) | (301 << (55 - 33))
-        assert bds50.is_bds50(mb) is False
+        payload = (1 << (55 - 23)) | (301 << (55 - 33))
+        assert bds50.is_bds50(payload) is False
 
     def test_tas_minus_gs_above_200_rejected(self):
         # Cross-field check: |tas - gs| > 200 kt rejected. Set gs=300
         # (raw 150) and tas=600 (raw 300), delta=300. Both status bits
         # and both values within their own ranges, so only the
         # cross-field check fires.
-        mb = (
+        payload = (
             (1 << (55 - 23))  # gs status
             | (150 << (55 - 33))  # gs raw = 150 → 300 kt
             | (1 << (55 - 45))  # tas status
             | (300 << (55 - 55))  # tas raw = 300 → 600 kt
         )
-        assert bds50.is_bds50(mb) is False
+        assert bds50.is_bds50(payload) is False
 
 
 class TestBds50Decoder:
     def test_golden_full_vector(self):
-        mb = mb_of("A000139381951536E024D4CCF6B5")
-        result = bds50.decode_bds50(mb)
+        payload = payload_of("A000139381951536E024D4CCF6B5")
+        result = bds50.decode_bds50(payload)
         assert result["roll"] == pytest.approx(2.1, abs=0.1)
         assert result["true_track"] == pytest.approx(114.258, abs=0.01)
         assert result["groundspeed"] == 438
@@ -616,8 +616,8 @@ class TestBds50Decoder:
         assert result["true_airspeed"] == 424
 
     def test_signed_roll(self):
-        mb = mb_of("A0001691FFD263377FFCE02B2BF9")
-        result = bds50.decode_bds50(mb)
+        payload = payload_of("A0001691FFD263377FFCE02B2BF9")
+        result = bds50.decode_bds50(payload)
         assert result["roll"] == pytest.approx(-0.35, abs=0.05)
 
     def test_track_signed_and_normalised(self):
@@ -626,12 +626,12 @@ class TestBds50Decoder:
         # normalised to 180.0 via normalise_angle's % 360 wrap.
         # This is the only test that exercises the signed track path
         # AND the non-trivial normalisation branch.
-        mb = (
+        payload = (
             (1 << (55 - 11))  # track status
             | (1 << (55 - 12))  # track sign bit
             # track raw bits 13-22 remain 0
         )
-        result = bds50.decode_bds50(mb)
+        result = bds50.decode_bds50(payload)
         assert result["true_track"] == pytest.approx(180.0, abs=0.001)
 
     def test_track_rate_signed_minimum_matches_v2(self):
@@ -640,12 +640,12 @@ class TestBds50Decoder:
         # 16 deg/s sustained) but matches v2 byte-for-byte. Document
         # the behaviour as a test so a future reviewer doesn't
         # "fix" it without understanding the v2 parity constraint.
-        mb = (
+        payload = (
             (1 << (55 - 34))  # track_rate status
             | (1 << (55 - 35))  # track_rate sign bit
             # track_rate magnitude bits 36-44 remain 0
         )
-        result = bds50.decode_bds50(mb)
+        result = bds50.decode_bds50(payload)
         assert result["track_rate"] == pytest.approx(-16.0, abs=0.001)
 
 
@@ -660,8 +660,8 @@ class TestCommBRoutesToBds50:
 
 class TestBds60Validator:
     def test_valid_bds60_accepts(self):
-        mb = mb_of("A00004128F39F91A7E27C46ADC21")
-        assert bds60.is_bds60(mb) is True
+        payload = payload_of("A00004128F39F91A7E27C46ADC21")
+        assert bds60.is_bds60(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds60.is_bds60(0) is False
@@ -669,32 +669,32 @@ class TestBds60Validator:
     def test_hdg_status_clear_but_sign_set_rejected(self):
         # Stricter than v2: status=0 sign=1 is suspicious. Pins the
         # first wrongstatus check in is_bds60.
-        mb = 1 << (55 - 1)  # only the heading sign bit set
-        assert bds60.is_bds60(mb) is False
+        payload = 1 << (55 - 1)  # only the heading sign bit set
+        assert bds60.is_bds60(payload) is False
 
     def test_ias_above_500_rejected(self):
         # Range check: indicated airspeed > 500 kt rejects.
         # Set ias status + raw = 501 (raw is unsigned, <= 1023 max).
-        mb = (1 << (55 - 12)) | (501 << (55 - 22))
-        assert bds60.is_bds60(mb) is False
+        payload = (1 << (55 - 12)) | (501 << (55 - 22))
+        assert bds60.is_bds60(payload) is False
 
     def test_mach_exactly_one_accepted(self):
         # Mach = 1.0 is physically meaningful (sonic flight) and must
         # be accepted. Raw 250 * 2.048/512 = 1.0 exactly. Pins the
         # `> 1.0` vs `>= 1.0` boundary decision.
-        mb = (1 << (55 - 23)) | (250 << (55 - 33))
-        assert bds60.is_bds60(mb) is True
+        payload = (1 << (55 - 23)) | (250 << (55 - 33))
+        assert bds60.is_bds60(payload) is True
 
     def test_mach_above_one_rejected(self):
         # Range check: Mach > 1.0 rejects. Raw 251 * 2.048/512 ~= 1.004.
-        mb = (1 << (55 - 23)) | (251 << (55 - 33))
-        assert bds60.is_bds60(mb) is False
+        payload = (1 << (55 - 23)) | (251 << (55 - 33))
+        assert bds60.is_bds60(payload) is False
 
 
 class TestBds60Decoder:
     def test_golden_full_vector(self):
-        mb = mb_of("A00004128F39F91A7E27C46ADC21")
-        result = bds60.decode_bds60(mb)
+        payload = payload_of("A00004128F39F91A7E27C46ADC21")
+        result = bds60.decode_bds60(payload)
         assert result["magnetic_heading"] == pytest.approx(42.715, abs=0.01)
         assert result["indicated_airspeed"] == 252
         assert result["mach"] == pytest.approx(0.42, abs=0.005)
@@ -705,8 +705,8 @@ class TestBds60Decoder:
         # Heading with sign=1 mag=0 -> signed(0, 10, 1) = -1024, times
         # 90/512 = -180.0, normalised via % 360.0 -> 180.0 exactly.
         # Exercises the only bds60 code path that hits normalise_angle.
-        mb = (1 << (55 - 0)) | (1 << (55 - 1))
-        result = bds60.decode_bds60(mb)
+        payload = (1 << (55 - 0)) | (1 << (55 - 1))
+        result = bds60.decode_bds60(payload)
         assert result["magnetic_heading"] == pytest.approx(180.0, abs=0.001)
 
     def test_vertical_rate_signed_negative(self):
@@ -715,12 +715,12 @@ class TestBds60Decoder:
         # So use mag = 500: signed(500, 9, 1) = -12, * 32 = -384 ft/min.
         # Pins the signed-vr-baro decode path independent of the
         # golden vector.
-        mb = (
+        payload = (
             (1 << (55 - 34))  # vrb status
             | (1 << (55 - 35))  # vrb sign
             | (500 << (55 - 44))  # vrb mag 500
         )
-        result = bds60.decode_bds60(mb)
+        result = bds60.decode_bds60(payload)
         assert result["baro_vertical_rate"] == -384
 
 
@@ -734,43 +734,43 @@ class TestCommBRoutesToBds60:
 
 class TestBds45Validator:
     def test_valid_bds45_accepts(self):
-        mb = mb_of("A00004190001FB80000000000000")
-        assert bds45.is_bds45(mb) is True
+        payload = payload_of("A00004190001FB80000000000000")
+        assert bds45.is_bds45(payload) is True
 
     def test_all_zeros_rejected(self):
         assert bds45.is_bds45(0) is False
 
     def test_reserved_tail_nonzero_rejected(self):
-        mb = mb_of("A00004190001FB80000000000000")
-        mb_bad = mb | 0x1  # set lowest reserved bit
-        assert bds45.is_bds45(mb_bad) is False
+        payload = payload_of("A00004190001FB80000000000000")
+        payload_bad = payload | 0x1  # set lowest reserved bit
+        assert bds45.is_bds45(payload_bad) is False
 
     def test_temperature_above_60_rejected(self):
         # Force temp status + magnitude that exceeds 60 degC.
         # Raw 241 * 0.25 = 60.25 degC (sign=0).
-        mb = (1 << (55 - 15)) | (241 << (55 - 25))
-        assert bds45.is_bds45(mb) is False
+        payload = (1 << (55 - 15)) | (241 << (55 - 25))
+        assert bds45.is_bds45(payload) is False
 
     def test_temperature_below_minus_80_rejected(self):
         # Sign=1 mag=191 -> signed -321 * 0.25 = -80.25 degC.
-        mb = (1 << (55 - 15)) | (1 << (55 - 16)) | (191 << (55 - 25))
-        assert bds45.is_bds45(mb) is False
+        payload = (1 << (55 - 15)) | (1 << (55 - 16)) | (191 << (55 - 25))
+        assert bds45.is_bds45(payload) is False
 
     def test_turbulence_status_clear_but_raw_nonzero_rejected(self):
         # wrong_status: bit 0 clear but bits 1-2 nonzero.
-        mb = 0b01 << (55 - 2)
-        assert bds45.is_bds45(mb) is False
+        payload = 0b01 << (55 - 2)
+        assert bds45.is_bds45(payload) is False
 
     def test_pressure_status_clear_but_raw_nonzero_rejected(self):
         # wrong_status: bit 26 clear but bits 27-37 nonzero.
-        mb = 1 << (55 - 37)
-        assert bds45.is_bds45(mb) is False
+        payload = 1 << (55 - 37)
+        assert bds45.is_bds45(payload) is False
 
 
 class TestBds45Decoder:
     def test_golden_temperature_only(self):
-        mb = mb_of("A00004190001FB80000000000000")
-        result = bds45.decode_bds45(mb)
+        payload = payload_of("A00004190001FB80000000000000")
+        result = bds45.decode_bds45(payload)
         assert result["static_air_temperature"] == pytest.approx(-4.5, abs=0.1)
         assert "turbulence" not in result
         assert "wind_shear" not in result
@@ -781,18 +781,18 @@ class TestBds45Decoder:
         assert "radio_height" not in result
 
     def test_temperature_gated_by_status_bit(self):
-        # Decision D (v2 bug fix): when MB bit 15 (temp status) is 0,
+        # Decision D (v2 bug fix): when payload bit 15 (temp status) is 0,
         # the temperature must NOT appear in the result dict even if
         # the magnitude bits are nonzero. Exercise decode_bds45
-        # directly since is_bds45 would reject this MB.
-        mb = 0b111111111 << (55 - 25)  # magnitude = 511, status bit 15 = 0
-        result = bds45.decode_bds45(mb)
+        # directly since is_bds45 would reject this payload.
+        payload = 0b111111111 << (55 - 25)  # magnitude = 511, status bit 15 = 0
+        result = bds45.decode_bds45(payload)
         assert "static_air_temperature" not in result
 
     def test_multi_hazard_decode(self):
         # Exercise the 5 hazard-level branches + pressure + radio
         # height, which the golden vector leaves empty.
-        mb = (
+        payload = (
             (1 << (55 - 0))  # turbulence status
             | (0b10 << (55 - 2))  # turbulence level 2
             | (1 << (55 - 3))  # wind shear status
@@ -808,7 +808,7 @@ class TestBds45Decoder:
             | (1 << (55 - 38))  # radio height status
             | (500 << (55 - 50))  # radio height raw 500 -> 8000 ft
         )
-        result = bds45.decode_bds45(mb)
+        result = bds45.decode_bds45(payload)
         assert result["turbulence"] == 2
         assert result["wind_shear"] == 1
         assert result["microburst"] == 3

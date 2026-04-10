@@ -1,13 +1,13 @@
 """BDS 6,2 -- ADS-B Target State and Status (TC=29).
 
 Only one format is currently defined (the DO-260B Target State and
-Status message). The 2-bit subtype field (ME bits 5-6) is emitted
-as an informational field but we do not branch on it -- matching
-jet1090's single-struct approach. DO-260A subtype 0 and reserved
-values 2/3 are parsed with the same layout; callers can ignore the
-result if the subtype value is unexpected.
+Status message). The 2-bit subtype field (payload bits 5-6) is
+emitted as an informational field but we do not branch on it --
+matching jet1090's single-struct approach. DO-260A subtype 0 and
+reserved values 2/3 are parsed with the same layout; callers can
+ignore the result if the subtype value is unexpected.
 
-ME field layout (56 bits, 0-indexed from MSB) per DO-260B
+Payload layout (56 bits, 0-indexed from MSB) per DO-260B
 section 2.2.3.2.7.1, cross-checked against
 jet1090/crates/rs1090/src/decode/bds/bds62.rs:
 
@@ -36,21 +36,21 @@ jet1090/crates/rs1090/src/decode/bds/bds62.rs:
 from typing import Any
 
 
-def decode_bds62(me: int) -> dict[str, Any]:
-    """Decode a BDS 6,2 ME field (ADS-B target state and status).
+def decode_bds62(payload: int) -> dict[str, Any]:
+    """Decode a BDS 6,2 payload (ADS-B target state and status).
 
     Args:
-        me: The 56-bit ME field as an integer.
+        payload: The 56-bit payload as an integer.
 
     Returns:
         Dict with subtype and the full set of DO-260B Target State
         and Status fields.
     """
-    result: dict[str, Any] = {"subtype": (me >> 49) & 0x3}  # bits 5-6
+    result: dict[str, Any] = {"subtype": (payload >> 49) & 0x3}  # bits 5-6
 
     # Selected altitude source at bit 8, value at bits 9-19 (11 bits).
-    alt_source_bit = (me >> 47) & 0x1
-    alt_raw = (me >> 36) & 0x7FF
+    alt_source_bit = (payload >> 47) & 0x1
+    alt_raw = (payload >> 36) & 0x7FF
     if alt_raw == 0:
         result["selected_altitude"] = None
         result["selected_altitude_source"] = "N/A"
@@ -59,7 +59,7 @@ def decode_bds62(me: int) -> dict[str, Any]:
         result["selected_altitude_source"] = "FMS" if alt_source_bit == 1 else "MCP/FCU"
 
     # Barometric pressure setting at bits 20-28 (9 bits).
-    baro_raw = (me >> 27) & 0x1FF
+    baro_raw = (payload >> 27) & 0x1FF
     if baro_raw == 0:
         result["baro_pressure_setting"] = None
     else:
@@ -68,21 +68,21 @@ def decode_bds62(me: int) -> dict[str, Any]:
     # Selected heading: status bit at 29, 9-bit value at bits 30-38.
     # Equivalent formulation: raw * 360/512 (our choice) or
     # raw * 180/256 (jet1090); mathematically identical.
-    hdg_status = (me >> 26) & 0x1
-    hdg_raw = (me >> 17) & 0x1FF
+    hdg_status = (payload >> 26) & 0x1
+    hdg_raw = (payload >> 17) & 0x1FF
     if hdg_status == 0:
         result["selected_heading"] = None
     else:
         result["selected_heading"] = hdg_raw * 360 / 512
 
     # Navigation integrity / accuracy fields.
-    result["nac_p"] = (me >> 13) & 0xF  # bits 39-42
-    result["nic_baro"] = (me >> 12) & 0x1  # bit 43
-    result["sil"] = (me >> 10) & 0x3  # bits 44-45
+    result["nac_p"] = (payload >> 13) & 0xF  # bits 39-42
+    result["nic_baro"] = (payload >> 12) & 0x1  # bit 43
+    result["sil"] = (payload >> 10) & 0x3  # bits 44-45
 
     # Mode status bit (bit 46) gates the five autopilot/nav flags.
     # TCAS operational (bit 52) is always valid regardless.
-    mode_status = (me >> 9) & 0x1
+    mode_status = (payload >> 9) & 0x1
     if mode_status == 0:
         result["autopilot"] = None
         result["vnav_mode"] = None
@@ -90,12 +90,12 @@ def decode_bds62(me: int) -> dict[str, Any]:
         result["approach_mode"] = None
         result["lnav_mode"] = None
     else:
-        result["autopilot"] = bool((me >> 8) & 0x1)  # bit 47
-        result["vnav_mode"] = bool((me >> 7) & 0x1)  # bit 48
-        result["altitude_hold_mode"] = bool((me >> 6) & 0x1)  # bit 49
-        result["approach_mode"] = bool((me >> 4) & 0x1)  # bit 51
-        result["lnav_mode"] = bool((me >> 2) & 0x1)  # bit 53
+        result["autopilot"] = bool((payload >> 8) & 0x1)  # bit 47
+        result["vnav_mode"] = bool((payload >> 7) & 0x1)  # bit 48
+        result["altitude_hold_mode"] = bool((payload >> 6) & 0x1)  # bit 49
+        result["approach_mode"] = bool((payload >> 4) & 0x1)  # bit 51
+        result["lnav_mode"] = bool((payload >> 2) & 0x1)  # bit 53
 
-    result["tcas_operational"] = bool((me >> 3) & 0x1)  # bit 52
+    result["tcas_operational"] = bool((payload >> 3) & 0x1)  # bit 52
 
     return result

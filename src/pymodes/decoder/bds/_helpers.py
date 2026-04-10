@@ -1,7 +1,7 @@
 """Bit-math helpers shared across BDS register decoders.
 
-BDS validators and decoders all operate on a 56-bit MB field as a
-Python int, extracting bit-slices with `(mb >> (55 - end)) & mask`.
+BDS validators and decoders all operate on a 56-bit payload as a
+Python int, extracting bit-slices with `(payload >> (55 - end)) & mask`.
 Several registers share the same post-extraction transformations:
 
 - Separate sign-bit + magnitude encoding (e.g. BDS 5,0 roll, BDS 6,0
@@ -49,7 +49,9 @@ def normalise_angle(deg: float) -> float:
     return deg % 360.0
 
 
-def wrong_status(mb: int, status_bit: int, value_start: int, value_width: int) -> bool:
+def wrong_status(
+    payload: int, status_bit: int, value_start: int, value_width: int
+) -> bool:
     """Return True if a status-gated value field is inconsistent.
 
     BDS registers with status-bit gates encode each field as a
@@ -60,8 +62,8 @@ def wrong_status(mb: int, status_bit: int, value_start: int, value_width: int) -
     format-ID check.
 
     Args:
-        mb: The 56-bit MB field as a Python int.
-        status_bit: 0-indexed position of the status bit from MB MSB.
+        payload: The 56-bit payload as a Python int.
+        status_bit: 0-indexed position of the status bit from payload MSB.
         value_start: 0-indexed position of the first value bit.
         value_width: Number of bits in the value field (may include
             a sign bit; the whole field is checked for non-zero).
@@ -71,13 +73,14 @@ def wrong_status(mb: int, status_bit: int, value_start: int, value_width: int) -
         False otherwise.
 
     Example:
-        BDS 4,0 MCP altitude at MB bits 0 (status) and 1-12 (12-bit
-        altitude raw): `wrong_status(mb, 0, 1, 12)` returns True when
-        the status bit is clear but the altitude bits are not.
+        BDS 4,0 MCP altitude at payload bits 0 (status) and 1-12
+        (12-bit altitude raw): `wrong_status(payload, 0, 1, 12)`
+        returns True when the status bit is clear but the altitude
+        bits are not.
     """
-    status = (mb >> (55 - status_bit)) & 0x1
+    status = (payload >> (55 - status_bit)) & 0x1
     if status != 0:
         return False
     value_shift = 55 - (value_start + value_width - 1)
-    value = (mb >> value_shift) & ((1 << value_width) - 1)
+    value = (payload >> value_shift) & ((1 << value_width) - 1)
     return value != 0

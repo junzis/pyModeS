@@ -49,8 +49,8 @@ class ACAS(DecoderBase):
         result["altitude"] = altcode_to_altitude(self._extract(19, 13))
 
         # DF16-specific: expose the 56-bit MV field (bits 32-87) as raw hex.
-        # DecoderBase populates self._me for all 112-bit messages.
+        # DecoderBase populates self._payload for all 112-bit messages.
         if self._df == 16:
-            result["mv"] = f"{self._me:014X}"
+            result["mv"] = f"{self._payload:014X}"
 
         return result

@@ -8,7 +8,7 @@ middle 22 bits:
 - Subtype 3: subsonic airspeed (heading + IAS/TAS)
 - Subtype 4: supersonic airspeed (4x scale)
 
-ME field layout (56 bits, 0-indexed from MSB of the ME field):
+Payload layout (56 bits, 0-indexed from MSB of the payload):
 
     bits 0-4:    TC (= 19)
     bits 5-7:    subtype (1-4)
@@ -41,18 +41,18 @@ import math
 from typing import Any
 
 
-def decode_bds09(me: int) -> dict[str, Any]:
-    """Decode a BDS 0,9 ME field (ADS-B airborne velocity, TC=19).
+def decode_bds09(payload: int) -> dict[str, Any]:
+    """Decode a BDS 0,9 payload (ADS-B airborne velocity, TC=19).
 
     Args:
-        me: The 56-bit ME field as an integer.
+        payload: The 56-bit payload as an integer.
 
     Returns:
         Dict with subtype plus subtype-specific fields and the common
         trailer (vr_source, vertical_rate, geo_minus_baro, nac_v).
     """
-    subtype = (me >> 48) & 0x7  # bits 5-7
-    nac_v = (me >> 43) & 0x7  # bits 10-12
+    subtype = (payload >> 48) & 0x7  # bits 5-7
+    nac_v = (payload >> 43) & 0x7  # bits 10-12
 
     result: dict[str, Any] = {
         "subtype": subtype,
@@ -60,14 +60,14 @@ def decode_bds09(me: int) -> dict[str, Any]:
     }
 
     if subtype in (1, 2):
-        result.update(_decode_ground_speed(me, subtype))
+        result.update(_decode_ground_speed(payload, subtype))
     elif subtype in (3, 4):
-        result.update(_decode_air_speed(me, subtype))
+        result.update(_decode_air_speed(payload, subtype))
 
     # Common trailer
-    vr_source = (me >> 20) & 0x1  # bit 35
-    vr_sign = (me >> 19) & 0x1  # bit 36
-    vr_mag = (me >> 10) & 0x1FF  # bits 37-45
+    vr_source = (payload >> 20) & 0x1  # bit 35
+    vr_sign = (payload >> 19) & 0x1  # bit 36
+    vr_mag = (payload >> 10) & 0x1FF  # bits 37-45
     result["vr_source"] = "BARO" if vr_source == 1 else "GNSS"
     if vr_mag == 0:
         result["vertical_rate"] = None
@@ -76,8 +76,8 @@ def decode_bds09(me: int) -> dict[str, Any]:
         result["vertical_rate"] = int(sign * (vr_mag - 1) * 64)
 
     # GNSS minus baro altitude diff: bit 48 sign, bits 49-55 magnitude
-    diff_sign = (me >> 7) & 0x1
-    diff_mag = me & 0x7F  # bits 49-55
+    diff_sign = (payload >> 7) & 0x1
+    diff_mag = payload & 0x7F  # bits 49-55
     if diff_mag == 0 or diff_mag == 127:
         result["geo_minus_baro"] = None
     else:
@@ -87,12 +87,12 @@ def decode_bds09(me: int) -> dict[str, Any]:
     return result
 
 
-def _decode_ground_speed(me: int, subtype: int) -> dict[str, Any]:
+def _decode_ground_speed(payload: int, subtype: int) -> dict[str, Any]:
     """Subtype 1 (subsonic) or 2 (supersonic) ground-speed decoding."""
-    v_ew_sign = (me >> 42) & 0x1  # bit 13
-    v_ew_mag = (me >> 32) & 0x3FF  # bits 14-23
-    v_ns_sign = (me >> 31) & 0x1  # bit 24
-    v_ns_mag = (me >> 21) & 0x3FF  # bits 25-34
+    v_ew_sign = (payload >> 42) & 0x1  # bit 13
+    v_ew_mag = (payload >> 32) & 0x3FF  # bits 14-23
+    v_ns_sign = (payload >> 31) & 0x1  # bit 24
+    v_ns_mag = (payload >> 21) & 0x3FF  # bits 25-34
 
     if v_ew_mag == 0 or v_ns_mag == 0:
         # Not available
@@ -124,12 +124,12 @@ def _decode_ground_speed(me: int, subtype: int) -> dict[str, Any]:
     }
 
 
-def _decode_air_speed(me: int, subtype: int) -> dict[str, Any]:
+def _decode_air_speed(payload: int, subtype: int) -> dict[str, Any]:
     """Subtype 3 (subsonic) or 4 (supersonic) airspeed decoding."""
-    hdg_status = (me >> 42) & 0x1  # bit 13
-    hdg_raw = (me >> 32) & 0x3FF  # bits 14-23
-    as_type = (me >> 31) & 0x1  # bit 24
-    as_mag = (me >> 21) & 0x3FF  # bits 25-34
+    hdg_status = (payload >> 42) & 0x1  # bit 13
+    hdg_raw = (payload >> 32) & 0x3FF  # bits 14-23
+    as_type = (payload >> 31) & 0x1  # bit 24
+    as_mag = (payload >> 21) & 0x3FF  # bits 25-34
 
     heading: float | None = None if hdg_status == 0 else hdg_raw / 1024 * 360.0
 

@@ -9,7 +9,7 @@ from pymodes.errors import InvalidHexError
 class TestCommBHeaderDecoding:
     def test_df20_header_altitude(self):
         # DF20 Comm-B altitude reply. The AC13 field lives at bits 19-31
-        # of the full 112-bit message, same layout as DF4. The MB payload
+        # of the full 112-bit message, same layout as DF4. The payload
         # here is BDS20 (aircraft identification); once Task 4 wires up
         # BDS20 dispatch this message also carries a callsign alongside
         # the header altitude.
@@ -22,8 +22,8 @@ class TestCommBHeaderDecoding:
         # DF21 Comm-B identity reply. The ID13 field lives at bits 19-31.
         # Synthetic: we reuse an A8... DF21 message and assert the squawk
         # field is extracted from those bits. Once Task 7 wires up BDS50
-        # dispatch this synthetic MB also validates as a Track and Turn
-        # Report; the header squawk extraction is what this test pins.
+        # dispatch this synthetic payload also validates as a Track and
+        # Turn Report; the header squawk extraction is what this test pins.
         result = decode("A8001EBCFFFB23286004A73F6A5B")
         assert result["df"] == 21
         assert "squawk" in result

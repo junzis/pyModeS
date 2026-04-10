@@ -11,16 +11,16 @@ format:
     bits 32-87:  ME -- the ADS-B payload (56)
     bits 88-111: CRC (24)
 
-The 5-bit typecode at ME bits 0-4 (message bits 32-36) selects the
-BDS register that defines the rest of the ME layout. The ADSB class
-dispatches on typecode via the _ADSB_DISPATCH table, which is
-pre-expanded from the human-editable _ADSB_RANGES list at module
-import time.
+The 5-bit typecode at payload bits 0-4 (message bits 32-36) selects
+the BDS register that defines the rest of the payload layout. The
+ADSB class dispatches on typecode via the _ADSB_DISPATCH table,
+which is pre-expanded from the human-editable _ADSB_RANGES list at
+module import time.
 
 Each BDS decoder is a module-level function
-decode_bdsXX(me: int) -> dict[str, Any] operating on the 56-bit ME
-field as a Python int. Bit positions inside the BDS functions are
-0-indexed from the MSB of the ME field, matching the BDS register
+decode_bdsXX(payload: int) -> dict[str, Any] operating on the 56-bit
+payload as a Python int. Bit positions inside the BDS functions are
+0-indexed from the MSB of the payload, matching the BDS register
 spec layout.
 """
 
@@ -56,8 +56,8 @@ class ADSB(DecoderBase):
     """Decoder for DF17 (extended squitter) and DF18 (non-transponder ADS-B)."""
 
     def decode(self) -> Decoded:
-        # TC is at ME bits 0-4 (top 5 bits of the 56-bit ME int).
-        tc = (self._me >> 51) & 0x1F
+        # TC is at payload bits 0-4 (top 5 bits of the 56-bit payload).
+        tc = (self._payload >> 51) & 0x1F
         result: Decoded = Decoded({"typecode": tc})
 
         entry = _ADSB_DISPATCH.get(tc)
@@ -72,8 +72,8 @@ class ADSB(DecoderBase):
         # BDS05 needs tc to distinguish barometric (TC 9-18) vs
         # GNSS altitude (TC 20-22).
         if bds_code == "0,5":
-            result.update(decoder(self._me, tc=tc))
+            result.update(decoder(self._payload, tc=tc))
         else:
-            result.update(decoder(self._me))
+            result.update(decoder(self._payload))
 
         return result

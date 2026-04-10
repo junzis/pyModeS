@@ -69,8 +69,8 @@ class Message:
         Message("20000000000000")                 # short from hex
         Message(0x8D406B9020..., length=112)      # from int with explicit length
 
-    Alternative construction from the ME field alone:
-        Message.from_me("2015A678D4D220", df=17, icao="406B90")
+    Alternative construction from the payload alone:
+        Message.from_payload("2015A678D4D220", df=17, icao="406B90")
 
     Note: no `__slots__` — `cached_property` stores cached values in
     `__dict__`, so slot-based instances are incompatible. Per the v3
@@ -126,34 +126,35 @@ class Message:
         return icao.upper()
 
     @classmethod
-    def from_me(cls, me: str, *, df: int, icao: str) -> Self:
-        """Construct a Message from the ME field alone plus explicit headers.
+    def from_payload(cls, payload: str, *, df: int, icao: str) -> Self:
+        """Construct a Message from the 56-bit payload alone plus explicit headers.
 
         Useful when the full message is not available (e.g., logs that
         strip the outer CRC and header) but the caller knows the
         downlink format and ICAO out of band.
 
         Args:
-            me: The 56-bit ME field as 14 hex characters.
+            payload: The 56-bit payload (ADS-B ME / Comm-B MB) as 14
+                hex characters.
             df: Downlink format (used to build the synthetic full message).
             icao: 24-bit ICAO address as a 6-character hex string.
 
         Returns:
             A Message with `_length == 112` representing a synthetic long
-            message: header(df) + icao + me + zero CRC. The CRC will not
-            validate; `crc_valid` returns False.
+            message: header(df) + icao + payload + zero CRC. The CRC
+            will not validate; `crc_valid` returns False.
         """
-        if len(me) != 14 or not all(c in _HEX_CHARS for c in me):
-            raise InvalidLengthError(actual=len(me), expected=(14,))
+        if len(payload) != 14 or not all(c in _HEX_CHARS for c in payload):
+            raise InvalidLengthError(actual=len(payload), expected=(14,))
         icao = cls._normalize_icao(icao)
         if df < 0 or df > 31:
             raise UnknownDFError(df)
 
-        me_int = int(me, 16)
+        payload_int = int(payload, 16)
         icao_int = int(icao, 16)
-        # Build 112-bit message: [df:5][ca:3][icao:24][me:56][parity:24]
-        # For from_me we set ca=0 and parity=0 (synthetic, CRC not valid).
-        n = (df << 107) | (icao_int << 80) | (me_int << 24)
+        # Build 112-bit message: [df:5][ca:3][icao:24][payload:56][parity:24]
+        # For from_payload we set ca=0 and parity=0 (synthetic, CRC not valid).
+        n = (df << 107) | (icao_int << 80) | (payload_int << 24)
         obj = cls.__new__(cls)
         obj._n = n
         obj._length = 112

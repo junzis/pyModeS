@@ -1,9 +1,9 @@
 """Base class for all pymodes decoder classes.
 
 Each decoder stores the raw message int plus its length (56 or 112)
-and, for long messages, the 56-bit ME/MV/MB payload extracted from
+and, for long messages, the 56-bit payload (ME/MV/MB) extracted from
 bits 32-87. Subclasses call `self._extract(start, width)` to pull
-unsigned bit fields from the full message, or use `self._me`
+unsigned bit fields from the full message, or use `self._payload`
 directly for payload-level positions.
 """
 
@@ -24,22 +24,22 @@ class DecoderBase:
             handle multiple DFs).
         _icao: the ICAO address as an uppercase hex string.
         _length: 56 or 112, the bit width of the message.
-        _me: the 56-bit ME/MV/MB payload (bits 32-87) for 112-bit
-            messages, or 0 for short messages. Used by ADS-B and
-            Comm-B decoders that address fields relative to the
-            payload MSB.
+        _payload: the 56-bit payload (ME/MV/MB, bits 32-87) for
+            112-bit messages, or 0 for short messages. Used by
+            ADS-B and Comm-B decoders that address fields relative
+            to the payload MSB.
     """
 
-    __slots__ = ("_df", "_icao", "_length", "_me", "_n")
+    __slots__ = ("_df", "_icao", "_length", "_n", "_payload")
 
     def __init__(self, n: int, *, df: int, icao: str, length: int) -> None:
         self._n = n
         self._df = df
         self._icao = icao
         self._length = length
-        # For 112-bit messages, extract the 56-bit ME/MV/MB payload at
-        # bits 32-87. Short messages have no such field; set to 0.
-        self._me = extract_field(n, 32, 56, 112) if length == 112 else 0
+        # For 112-bit messages, extract the 56-bit payload at bits
+        # 32-87. Short messages have no such field; set to 0.
+        self._payload = extract_field(n, 32, 56, 112) if length == 112 else 0
 
     def _extract(self, start: int, width: int) -> int:
         """Extract an unsigned bit field from the full message int.

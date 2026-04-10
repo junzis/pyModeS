@@ -49,15 +49,15 @@ class TestAdsbDispatchIdentification:
 class TestAdsbBds61Subtype2:
     def test_subtype_2_wires_into_bds30(self):
         # Synthetic ADS-B TC=28 subtype=2 message with minimal ACAS RA:
-        # issued_ra bit (ME bit 8) set, all other RA/RAC/TTI bits zero.
-        # Build the 56-bit ME:
+        # issued_ra bit (payload bit 8) set, all other RA/RAC/TTI bits zero.
+        # Build the 56-bit payload:
         #   TC      = 28            (5 bits)
         #   subtype = 2             (3 bits)
-        #   issued  = 1             (1 bit — ME bit 8)
+        #   issued  = 1             (1 bit — payload bit 8)
         #   rest    = 0
-        me = (28 << 51) | (2 << 48) | (1 << 47)
+        payload = (28 << 51) | (2 << 48) | (1 << 47)
         # Wrap into a 112-bit DF17 message with ICAO = 406B90, zero CRC.
-        n = (17 << 107) | (0x406B90 << 80) | (me << 24)
+        n = (17 << 107) | (0x406B90 << 80) | (payload << 24)
 
         # Fix up the CRC so crc_valid is True.
         from pymodes._bits import crc_remainder

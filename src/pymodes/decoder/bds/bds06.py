@@ -3,7 +3,7 @@
 No altitude (aircraft is on the ground). Decodes movement (packed
 speed), track (with validity flag), and raw CPR lat/lon fields.
 
-ME field layout (56 bits, 0-indexed from MSB):
+Payload layout (56 bits, 0-indexed from MSB):
     bits 0-4:    TC
     bits 5-11:   MOV (movement, 7 bits, packed speed)
     bit 12:      track status (1 = valid)
@@ -41,22 +41,22 @@ def _decode_movement(mov: int) -> float | None:
     return _KTS_LB[i - 1] + (mov - _MOV_LB[i - 1]) * _STEP[i - 1]
 
 
-def decode_bds06(me: int) -> dict[str, Any]:
-    """Decode a BDS 0,6 ME field (ADS-B surface position).
+def decode_bds06(payload: int) -> dict[str, Any]:
+    """Decode a BDS 0,6 payload (ADS-B surface position).
 
     Args:
-        me: The 56-bit ME field as an integer.
+        payload: The 56-bit payload as an integer.
 
     Returns:
         Dict with movement, groundspeed, track, track_status,
         cpr_format, cpr_lat, cpr_lon.
     """
-    mov = (me >> 44) & 0x7F  # bits 5-11
-    track_status = (me >> 43) & 0x1  # bit 12
-    track_raw = (me >> 36) & 0x7F  # bits 13-19
-    cpr_format = (me >> 34) & 0x1  # bit 21
-    cpr_lat = (me >> 17) & 0x1FFFF  # bits 22-38
-    cpr_lon = me & 0x1FFFF  # bits 39-55
+    mov = (payload >> 44) & 0x7F  # bits 5-11
+    track_status = (payload >> 43) & 0x1  # bit 12
+    track_raw = (payload >> 36) & 0x7F  # bits 13-19
+    cpr_format = (payload >> 34) & 0x1  # bit 21
+    cpr_lat = (payload >> 17) & 0x1FFFF  # bits 22-38
+    cpr_lon = payload & 0x1FFFF  # bits 39-55
 
     track: float | None = track_raw * 360 / 128 if track_status == 1 else None
 

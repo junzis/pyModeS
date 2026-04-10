@@ -1,15 +1,15 @@
 """Two-phase BDS inference dispatch for Comm-B (DF20/21).
 
 Phase 1 -- format-ID fast path
-    The top 8 bits of the MB field (MB bits 0-7) contain an explicit
+    The top 8 bits of the payload (bits 0-7) contain an explicit
     BDS identifier for registers 1,0 / 2,0 / 3,0. We check these
     first: the validator is still run so reserved-bit and field-range
     checks apply, but the fast path terminates after the first format
     match (a valid BDS1,0 message will never also match BDS2,0).
 
-    BDS 1,7 also belongs conceptually to the fast path, but its MB
-    field has no fixed prefix byte -- bits 0-23 are a capability map.
-    Its entry uses ``None`` as the expected prefix and runs its
+    BDS 1,7 also belongs conceptually to the fast path, but its
+    payload has no fixed prefix byte -- bits 0-23 are a capability
+    map. Its entry uses ``None`` as the expected prefix and runs its
     validator directly.
 
 Phase 2 -- heuristic slow path
@@ -48,7 +48,7 @@ from pymodes.decoder.bds import (
 )
 
 # Format-ID registers. Each entry is (bds_code, expected_id_byte, validator).
-# BDS17 has no fixed prefix byte (its MB bits 0-23 are a capability map),
+# BDS17 has no fixed prefix byte (its payload bits 0-23 are a capability map),
 # so its entry uses None and falls through to the validator directly.
 _FORMAT_ID: list[tuple[str, int | None, Callable[[int], bool]]] = [
     ("1,0", 0x10, bds10.is_bds10),
@@ -80,28 +80,28 @@ _VALIDATORS.update(dict(_HEURISTIC))
 _VALIDATORS.update(dict(_HEURISTIC_METEO))
 
 
-def matches(bds_code: str, mb: int) -> bool:
-    """Return True if the registered validator for `bds_code` accepts `mb`."""
+def matches(bds_code: str, payload: int) -> bool:
+    """Return True if the registered validator for `bds_code` accepts `payload`."""
     validator = _VALIDATORS.get(bds_code)
     if validator is None:
         return False
-    return validator(mb)
+    return validator(payload)
 
 
 def infer(
-    mb: int,
+    payload: int,
     *,
     include_meteo: bool = False,
     known: dict[str, Any] | None = None,
 ) -> list[str]:
-    """Return plausible BDS codes for a Comm-B MB field.
+    """Return plausible BDS codes for a Comm-B payload.
 
     The first element (when non-empty) is the best candidate -- either
     the format-ID'd register (Phase 1) or the first heuristic match
     (Phase 2). Any additional heuristic matches follow.
 
     Args:
-        mb: The 56-bit Comm-B MB field as a Python int.
+        payload: The 56-bit Comm-B payload as a Python int.
         include_meteo: When True, also try BDS 4,4 and 4,5 heuristic
             validators. Defaults to False because these share bit
             patterns with non-meteorological traffic.
@@ -111,24 +111,24 @@ def infer(
 
     Returns:
         A list of BDS code strings (e.g. "1,0", "5,0"). Empty list if
-        nothing plausible matched or `mb == 0`.
+        nothing plausible matched or `payload == 0`.
     """
     _ = known  # reserved for future reference disambiguation
 
-    if mb == 0:
+    if payload == 0:
         return []
 
     candidates: list[str] = []
 
     # Phase 1 -- format-ID fast path.
-    id_byte = (mb >> 48) & 0xFF
+    id_byte = (payload >> 48) & 0xFF
     for code, expected, validator in _FORMAT_ID:
         if expected is None:
             # BDS17 has no fixed prefix byte; run its validator directly.
-            if validator(mb):
+            if validator(payload):
                 candidates.append(code)
                 break
-        elif id_byte == expected and validator(mb):
+        elif id_byte == expected and validator(payload):
             candidates.append(code)
             # Format IDs are exclusive: a valid BDS1,0 can never also
             # be a valid BDS2,0. Stop the fast path as soon as one hits.
@@ -136,12 +136,12 @@ def infer(
 
     # Phase 2 -- heuristic slow path.
     for code, validator in _HEURISTIC:
-        if validator(mb):
+        if validator(payload):
             candidates.append(code)
 
     if include_meteo:
         for code, validator in _HEURISTIC_METEO:
-            if validator(mb):
+            if validator(payload):
                 candidates.append(code)
 
     return candidates

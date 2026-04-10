@@ -7,11 +7,11 @@ class TestDecodeCallsign:
     def test_ezy85mh(self):
         # From v2 test_adsb_callsign:
         # msg = "8D406B902015A678D4D220AA4BDA"
-        # ME = msg[8:22] = "2015A678D4D220" (56-bit field: TC[5] | CA[3] | cs[48])
-        # Callsign occupies the lower 48 bits of ME (bits 8-55 in 1-indexed notation).
-        # Leading and trailing whitespace is stripped.
-        me = 0x2015A678D4D220
-        cs_bits = me & ((1 << 48) - 1)  # lower 48 bits of the 56-bit ME
+        # payload = msg[8:22] = "2015A678D4D220" (56-bit field: TC[5] | CA[3] | cs[48])
+        # Callsign occupies the lower 48 bits of the payload (bits 8-55
+        # in 1-indexed notation). Leading and trailing whitespace is stripped.
+        payload = 0x2015A678D4D220
+        cs_bits = payload & ((1 << 48) - 1)  # lower 48 bits of the 56-bit payload
         assert decode_callsign(cs_bits) == "EZY85MH"
 
     def test_empty_field_returns_empty(self):

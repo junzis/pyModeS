@@ -5,7 +5,7 @@ selected altitude targets (MCP/FCU and FMS) and the current
 barometric pressure setting at the aircraft, plus MCP mode flags
 and the target altitude source.
 
-MB field layout (56 bits, 0-indexed from MB MSB):
+Payload layout (56 bits, 0-indexed from payload MSB):
     bit   0    : MCP/FCU selected altitude status
     bits  1-12 : MCP/FCU selected altitude (12 bits, raw * 16 = ft)
     bit  13    : FMS selected altitude status
@@ -38,59 +38,59 @@ _ALT_SOURCE = {
 }
 
 
-def is_bds40(mb: int) -> bool:
-    """Return True if `mb` is a plausible BDS 4,0 report."""
-    if mb == 0:
+def is_bds40(payload: int) -> bool:
+    """Return True if `payload` is a plausible BDS 4,0 report."""
+    if payload == 0:
         return False
 
     # Status-bit consistency: if the status bit is 0, the gated value
     # field must also be 0.
-    if wrong_status(mb, 0, 1, 12):  # MCP altitude
+    if wrong_status(payload, 0, 1, 12):  # MCP altitude
         return False
-    if wrong_status(mb, 13, 14, 12):  # FMS altitude
+    if wrong_status(payload, 13, 14, 12):  # FMS altitude
         return False
-    if wrong_status(mb, 26, 27, 12):  # baro pressure
+    if wrong_status(payload, 26, 27, 12):  # baro pressure
         return False
-    if wrong_status(mb, 47, 48, 3):  # MCP mode bits (vnav, alt hold, approach)
+    if wrong_status(payload, 47, 48, 3):  # MCP mode bits (vnav, alt hold, approach)
         return False
-    if wrong_status(mb, 53, 54, 2):  # target altitude source
+    if wrong_status(payload, 53, 54, 2):  # target altitude source
         return False
 
     # Reserved bits 39-46 (8 bits) must be zero.
-    if ((mb >> (55 - 46)) & 0xFF) != 0:
+    if ((payload >> (55 - 46)) & 0xFF) != 0:
         return False
 
     # Reserved bits 51-52 (2 bits) must be zero.
-    return ((mb >> (55 - 52)) & 0x3) == 0
+    return ((payload >> (55 - 52)) & 0x3) == 0
 
 
-def decode_bds40(mb: int) -> dict[str, Any]:
-    """Decode a BDS 4,0 Selected Vertical Intention MB field.
+def decode_bds40(payload: int) -> dict[str, Any]:
+    """Decode a BDS 4,0 Selected Vertical Intention payload.
 
     Returns only the fields whose status bits are set. MCP mode bits
     and target altitude source are nested under their status gates.
     """
     result: dict[str, Any] = {}
 
-    if (mb >> (55 - 0)) & 0x1:
-        raw = (mb >> (55 - 12)) & 0xFFF
+    if (payload >> (55 - 0)) & 0x1:
+        raw = (payload >> (55 - 12)) & 0xFFF
         result["selected_altitude_mcp"] = raw * 16
 
-    if (mb >> (55 - 13)) & 0x1:
-        raw = (mb >> (55 - 25)) & 0xFFF
+    if (payload >> (55 - 13)) & 0x1:
+        raw = (payload >> (55 - 25)) & 0xFFF
         result["selected_altitude_fms"] = raw * 16
 
-    if (mb >> (55 - 26)) & 0x1:
-        raw = (mb >> (55 - 38)) & 0xFFF
+    if (payload >> (55 - 26)) & 0x1:
+        raw = (payload >> (55 - 38)) & 0xFFF
         result["baro_pressure_setting"] = raw * 0.1 + 800.0
 
-    if (mb >> (55 - 47)) & 0x1:
-        result["vnav_mode"] = bool((mb >> (55 - 48)) & 0x1)
-        result["altitude_hold_mode"] = bool((mb >> (55 - 49)) & 0x1)
-        result["approach_mode"] = bool((mb >> (55 - 50)) & 0x1)
+    if (payload >> (55 - 47)) & 0x1:
+        result["vnav_mode"] = bool((payload >> (55 - 48)) & 0x1)
+        result["altitude_hold_mode"] = bool((payload >> (55 - 49)) & 0x1)
+        result["approach_mode"] = bool((payload >> (55 - 50)) & 0x1)
 
-    if (mb >> (55 - 53)) & 0x1:
-        src = (mb >> (55 - 55)) & 0x3
+    if (payload >> (55 - 53)) & 0x1:
+        src = (payload >> (55 - 55)) & 0x3
         result["target_altitude_source"] = _ALT_SOURCE[src]
 
     return result

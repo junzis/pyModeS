@@ -6,7 +6,7 @@ at the aircraft's current position. Because it is optional and
 shares bit patterns with other registers, v2 treats BDS44 as a
 heuristic register in infer() — only tried when `include_meteo=True`.
 
-MB field layout (56 bits, 0-indexed from MB MSB):
+Payload layout (56 bits, 0-indexed from payload MSB):
     bits  0- 3 : figure of merit (4 bits, validator: <= 4)
     bit   4    : wind status
     bits  5-13 : wind speed (9 bits, kt)
@@ -27,33 +27,33 @@ from typing import Any
 from pymodes.decoder.bds._helpers import signed, wrong_status
 
 
-def is_bds44(mb: int) -> bool:
-    """Return True if `mb` is a plausible BDS 4,4 MRAR."""
-    if mb == 0:
+def is_bds44(payload: int) -> bool:
+    """Return True if `payload` is a plausible BDS 4,4 MRAR."""
+    if payload == 0:
         return False
 
     # FOM sanity: must be 0..4 inclusive.
-    fom = (mb >> (55 - 3)) & 0xF
+    fom = (payload >> (55 - 3)) & 0xF
     if fom > 4:
         return False
 
     # Wind must be present (v2 heuristic).
-    wind_status = (mb >> (55 - 4)) & 0x1
+    wind_status = (payload >> (55 - 4)) & 0x1
     if wind_status == 0:
         return False
 
     # Status/value consistency for pressure, turbulence, humidity.
-    if wrong_status(mb, 34, 35, 11):  # static pressure
+    if wrong_status(payload, 34, 35, 11):  # static pressure
         return False
-    if wrong_status(mb, 46, 47, 2):  # turbulence
+    if wrong_status(payload, 46, 47, 2):  # turbulence
         return False
-    if wrong_status(mb, 49, 50, 6):  # humidity
+    if wrong_status(payload, 49, 50, 6):  # humidity
         return False
 
-    wind_speed = (mb >> (55 - 13)) & 0x1FF
-    wind_dir_raw = (mb >> (55 - 22)) & 0x1FF
-    temp_sign = (mb >> (55 - 23)) & 0x1
-    temp_raw = (mb >> (55 - 33)) & 0x3FF
+    wind_speed = (payload >> (55 - 13)) & 0x1FF
+    wind_dir_raw = (payload >> (55 - 22)) & 0x1FF
+    temp_sign = (payload >> (55 - 23)) & 0x1
+    temp_raw = (payload >> (55 - 33)) & 0x3FF
 
     # Wind speed range.
     if wind_speed > 250:
@@ -70,29 +70,29 @@ def is_bds44(mb: int) -> bool:
     return not (wind_speed == 0 and wind_dir_raw == 0 and temp_raw == 0)
 
 
-def decode_bds44(mb: int) -> dict[str, Any]:
-    """Decode a BDS 4,4 MRAR MB field."""
+def decode_bds44(payload: int) -> dict[str, Any]:
+    """Decode a BDS 4,4 MRAR payload."""
     result: dict[str, Any] = {
-        "figure_of_merit": (mb >> (55 - 3)) & 0xF,
+        "figure_of_merit": (payload >> (55 - 3)) & 0xF,
     }
 
-    if (mb >> (55 - 4)) & 0x1:
-        result["wind_speed"] = (mb >> (55 - 13)) & 0x1FF
-        result["wind_direction"] = ((mb >> (55 - 22)) & 0x1FF) * (180.0 / 256.0)
+    if (payload >> (55 - 4)) & 0x1:
+        result["wind_speed"] = (payload >> (55 - 13)) & 0x1FF
+        result["wind_direction"] = ((payload >> (55 - 22)) & 0x1FF) * (180.0 / 256.0)
 
-    # Temperature is unconditional per v2 (the status bit at MB 23 is
-    # actually the sign bit in this layout).
-    temp_sign = (mb >> (55 - 23)) & 0x1
-    temp_raw = (mb >> (55 - 33)) & 0x3FF
+    # Temperature is unconditional per v2 (the status bit at payload
+    # bit 23 is actually the sign bit in this layout).
+    temp_sign = (payload >> (55 - 23)) & 0x1
+    temp_raw = (payload >> (55 - 33)) & 0x3FF
     result["static_air_temperature"] = signed(temp_raw, 10, temp_sign) * 0.25
 
-    if (mb >> (55 - 34)) & 0x1:
-        result["static_pressure"] = (mb >> (55 - 45)) & 0x7FF
+    if (payload >> (55 - 34)) & 0x1:
+        result["static_pressure"] = (payload >> (55 - 45)) & 0x7FF
 
-    if (mb >> (55 - 46)) & 0x1:
-        result["turbulence"] = (mb >> (55 - 48)) & 0x3
+    if (payload >> (55 - 46)) & 0x1:
+        result["turbulence"] = (payload >> (55 - 48)) & 0x3
 
-    if (mb >> (55 - 49)) & 0x1:
-        result["humidity"] = ((mb >> (55 - 55)) & 0x3F) * (100.0 / 64.0)
+    if (payload >> (55 - 49)) & 0x1:
+        result["humidity"] = ((payload >> (55 - 55)) & 0x3F) * (100.0 / 64.0)
 
     return result
