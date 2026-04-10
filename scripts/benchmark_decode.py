@@ -41,6 +41,26 @@ from pyModeS import c_common, py_common  # noqa: E402  # type: ignore[import-not
 # v3
 import pymodes  # noqa: E402
 
+
+def _pymodes_v3_version() -> str:
+    """Resolve pymodes v3 version from pyproject.toml.
+
+    Needed because `pymodes.__version__` goes through
+    `importlib.metadata.version("pymodes")`, which in the v2-vs-v3
+    benchmark env collides with the installed `pyModeS` 2.21.1
+    distribution (both normalize to `pymodes`) and returns 2.21.1
+    instead of the v3 working-copy version.
+    """
+    pyproject = REPO_ROOT / "pyproject.toml"
+    try:
+        import tomllib
+
+        data = tomllib.loads(pyproject.read_text())
+        return str(data["project"]["version"])
+    except Exception:
+        return pymodes.__version__
+
+
 WARMUP_ROUNDS = 1
 TIMED_ROUNDS = 5
 
@@ -137,7 +157,7 @@ def main() -> None:
         f"# Benchmark — {n} messages from long_flight.csv",
         "",
         f"Corpus: `{corpus_path}`",
-        f"pymodes version: `{pymodes.__version__}`",
+        f"pymodes version: `{_pymodes_v3_version()}`",
         "",
         "| Decoder | Wall time (median) | Throughput | vs v2 c_common | vs v2 py_common |",
         "|---|---|---|---|---|",
