@@ -4,13 +4,186 @@ pymodes 3 is a ground-up rewrite with a cleaner API, faster internals,
 and no Cython extension. It is **not backwards-compatible** with
 pyModeS 2.x.
 
-The full equivalence table, renamed-keys map, and live-stream
-migration examples are added in a follow-up task. For now, if you
-aren't ready to migrate:
+If you aren't ready to migrate, pin the old version:
 
 ```sh
 pip install "pyModeS<3"
 ```
 
-Both v2 and v3 coexist on PyPI because they use different import
-names (`pyModeS` vs `pymodes`).
+pyModeS 2.21.1 continues to work and will remain available on PyPI.
+
+## Install
+
+```sh
+# v3
+pip install "pymodes>=3"
+
+# v2 (legacy)
+pip install "pyModeS<3"
+```
+
+Both can coexist on PyPI because v3 uses the lowercase `pymodes` name
+and v2 uses the camelCase `pyModeS` name — they're distinct
+distributions that never collide during import.
+
+## Import change
+
+```python
+# pyModeS 2.x
+import pyModeS as pms
+pms.adsb.typecode("8D...")
+
+# pymodes 3
+import pymodes
+result = pymodes.decode("8D...")
+result["typecode"]
+```
+
+## API change — the big one
+
+pyModeS 2.x has a function-per-field API: you call
+`pms.adsb.callsign(msg)`, then `pms.adsb.altitude(msg)`, then
+`pms.adsb.velocity(msg)`, and so on. Each call re-parses the message
+header.
+
+pymodes 3 has a single `decode()` function that returns every
+decodable field in one pass:
+
+```python
+import pymodes
+result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
+# Read whatever you need from the returned dict:
+callsign = result.get("callsign")
+altitude = result.get("altitude")
+typecode = result.get("typecode")
+```
+
+The returned `Decoded` object is a `dict` subclass — JSON-serializable,
+pandas/parquet-compatible, usable with `**` unpacking and all standard
+dict operations. It also supports attribute-style access as a
+convenience:
+
+```python
+result.callsign  # same as result["callsign"]
+```
+
+## Equivalence table
+
+| pyModeS 2.x call | pymodes 3 equivalent |
+|---|---|
+| `pms.common.df(msg)` | `pymodes.decode(msg)["df"]` |
+| `pms.common.icao(msg)` | `pymodes.decode(msg)["icao"]` |
+| `pms.common.typecode(msg)` | `pymodes.decode(msg)["typecode"]` |
+| `pms.common.altcode(msg)` | `pymodes.decode(msg)["altitude"]` (DF4/20) |
+| `pms.common.idcode(msg)` | `pymodes.decode(msg)["squawk"]` (DF5/21) |
+| `pms.adsb.callsign(msg)` | `pymodes.decode(msg)["callsign"]` |
+| `pms.adsb.category(msg)` | `pymodes.decode(msg)["category"]` |
+| `pms.adsb.altitude(msg)` | `pymodes.decode(msg)["altitude"]` |
+| `pms.adsb.velocity(msg)` | `pymodes.decode(msg)` → `groundspeed`, `track`, `vertical_rate`, or `airspeed`/`airspeed_type`/`heading` for subtypes 3/4 |
+| `pms.adsb.oe_flag(msg)` | `pymodes.decode(msg)["cpr_format"]` |
+| `pms.adsb.position(m0, m1, t0, t1)` | `pymodes.decode([m0, m1], timestamps=[t0, t1])` |
+| `pms.adsb.position_with_ref(msg, lat, lon)` | `pymodes.decode(msg, reference=(lat, lon))` |
+| `pms.adsb.surface_position_with_ref(msg, lat, lon)` | `pymodes.decode(msg, surface_ref=(lat, lon))` |
+| `pms.bds.infer(msg, mrar=True)` | `pymodes.decode(msg)["bds"]` (for DF20/21) |
+| `pms.commb.cs20(msg)` | `pymodes.decode(msg)["callsign"]` (for BDS 2,0) |
+| `pms.commb.selalt40mcp(msg)` | `pymodes.decode(msg)["selected_altitude_mcp"]` |
+| `pms.commb.selalt40fms(msg)` | `pymodes.decode(msg)["selected_altitude_fms"]` |
+| `pms.commb.p40baro(msg)` | `pymodes.decode(msg)["baro_pressure_setting"]` |
+| `pms.commb.roll50(msg)` | `pymodes.decode(msg)["roll"]` |
+| `pms.commb.trk50(msg)` | `pymodes.decode(msg)["true_track"]` |
+| `pms.commb.gs50(msg)` | `pymodes.decode(msg)["groundspeed"]` |
+| `pms.commb.tas50(msg)` | `pymodes.decode(msg)["true_airspeed"]` |
+| `pms.commb.rtrk50(msg)` | `pymodes.decode(msg)["track_rate"]` |
+| `pms.commb.hdg60(msg)` | `pymodes.decode(msg)["magnetic_heading"]` |
+| `pms.commb.ias60(msg)` | `pymodes.decode(msg)["indicated_airspeed"]` |
+| `pms.commb.mach60(msg)` | `pymodes.decode(msg)["mach"]` |
+| `pms.commb.vr60baro(msg)` | `pymodes.decode(msg)["baro_vertical_rate"]` |
+| `pms.commb.vr60ins(msg)` | `pymodes.decode(msg)["inertial_vertical_rate"]` |
+
+See the [API reference](api.md) for the full list of decoded fields.
+
+## Renamed keys
+
+Some field names may change in v3 for clarity or consistency with
+the canonical schema. If any renames exist, this table lists them:
+
+<!-- RENAMED KEYS START -->
+_No pyModeS 2.21.1 field names were renamed in v3. The field-name surface is identical across the two versions; only the invocation shape changed (function-per-field → single `decode()`). See the equivalence table above._
+<!-- RENAMED KEYS END -->
+
+Regenerate this section by running:
+
+```sh
+uv run python scripts/gen_migration_table.py
+```
+
+## Live streams
+
+pyModeS 2.x required manual CPR pair accumulation and ICAO tracking.
+v3 provides `PipeDecoder`, which handles both automatically:
+
+```python
+# pyModeS 2.x — manual pair accumulation
+import pyModeS as pms
+import time
+
+ac_states = {}
+for msg in stream:
+    icao = pms.common.icao(msg)
+    if icao not in ac_states:
+        ac_states[icao] = {}
+    tc = pms.common.typecode(msg)
+    if 9 <= tc <= 18:
+        oe = pms.adsb.oe_flag(msg)
+        slot = "even" if oe == 0 else "odd"
+        ac_states[icao][slot] = msg
+        ac_states[icao][f"t_{slot}"] = time.time()
+        if "even" in ac_states[icao] and "odd" in ac_states[icao]:
+            lat, lon = pms.adsb.position(
+                ac_states[icao]["even"],
+                ac_states[icao]["odd"],
+                ac_states[icao]["t_even"],
+                ac_states[icao]["t_odd"],
+            )
+
+# pymodes 3 — one line of state
+from pymodes import PipeDecoder
+pipe = PipeDecoder(surface_ref="EHAM")
+for msg, t in stream:
+    result = pipe.decode(msg, timestamp=t)
+    # lat/lon is populated when the CPR pair resolves
+    if "latitude" in result:
+        print(result["icao"], result["latitude"], result["longitude"])
+```
+
+`PipeDecoder` also handles:
+
+- Per-ICAO state for Comm-B BDS 5,0/6,0 disambiguation (Phase 3 scoring)
+- TTL eviction of stale aircraft after 5 minutes of silence
+- DF20/21 `icao_verified=True` promotion via a trusted-ICAO set
+  populated from clean DF17/18 plain-text addresses
+
+See the [PipeDecoder deep-dive](pipe.md) for the full state model
+and thread-safety notes.
+
+## Removed features
+
+- **Cython extension (`c_common`)** — v3 is pure Python and is
+  measurably faster than v2's compiled C path. No reintroduction
+  planned.
+- **Python 3.9 / 3.10 support** — v3 requires Python 3.11+.
+- **`pyModeS.streamer` subpackage** — the legacy streamer and
+  `modeslive` tool are not ported. A new CLI + streaming subsystem
+  is planned as a follow-up spec after v3.0.0 ships.
+
+## Pinning strategy
+
+If any of your code still depends on v2 behavior, pin to v2 explicitly:
+
+```
+pyModeS<3
+```
+
+and migrate incrementally. v3 and v2 install under different import
+names (`pymodes` vs `pyModeS`), so they can coexist in the same
+virtualenv during migration — import whichever you need per module.
