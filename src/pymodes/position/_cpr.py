@@ -8,6 +8,7 @@ boundary table for O(log n) bisect lookup.
 """
 
 from bisect import bisect_right
+from math import floor
 
 # Latitude boundaries where NL() steps down, in ascending order.
 # Entry i is the latitude at which NL transitions from (59 - i) to
@@ -95,6 +96,44 @@ def cprNL(lat: float) -> int:
     # bisect_right: first index where abs_lat < boundary, so NL = 59 - idx.
     idx = bisect_right(_NL_BOUNDARIES, abs_lat)
     return 59 - idx
+
+
+_CPR_DENOM = 131072.0  # 2**17
+
+
+def airborne_position_with_ref(
+    cpr_format: int,
+    cpr_lat_raw: int,
+    cpr_lon_raw: int,
+    lat_ref: float,
+    lon_ref: float,
+) -> tuple[float, float]:
+    """Resolve an airborne CPR frame against a nearby reference.
+
+    Per DO-260B §A.1.7.5. The reference must lie within 180 NM of
+    the true position. Returns (lat, lon) in decimal degrees.
+
+    Args:
+        cpr_format: 0 = even, 1 = odd.
+        cpr_lat_raw: raw 17-bit CPR latitude field.
+        cpr_lon_raw: raw 17-bit CPR longitude field.
+        lat_ref: reference latitude in degrees.
+        lon_ref: reference longitude in degrees.
+    """
+    cpr_lat = cpr_lat_raw / _CPR_DENOM
+    cpr_lon = cpr_lon_raw / _CPR_DENOM
+    d_lat = 360.0 / 59 if cpr_format else 360.0 / 60
+
+    j = floor(0.5 + lat_ref / d_lat - cpr_lat)
+    lat = d_lat * (j + cpr_lat)
+
+    ni = cprNL(lat) - cpr_format
+    d_lon = 360.0 / ni if ni > 0 else 360.0
+
+    m = floor(0.5 + lon_ref / d_lon - cpr_lon)
+    lon = d_lon * (m + cpr_lon)
+
+    return lat, lon
 
 
 if __name__ == "__main__":
