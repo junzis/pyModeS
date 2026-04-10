@@ -68,9 +68,9 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "callsign": "str | None",
     "category": "int | None",
     "wake_vortex": "str | None",
-    # BDS 0,9 velocity
+    # BDS 0,9 velocity (also reused for surface BDS 0,6)
     "subtype": "int | None",
-    "groundspeed": "float | None",
+    "groundspeed": "int | None",
     "track": "float | None",
     "heading": "float | None",
     "airspeed": "int | None",
@@ -100,7 +100,7 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "supported_bds": "list[str] | None",
     # BDS 3,0 ACAS RA broadcast
     "threat_type_indicator": "int | None",
-    "issued_ra": "int | None",
+    "issued_ra": "bool | None",
     "corrective": "bool | None",
     "downward_sense": "bool | None",
     "increased_rate": "bool | None",
@@ -116,7 +116,7 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "threat_icao": "str | None",
     "threat_altitude": "int | None",
     "threat_range": "float | None",
-    "threat_bearing": "float | None",
+    "threat_bearing": "int | None",
     # BDS 4,0 selected vertical intention
     "selected_altitude_mcp": "int | None",
     "selected_altitude_fms": "int | None",
@@ -126,7 +126,7 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "approach_mode": "bool | None",
     "target_altitude_source": "str | None",
     # BDS 4,4 met routine
-    "wind_speed": "float | None",
+    "wind_speed": "int | None",
     "wind_direction": "float | None",
     "static_air_temperature": "float | None",
     "static_pressure": "int | None",
