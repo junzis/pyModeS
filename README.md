@@ -22,20 +22,41 @@ Python 3.11+ required.
 import pymodes
 
 # Single-message decode — returns a Decoded dict with every
-# decodable field populated.
+# decodable field populated in one pass.
 result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
-print(result["df"])         # 17
-print(result["icao"])       # '406B90'
-print(result["typecode"])   # 4
-print(result["callsign"])   # 'EZY85MH_'
+print(result)
+# {
+#     'df': 17,
+#     'icao': '406B90',
+#     'crc_valid': True,
+#     'typecode': 4,
+#     'bds': '0,8',
+#     'callsign': 'EZY85MH',
+#     'category': 0,
+#     'wake_vortex': 'No category information',
+# }
 
-# Batch decode with timestamps — CPR pairs get resolved automatically.
+# Batch decode mixing DF17 ident/velocity/pos + DF20/21 Comm-B.
+# Timestamps let the dispatcher resolve CPR pairs and disambiguate
+# ambiguous Comm-B registers.
 results = pymodes.decode(
-    ["8D40058B58C901375147EFD09357",
-     "8D40058B58C904A87F402D3B8C59"],
-    timestamps=[1446332400.0, 1446332405.0],
+    [
+        "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
+        "8D485020994409940838175B284F",  # DF17 BDS 0,9 airborne velocity
+        "8D40058B58C901375147EFD09357",  # DF17 BDS 0,5 airborne pos (even)
+        "8D40058B58C904A87F402D3B8C59",  # DF17 BDS 0,5 airborne pos (odd)
+        "A000178D10010080F50000D5893C",  # DF20 BDS 1,0 data link capability
+        "A8000D9FA55A032DBFFC000D8123",  # DF21 BDS 6,0 heading & speed
+    ],
+    timestamps=[1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
 )
-assert results[1]["latitude"] is not None
+assert results[0]["callsign"] == "EZY85MH"
+assert results[1]["groundspeed"] == 159
+assert results[3]["latitude"] is not None  # CPR pair resolved
+
+# Surface CPR — real DF18 surface movement on LFBO (Toulouse-Blagnac).
+r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
+print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 
 # Streaming decoder with per-ICAO state, CPR pair matching,
 # TTL eviction, and DF20/21 ICAO verification.
@@ -46,6 +67,54 @@ for msg, timestamp in stream:
     if "latitude" in decoded:
         print(decoded["icao"], decoded["latitude"], decoded["longitude"])
 ```
+
+See [`docs/quickstart.md`](./docs/quickstart.md) for the full tour
+(full-dict mode, error handling, attribute access).
+
+## CLI
+
+pymodes ships with a `modes` command-line tool for ad-hoc decoding
+and live streaming.
+
+### `modes decode` — one-shot and file mode
+
+```sh
+# Decode one hex message (pretty-printed JSON)
+modes decode 8D406B902015A678D4D220AA4BDA
+
+# With airborne CPR reference
+modes decode 8D40058B58C901375147EFD09357 --reference 49.0 6.0
+
+# Compact JSON piped to jq
+modes decode 8D406B902015A678D4D220AA4BDA --compact | jq .
+
+# Decode a file of hex messages (one per line OR timestamp,hex CSV)
+modes decode --file captures/flight.log
+
+# Stdin + surface CPR
+cat taxi.log | modes decode --file - --surface-ref LFBO
+```
+
+### `modes live` — streaming TCP source
+
+```sh
+# Stream decoded JSON lines from a dump1090-style beast feed
+modes live --network localhost:30005
+
+# Tee output to a file
+modes live --network host:30005 --dump-to flight.jsonl
+
+# Stream from the TU Delft public feed (live aircraft over Europe)
+modes live --network airsquitter.lr.tudelft.nl:10006
+
+# Interactive live aircraft table (requires pymodes[tui] extra)
+pip install "pymodes[tui]"
+modes live --network host:30005 --tui
+```
+
+Mode-S Beast binary format is supported (dump1090 port 30005 and
+equivalents). See [`docs/quickstart.md`](./docs/quickstart.md) for
+the full command reference.
 
 ## Features
 

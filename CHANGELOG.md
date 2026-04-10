@@ -32,6 +32,17 @@ the migration guide.
   `pyModeS 2.21.1` on the deduplicated `tests/data/` corpus
 - MkDocs + Material documentation site (docs added in a later
   commit in this release)
+- `modes` command-line tool with two subcommands:
+  - `modes decode MESSAGE` for one-shot decoding (pretty or compact JSON)
+  - `modes decode --file PATH` for batch decoding a file of hex messages
+  - `modes live --network HOST:PORT` for streaming TCP decode from a
+    Mode-S Beast binary feed
+  - `modes live --dump-to FILE` to tee JSON lines to a file
+  - `modes live --tui` for an interactive rich-based aircraft table
+    (requires `pymodes[tui]` extra)
+  - Graceful SIGINT/SIGTERM shutdown with final stats line
+- `pymodes[tui]` optional dependency: pulls in `rich>=13.0` for the
+  `modes live --tui` interactive display
 
 ### Changed
 
@@ -55,6 +66,8 @@ the migration guide.
 - numpy hard dependency
 - `pyModeS.streamer` subpackage (deferred to a future CLI / streamer
   spec)
+- `modeslive` CLI entry point (replaced by `modes live`; see
+  `docs/migration.md` for the rename notes)
 
 ### Performance
 

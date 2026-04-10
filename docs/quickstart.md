@@ -131,3 +131,98 @@ results = pymodes.decode(
 assert "error" in results[0]
 assert results[1]["icao"] == "406B90"
 ```
+
+## CLI
+
+pymodes ships with a `modes` command-line tool, installed as a
+console script when you run `pip install pymodes`.
+
+### `modes decode`
+
+```
+modes decode [--compact] [--full-dict] [--surface-ref REF]
+             (MESSAGE [--reference LAT LON] | --file PATH)
+```
+
+One-shot decode of a single hex message, or batch decode of a file
+of hex messages (one per line, or `timestamp,hex` CSV).
+
+Flags:
+
+- `--compact` — emit one-line JSON instead of pretty-printed
+- `--full-dict` — populate every key in the canonical schema
+- `--reference LAT LON` — airborne CPR reference (only valid with
+  a single positional MESSAGE — not with `--file`)
+- `--surface-ref REF` — surface CPR reference (airport ICAO code
+  like `LFBO`, or a `lat,lon` string)
+- `--file PATH` — read from a file; use `-` for stdin
+
+Examples:
+
+```sh
+# Single message, pretty
+modes decode 8D406B902015A678D4D220AA4BDA
+
+# Single message + airborne reference
+modes decode 8D40058B58C901375147EFD09357 --reference 49.0 6.0
+
+# Single message, compact JSON for piping
+modes decode 8D406B902015A678D4D220AA4BDA --compact | jq .
+
+# File + surface reference (all aircraft at LFBO)
+modes decode --file captures/lfbo.csv --surface-ref LFBO
+
+# File from stdin
+cat flight.log | modes decode --file -
+```
+
+### `modes live`
+
+```
+modes live --network HOST:PORT [--surface-ref REF]
+                               [--full-dict]
+                               [--dump-to FILE]
+                               [--tui]
+                               [--quiet]
+```
+
+Opens a TCP connection to a Mode-S Beast binary feed (dump1090's
+default port 30005, dump1090-fa, readsb, piaware, AirSquitter) and
+emits decoded JSON lines to stdout as they arrive. Legacy AVR raw
+text format is not supported in the alpha.
+
+Flags:
+
+- `--network HOST:PORT` — required TCP endpoint
+- `--surface-ref REF` — forwarded to the internal `PipeDecoder`
+  for surface CPR resolution
+- `--full-dict` — emit every schema key per line
+- `--dump-to FILE` — tee JSON lines to a file in addition to
+  stdout (incompatible with `--tui`)
+- `--tui` — interactive live aircraft table (requires
+  `pymodes[tui]` extra; incompatible with `--dump-to` and
+  `--quiet`)
+- `--quiet` — suppress stdout (use with `--dump-to`)
+
+Examples:
+
+```sh
+# Basic streaming to stdout
+modes live --network localhost:30005
+
+# Public test feed over Europe (TU Delft)
+modes live --network airsquitter.lr.tudelft.nl:10006
+
+# Tee to a file for later analysis
+modes live --network host:30005 --dump-to flight.jsonl
+
+# Interactive TUI
+pip install "pymodes[tui]"
+modes live --network host:30005 --tui
+```
+
+Signal handling: Ctrl-C (SIGINT) and SIGTERM trigger a clean
+shutdown and print a final stats line to stderr.
+
+Reconnect: the network source automatically reconnects on dropped
+connections with exponential backoff (0.5 s → 10 s cap).

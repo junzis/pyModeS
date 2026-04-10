@@ -166,15 +166,47 @@ for msg, t in stream:
 See the [PipeDecoder deep-dive](pipe.md) for the full state model
 and thread-safety notes.
 
+## CLI rename: `modeslive` → `modes live`
+
+pyModeS 2.x shipped a single console script called `modeslive`.
+pymodes 3 replaces it with a new `modes` command that has subcommands:
+
+```sh
+# v2
+modeslive --source net --connect host 30005 beast
+
+# v3
+modes live --network host:30005
+```
+
+Notable differences:
+
+- **Subcommand-style.** `modes decode` is a new one-shot sibling
+  of `modes live`.
+- **Simplified network flag.** `--network HOST:PORT` replaces
+  `--source net --connect HOST PORT DATATYPE`. Only the Mode-S
+  Beast binary format is supported; point at dump1090's port
+  30005 (or the equivalent beast port on your feed).
+- **Firehose default.** `modes live` writes JSON lines to stdout
+  by default — pipe to `jq`, redirect to a file, or stream into
+  a parquet writer.
+- **Optional TUI.** The interactive aircraft table is now
+  `modes live --tui`, which requires the `pymodes[tui]` extra
+  (`pip install "pymodes[tui]"`). Powered by `rich` instead of
+  `curses`.
+- **RTL-SDR.** Deferred to a follow-up release. For now, pipe
+  through `dump1090 --net` and connect via `--network
+  localhost:30005`.
+
 ## Removed features
 
 - **Cython extension (`c_common`)** — v3 is pure Python and is
   measurably faster than v2's compiled C path. No reintroduction
   planned.
 - **Python 3.9 / 3.10 support** — v3 requires Python 3.11+.
-- **`pyModeS.streamer` subpackage** — the legacy streamer and
-  `modeslive` tool are not ported. A new CLI + streaming subsystem
-  is planned as a follow-up spec after v3.0.0 ships.
+- **`pyModeS.streamer` subpackage** — the legacy streamer is not
+  ported. The `modeslive` entry point is replaced by `modes live`
+  (see the CLI rename section above).
 
 ## Pinning strategy
 
