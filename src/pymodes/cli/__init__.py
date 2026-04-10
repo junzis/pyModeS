@@ -12,7 +12,26 @@ full implementation lives in the sibling modules in this package:
 
 from __future__ import annotations
 
+import importlib
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import argparse
+    from collections.abc import Callable
+
 __all__ = ["main"]
+
+
+def _load_runner(submodule: str) -> Callable[[argparse.Namespace], int]:
+    """Lazily import ``pymodes.cli.<submodule>.run``.
+
+    Uses :func:`importlib.import_module` so mypy does not try to
+    resolve the submodule statically — the ``decode`` and ``live``
+    modules land in later Plan 6 tasks.
+    """
+    module = importlib.import_module(f"pymodes.cli.{submodule}")
+    runner: Callable[[argparse.Namespace], int] = module.run
+    return runner
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -29,13 +48,9 @@ def main(argv: list[str] | None = None) -> int:
     validate_args(args, parser)
 
     if args.command == "decode":
-        from pymodes.cli.decode import run as run_decode
-
-        return run_decode(args)
+        return _load_runner("decode")(args)
     if args.command == "live":
-        from pymodes.cli.live import run as run_live
-
-        return run_live(args)
+        return _load_runner("live")(args)
 
     parser.print_help()
     return 2
