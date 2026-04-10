@@ -5,6 +5,21 @@ import pytest
 from pymodes.position._cpr import airborne_position_with_ref, cprNL
 
 
+def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
+    """Extract (cpr_format, cpr_lat_raw, cpr_lon_raw) from a full hex ADS-B message.
+
+    Bit 21 of the 56-bit payload = CPR format (0=even, 1=odd);
+    bits 22-38 = CPR latitude; bits 39-55 = CPR longitude.
+    """
+    n = int(hex_msg, 16)
+    payload = (n >> 24) & ((1 << 56) - 1)
+    return (
+        (payload >> 34) & 0x1,
+        (payload >> 17) & 0x1FFFF,
+        payload & 0x1FFFF,
+    )
+
+
 class TestCprNL:
     def test_equator(self):
         # At the equator, NL = 59 (maximum zones)
@@ -71,36 +86,21 @@ class TestAirbornePositionWithRef:
     # internally. Our new API takes the raw CPR ints directly
     # (since Message.decode() already has them), so we precompute.
 
-    @staticmethod
-    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
-        """Return (cpr_format, cpr_lat_raw, cpr_lon_raw) for a hex ADS-B msg.
-
-        Bit 53 (of the 112-bit message) = F (CPR format),
-        bits 54-70 = CPR lat, bits 71-87 = CPR lon. Using 0-indexed
-        payload bits here: bit 21 = F, bits 22-38 = lat, bits 39-55 = lon.
-        """
-        n = int(hex_msg, 16)
-        payload = (n >> 24) & ((1 << 56) - 1)
-        cpr_format = (payload >> 34) & 0x1
-        cpr_lat = (payload >> 17) & 0x1FFFF
-        cpr_lon = payload & 0x1FFFF
-        return cpr_format, cpr_lat, cpr_lon
-
     def test_even_message_europe(self):
-        fmt, lat_cpr, lon_cpr = self._cpr_fields("8D40058B58C901375147EFD09357")
+        fmt, lat_cpr, lon_cpr = _cpr_fields("8D40058B58C901375147EFD09357")
         lat, lon = airborne_position_with_ref(fmt, lat_cpr, lon_cpr, 49.0, 6.0)
         assert lat == pytest.approx(49.82410, abs=0.001)
         assert lon == pytest.approx(6.06785, abs=0.001)
 
     def test_odd_message_europe(self):
-        fmt, lat_cpr, lon_cpr = self._cpr_fields("8D40058B58C904A87F402D3B8C59")
+        fmt, lat_cpr, lon_cpr = _cpr_fields("8D40058B58C904A87F402D3B8C59")
         lat, lon = airborne_position_with_ref(fmt, lat_cpr, lon_cpr, 49.0, 6.0)
         assert lat == pytest.approx(49.81755, abs=0.001)
         assert lon == pytest.approx(6.08442, abs=0.001)
 
     def test_numerical_challenge(self):
         """v2 regression: reference close to a zone boundary."""
-        fmt, lat_cpr, lon_cpr = self._cpr_fields("8D06A15358BF17FF7D4A84B47B95")
+        fmt, lat_cpr, lon_cpr = _cpr_fields("8D06A15358BF17FF7D4A84B47B95")
         lat_ref = 30.508474576271183  # close to (360/59)*5
         lon_ref = 7.2 * 5.0 + 3e-15
         lat, lon = airborne_position_with_ref(fmt, lat_cpr, lon_cpr, lat_ref, lon_ref)
@@ -109,22 +109,12 @@ class TestAirbornePositionWithRef:
 
 
 class TestAirbornePositionPair:
-    @staticmethod
-    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
-        n = int(hex_msg, 16)
-        payload = (n >> 24) & ((1 << 56) - 1)
-        return (
-            (payload >> 34) & 0x1,
-            (payload >> 17) & 0x1FFFF,
-            payload & 0x1FFFF,
-        )
-
     def test_pair_odd_newer(self):
         """Matches v2 tests/test_adsb.py::test_adsb_position — odd frame is newer."""
         from pymodes.position._cpr import airborne_position_pair
 
-        _, elat, elon = self._cpr_fields("8D40058B58C901375147EFD09357")
-        _, olat, olon = self._cpr_fields("8D40058B58C904A87F402D3B8C59")
+        _, elat, elon = _cpr_fields("8D40058B58C901375147EFD09357")
+        _, olat, olon = _cpr_fields("8D40058B58C904A87F402D3B8C59")
         result = airborne_position_pair(elat, elon, olat, olon, even_is_newer=False)
         assert result is not None
         lat, lon = result
@@ -141,8 +131,8 @@ class TestAirbornePositionPair:
         """
         from pymodes.position._cpr import airborne_position_pair
 
-        _, elat, elon = self._cpr_fields("8D40058B58C901375147EFD09357")
-        _, olat, olon = self._cpr_fields("8D40058B58C904A87F402D3B8C59")
+        _, elat, elon = _cpr_fields("8D40058B58C901375147EFD09357")
+        _, olat, olon = _cpr_fields("8D40058B58C904A87F402D3B8C59")
         result = airborne_position_pair(elat, elon, olat, olon, even_is_newer=True)
         assert result is not None
         lat, lon = result
@@ -163,45 +153,25 @@ class TestAirbornePositionPair:
 
 
 class TestSurfacePositionWithRef:
-    @staticmethod
-    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
-        n = int(hex_msg, 16)
-        payload = (n >> 24) & ((1 << 56) - 1)
-        return (
-            (payload >> 34) & 0x1,
-            (payload >> 17) & 0x1FFFF,
-            payload & 0x1FFFF,
-        )
-
     def test_christchurch_surface(self):
         """Matches v2 tests/test_adsb.py::test_adsb_surface_position_with_ref."""
         from pymodes.position._cpr import surface_position_with_ref
 
-        fmt, lat_cpr, lon_cpr = self._cpr_fields("8FC8200A3AB8F5F893096B000000")
+        fmt, lat_cpr, lon_cpr = _cpr_fields("8FC8200A3AB8F5F893096B000000")
         lat, lon = surface_position_with_ref(fmt, lat_cpr, lon_cpr, -43.5, 172.5)
         assert lat == pytest.approx(-43.48564, abs=0.001)
         assert lon == pytest.approx(172.53942, abs=0.001)
 
 
 class TestSurfacePositionPair:
-    @staticmethod
-    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
-        n = int(hex_msg, 16)
-        payload = (n >> 24) & ((1 << 56) - 1)
-        return (
-            (payload >> 34) & 0x1,
-            (payload >> 17) & 0x1FFFF,
-            payload & 0x1FFFF,
-        )
-
     def test_christchurch_pair(self):
         """Verbatim from v2 tests/test_adsb.py::test_adsb_surface_position."""
         from pymodes.position._cpr import surface_position_pair
 
         # even: 8CC8200A3AC8F009BCDEF2000000 (t=0)
         # odd:  8FC8200A3AB8F5F893096B000000 (t=2) — odd is newer
-        _, elat, elon = self._cpr_fields("8CC8200A3AC8F009BCDEF2000000")
-        _, olat, olon = self._cpr_fields("8FC8200A3AB8F5F893096B000000")
+        _, elat, elon = _cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = _cpr_fields("8FC8200A3AB8F5F893096B000000")
         result = surface_position_pair(
             elat,
             elon,
@@ -215,3 +185,104 @@ class TestSurfacePositionPair:
         lat, lon = result
         assert lat == pytest.approx(-43.48564, abs=0.001)
         assert lon == pytest.approx(172.53942, abs=0.001)
+
+    def test_christchurch_pair_even_newer(self):
+        """Same pair, but exercise the even_is_newer=True branch (ni=max(nl,1))."""
+        from pymodes.position._cpr import surface_position_pair
+
+        _, elat, elon = _cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = _cpr_fields("8FC8200A3AB8F5F893096B000000")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=-43.496,
+            lon_ref=172.558,
+            even_is_newer=True,
+        )
+        assert result is not None
+        lat, lon = result
+        # Slightly different result because the algorithm uses the
+        # even-frame latitude and a different ni formula.
+        assert lat == pytest.approx(-43.485741, abs=0.001)
+        assert lon == pytest.approx(172.539293, abs=0.001)
+
+    def test_northern_hemisphere(self):
+        """Positive lat_ref → N-hemisphere candidate (lat ≈ +46° mirror of -43°)."""
+        from pymodes.position._cpr import surface_position_pair
+
+        _, elat, elon = _cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = _cpr_fields("8FC8200A3AB8F5F893096B000000")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=43.5,
+            lon_ref=172.558,
+            even_is_newer=False,
+        )
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(46.51436, abs=0.001)
+        assert lon == pytest.approx(172.16639, abs=0.001)
+
+    def test_quadrant_wrap_180(self):
+        """Receiver 180° away → algorithm picks the +180 quadrant candidate."""
+        from pymodes.position._cpr import surface_position_pair
+
+        _, elat, elon = _cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = _cpr_fields("8FC8200A3AB8F5F893096B000000")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=-43.496,
+            lon_ref=-7.5,
+            even_is_newer=False,
+        )
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(-43.48564, abs=0.001)
+        assert lon == pytest.approx(-7.46058, abs=0.001)
+
+    def test_quadrant_wrap_90(self):
+        """Receiver 90° away → algorithm picks the +90 quadrant candidate."""
+        from pymodes.position._cpr import surface_position_pair
+
+        _, elat, elon = _cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = _cpr_fields("8FC8200A3AB8F5F893096B000000")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=-43.496,
+            lon_ref=-97.5,
+            even_is_newer=False,
+        )
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(-43.48564, abs=0.001)
+        assert lon == pytest.approx(-97.46058, abs=0.001)
+
+    def test_zone_mismatch_returns_none(self):
+        """Synthetic CPR pair where N-hemi candidates fall in different NL zones.
+
+        Found by grid search: cpr_lat_even=28672, cpr_lat_odd=122880 produce
+        lat_even_n ≈ 25.828° (NL=54), lat_odd_n ≈ 25.837° (NL=53).
+        """
+        from pymodes.position._cpr import surface_position_pair
+
+        result = surface_position_pair(
+            28672,
+            0,
+            122880,
+            0,
+            lat_ref=50.0,
+            lon_ref=0.0,
+            even_is_newer=True,
+        )
+        assert result is None
