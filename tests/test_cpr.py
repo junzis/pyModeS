@@ -181,3 +181,37 @@ class TestSurfacePositionWithRef:
         lat, lon = surface_position_with_ref(fmt, lat_cpr, lon_cpr, -43.5, 172.5)
         assert lat == pytest.approx(-43.48564, abs=0.001)
         assert lon == pytest.approx(172.53942, abs=0.001)
+
+
+class TestSurfacePositionPair:
+    @staticmethod
+    def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
+        n = int(hex_msg, 16)
+        payload = (n >> 24) & ((1 << 56) - 1)
+        return (
+            (payload >> 34) & 0x1,
+            (payload >> 17) & 0x1FFFF,
+            payload & 0x1FFFF,
+        )
+
+    def test_christchurch_pair(self):
+        """Verbatim from v2 tests/test_adsb.py::test_adsb_surface_position."""
+        from pymodes.position._cpr import surface_position_pair
+
+        # even: 8CC8200A3AC8F009BCDEF2000000 (t=0)
+        # odd:  8FC8200A3AB8F5F893096B000000 (t=2) — odd is newer
+        _, elat, elon = self._cpr_fields("8CC8200A3AC8F009BCDEF2000000")
+        _, olat, olon = self._cpr_fields("8FC8200A3AB8F5F893096B000000")
+        result = surface_position_pair(
+            elat,
+            elon,
+            olat,
+            olon,
+            lat_ref=-43.496,
+            lon_ref=172.558,
+            even_is_newer=False,
+        )
+        assert result is not None
+        lat, lon = result
+        assert lat == pytest.approx(-43.48564, abs=0.001)
+        assert lon == pytest.approx(172.53942, abs=0.001)

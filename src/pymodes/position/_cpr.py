@@ -221,6 +221,65 @@ def surface_position_with_ref(
     return lat, lon
 
 
+def surface_position_pair(
+    cpr_lat_even_raw: int,
+    cpr_lon_even_raw: int,
+    cpr_lat_odd_raw: int,
+    cpr_lon_odd_raw: int,
+    *,
+    lat_ref: float,
+    lon_ref: float,
+    even_is_newer: bool,
+) -> tuple[float, float] | None:
+    """Resolve an even/odd surface CPR pair against a receiver location.
+
+    Per DO-260B §A.1.7.4. The receiver reference is required because
+    surface CPR has a 90° latitude zone and four longitude quadrants;
+    without a reference we cannot choose among them.
+
+    Returns (lat, lon) if both frames fall in the same latitude zone,
+    otherwise None.
+    """
+    cprlat_even = cpr_lat_even_raw / _CPR_DENOM
+    cprlon_even = cpr_lon_even_raw / _CPR_DENOM
+    cprlat_odd = cpr_lat_odd_raw / _CPR_DENOM
+    cprlon_odd = cpr_lon_odd_raw / _CPR_DENOM
+
+    j = floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
+
+    # Northern-hemisphere candidate latitudes
+    lat_even_n = (90.0 / 60) * (j % 60 + cprlat_even)
+    lat_odd_n = (90.0 / 59) * (j % 59 + cprlat_odd)
+    # Southern-hemisphere candidates
+    lat_even_s = lat_even_n - 90
+    lat_odd_s = lat_odd_n - 90
+
+    lat_even = lat_even_n if lat_ref > 0 else lat_even_s
+    lat_odd = lat_odd_n if lat_ref > 0 else lat_odd_s
+
+    if cprNL(lat_even) != cprNL(lat_odd):
+        return None
+
+    if even_is_newer:
+        lat = lat_even
+        nl = cprNL(lat)
+        ni = max(nl, 1)
+        m = floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
+        lon_base = (90.0 / ni) * (m % ni + cprlon_even)
+    else:
+        lat = lat_odd
+        nl = cprNL(lat)
+        ni = max(nl - 1, 1)
+        m = floor(cprlon_even * (nl - 1) - cprlon_odd * nl + 0.5)
+        lon_base = (90.0 / ni) * (m % ni + cprlon_odd)
+
+    # Four candidate longitudes (one per 90° quadrant), each wrapped
+    # to [-180, 180]. Pick the one closest to the receiver.
+    candidates = [((lon_base + q + 180) % 360) - 180 for q in (0, 90, 180, 270)]
+    lon = min(candidates, key=lambda c: abs(lon_ref - c))
+    return lat, lon
+
+
 if __name__ == "__main__":
     # Regeneration recipe — run this file directly to reprint the
     # _NL_BOUNDARIES table. Formula per DO-260B §A.1.7.2 with nz=15:
