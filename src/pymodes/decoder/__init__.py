@@ -45,5 +45,6 @@ from pymodes.decoder import (  # noqa: E402
     acas,  # noqa: F401
     adsb,  # noqa: F401
     allcall,  # noqa: F401
+    commb,  # noqa: F401
     surv,  # noqa: F401
 )

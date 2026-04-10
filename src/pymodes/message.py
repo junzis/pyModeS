@@ -83,6 +83,7 @@ class Message:
         /,
         *,
         length: int | None = None,
+        icao_hint: str | None = None,
     ) -> None:
         if isinstance(msg, str):
             self._n, self._length = self._parse_hex(msg)
@@ -100,6 +101,11 @@ class Message:
                 )
         else:
             raise TypeError(f"msg must be str, int, or bytes; got {type(msg).__name__}")
+
+        # Optional out-of-band ICAO hint for DF20/21 (and other
+        # CRC-ICAO formats). Stored so `icao` can prefer it over the
+        # CRC-derived value, and so `decode()` can set `icao_verified`.
+        self._icao_hint = icao_hint.upper() if icao_hint is not None else None
 
     @staticmethod
     def _parse_hex(hexstr: str) -> tuple[int, int]:
@@ -156,11 +162,14 @@ class Message:
 
         For DF11/17/18, ICAO is at bits 8-31 of the message. For
         DF0/4/5/16/20/21, ICAO is derived from the CRC remainder
-        (see crc property).
+        (see crc property), unless an `icao_hint` was supplied at
+        construction time, in which case the hint is used verbatim.
         """
         if self.df in (11, 17, 18):
             return f"{extract_field(self._n, 8, 24, self._length):06X}"
-        # DF0, 4, 5, 16, 20, 21 — ICAO comes from CRC
+        if self._icao_hint is not None:
+            return self._icao_hint
+        # DF0, 4, 5, 16, 20, 21 - ICAO comes from CRC
         return f"{self.crc:06X}"
 
     @cached_property
@@ -196,9 +205,11 @@ class Message:
     def decode(self) -> Decoded:
         """Decode every field of this message.
 
-        Returns a Decoded dict containing df, icao, crc_valid,
-        and whatever DF-specific fields the appropriate decoder class
-        extracts.
+        Returns a Decoded dict containing df, icao, crc_valid, and
+        whatever DF-specific fields the appropriate decoder class
+        extracts. For DF20/21 the dict also includes `icao_verified`
+        (True when an `icao_hint` was supplied at construction time,
+        False when the ICAO was derived from the CRC remainder).
         """
         # Import locally to avoid circular import at module load time
         from pymodes.decoder import _DECODERS
@@ -210,6 +221,9 @@ class Message:
                 "crc_valid": self.crc_valid,
             }
         )
+
+        if self.df in (20, 21):
+            result["icao_verified"] = self._icao_hint is not None
 
         decoder_cls = _DECODERS.get(self.df)
         if decoder_cls is not None:

@@ -24,22 +24,24 @@ def decode(
     Args:
         msg: Full Mode-S message as a hex string. Either 14 chars (short,
             56 bits) or 28 chars (long, 112 bits).
-        me: Alternative input path — the 56-bit ME field alone as 14
+        me: Alternative input path - the 56-bit ME field alone as 14
             hex chars. Requires `df` and `icao` to be provided.
         df: Downlink format override, used only when `me` is provided.
-        icao: ICAO address override (6-char hex), used only when `me`
-            is provided, OR for DF20/21 where the caller knows the ICAO
-            out of band (see spec §11.4).
+        icao: ICAO address hint. For the `me=` path it is required.
+            For the `msg=` path it is optional: if provided for DF20/21
+            it overrides the CRC-derived ICAO and sets
+            `icao_verified=True` in the result (see spec 11.4).
 
     Returns:
         A Decoded dict with at least `df`, `icao`, and `crc_valid`.
         Additional fields are added by the decoder class dispatched
-        based on DF (see phases 2-4).
+        based on DF.
 
     Raises:
         InvalidHexError: if the input is not valid hex.
         InvalidLengthError: if the input length is wrong.
-        ValueError: if both or neither of msg/me is provided.
+        ValueError: if both or neither of msg/me is provided, or if
+            `me` is given without `df`/`icao`.
     """
     if msg is None and me is None:
         raise ValueError("exactly one of msg or me must be provided")
@@ -52,6 +54,6 @@ def decode(
         message = Message.from_me(me, df=df, icao=icao)
     else:
         assert msg is not None
-        message = Message(msg)
+        message = Message(msg, icao_hint=icao)
 
     return message.decode()
