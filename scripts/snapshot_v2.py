@@ -107,7 +107,13 @@ def _safe_call(fn, *args, **kwargs):
 
 
 def _decode_v2(msg: str) -> dict[str, Any]:
-    """Run every applicable v2 decoder on `msg` and return a dict."""
+    """Run every applicable v2 decoder on `msg` and return a dict.
+
+    Keys with None values are omitted from the returned dict to
+    match v3's omit-missing semantics — makes direct comparison
+    possible without a three-way "v2 emitted None, v3 omits, v3
+    emits None" distinction.
+    """
     out: dict[str, Any] = {}
 
     try:

@@ -1,7 +1,7 @@
-"""Golden-file oracle test: v3 decode output must match pyModeS 2.22.0.
+"""Golden-file oracle test: v3 decode output must match pyModeS 2.21.1.
 
 Loads tests/fixtures/golden_v2.json (a deduplicated + per-DF-capped
-snapshot of pyModeS 2.22.0 output on tests/data/*.csv) and asserts
+snapshot of pyModeS 2.21.1 output on tests/data/*.csv) and asserts
 that pymodes.decode() produces matching values for every v2-emitted
 key.
 
@@ -29,8 +29,20 @@ FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_v2.json"
 
 
 def _load_golden() -> dict[str, dict[str, Any]]:
-    with FIXTURE_PATH.open() as f:
-        data = json.load(f)
+    try:
+        with FIXTURE_PATH.open() as f:
+            data: dict[str, dict[str, Any]] = json.load(f)
+    except FileNotFoundError as e:
+        raise RuntimeError(
+            f"golden_v2.json fixture not found at {FIXTURE_PATH}. "
+            f"Run `uv run --no-project --with 'pyModeS==2.21.1' "
+            f"python scripts/snapshot_v2.py` to regenerate it."
+        ) from e
+    except json.JSONDecodeError as e:
+        raise RuntimeError(
+            f"golden_v2.json at {FIXTURE_PATH} is malformed (JSON decode failed "
+            f"at line {e.lineno}). Re-run scripts/snapshot_v2.py to regenerate."
+        ) from e
     return data
 
 
@@ -42,6 +54,18 @@ def _bds_normalize(v2_bds: str | None) -> str | None:
     if len(tail) != 2:
         return v2_bds
     return f"{tail[0]},{tail[1]}"
+
+
+def _icao_normalize(val: Any) -> Any:
+    """Lowercase ICAO strings for v2↔v3 comparison.
+
+    v3 always emits ICAO as uppercase hex; v2 emits lowercase.
+    Normalize both sides by lowercasing, done in the test rather
+    than in the snapshot so the snapshot stays faithful to v2.
+    """
+    if isinstance(val, str):
+        return val.lower()
+    return val
 
 
 def _mismatch(msg: str, key: str, v2_value: Any, v3_value: Any) -> str:
@@ -66,8 +90,12 @@ def test_v3_matches_v2_golden(msg: str) -> None:
         # not in the snapshot, so the snapshot stays faithful to v2.
         if v2_key == "bds":
             v2_value = _bds_normalize(v2_value)
+        if v2_key == "icao":
+            v2_value = _icao_normalize(v2_value)
 
         v3_value = v3_output.get(v3_key)
+        if v2_key == "icao":
+            v3_value = _icao_normalize(v3_value)
         tol = V2_VALUE_TOLERANCE.get(v3_key)
 
         if (

@@ -1,4 +1,4 @@
-"""Compatibility tables bridging pyModeS 2.22.0 output to pymodes v3.
+"""Compatibility tables bridging pyModeS 2.21.1 output to pymodes v3.
 
 Two tables live here and serve as the single source of truth for both
 the golden-file oracle test (``tests/test_golden_v2_corpus.py``) and
