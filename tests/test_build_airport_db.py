@@ -52,6 +52,52 @@ def test_filter_drops_small_airports():
     assert codes == ["EHAM", "KLAX"]  # sorted, small dropped
 
 
+def test_filter_drops_non_icao_idents():
+    mod = _load_script()
+    rows = [
+        # Real 4-letter ICAO — keep
+        {
+            "ident": "EHAM",
+            "name": "Schiphol",
+            "type": "large_airport",
+            "latitude_deg": "52.3",
+            "longitude_deg": "4.76",
+        },
+        # Surrogate IDs OurAirports issues when no ICAO exists — drop
+        {
+            "ident": "5A8",
+            "name": "Aleknagik",
+            "type": "medium_airport",
+            "latitude_deg": "59.28",
+            "longitude_deg": "-158.61",
+        },
+        {
+            "ident": "07FA",
+            "name": "Ocean Reef",
+            "type": "medium_airport",
+            "latitude_deg": "25.32",
+            "longitude_deg": "-80.27",
+        },
+        {
+            "ident": "AE-0221",
+            "name": "Al Bateen Executive",
+            "type": "medium_airport",
+            "latitude_deg": "24.44",
+            "longitude_deg": "54.51",
+        },
+        # Lowercase — drop (ICAO codes are canonically uppercase)
+        {
+            "ident": "eham",
+            "name": "lowercase",
+            "type": "large_airport",
+            "latitude_deg": "52.3",
+            "longitude_deg": "4.76",
+        },
+    ]
+    out = mod.filter_and_sort(rows)  # type: ignore[attr-defined]
+    assert [r["icao"] for r in out] == ["EHAM"]
+
+
 def test_filter_drops_invalid_coords():
     mod = _load_script()
     rows = [

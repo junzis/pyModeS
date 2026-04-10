@@ -25,13 +25,24 @@ HEADER = '''# ruff: noqa: E501, RUF001
 
 Generated from OurAirports dataset by scripts/build_airport_db.py.
 Source: https://davidmegginson.github.io/ourairports-data/airports.csv
-Filter: large_airport + medium_airport (all, regardless of scheduled service).
+Filter: large_airport + medium_airport with an assigned 4-letter ICAO code.
 
 Do not edit by hand — rerun the build script to regenerate.
 """
 
 AIRPORTS: dict[str, tuple[float, float]] = {
 '''
+
+
+def _is_icao_code(ident: str) -> bool:
+    """Return True if `ident` is a plausible 4-letter ICAO code.
+
+    OurAirports emits two styles of `ident`: real 4-letter ICAO
+    codes (e.g. "EHAM", "KJFK") and surrogate identifiers for
+    airports without an assigned ICAO code (e.g. "5A8", "07FA",
+    "AE-0221"). We keep only the former.
+    """
+    return len(ident) == 4 and ident.isascii() and ident.isalpha() and ident.isupper()
 
 
 def fetch_csv() -> list[dict[str, str]]:
@@ -46,7 +57,7 @@ def filter_and_sort(rows: list[dict[str, str]]) -> list[dict[str, object]]:
     for row in rows:
         if row["type"] not in ALLOWED_TYPES:
             continue
-        if not row["ident"]:
+        if not _is_icao_code(row["ident"]):
             continue
         try:
             lat = float(row["latitude_deg"])
