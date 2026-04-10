@@ -1,0 +1,5340 @@
+{
+  "8d406b902015a678d4d220aa4bda": {
+    "callsign": "EZY85MH_",
+    "category": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 4
+  },
+  "8d406b9058b97218e77d23bead12": {
+    "altitude": 35975,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b975870b738754f480": {
+    "altitude": 35975,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b975871773722a2b6b": {
+    "altitude": 35975,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98218dd7d364566ef": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982190f7cdcc3ae36": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98219697c3225c39a": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98219757c1d5f157e": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98219877bfb933987": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98219d17b7210fee6": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98219f17b35a9d18b": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821b2778f579f964": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821b4778bbb5aa3e": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821b93782f389dfb": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821bc377d4cf518f": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821bff7765f7491b": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c0b775015c337": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c2b7713acd46c": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c357700ccc338": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c5b76b9b6b280": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c8576694d3499": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821c8b765ef19e5b": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821cbd7601b99c14": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821cdd75c760af62": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821d07757785c7fc": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821d29753b812b61": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821d2f752fad0a09": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821d5974e0661b8c": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821d6374cb7570f1": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821dfb73b1047cbb": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821e497320e9fd49": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821e937295d6a93b": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821f9d70a7a22995": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821fe37025f5a8ab": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9821fed7010491e72": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982201f6fb5a5aea5": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98220336f8db87084": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98220596f45060bb9": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982209b6ecc8bd0e1": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98220a56eb9acdd61": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98220f56e21fcf757": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98220fb6e16405d95": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98222496ba5b1c71f": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98222996b0d0ac8ec": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98222d96a94765f43": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982244967dafc90b5": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982245567c5876739": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982245f67b00f0384": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9822479677f9da3c3": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982249767480489d7": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98224df66beeb5ee8": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982250f666386c27f": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9822519665089b693": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982255965d6167aac": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982255f65cbc5dfa1": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982259f65525d4123": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98225cf64f7fdfbae": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98225e564cfccdc09": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98226096489cf0f6b": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9822629644c713add": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9822635643708b7b7": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982266f63c7058537": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982268f638adc3ad2": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98226df62f378ad7d": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98226ef62d41e84d0": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98227396248a396a8": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982273f623d720119": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9822749622ab30808": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98227536215e5c7b2": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982277f61c3ef1f42": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98227fd60d0efb627": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b982280760bdec6ac0": {
+    "altitude": 36000,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858721735e76b697": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98587377338856dfc": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985875373067ccdaa": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98587d77212af4d6d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858819719b149211": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98588377162e9951b": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985888770cf6cdf2c": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98588bb706e542760": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98588e9701be55d97": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98589676f33dddabb": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985898b6eefab89c3": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98589976edb2e2781": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98589db6e5c05fa3b": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98589f16e3437be24": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858a216ddce123c2": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858a4b6d8e58d290": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858a576d7ad9f972": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858ab76ccaf4538c": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858aeb6c68fcc7a9": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858b116c22591ba1": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858b3b6bd5b9396e": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858b616b8f988069": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858b6b6b7de83230": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858b8b6b423333c6": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858bbb6ae95c5971": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858be56a9ab4f4a7": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858bef6a88c102ee": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858c7b698800f76e": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858c856974bf84b4": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858dc56727b64b1f": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858e2566761d560d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858eb3656c147519": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858ed96528ad40be": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858ee36514411b3f": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858f336480de8d2d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858f7764019bd6b2": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858f8363ed7b6fba": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858fc7636e3e283e": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9858fd9634ca0ea0b": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985901762da47a7cc": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9859041628bc075b9": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98590716232a1ee4d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985907b621ed56d2d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98590bf619f68249f": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985910f610b363b76": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985911960f7cc67f2": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985923d5ed7495193": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985923f5ed152dd3c": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98592c35ddc1e4025": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98592e75d966f821f": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98592f95d770a2d98": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98593415ceecb21aa": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985934b5cdcbf1653": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985938f5c5b106d4c": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98593bf5c0274b2a8": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98593fd5b8ec88c62": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98594035b835e5dc0": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985940d5b6ee6fe0d": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98594415b0dc85f91": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98594675ac8549e21": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98594815a945ecc93": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985954759202d3da7": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98595d9580da856f7": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b98595f957d24ca36e": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b985962757793618f4": {
+    "altitude": 36000,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921dc1741ff55159": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921de573d9a9fd79": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921e2173698470df": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921e2b73560ffb75": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921ec5723b9bd32e": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921ecf722811d16e": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921f0f71ae4fe4af": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921fa770937eae98": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9921fd97038d76a73": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b992203f6f782b479f": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b992228f6b2035a479": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99222a36af82333c8": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99222df6a886aa2a7": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99222e96a75247b83": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99222f36a618cedf7": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b992233969de5977b1": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b992235969a16bf18a": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9922365698c54475c": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b992238969462cdd51": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99223bf68e090f233": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99223c968cd50b63d": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99223cf68c17c07e1": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99223d968ae7058ef": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99224a5672eb5d371": {
+    "altitude": 36025,
+    "cpr_format": 0,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958c3f69f570ec83": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958c4569eae866f2": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958d1968613b47d1": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958d5567f5b5de21": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958d5f67e1c00c45": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958d8f678880721f": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958d996776743f00": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958da167697de5a1": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958df566ceea1233": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9958e4b662ea336cc": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9959065624786398e": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b995909161f75d9d64": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99590df61646d30b2": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b995912360e5110562": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b995915d6078b9c4cc": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9959165606bb05637": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b9959173605140a6be": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99591a15ff89b254f": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99591cb5fa9dd3c0f": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99591d55f974356b8": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99591fb5f5140d092": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b995924b5ebd45ea39": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99592855e509db50b": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99593175d3d754864": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b9058b99593215d29c15135": {
+    "altitude": 36025,
+    "cpr_format": 1,
+    "df": 17,
+    "icao": "406b90",
+    "typecode": 11
+  },
+  "8d406b909945de0fe00405703e31": {
+    "df": 17,
+    "groundspeed": 493,
+    "icao": "406b90",
+    "track": 284.7967622450573,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945de0fe00805386431": {
+    "df": 17,
+    "groundspeed": 493,
+    "icao": "406b90",
+    "track": 284.7967622450573,
+    "typecode": 19,
+    "vertical_rate": 64
+  },
+  "8d406b909945de10000405999be4": {
+    "df": 17,
+    "groundspeed": 493,
+    "icao": "406b90",
+    "track": 284.9089863638667,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945df0fe004057334ff": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.7671607673906,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945df0fe008053b6eff": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.7671607673906,
+    "typecode": 19,
+    "vertical_rate": 64
+  },
+  "8d406b909945df0fe804051d96f7": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.7671607673906,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00f8804059285b6": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.4015377501518,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00f880805dadfb6": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.4015377501518,
+    "typecode": 19,
+    "vertical_rate": -64
+  },
+  "8d406b909945e00fa00405b95b97": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.5136972452361,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00fa80405d7f99f": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.5136972452361,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00fa808059fa39f": {
+    "df": 17,
+    "groundspeed": 494,
+    "icao": "406b90",
+    "track": 284.5136972452361,
+    "typecode": 19,
+    "vertical_rate": -64
+  },
+  "8d406b909945e00fc0040576dfec": {
+    "df": 17,
+    "groundspeed": 495,
+    "icao": "406b90",
+    "track": 284.62574318038617,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00fc80405187de4": {
+    "df": 17,
+    "groundspeed": 495,
+    "icao": "406b90",
+    "track": 284.62574318038617,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "8d406b909945e00fe804055d01cd": {
+    "df": 17,
+    "groundspeed": 495,
+    "icao": "406b90",
+    "track": 284.7376748723035,
+    "typecode": 19,
+    "vertical_rate": 0
+  },
+  "a000019910010080f500004315b2": {
+    "altitude": 1625,
+    "bds": "BDS10",
+    "df": 20,
+    "icao": "ABB3BE"
+  },
+  "a000039199680030a800006a74ac": {
+    "altitude": 4625,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484B92",
+    "selected_altitude_mcp": 13008
+  },
+  "a0000392835b1f1f2064854800d9": {
+    "altitude": 4650,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 248,
+    "icao": "484B92",
+    "roll": 4.5703125,
+    "track_rate": 0.375,
+    "true_airspeed": 266,
+    "true_track": 250.13671875
+  },
+  "a000039299680030a80000e91aca": {
+    "altitude": 4650,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484B92",
+    "selected_altitude_mcp": 13008
+  },
+  "a0000392d919f719e3bc75c92483": {
+    "altitude": 4650,
+    "baro_vertical_rate": 3808,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484B92",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": 3744,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 250.48828125
+  },
+  "a000039399680030a8000097c0e8": {
+    "altitude": 4675,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484B92",
+    "selected_altitude_mcp": 13008
+  },
+  "a0000393d929f719e3cc76e3b519": {
+    "altitude": 4675,
+    "baro_vertical_rate": 3872,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484B92",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": 3776,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 250.6640625
+  },
+  "a00003969f99f319bf57ec568a95": {
+    "altitude": 4750,
+    "baro_vertical_rate": -704,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "48506B",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": -640,
+    "mach": 0.40800000000000003,
+    "magnetic_heading": 88.76953125
+  },
+  "a00003998010fd240004869cc19b": {
+    "altitude": 4825,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 288,
+    "icao": "484371",
+    "roll": 0.0,
+    "true_airspeed": 268,
+    "true_track": 22.1484375
+  },
+  "a000039985e00030a40000a872f2": {
+    "altitude": 4825,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484371",
+    "selected_altitude_mcp": 3008
+  },
+  "a00003998729f719ff67ecc38d71": {
+    "altitude": 4825,
+    "baro_vertical_rate": -640,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484371",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": -640,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 20.0390625
+  },
+  "a00003998729f719ff6fecb3e171": {
+    "altitude": 4825,
+    "baro_vertical_rate": -608,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484371",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": -640,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 20.0390625
+  },
+  "a0000399bcaa111b3ef7e27688f0": {
+    "altitude": 4825,
+    "baro_vertical_rate": -1088,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CABC0",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": -960,
+    "mach": 0.432,
+    "magnetic_heading": 170.5078125
+  },
+  "a000053a87d00031d000007a72af": {
+    "altitude": 7650,
+    "baro_pressure_setting": 1028.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C66A5",
+    "selected_altitude_mcp": 4000
+  },
+  "a000063899680030a80000ee89f1": {
+    "altitude": 9200,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484CB8",
+    "selected_altitude_mcp": 13008
+  },
+  "a0000638b699f11be3846dca35f9": {
+    "altitude": 9200,
+    "baro_vertical_rate": 3584,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484CB8",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": 3488,
+    "mach": 0.444,
+    "magnetic_heading": 153.45703125
+  },
+  "a0000638fa81c10000000081a92f": {
+    "altitude": 9200,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "484CB8"
+  },
+  "a000063afa81c1000000007c1d6b": {
+    "altitude": 9250,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "484CB8"
+  },
+  "a00006b68af9b718e3c474a87b83": {
+    "altitude": 9950,
+    "bds": "BDS50,BDS60",
+    "df": 20,
+    "icao": "484F07"
+  },
+  "a00006b699680030a800008d0ba9": {
+    "altitude": 9950,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484F07",
+    "selected_altitude_mcp": 13008
+  },
+  "a000081eaee00031bc0000702603": {
+    "altitude": 12150,
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "44CE78",
+    "selected_altitude_mcp": 24000
+  },
+  "a000081effb54f2cfffcb38e96eb": {
+    "altitude": 12150,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 358,
+    "icao": "44CE78",
+    "roll": -0.52734375,
+    "track_rate": -0.03125,
+    "true_airspeed": 358,
+    "true_track": 119.35546875
+  },
+  "a000093010030a80e50000705c3e": {
+    "altitude": 13800,
+    "bds": "BDS10",
+    "df": 20,
+    "icao": "48548E"
+  },
+  "a0000930aee57730a80106fb781b": {
+    "altitude": 13800,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "48548E",
+    "selected_altitude_fms": 24000,
+    "selected_altitude_mcp": 24000
+  },
+  "a0000930da3a212122cc5af8ec8e": {
+    "altitude": 13800,
+    "baro_vertical_rate": 2848,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "48548E",
+    "indicated_airspeed": 272,
+    "inertial_vertical_rate": 2880,
+    "mach": 0.528,
+    "magnetic_heading": 253.65234375
+  },
+  "a0000930da3a212122dc5a18348e": {
+    "altitude": 13800,
+    "baro_vertical_rate": 2912,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "48548E",
+    "indicated_airspeed": 272,
+    "inertial_vertical_rate": 2880,
+    "mach": 0.528,
+    "magnetic_heading": 253.65234375
+  },
+  "a0000930fe5b2b287fe4a7c28bc5": {
+    "altitude": 13800,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 322,
+    "icao": "48548E",
+    "roll": -2.4609375,
+    "track_rate": -0.125,
+    "true_airspeed": 334,
+    "true_track": 251.19140625
+  },
+  "a0000930fe7b2d287fe4a76cc3b8": {
+    "altitude": 13800,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 322,
+    "icao": "48548E",
+    "roll": -2.28515625,
+    "track_rate": -0.125,
+    "true_airspeed": 334,
+    "true_track": 251.3671875
+  },
+  "a000093b803d952d7ffcbfcac5ec": {
+    "altitude": 14075,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 362,
+    "icao": "4840D5",
+    "roll": 0.17578125,
+    "track_rate": -0.03125,
+    "true_airspeed": 382,
+    "true_track": 305.5078125
+  },
+  "a000093baee00031bc0000fade4c": {
+    "altitude": 14075,
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4840D5",
+    "selected_altitude_mcp": 24000
+  },
+  "a000093bec6a6d25a1ac342cd94e": {
+    "altitude": 14075,
+    "baro_vertical_rate": 1696,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4840D5",
+    "indicated_airspeed": 310,
+    "inertial_vertical_rate": 1664,
+    "mach": 0.6,
+    "magnetic_heading": 304.8046875
+  },
+  "a0000995af4a7b26e2d457413117": {
+    "altitude": 14325,
+    "baro_vertical_rate": 2880,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484FDF",
+    "indicated_airspeed": 317,
+    "inertial_vertical_rate": 2784,
+    "mach": 0.62,
+    "magnetic_heading": 132.890625
+  },
+  "a000099710010080e500004b3a61": {
+    "altitude": 14375,
+    "bds": "BDS10",
+    "df": 20,
+    "icao": "484FDF"
+  },
+  "a00009978015ef31a004c49bcff3": {
+    "altitude": 14375,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 396,
+    "icao": "484FDF",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 392,
+    "true_track": 133.41796875
+  },
+  "a0000a399b5c0170a80000577101": {
+    "altitude": 15625,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA54C",
+    "selected_altitude_fms": 80,
+    "selected_altitude_mcp": 14000
+  },
+  "a0000a3ad45a2f233e6fcf4bcbe2": {
+    "altitude": 15650,
+    "baro_vertical_rate": -1632,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA54C",
+    "indicated_airspeed": 279,
+    "inertial_vertical_rate": -1568,
+    "mach": 0.56,
+    "magnetic_heading": 237.12890625
+  },
+  "a0000b1fb2c80031bc000042897f": {
+    "altitude": 16975,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "3946E1"
+  },
+  "a0000b1fff9925347ffcd47742fa": {
+    "altitude": 16975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 418,
+    "icao": "3946E1",
+    "roll": -0.703125,
+    "track_rate": -0.03125,
+    "true_airspeed": 424,
+    "true_track": 205.6640625
+  },
+  "a0000b3993880030a800000f2e49": {
+    "altitude": 17225,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "738057"
+  },
+  "a0000bb8ffff01208004870d2b9b": {
+    "altitude": 18000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 260,
+    "icao": "43E859",
+    "roll": -0.17578125,
+    "true_airspeed": 270,
+    "true_track": 337.5
+  },
+  "a0000c179b580030a40000d8dc52": {
+    "altitude": 18375,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "4BA952"
+  },
+  "a0000c90a23a512760040044d995": {
+    "altitude": 19000,
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4010DD",
+    "indicated_airspeed": 296,
+    "inertial_vertical_rate": 0,
+    "mach": 0.628,
+    "magnetic_heading": 96.15234375
+  },
+  "a0000d92b2c80031bc00000eda3b": {
+    "altitude": 20650,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "471F89"
+  },
+  "a0000e12cd09ed22be87d1b3b5e8": {
+    "altitude": 21450,
+    "baro_vertical_rate": -1536,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CAB9A",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": -1504,
+    "mach": 0.552,
+    "magnetic_heading": 216.5625
+  },
+  "a0000e1aa3280031bc0000688fd2": {
+    "altitude": 21650,
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4BAA59",
+    "selected_altitude_mcp": 18000
+  },
+  "a0000e1ae13a3527febfd28640f5": {
+    "altitude": 21650,
+    "baro_vertical_rate": -1312,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4BAA59",
+    "indicated_airspeed": 282,
+    "inertial_vertical_rate": -1472,
+    "mach": 0.636,
+    "magnetic_heading": 273.33984375
+  },
+  "a0000e9fff9d612d7ff4b78ff5b8": {
+    "altitude": 22575,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 362,
+    "icao": "4A0835",
+    "roll": -0.703125,
+    "track_rate": -0.0625,
+    "true_airspeed": 366,
+    "true_track": 300.9375
+  },
+  "a0000eb0a3280030aa0000f09415": {
+    "altitude": 22600,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4A0835",
+    "selected_altitude_mcp": 18000
+  },
+  "a0000eb0ff9d612d600cb79c79b5": {
+    "altitude": 22600,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 362,
+    "icao": "4A0835",
+    "roll": -0.703125,
+    "track_rate": 0.03125,
+    "true_airspeed": 366,
+    "true_track": 300.9375
+  },
+  "a0000f1080337734fffcca2abf17": {
+    "altitude": 23000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 422,
+    "icao": "40688A",
+    "roll": 0.17578125,
+    "track_rate": -0.03125,
+    "true_airspeed": 404,
+    "true_track": 77.87109375
+  },
+  "a0000f10acf000319400004fbe7c": {
+    "altitude": 23000,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "40688A",
+    "selected_altitude_mcp": 23008
+  },
+  "a0000fb3b4c00030a800004becbc": {
+    "altitude": 24275,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484165",
+    "selected_altitude_mcp": 27008
+  },
+  "a0000fb3ff7907347fecd6250db9": {
+    "altitude": 24275,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 418,
+    "icao": "484165",
+    "roll": -0.87890625,
+    "track_rate": -0.09375,
+    "true_airspeed": 428,
+    "true_track": 203.02734375
+  },
+  "a0000fb4b4c00030a80000cc1e5b": {
+    "altitude": 24300,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "484165",
+    "selected_altitude_mcp": 27008
+  },
+  "a000101f801f83326004c37ecf81": {
+    "altitude": 24975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 402,
+    "icao": "4CA8DF",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 390,
+    "true_track": 348.92578125
+  },
+  "a00010358118f7306014c7914834": {
+    "altitude": 25125,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 386,
+    "icao": "4CA5BE",
+    "roll": 1.40625,
+    "track_rate": 0.0625,
+    "true_airspeed": 398,
+    "true_track": 201.62109375
+  },
+  "a00011178051ff35200cce21fcde": {
+    "altitude": 26375,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 424,
+    "icao": "4CA6E3",
+    "roll": 0.3515625,
+    "track_rate": 0.03125,
+    "true_airspeed": 412,
+    "true_track": 44.82421875
+  },
+  "a0001117901a2f2b21c000b31b62": {
+    "altitude": 26375,
+    "bds": "BDS50,BDS60",
+    "df": 20,
+    "icao": "4CA6E3"
+  },
+  "a0001117c07800000000008ce73d": {
+    "altitude": 26375,
+    "bds": "BDS40,BDS45,BDS60",
+    "df": 20,
+    "icao": "4CA6E3"
+  },
+  "a0001118901a2f2b21b800efa89c": {
+    "altitude": 26400,
+    "bds": "BDS50,BDS60",
+    "df": 20,
+    "icao": "4CA6E3"
+  },
+  "a0001118901a2f2b21c0003dd087": {
+    "altitude": 26400,
+    "bds": "BDS50,BDS60",
+    "df": 20,
+    "icao": "4CA6E3"
+  },
+  "a0001118c0780000000000022cd8": {
+    "altitude": 26400,
+    "bds": "BDS40,BDS45,BDS60",
+    "df": 20,
+    "icao": "4CA6E3"
+  },
+  "a00011198051ff352004cea18119": {
+    "altitude": 26425,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 424,
+    "icao": "4CA6E3",
+    "roll": 0.3515625,
+    "track_rate": 0.0,
+    "true_airspeed": 412,
+    "true_track": 44.82421875
+  },
+  "a0001119c8480030a800006c30e6": {
+    "altitude": 26425,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "485123",
+    "selected_altitude_mcp": 37008
+  },
+  "a000111a972a412ca20c357181ce": {
+    "altitude": 26450,
+    "baro_vertical_rate": 2080,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CABA3",
+    "indicated_airspeed": 288,
+    "inertial_vertical_rate": 1696,
+    "mach": 0.712,
+    "magnetic_heading": 65.0390625
+  },
+  "a000111b972a412ca1cc359cbf19": {
+    "altitude": 26475,
+    "baro_vertical_rate": 1824,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CABA3",
+    "indicated_airspeed": 288,
+    "inertial_vertical_rate": 1696,
+    "mach": 0.712,
+    "magnetic_heading": 65.0390625
+  },
+  "a000111bc4600030a800000a1814": {
+    "altitude": 26475,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CABA3",
+    "selected_altitude_mcp": 35008
+  },
+  "a000113cb0d80031940000db1fcc": {
+    "altitude": 26900,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C66AF",
+    "selected_altitude_mcp": 25008
+  },
+  "a00011bdb0d800319400004a3d30": {
+    "altitude": 27725,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400E51",
+    "selected_altitude_mcp": 25008
+  },
+  "a00011bee1d9f5283e4fca12d1e1": {
+    "altitude": 27750,
+    "baro_vertical_rate": -1760,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400E51",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": -1728,
+    "mach": 0.64,
+    "magnetic_heading": 275.09765625
+  },
+  "a00011bfaaf80030a401003a89ea": {
+    "altitude": 27775,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4851AD",
+    "selected_altitude_mcp": 22000
+  },
+  "a0001210aaf80030a4010095bef5": {
+    "altitude": 27800,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4851AD",
+    "selected_altitude_mcp": 22000
+  },
+  "a00012118011093efffcf46a3e55": {
+    "altitude": 27825,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 502,
+    "icao": "4851AD",
+    "roll": 0.0,
+    "track_rate": -0.03125,
+    "true_airspeed": 488,
+    "true_track": 23.203125
+  },
+  "a0001231b8a800319400001fdb3b": {
+    "altitude": 28225,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4008B4",
+    "selected_altitude_mcp": 29008
+  },
+  "a0001232f9b64f3bbfa4e9795f9a": {
+    "altitude": 28250,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 476,
+    "icao": "4008B4",
+    "roll": -8.96484375,
+    "track_rate": -0.375,
+    "true_airspeed": 466,
+    "true_track": 141.85546875
+  },
+  "a000123e202cc371cf8d6017072c": {
+    "altitude": 28550,
+    "bds": "BDS20",
+    "callsign": "KLM1385_",
+    "df": 20,
+    "icao": "484555"
+  },
+  "a000123e98aa6330e13c253145bd": {
+    "altitude": 28550,
+    "baro_vertical_rate": 1248,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484555",
+    "indicated_airspeed": 305,
+    "inertial_vertical_rate": 1184,
+    "mach": 0.78,
+    "magnetic_heading": 69.2578125
+  },
+  "a00012b8f09a7f33a15c2b3937e3": {
+    "altitude": 29200,
+    "baro_vertical_rate": 1376,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "C01755",
+    "indicated_airspeed": 319,
+    "inertial_vertical_rate": 1376,
+    "mach": 0.8240000000000001,
+    "magnetic_heading": 316.58203125
+  },
+  "a00012ba200c16b5c328205ad7f7": {
+    "altitude": 29250,
+    "bds": "BDS20",
+    "callsign": "CAZ502__",
+    "df": 20,
+    "icao": "4B1534"
+  },
+  "a00012bbc0780030a40000008b67": {
+    "altitude": 29275,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "4B1534"
+  },
+  "a00013129cca3b2ee1742b587ad1": {
+    "altitude": 29450,
+    "baro_vertical_rate": 1472,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA244",
+    "indicated_airspeed": 285,
+    "inertial_vertical_rate": 1376,
+    "mach": 0.748,
+    "magnetic_heading": 80.859375
+  },
+  "a00013129cca3b2ee17c2b2816d1": {
+    "altitude": 29450,
+    "baro_vertical_rate": 1504,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA244",
+    "indicated_airspeed": 285,
+    "inertial_vertical_rate": 1376,
+    "mach": 0.748,
+    "magnetic_heading": 80.859375
+  },
+  "a0001312ffd38138fffcdb3c48b3": {
+    "altitude": 29450,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 454,
+    "icao": "4CA244",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 438,
+    "true_track": 78.75
+  },
+  "a0001337e5d9fd2aa04400629c57": {
+    "altitude": 29975,
+    "baro_vertical_rate": 256,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "484B00",
+    "indicated_airspeed": 254,
+    "inertial_vertical_rate": 0,
+    "mach": 0.68,
+    "magnetic_heading": 286.34765625
+  },
+  "a0001338202cc371d38e60a05469": {
+    "altitude": 30000,
+    "bds": "BDS20",
+    "callsign": "KLM1489_",
+    "df": 20,
+    "icao": "484B00"
+  },
+  "a000139ae1d9f12a3e2fc867b3b1": {
+    "altitude": 30450,
+    "baro_vertical_rate": -1888,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "42498D",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -1792,
+    "mach": 0.672,
+    "magnetic_heading": 275.09765625
+  },
+  "a0001415a32800319400003c1e99": {
+    "altitude": 31125,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400CEB",
+    "selected_altitude_mcp": 18000
+  },
+  "a0001415effa272efe57ca835ad2": {
+    "altitude": 31125,
+    "baro_vertical_rate": -1728,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400CEB",
+    "indicated_airspeed": 275,
+    "inertial_vertical_rate": -1728,
+    "mach": 0.748,
+    "magnetic_heading": 314.82421875
+  },
+  "a0001416a75a072c7e07c27a146a": {
+    "altitude": 31150,
+    "baro_vertical_rate": -2048,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA53F",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -1984,
+    "mach": 0.708,
+    "magnetic_heading": 110.56640625
+  },
+  "a0001416b0d80030a80000d5ee0b": {
+    "altitude": 31150,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA53F",
+    "selected_altitude_mcp": 25008
+  },
+  "a00014178054df34fffcce5853b9": {
+    "altitude": 31175,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 422,
+    "icao": "4CA53F",
+    "roll": 0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 412,
+    "true_track": 109.51171875
+  },
+  "a0001417b0d80030a80000ab3429": {
+    "altitude": 31175,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA53F",
+    "selected_altitude_mcp": 25008
+  },
+  "a00014188054df34fffcced6985c": {
+    "altitude": 31200,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 422,
+    "icao": "4CA53F",
+    "roll": 0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 412,
+    "true_track": 109.51171875
+  },
+  "a0001418a75a072c7e07c175edbf": {
+    "altitude": 31200,
+    "baro_vertical_rate": -2048,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA53F",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -2016,
+    "mach": 0.708,
+    "magnetic_heading": 110.56640625
+  },
+  "a000143cc4600030a40000b43ace": {
+    "altitude": 31700,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4C01E5",
+    "selected_altitude_mcp": 35008
+  },
+  "a0001496801c8538a004ec6bbad1": {
+    "altitude": 31950,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 452,
+    "icao": "A2CE12",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 472,
+    "true_track": 281.6015625
+  },
+  "a000149da8ca3730e11422cb6385": {
+    "altitude": 32125,
+    "baro_vertical_rate": 1088,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400AFC",
+    "indicated_airspeed": 283,
+    "inertial_vertical_rate": 1088,
+    "mach": 0.78,
+    "magnetic_heading": 114.609375
+  },
+  "a000149dc4600031940000c25ab7": {
+    "altitude": 32125,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400AFC",
+    "selected_altitude_mcp": 35008
+  },
+  "a000149dfff4fb3a7ffce2864cdc": {
+    "altitude": 32125,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "400AFC",
+    "roll": -0.17578125,
+    "track_rate": -0.03125,
+    "true_airspeed": 452,
+    "true_track": 111.97265625
+  },
+  "a000149ec46000319400004134d1": {
+    "altitude": 32150,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400AFC",
+    "selected_altitude_mcp": 35008
+  },
+  "a00014b1bc95e4b0a8000063e347": {
+    "altitude": 32225,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA6B6",
+    "selected_altitude_fms": 31008,
+    "selected_altitude_mcp": 31008
+  },
+  "a000151ae00a5334211c1e37db5f": {
+    "altitude": 32850,
+    "baro_vertical_rate": 1120,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "44A88C",
+    "indicated_airspeed": 297,
+    "inertial_vertical_rate": 960,
+    "mach": 0.8320000000000001,
+    "magnetic_heading": 270.0
+  },
+  "a000153080349136bffcd2314c14": {
+    "altitude": 33000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 436,
+    "icao": "406674",
+    "roll": 0.17578125,
+    "track_rate": -0.03125,
+    "true_airspeed": 420,
+    "true_track": 102.65625
+  },
+  "a0001530a55a032dbffc0043d793": {
+    "altitude": 33000,
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "406674",
+    "indicated_airspeed": 257,
+    "inertial_vertical_rate": 0,
+    "mach": 0.728,
+    "magnetic_heading": 104.94140625
+  },
+  "a0001530ad3a032de00c00f010a6": {
+    "altitude": 33000,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400A04",
+    "indicated_airspeed": 257,
+    "inertial_vertical_rate": 0,
+    "mach": 0.732,
+    "magnetic_heading": 127.08984375
+  },
+  "a0001530c0780000000000bfe403": {
+    "altitude": 33000,
+    "bds": "BDS40,BDS45,BDS60",
+    "df": 20,
+    "icao": "400A04"
+  },
+  "a0001530c0780031940000abcbed": {
+    "altitude": 33000,
+    "bds": "BDS40,BDS45",
+    "df": 20,
+    "icao": "406674"
+  },
+  "a00015b0acf00030a40180b01f78": {
+    "altitude": 33800,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4851B1",
+    "selected_altitude_mcp": 23008
+  },
+  "a00015b4a59a1f30e104207253d0": {
+    "altitude": 33900,
+    "baro_vertical_rate": 1024,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "40701C",
+    "indicated_airspeed": 271,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.78,
+    "magnetic_heading": 105.64453125
+  },
+  "a00015b4c4600030aa0000b86dd2": {
+    "altitude": 33900,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "40701C",
+    "selected_altitude_mcp": 35008
+  },
+  "a00015b4ffb4993a7ffcdfe19e01": {
+    "altitude": 33900,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "40701C",
+    "roll": -0.52734375,
+    "track_rate": -0.03125,
+    "true_airspeed": 446,
+    "true_track": 103.359375
+  },
+  "a00015b7801d513a2004eecafcfe": {
+    "altitude": 33975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 464,
+    "icao": "4D010D",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 476,
+    "true_track": 299.53125
+  },
+  "a00015b7c26e1370aa00005dd34a": {
+    "altitude": 33975,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4D010D",
+    "selected_altitude_fms": 34000,
+    "selected_altitude_mcp": 34000
+  },
+  "a00015b7e94a4534200fff4dd112": {
+    "altitude": 33975,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4D010D",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": -32,
+    "mach": 0.8320000000000001,
+    "magnetic_heading": 296.015625
+  },
+  "a00015b7e94a45343fffff841ef2": {
+    "altitude": 33975,
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4D010D",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": -32,
+    "mach": 0.8320000000000001,
+    "magnetic_heading": 296.015625
+  },
+  "a0001636a419f12dfe8fe1f9e4c0": {
+    "altitude": 34750,
+    "baro_vertical_rate": -1504,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "3C56E7",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -992,
+    "mach": 0.732,
+    "magnetic_heading": 101.42578125
+  },
+  "a0001636a419f12dff37e1a3d0ac": {
+    "altitude": 34750,
+    "baro_vertical_rate": -832,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "3C56E7",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -992,
+    "mach": 0.732,
+    "magnetic_heading": 101.42578125
+  },
+  "a0001636fff469376004d259d163": {
+    "altitude": 34750,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 442,
+    "icao": "3C56E7",
+    "roll": -0.17578125,
+    "track_rate": 0.0,
+    "true_airspeed": 420,
+    "true_track": 99.140625
+  },
+  "a000169010030a80fd0000c5caae": {
+    "altitude": 35000,
+    "bds": "BDS10",
+    "df": 20,
+    "icao": "471F6C"
+  },
+  "a00016908013bb3a7ffcdd97fc0c": {
+    "altitude": 35000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "471F6C",
+    "roll": 0.0,
+    "track_rate": -0.03125,
+    "true_airspeed": 442,
+    "true_track": 83.84765625
+  },
+  "a00016908033c73aa004df6ae429": {
+    "altitude": 35000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 468,
+    "icao": "40097C",
+    "roll": 0.17578125,
+    "track_rate": 0.0,
+    "true_airspeed": 446,
+    "true_track": 84.90234375
+  },
+  "a00016909e7a0d30601fffd9d726": {
+    "altitude": 35000,
+    "baro_vertical_rate": 96,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.772,
+    "magnetic_heading": 85.60546875
+  },
+  "a00016909e7a0d307fd7ffbee8cf": {
+    "altitude": 35000,
+    "baro_vertical_rate": -192,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.772,
+    "magnetic_heading": 85.60546875
+  },
+  "a00016909e7a0d307ffffff0c0c6": {
+    "altitude": 35000,
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.772,
+    "magnetic_heading": 85.60546875
+  },
+  "a00016909eda1130e00c002d6f95": {
+    "altitude": 35000,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "40097C",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 86.66015625
+  },
+  "a0001690a5fa0b307fe400243b25": {
+    "altitude": 35000,
+    "baro_vertical_rate": -128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4006B4",
+    "indicated_airspeed": 261,
+    "inertial_vertical_rate": 0,
+    "mach": 0.772,
+    "magnetic_heading": 106.69921875
+  },
+  "a0001690c4600030aa000009f2f9": {
+    "altitude": 35000,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "471F6C",
+    "selected_altitude_mcp": 35008
+  },
+  "a0001690c4600031940000ff7a0d": {
+    "altitude": 35000,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "40097C",
+    "selected_altitude_mcp": 35008
+  },
+  "a0001690c4600031bc0000a8e592": {
+    "altitude": 35000,
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C48C2",
+    "selected_altitude_mcp": 35008
+  },
+  "a0001690c4662330aa00002829a7": {
+    "altitude": 35000,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C4AD7",
+    "selected_altitude_fms": 35008,
+    "selected_altitude_mcp": 35008
+  },
+  "a0001690fa810100000000fd798b": {
+    "altitude": 35000,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "40097C"
+  },
+  "a000169180349d3b200ce07b8e2d": {
+    "altitude": 35025,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 472,
+    "icao": "471F6D",
+    "roll": 0.17578125,
+    "track_rate": 0.03125,
+    "true_airspeed": 448,
+    "true_track": 103.7109375
+  },
+  "a0001691a54a1130ffe4000163b1": {
+    "altitude": 35025,
+    "baro_vertical_rate": -128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "471F6D",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 104.765625
+  },
+  "a0001691c4600030aa00007728da": {
+    "altitude": 35025,
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "471F6D",
+    "selected_altitude_mcp": 35008
+  },
+  "a00017158075173a6004d93a613f": {
+    "altitude": 35925,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "400BD7",
+    "roll": 0.52734375,
+    "track_rate": 0.0,
+    "true_airspeed": 434,
+    "true_track": 114.43359375
+  },
+  "a0001715a9b9f52f6104203dd93c": {
+    "altitude": 35925,
+    "baro_vertical_rate": 1024,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400BD7",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.756,
+    "magnetic_heading": 117.24609375
+  },
+  "a0001715a9b9f52f610c204db53c": {
+    "altitude": 35925,
+    "baro_vertical_rate": 1056,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "400BD7",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.756,
+    "magnetic_heading": 117.24609375
+  },
+  "a0001715c8480031940000511c5a": {
+    "altitude": 35925,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400BD7",
+    "selected_altitude_mcp": 37008
+  },
+  "a0001716fffcdb356004e100bd9c": {
+    "altitude": 35950,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 426,
+    "icao": "4BAA84",
+    "roll": -0.17578125,
+    "track_rate": 0.0,
+    "true_airspeed": 450,
+    "true_track": 289.16015625
+  },
+  "a0001717204d64b8d338201d0b16": {
+    "altitude": 35975,
+    "bds": "BDS20",
+    "callsign": "SVR843__",
+    "df": 20,
+    "icao": "424928"
+  },
+  "a0001717c6500031bc00002ac90c": {
+    "altitude": 35975,
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C6484",
+    "selected_altitude_mcp": 36000
+  },
+  "a0001717ffdd1934bffce1146e2c": {
+    "altitude": 35975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 420,
+    "icao": "3C6484",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 450,
+    "true_track": 294.609375
+  },
+  "a000171aaaba393561fc41bcf2bf": {
+    "altitude": 36050,
+    "baro_vertical_rate": 2016,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "06A0A5",
+    "indicated_airspeed": 284,
+    "inertial_vertical_rate": 2080,
+    "mach": 0.852,
+    "magnetic_heading": 120.05859375
+  },
+  "a000171ad0180030a40180e28a82": {
+    "altitude": 36050,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "06A0A5",
+    "selected_altitude_mcp": 41008
+  },
+  "a000171f807be532e00cdd78ea76": {
+    "altitude": 36175,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 406,
+    "icao": "4BAB24",
+    "roll": 0.52734375,
+    "track_rate": 0.03125,
+    "true_airspeed": 442,
+    "true_track": 267.5390625
+  },
+  "a000179fc8480030e00000440212": {
+    "altitude": 36975,
+    "baro_pressure_setting": 1016.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3C64C5",
+    "selected_altitude_mcp": 37008
+  },
+  "a000179fc84e4270a80000d5cf05": {
+    "altitude": 36975,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA554",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008
+  },
+  "a000179fff993536fffce7ca6114": {
+    "altitude": 36975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 438,
+    "icao": "4CA92E",
+    "roll": -0.703125,
+    "track_rate": -0.03125,
+    "true_airspeed": 462,
+    "true_track": 207.0703125
+  },
+  "a000179fffd48b3bfffce467f3d9": {
+    "altitude": 36975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 478,
+    "icao": "3C64C5",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 456,
+    "true_track": 102.12890625
+  },
+  "a00017b0202422f94958208f0a91": {
+    "altitude": 37000,
+    "bds": "BDS20",
+    "callsign": "IBK9RU__",
+    "df": 20,
+    "icao": "4CA948"
+  },
+  "a00017b0204994b14c18202cac56": {
+    "altitude": 37000,
+    "bds": "BDS20",
+    "callsign": "RYR1SA__",
+    "df": 20,
+    "icao": "4CA5ED"
+  },
+  "a00017b08010e33a2004e558a8a0": {
+    "altitude": 37000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 464,
+    "icao": "4CA618",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 458,
+    "true_track": 19.86328125
+  },
+  "a00017b080112f3ae004e1611488": {
+    "altitude": 37000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 470,
+    "icao": "4CA52A",
+    "roll": 0.0,
+    "track_rate": 0.0,
+    "true_airspeed": 450,
+    "true_track": 26.54296875
+  },
+  "a00017b08072773a6004dc6c3594": {
+    "altitude": 37000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "4CA5ED",
+    "roll": 0.52734375,
+    "track_rate": 0.0,
+    "true_airspeed": 440,
+    "true_track": 55.37109375
+  },
+  "a00017b085aa0731e024007c8202": {
+    "altitude": 37000,
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA618",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 15.8203125
+  },
+  "a00017b088a9ff317fdfff67a337": {
+    "altitude": 37000,
+    "baro_vertical_rate": -160,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA52A",
+    "indicated_airspeed": 255,
+    "inertial_vertical_rate": -32,
+    "mach": 0.788,
+    "magnetic_heading": 24.2578125
+  },
+  "a00017b08999f730bff400470fc6": {
+    "altitude": 37000,
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA948",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": 0,
+    "mach": 0.776,
+    "magnetic_heading": 26.89453125
+  },
+  "a00017b08af9f330602400544b86": {
+    "altitude": 37000,
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA554",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 0,
+    "mach": 0.772,
+    "magnetic_heading": 30.76171875
+  },
+  "a00017b0906a0331a0040177545c": {
+    "altitude": 37000,
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4CA7F2",
+    "indicated_airspeed": 257,
+    "inertial_vertical_rate": 32,
+    "mach": 0.792,
+    "magnetic_heading": 46.0546875
+  },
+  "a00017b09949ed2fa02400edb4f5": {
+    "altitude": 37000,
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "405F12",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": 0,
+    "mach": 0.76,
+    "magnetic_heading": 71.015625
+  },
+  "a00017b09959eb2fa02c003a2739": {
+    "altitude": 37000,
+    "baro_vertical_rate": 160,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "405F12",
+    "indicated_airspeed": 245,
+    "inertial_vertical_rate": 0,
+    "mach": 0.76,
+    "magnetic_heading": 71.19140625
+  },
+  "a00017b09959ed2fa00c000e5d94": {
+    "altitude": 37000,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "405F12",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": 0,
+    "mach": 0.76,
+    "magnetic_heading": 71.19140625
+  },
+  "a00017b0a8e9f930fff400c1b45c": {
+    "altitude": 37000,
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "4070EF",
+    "indicated_airspeed": 252,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 114.9609375
+  },
+  "a00017b0c8480030a800007ab68d": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA5ED",
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c8480030a800007abb6f": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA80F",
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c84800319400009c7a14": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "405F12",
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c84e4270a80000733553": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4070EF",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c84e4270a800007fe0e8": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA554",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c84e4270a800007fe3a4": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA618",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0c84e4270a800007fecf4": {
+    "altitude": 37000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4CA948",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008
+  },
+  "a00017b0cb1a0531fffc00a48fcd": {
+    "altitude": 37000,
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "47945C",
+    "indicated_airspeed": 258,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 211.11328125
+  },
+  "a00017b0fe81c3000000003dd075": {
+    "altitude": 37000,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "4CA618"
+  },
+  "a00017b0fff3293a6004daba8f3d": {
+    "altitude": 37000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 466,
+    "icao": "405F12",
+    "roll": -0.17578125,
+    "track_rate": 0.0,
+    "true_airspeed": 436,
+    "true_track": 71.015625
+  },
+  "a00017b1c8480031940000e2f7d6": {
+    "altitude": 37025,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "4008F2",
+    "selected_altitude_mcp": 37008
+  },
+  "a0001837c929f931e00c00e60488": {
+    "altitude": 37975,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "478537",
+    "indicated_airspeed": 252,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 205.6640625
+  },
+  "a0001837ca3c0170a8000087aedf": {
+    "altitude": 37975,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "478537",
+    "selected_altitude_fms": 80,
+    "selected_altitude_mcp": 38000
+  },
+  "a0001837ffd90b363ffce4d82704": {
+    "altitude": 37975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 432,
+    "icao": "478537",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 456,
+    "true_track": 203.37890625
+  },
+  "a0001838e519f33160240142d7fa": {
+    "altitude": 38000,
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "3C674D",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 32,
+    "mach": 0.788,
+    "magnetic_heading": 284.23828125
+  },
+  "a0001838fa8103000000002d2cc4": {
+    "altitude": 38000,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "3C674D"
+  },
+  "a00018bfa87a11353fcffcc39c46": {
+    "altitude": 38975,
+    "baro_vertical_rate": -224,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "406D7B",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": -128,
+    "mach": 0.848,
+    "magnetic_heading": 113.73046875
+  },
+  "a00018bfb0ba13353ff40001fe09": {
+    "altitude": 38975,
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "C02EC1",
+    "indicated_airspeed": 265,
+    "inertial_vertical_rate": 0,
+    "mach": 0.848,
+    "magnetic_heading": 136.93359375
+  },
+  "a00018bfcc300030a4018002b743": {
+    "altitude": 38975,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "406D7B",
+    "selected_altitude_mcp": 39008
+  },
+  "a00018bfcc300030a4018082f4f9": {
+    "altitude": 38975,
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "C02EC1",
+    "selected_altitude_mcp": 39008
+  },
+  "a00018bffff5ef3da004f5b93b6e": {
+    "altitude": 38975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 492,
+    "icao": "C02EC1",
+    "roll": -0.17578125,
+    "track_rate": 0.0,
+    "true_airspeed": 490,
+    "true_track": 133.41796875
+  },
+  "a00019108d49d92fe00c0018b267": {
+    "altitude": 39000,
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "3950CE",
+    "indicated_airspeed": 236,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 37.265625
+  },
+  "a00019108d49d92fe02c0026f66e": {
+    "altitude": 39000,
+    "baro_vertical_rate": 160,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "3950CE",
+    "indicated_airspeed": 236,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 37.265625
+  },
+  "a0001910a3d9f532bfec007ae77d": {
+    "altitude": 39000,
+    "bds": "BDS45,BDS60",
+    "df": 20,
+    "icao": "70C0A6"
+  },
+  "a0001910cc300031a80000e1e46d": {
+    "altitude": 39000,
+    "baro_pressure_setting": 1026.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "3950CE",
+    "selected_altitude_mcp": 39008
+  },
+  "a0001910fa810300000000dd1204": {
+    "altitude": 39000,
+    "bds": "BDS17,BDS45",
+    "df": 20,
+    "icao": "3950CE"
+  },
+  "a0001910ffd1c7393ffcdbaae026": {
+    "altitude": 39000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 456,
+    "icao": "3950CE",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 438,
+    "true_track": 39.90234375
+  },
+  "a0001910ffd4593c7ffce6d9b980": {
+    "altitude": 39000,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 482,
+    "icao": "3C656B",
+    "roll": -0.3515625,
+    "track_rate": -0.03125,
+    "true_airspeed": 460,
+    "true_track": 97.734375
+  },
+  "a000199858cd81d99de53cad9b53": {
+    "altitude": 40000,
+    "df": 20,
+    "icao": "484B8F"
+  },
+  "a0001998b6b40130a80000e8f7bb": {
+    "altitude": 40000,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "342119",
+    "selected_altitude_fms": 64,
+    "selected_altitude_mcp": 28000
+  },
+  "a0001a1fd01e80f0a80000a6b5ca": {
+    "altitude": 40975,
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "502CB6",
+    "selected_altitude_fms": 41008,
+    "selected_altitude_mcp": 41008
+  },
+  "a0280fb5a57a4d2b61ac33cf48e5": {
+    "altitude": 24325,
+    "baro_vertical_rate": 1696,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "471F70",
+    "indicated_airspeed": 294,
+    "inertial_vertical_rate": 1632,
+    "mach": 0.6920000000000001,
+    "magnetic_heading": 105.29296875
+  },
+  "a028159cc848003194000072ff14": {
+    "altitude": 33700,
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "400DA0",
+    "selected_altitude_mcp": 37008
+  },
+  "a0281717c65000310800008a17a7": {
+    "altitude": 35975,
+    "baro_pressure_setting": 1018.0,
+    "bds": "BDS40",
+    "df": 20,
+    "icao": "501D1D",
+    "selected_altitude_mcp": 36000
+  },
+  "a0281717e949ef2efff7feabbe03": {
+    "altitude": 35975,
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "501D1D",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.748,
+    "magnetic_heading": 296.015625
+  },
+  "a0281717e959ef2efffffe76136b": {
+    "altitude": 35975,
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 20,
+    "icao": "501D1D",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.748,
+    "magnetic_heading": 296.19140625
+  },
+  "a0281717fc7d3f32bfc4d89c2a2b": {
+    "altitude": 35975,
+    "bds": "BDS50",
+    "df": 20,
+    "groundspeed": 404,
+    "icao": "501D1D",
+    "roll": -5.09765625,
+    "track_rate": -0.25,
+    "true_airspeed": 432,
+    "true_track": 297.94921875
+  },
+  "a80000238075173a6004d94e810a": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "400BD7",
+    "roll": 0.52734375,
+    "squawk": "0504",
+    "track_rate": 0.0,
+    "true_airspeed": 434,
+    "true_track": 114.43359375
+  },
+  "a80000238095173a6004d9cc2917": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "400BD7",
+    "roll": 0.703125,
+    "squawk": "0504",
+    "track_rate": 0.0,
+    "true_airspeed": 434,
+    "true_track": 114.43359375
+  },
+  "a8000023a9b9f52f60d42021ad7e": {
+    "baro_vertical_rate": 832,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "400BD7",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.756,
+    "magnetic_heading": 117.24609375,
+    "squawk": "0504"
+  },
+  "a8000023a9b9f52f60f4201fe977": {
+    "baro_vertical_rate": 960,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "400BD7",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.756,
+    "magnetic_heading": 117.24609375,
+    "squawk": "0504"
+  },
+  "a8000032ffb6b7333ffcc8e6fffc": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 408,
+    "icao": "400936",
+    "roll": -0.52734375,
+    "squawk": "0501",
+    "track_rate": -0.03125,
+    "true_airspeed": 400,
+    "true_track": 150.99609375
+  },
+  "a800003680352f2efffcb8664e59": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 374,
+    "icao": "40673B",
+    "roll": 0.17578125,
+    "squawk": "0503",
+    "track_rate": -0.03125,
+    "true_airspeed": 368,
+    "true_track": 116.54296875
+  },
+  "a80000368035312efff4b834e66d": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 374,
+    "icao": "40673B",
+    "roll": 0.17578125,
+    "squawk": "0503",
+    "track_rate": -0.0625,
+    "true_airspeed": 368,
+    "true_track": 116.71875
+  },
+  "a8000036ab49e926a10c20f6ab45": {
+    "baro_vertical_rate": 1056,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40673B",
+    "indicated_airspeed": 244,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.616,
+    "magnetic_heading": 121.640625,
+    "squawk": "0503"
+  },
+  "a8000036b8a80030aa000096eb34": {
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "40673B",
+    "selected_altitude_mcp": 29008,
+    "squawk": "0503"
+  },
+  "a80000ae801d513a2004ee5a6fbd": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 464,
+    "icao": "4D010D",
+    "roll": 0.0,
+    "squawk": "4702",
+    "track_rate": 0.0,
+    "true_airspeed": 476,
+    "true_track": 299.53125
+  },
+  "a80000aee94a45343fffff148db1": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4D010D",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": -32,
+    "mach": 0.8320000000000001,
+    "magnetic_heading": 296.015625,
+    "squawk": "4702"
+  },
+  "a80000bba4ca0331bffc017cba1e": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C64C5",
+    "indicated_airspeed": 257,
+    "inertial_vertical_rate": 32,
+    "mach": 0.792,
+    "magnetic_heading": 103.359375,
+    "squawk": "4705"
+  },
+  "a80000bbc8480030e00000df2467": {
+    "baro_pressure_setting": 1016.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "3C64C5",
+    "selected_altitude_mcp": 37008,
+    "squawk": "4705"
+  },
+  "a80000bbffd48b3bfffce4fcd5ac": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 478,
+    "icao": "3C64C5",
+    "roll": -0.3515625,
+    "squawk": "4705",
+    "track_rate": -0.03125,
+    "true_airspeed": 456,
+    "true_track": 102.12890625
+  },
+  "a800012fa75a0d307ff4002c9cfa": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4064BB",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": 0,
+    "mach": 0.772,
+    "magnetic_heading": 110.56640625,
+    "squawk": "0746"
+  },
+  "a800013abd29ef2fe014005aef16": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA80F",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 171.9140625,
+    "squawk": "0741"
+  },
+  "a80001aaeb19f12f3ffc00d405f8": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4009D9",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": 0,
+    "mach": 0.752,
+    "magnetic_heading": 301.11328125,
+    "squawk": "4740"
+  },
+  "a80001aaffdd7332bffcd799534a": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 404,
+    "icao": "4009D9",
+    "roll": -0.3515625,
+    "squawk": "4740",
+    "track_rate": -0.03125,
+    "true_airspeed": 430,
+    "true_track": 302.51953125
+  },
+  "a80001aafffd7332bffcd73d2593": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 404,
+    "icao": "4009D9",
+    "roll": -0.17578125,
+    "squawk": "4740",
+    "track_rate": -0.03125,
+    "true_airspeed": 430,
+    "true_track": 302.51953125
+  },
+  "a800020ce1d9f5283e4fc9926c51": {
+    "baro_vertical_rate": -1760,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "400E51",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": -1760,
+    "mach": 0.64,
+    "magnetic_heading": 275.09765625,
+    "squawk": "2202"
+  },
+  "a800020cfedc372d7fecbde86bfb": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 362,
+    "icao": "400E51",
+    "roll": -1.7578125,
+    "squawk": "2202",
+    "track_rate": -0.09375,
+    "true_airspeed": 378,
+    "true_track": 274.74609375
+  },
+  "a800020db0ba1335200400a93667": {
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "C02EC1",
+    "indicated_airspeed": 265,
+    "inertial_vertical_rate": 0,
+    "mach": 0.848,
+    "magnetic_heading": 136.93359375,
+    "squawk": "2206"
+  },
+  "a800020dcc300030a40180e3f377": {
+    "baro_pressure_setting": 1013.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "C02EC1",
+    "selected_altitude_mcp": 39008,
+    "squawk": "2206"
+  },
+  "a800020dfff5ef3da004f5d83ce0": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 492,
+    "icao": "C02EC1",
+    "roll": -0.17578125,
+    "squawk": "2206",
+    "track_rate": 0.0,
+    "true_airspeed": 490,
+    "true_track": 133.41796875
+  },
+  "a8000333a02a372721742e1f5547": {
+    "baro_vertical_rate": 1472,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F89",
+    "indicated_airspeed": 283,
+    "inertial_vertical_rate": 1472,
+    "mach": 0.624,
+    "magnetic_heading": 90.3515625,
+    "squawk": "2545"
+  },
+  "a8000333fff40131a00cc0fe032f": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 396,
+    "icao": "471F89",
+    "roll": -0.17578125,
+    "squawk": "2545",
+    "track_rate": 0.03125,
+    "true_airspeed": 384,
+    "true_track": 90.0
+  },
+  "a80004908010fd24000486228484": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 288,
+    "icao": "484371",
+    "roll": 0.0,
+    "squawk": "4021",
+    "true_airspeed": 268,
+    "true_track": 22.1484375
+  },
+  "a80004908030fd2400048686f25d": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 288,
+    "icao": "484371",
+    "roll": 0.17578125,
+    "squawk": "4021",
+    "true_airspeed": 268,
+    "true_track": 22.1484375
+  },
+  "a80004908729f719ff5fed2ccc6e": {
+    "baro_vertical_rate": -672,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484371",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": -608,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 20.0390625,
+    "squawk": "4021"
+  },
+  "a80004908729f719ff67ec7dc86e": {
+    "baro_vertical_rate": -640,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484371",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": -640,
+    "mach": 0.41200000000000003,
+    "magnetic_heading": 20.0390625,
+    "squawk": "4021"
+  },
+  "a80004aa8054df34fffcce3f452c": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 422,
+    "icao": "4CA53F",
+    "roll": 0.3515625,
+    "squawk": "4720",
+    "track_rate": -0.03125,
+    "true_airspeed": 412,
+    "true_track": 109.51171875
+  },
+  "a8000539aa2a1531200c02646fa6": {
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4010DC",
+    "indicated_airspeed": 266,
+    "inertial_vertical_rate": 64,
+    "mach": 0.784,
+    "magnetic_heading": 118.4765625,
+    "squawk": "0365"
+  },
+  "a80007009949eb2fa014002d7f6c": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "405F12",
+    "indicated_airspeed": 245,
+    "inertial_vertical_rate": 0,
+    "mach": 0.76,
+    "magnetic_heading": 71.015625,
+    "squawk": "2060"
+  },
+  "a80007009949ed2fa02400f9ddc1": {
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "405F12",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": 0,
+    "mach": 0.76,
+    "magnetic_heading": 71.015625,
+    "squawk": "2060"
+  },
+  "a8000700fff3293a6004daaee609": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "405F12",
+    "roll": -0.17578125,
+    "squawk": "2060",
+    "track_rate": 0.0,
+    "true_airspeed": 436,
+    "true_track": 71.015625
+  },
+  "a800078f2010c23360e8200594a4": {
+    "bds": "BDS20",
+    "callsign": "DLH3XN__",
+    "df": 21,
+    "icao": "3C6484",
+    "squawk": "6666"
+  },
+  "a800078f805d1934a00ce0d4d426": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 420,
+    "icao": "3C6484",
+    "roll": 0.3515625,
+    "squawk": "6666",
+    "track_rate": 0.03125,
+    "true_airspeed": 448,
+    "true_track": 294.609375
+  },
+  "a800078fe88a0730e017fe626383": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C6484",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -64,
+    "mach": 0.78,
+    "magnetic_heading": 293.90625,
+    "squawk": "6666"
+  },
+  "a800078fe88a0730ffdffe055c6a": {
+    "baro_vertical_rate": -160,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C6484",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -64,
+    "mach": 0.78,
+    "magnetic_heading": 293.90625,
+    "squawk": "6666"
+  },
+  "a800079c803d952d6004bf9414d0": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 362,
+    "icao": "4840D5",
+    "roll": 0.17578125,
+    "squawk": "6263",
+    "track_rate": 0.0,
+    "true_airspeed": 382,
+    "true_track": 305.5078125
+  },
+  "a800079c803d952d7ffcbf2db730": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 362,
+    "icao": "4840D5",
+    "roll": 0.17578125,
+    "squawk": "6263",
+    "track_rate": -0.03125,
+    "true_airspeed": 382,
+    "true_track": 305.5078125
+  },
+  "a800079cec6a6d25a1cc34896789": {
+    "baro_vertical_rate": 1824,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4840D5",
+    "indicated_airspeed": 310,
+    "inertial_vertical_rate": 1664,
+    "mach": 0.6,
+    "magnetic_heading": 304.8046875,
+    "squawk": "6263"
+  },
+  "a800079cec6a6d25e1f436ad73c9": {
+    "baro_vertical_rate": 1984,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4840D5",
+    "indicated_airspeed": 310,
+    "inertial_vertical_rate": 1728,
+    "mach": 0.604,
+    "magnetic_heading": 304.8046875,
+    "squawk": "6263"
+  },
+  "a800079e2010c2395c1820041476": {
+    "bds": "BDS20",
+    "callsign": "DLH9WA__",
+    "df": 21,
+    "icao": "3C674D",
+    "squawk": "6663"
+  },
+  "a800079e807cb735600ce15478ba": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 426,
+    "icao": "3C674D",
+    "roll": 0.52734375,
+    "squawk": "6663",
+    "track_rate": 0.03125,
+    "true_airspeed": 450,
+    "true_track": 285.99609375
+  },
+  "a800079eca380031bc000057a950": {
+    "baro_pressure_setting": 1027.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "3C674D",
+    "selected_altitude_mcp": 38000,
+    "squawk": "6663"
+  },
+  "a800079ee519f33160240171538e": {
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C674D",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 32,
+    "mach": 0.788,
+    "magnetic_heading": 284.23828125,
+    "squawk": "6663"
+  },
+  "a800079ee519f331604401339f95": {
+    "baro_vertical_rate": 256,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C674D",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 32,
+    "mach": 0.788,
+    "magnetic_heading": 284.23828125,
+    "squawk": "6663"
+  },
+  "a800079ee519f331606c017db79c": {
+    "baro_vertical_rate": 416,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C674D",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 32,
+    "mach": 0.788,
+    "magnetic_heading": 284.23828125,
+    "squawk": "6663"
+  },
+  "a800079ee519f3317fcc0128286e": {
+    "baro_vertical_rate": -224,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C674D",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 32,
+    "mach": 0.788,
+    "magnetic_heading": 284.23828125,
+    "squawk": "6663"
+  },
+  "a800088e8d39d92fe02400f07cd6": {
+    "baro_vertical_rate": 128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3950CE",
+    "indicated_airspeed": 236,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 37.08984375,
+    "squawk": "5602"
+  },
+  "a800088e8d39d92ffffc00779b3f": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3950CE",
+    "indicated_airspeed": 236,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 37.08984375,
+    "squawk": "5602"
+  },
+  "a800088e8d49d92fe02c003ebedc": {
+    "baro_vertical_rate": 160,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3950CE",
+    "indicated_airspeed": 236,
+    "inertial_vertical_rate": 0,
+    "mach": 0.764,
+    "magnetic_heading": 37.265625,
+    "squawk": "5602"
+  },
+  "a800088effd1c7393ffcdbb2a894": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 456,
+    "icao": "3950CE",
+    "roll": -0.3515625,
+    "squawk": "5602",
+    "track_rate": -0.03125,
+    "true_airspeed": 438,
+    "true_track": 39.90234375
+  },
+  "a80008a680112f3ae004e1f796d0": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 470,
+    "icao": "4CA52A",
+    "roll": 0.0,
+    "squawk": "5502",
+    "track_rate": 0.0,
+    "true_airspeed": 450,
+    "true_track": 26.54296875
+  },
+  "a80008a688a9ff31600ffef95e8f": {
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA52A",
+    "indicated_airspeed": 255,
+    "inertial_vertical_rate": -64,
+    "mach": 0.788,
+    "magnetic_heading": 24.2578125,
+    "squawk": "5502"
+  },
+  "a80008a6c84c0170a800003b7631": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "4CA52A",
+    "selected_altitude_fms": 80,
+    "selected_altitude_mcp": 37008,
+    "squawk": "5502"
+  },
+  "a8000aaeb9a9f1302017fdfa9083": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4070EA",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -96,
+    "mach": 0.768,
+    "magnetic_heading": 162.0703125,
+    "squawk": "7702"
+  },
+  "a8000b12aaba37356214426ed7cc": {
+    "baro_vertical_rate": 2112,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "06A0A5",
+    "indicated_airspeed": 283,
+    "inertial_vertical_rate": 2112,
+    "mach": 0.852,
+    "magnetic_heading": 120.05859375,
+    "squawk": "3441"
+  },
+  "a8000b139efa0731ffffff9ad071": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4008F2",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -32,
+    "mach": 0.796,
+    "magnetic_heading": 87.01171875,
+    "squawk": "3445"
+  },
+  "a8000b358ae9b718e3ac73994853": {
+    "baro_vertical_rate": 3744,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484F07",
+    "indicated_airspeed": 219,
+    "inertial_vertical_rate": 3680,
+    "mach": 0.396,
+    "magnetic_heading": 30.5859375,
+    "squawk": "3147"
+  },
+  "a8000ba48031ff352004ce5d2210": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 424,
+    "icao": "4CA6E3",
+    "roll": 0.17578125,
+    "squawk": "7142",
+    "track_rate": 0.0,
+    "true_airspeed": 412,
+    "true_track": 44.82421875
+  },
+  "a8000ba48031ff35200cce2d4e10": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 424,
+    "icao": "4CA6E3",
+    "roll": 0.17578125,
+    "squawk": "7142",
+    "track_rate": 0.03125,
+    "true_airspeed": 412,
+    "true_track": 44.82421875
+  },
+  "a8000ba48051ff35200cce3e2172": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 424,
+    "icao": "4CA6E3",
+    "roll": 0.3515625,
+    "squawk": "7142",
+    "track_rate": 0.03125,
+    "true_airspeed": 412,
+    "true_track": 44.82421875
+  },
+  "a8000ba4901a2f2b21b0000ed2d5": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CA6E3",
+    "squawk": "7142"
+  },
+  "a8000ba4901a2f2b21b8007ebed5": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CA6E3",
+    "squawk": "7142"
+  },
+  "a8000ba4901a2f2b21c000acc6ce": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CA6E3",
+    "squawk": "7142"
+  },
+  "a8000ba4c0780000000000933a91": {
+    "bds": "BDS40,BDS45,BDS60",
+    "df": 21,
+    "icao": "4CA6E3",
+    "squawk": "7142"
+  },
+  "a8000d158b09f3306004006d9b60": {
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA554",
+    "indicated_airspeed": 249,
+    "inertial_vertical_rate": 0,
+    "mach": 0.772,
+    "magnetic_heading": 30.9375,
+    "squawk": "1067"
+  },
+  "a8000d15c84e4270a800008b6785": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "4CA554",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008,
+    "squawk": "1067"
+  },
+  "a8000d9fa55a032dbffc000d8123": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "406674",
+    "indicated_airspeed": 257,
+    "inertial_vertical_rate": 0,
+    "mach": 0.728,
+    "magnetic_heading": 104.94140625,
+    "squawk": "5667"
+  },
+  "a8000d9fc0780031940000e59d5d": {
+    "bds": "BDS40,BDS45",
+    "df": 21,
+    "icao": "406674",
+    "squawk": "5667"
+  },
+  "a8000db7202422f9495820314d90": {
+    "bds": "BDS20",
+    "callsign": "IBK9RU__",
+    "df": 21,
+    "icao": "4CA948",
+    "squawk": "5567"
+  },
+  "a8000db780115f396004de249b33": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 458,
+    "icao": "4CA948",
+    "roll": 0.0,
+    "squawk": "5567",
+    "track_rate": 0.0,
+    "true_airspeed": 444,
+    "true_track": 30.76171875
+  },
+  "a8000db780315f396004de80edea": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 458,
+    "icao": "4CA948",
+    "roll": 0.17578125,
+    "squawk": "5567",
+    "track_rate": 0.0,
+    "true_airspeed": 444,
+    "true_track": 30.76171875
+  },
+  "a8000db780515f396004de938288": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 458,
+    "icao": "4CA948",
+    "roll": 0.3515625,
+    "squawk": "5567",
+    "track_rate": 0.0,
+    "true_airspeed": 444,
+    "true_track": 30.76171875
+  },
+  "a8000db78999f730a01400d05f27": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA948",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": 0,
+    "mach": 0.776,
+    "magnetic_heading": 26.89453125,
+    "squawk": "5567"
+  },
+  "a8000db78999f730bff400f948c7": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA948",
+    "indicated_airspeed": 251,
+    "inertial_vertical_rate": 0,
+    "mach": 0.776,
+    "magnetic_heading": 26.89453125,
+    "squawk": "5567"
+  },
+  "a8000db7c84e4270a80000c1abf5": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "4CA948",
+    "selected_altitude_fms": 37008,
+    "selected_altitude_mcp": 37008,
+    "squawk": "5567"
+  },
+  "a8000eadfff3c1236004848a82fc": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 282,
+    "icao": "48506B",
+    "roll": -0.17578125,
+    "squawk": "7326",
+    "track_rate": 0.0,
+    "true_airspeed": 264,
+    "true_track": 84.375
+  },
+  "a8000f07c4600031800000bb54f4": {
+    "baro_pressure_setting": 1024.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "471F66",
+    "selected_altitude_mcp": 35008,
+    "squawk": "3466"
+  },
+  "a8000f07ffb3ef3affecde5e9212": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 470,
+    "icao": "471F66",
+    "roll": -0.52734375,
+    "squawk": "3466",
+    "track_rate": -0.09375,
+    "true_airspeed": 444,
+    "true_track": 88.41796875
+  },
+  "a8000f1de70a07313fefffc567f7": {
+    "baro_vertical_rate": -96,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4BAA84",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": -32,
+    "mach": 0.784,
+    "magnetic_heading": 289.6875,
+    "squawk": "3267"
+  },
+  "a800101eb0d80031940000190c12": {
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "3C66AF",
+    "selected_altitude_mcp": 25008,
+    "squawk": "0613"
+  },
+  "a800101ee1a9f5273ea7d2c4ec0c": {
+    "baro_vertical_rate": -1408,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C66AF",
+    "indicated_airspeed": 250,
+    "inertial_vertical_rate": -1472,
+    "mach": 0.624,
+    "magnetic_heading": 274.5703125,
+    "squawk": "0613"
+  },
+  "a800101efffc3d2d6004ba87851b": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 362,
+    "icao": "3C66AF",
+    "roll": -0.17578125,
+    "squawk": "0613",
+    "track_rate": 0.0,
+    "true_airspeed": 372,
+    "true_track": 275.2734375
+  },
+  "a8001030aa8a6925a23445207d6e": {
+    "baro_vertical_rate": 2240,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "44CDC3",
+    "indicated_airspeed": 308,
+    "inertial_vertical_rate": 2208,
+    "mach": 0.6,
+    "magnetic_heading": 119.53125,
+    "squawk": "0111"
+  },
+  "a8001190809e0735200cd94fc0fa": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 424,
+    "icao": "400CEB",
+    "roll": 0.703125,
+    "squawk": "4051",
+    "track_rate": 0.03125,
+    "true_airspeed": 434,
+    "true_track": 315.52734375
+  },
+  "a80011ab204994b8d30d6083b0b9": {
+    "bds": "BDS20",
+    "callsign": "RYR8405_",
+    "df": 21,
+    "icao": "4CA244",
+    "squawk": "4754"
+  },
+  "a80011abc4600030a800006c8004": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "4CA244",
+    "selected_altitude_mcp": 35008,
+    "squawk": "4754"
+  },
+  "a80011abffd38138fffcdb6366ff": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 454,
+    "icao": "4CA244",
+    "roll": -0.3515625,
+    "squawk": "4754",
+    "track_rate": -0.03125,
+    "true_airspeed": 438,
+    "true_track": 78.75
+  },
+  "a80011abffd381392004da6e30ba": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 456,
+    "icao": "4CA244",
+    "roll": -0.3515625,
+    "squawk": "4754",
+    "track_rate": 0.0,
+    "true_airspeed": 436,
+    "true_track": 78.75
+  },
+  "a80011abffd381393ffcdb286753": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 456,
+    "icao": "4CA244",
+    "roll": -0.3515625,
+    "squawk": "4754",
+    "track_rate": -0.03125,
+    "true_airspeed": 438,
+    "true_track": 78.75
+  },
+  "a80011af8014fb3a7ffce216ce8f": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "400AFC",
+    "roll": 0.0,
+    "squawk": "4756",
+    "track_rate": -0.03125,
+    "true_airspeed": 452,
+    "true_track": 111.97265625
+  },
+  "a80011afa8ca3530e1142281aef5": {
+    "baro_vertical_rate": 1088,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "400AFC",
+    "indicated_airspeed": 282,
+    "inertial_vertical_rate": 1088,
+    "mach": 0.78,
+    "magnetic_heading": 114.609375,
+    "squawk": "4756"
+  },
+  "a80011afa8ca3730e10c22170f69": {
+    "baro_vertical_rate": 1056,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "400AFC",
+    "indicated_airspeed": 283,
+    "inertial_vertical_rate": 1088,
+    "mach": 0.78,
+    "magnetic_heading": 114.609375,
+    "squawk": "4756"
+  },
+  "a80011afffd4fb3a7ff4e21e8ee9": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "400AFC",
+    "roll": -0.3515625,
+    "squawk": "4756",
+    "track_rate": -0.0625,
+    "true_airspeed": 452,
+    "true_track": 111.97265625
+  },
+  "a80011afffd4fb3a7ffce26ee2e9": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "400AFC",
+    "roll": -0.3515625,
+    "squawk": "4756",
+    "track_rate": -0.03125,
+    "true_airspeed": 452,
+    "true_track": 111.97265625
+  },
+  "a80011bba87a11353fd7fc8a7130": {
+    "baro_vertical_rate": -192,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "406D7B",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": -128,
+    "mach": 0.848,
+    "magnetic_heading": 113.73046875,
+    "squawk": "4755"
+  },
+  "a80011bba87a11353fe7fbab3d1d": {
+    "baro_vertical_rate": -128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "406D7B",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": -160,
+    "mach": 0.848,
+    "magnetic_heading": 113.73046875,
+    "squawk": "4755"
+  },
+  "a80011bbfff4fb3fe004f3f4a6b1": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 510,
+    "icao": "406D7B",
+    "roll": -0.17578125,
+    "squawk": "4755",
+    "track_rate": 0.0,
+    "true_airspeed": 486,
+    "true_track": 111.97265625
+  },
+  "a800121080349f416004f47995ac": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 522,
+    "icao": "3C4AD7",
+    "roll": 0.17578125,
+    "squawk": "2011",
+    "track_rate": 0.0,
+    "true_airspeed": 488,
+    "true_track": 103.88671875
+  },
+  "a8001210a5ea4535200c00be581a": {
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C4AD7",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": 0,
+    "mach": 0.848,
+    "magnetic_heading": 106.5234375,
+    "squawk": "2011"
+  },
+  "a8001220ba980030a80000f50078": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "A16C3A",
+    "selected_altitude_mcp": 30000,
+    "squawk": "2110"
+  },
+  "a8001220ea7a8331a1f43cef13ab": {
+    "baro_vertical_rate": 1984,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "A16C3A",
+    "indicated_airspeed": 321,
+    "inertial_vertical_rate": 1920,
+    "mach": 0.792,
+    "magnetic_heading": 299.35546875,
+    "squawk": "2110"
+  },
+  "a800128980193533e004dd551dd4": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 414,
+    "icao": "4CA6B6",
+    "roll": 0.0,
+    "squawk": "6214",
+    "track_rate": 0.0,
+    "true_airspeed": 442,
+    "true_track": 207.0703125
+  },
+  "a800129fd46a2f233e6fcff8a7a5": {
+    "baro_vertical_rate": -1632,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA54C",
+    "indicated_airspeed": 279,
+    "inertial_vertical_rate": -1568,
+    "mach": 0.56,
+    "magnetic_heading": 237.3046875,
+    "squawk": "6617"
+  },
+  "a800129fd46a2f233e77cf6813a5": {
+    "baro_vertical_rate": -1600,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA54C",
+    "indicated_airspeed": 279,
+    "inertial_vertical_rate": -1568,
+    "mach": 0.56,
+    "magnetic_heading": 237.3046875,
+    "squawk": "6617"
+  },
+  "a800132889a9ed25bef7e1691046": {
+    "baro_vertical_rate": -1088,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA852",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": -992,
+    "mach": 0.6,
+    "magnetic_heading": 27.0703125,
+    "squawk": "2350"
+  },
+  "a800132889a9ed25beffe1197c46": {
+    "baro_vertical_rate": -1056,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA852",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": -992,
+    "mach": 0.6,
+    "magnetic_heading": 27.0703125,
+    "squawk": "2350"
+  },
+  "a800132cfff1fd3b7ffcde666477": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 474,
+    "icao": "4CA4EB",
+    "roll": -0.17578125,
+    "squawk": "2352",
+    "track_rate": -0.03125,
+    "true_airspeed": 444,
+    "true_track": 44.6484375
+  },
+  "a800142a8019a928bff4a9cfd079": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CAB9A",
+    "squawk": "0730"
+  },
+  "a800142a8019a928bffca9bfbc79": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CAB9A",
+    "squawk": "0730"
+  },
+  "a800142acd09ed22be7fd19ec73f": {
+    "baro_vertical_rate": -1568,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CAB9A",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": -1504,
+    "mach": 0.552,
+    "magnetic_heading": 216.5625,
+    "squawk": "0730"
+  },
+  "a800142acd09ed22be87d1b5af00": {
+    "baro_vertical_rate": -1536,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CAB9A",
+    "indicated_airspeed": 246,
+    "inertial_vertical_rate": -1504,
+    "mach": 0.552,
+    "magnetic_heading": 216.5625,
+    "squawk": "0730"
+  },
+  "a8001490fffe093ae014f618917e": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 470,
+    "icao": "71002B",
+    "roll": -0.17578125,
+    "squawk": "4031",
+    "track_rate": 0.0625,
+    "true_airspeed": 492,
+    "true_track": 315.703125
+  },
+  "a80015afa57a1f30e134218a2176": {
+    "baro_vertical_rate": 1216,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40701C",
+    "indicated_airspeed": 271,
+    "inertial_vertical_rate": 1056,
+    "mach": 0.78,
+    "magnetic_heading": 105.29296875,
+    "squawk": "4776"
+  },
+  "a80015afa58a1f30e0fc215d6874": {
+    "baro_vertical_rate": 992,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40701C",
+    "indicated_airspeed": 271,
+    "inertial_vertical_rate": 1056,
+    "mach": 0.78,
+    "magnetic_heading": 105.46875,
+    "squawk": "4776"
+  },
+  "a80015afa58a1f30e14420f8a811": {
+    "baro_vertical_rate": 1280,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40701C",
+    "indicated_airspeed": 271,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.78,
+    "magnetic_heading": 105.46875,
+    "squawk": "4776"
+  },
+  "a80015afa59a1d30e104202ff4f7": {
+    "baro_vertical_rate": 1024,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40701C",
+    "indicated_airspeed": 270,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.78,
+    "magnetic_heading": 105.64453125,
+    "squawk": "4776"
+  },
+  "a80015afa59a1f30e1042029e16b": {
+    "baro_vertical_rate": 1024,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40701C",
+    "indicated_airspeed": 271,
+    "inertial_vertical_rate": 1024,
+    "mach": 0.78,
+    "magnetic_heading": 105.64453125,
+    "squawk": "4776"
+  },
+  "a80015afc4600030aa0000e3df69": {
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "40701C",
+    "selected_altitude_mcp": 35008,
+    "squawk": "4776"
+  },
+  "a80015afffb4993a7ffcdfba2cba": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "40701C",
+    "roll": -0.52734375,
+    "squawk": "4776",
+    "track_rate": -0.03125,
+    "true_airspeed": 446,
+    "true_track": 103.359375
+  },
+  "a8001608eb4a0d25be6fcef4d8cc": {
+    "baro_vertical_rate": -1632,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4A0835",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -1600,
+    "mach": 0.6,
+    "magnetic_heading": 301.640625,
+    "squawk": "2230"
+  },
+  "a8001608eb4a0d25be77ce646ccc": {
+    "baro_vertical_rate": -1600,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4A0835",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -1600,
+    "mach": 0.6,
+    "magnetic_heading": 301.640625,
+    "squawk": "2230"
+  },
+  "a8001608eb4a0d25be7fce1400cc": {
+    "baro_vertical_rate": -1568,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4A0835",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -1600,
+    "mach": 0.6,
+    "magnetic_heading": 301.640625,
+    "squawk": "2230"
+  },
+  "a8001608ff7d612d2004b73f93a9": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 360,
+    "icao": "4A0835",
+    "roll": -0.87890625,
+    "squawk": "2230",
+    "track_rate": 0.0,
+    "true_airspeed": 366,
+    "true_track": 300.9375
+  },
+  "a8001608ff7d612d3ff4b7f65c49": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 360,
+    "icao": "4A0835",
+    "roll": -0.87890625,
+    "squawk": "2230",
+    "track_rate": -0.0625,
+    "true_airspeed": 366,
+    "true_track": 300.9375
+  },
+  "a8001635c87a5d2ca204408b3d72": {
+    "baro_vertical_rate": 2048,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484165",
+    "indicated_airspeed": 302,
+    "inertial_vertical_rate": 2048,
+    "mach": 0.712,
+    "magnetic_heading": 203.73046875,
+    "squawk": "2137"
+  },
+  "a8001635c87a5d2ca20c3ef9a73b": {
+    "baro_vertical_rate": 2080,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484165",
+    "indicated_airspeed": 302,
+    "inertial_vertical_rate": 1984,
+    "mach": 0.712,
+    "magnetic_heading": 203.73046875,
+    "squawk": "2137"
+  },
+  "a8001635c87a5d2ca2343fa8a33b": {
+    "baro_vertical_rate": 2240,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "484165",
+    "indicated_airspeed": 302,
+    "inertial_vertical_rate": 2016,
+    "mach": 0.712,
+    "magnetic_heading": 203.73046875,
+    "squawk": "2137"
+  },
+  "a8001635ff9905347ff4d70b75e0": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 418,
+    "icao": "484165",
+    "roll": -0.703125,
+    "squawk": "2137",
+    "track_rate": -0.0625,
+    "true_airspeed": 430,
+    "true_track": 202.8515625
+  },
+  "a800163a801591357ffcd4dd3dc7": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 426,
+    "icao": "400A04",
+    "roll": 0.0,
+    "squawk": "2731",
+    "track_rate": -0.03125,
+    "true_airspeed": 424,
+    "true_track": 125.15625
+  },
+  "a800163ba3d9f532bfe400ab184b": {
+    "bds": "BDS45,BDS60",
+    "df": 21,
+    "icao": "70C0A6",
+    "squawk": "2735"
+  },
+  "a800163bffd4733d7ffce6606804": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 490,
+    "icao": "70C0A6",
+    "roll": -0.3515625,
+    "squawk": "2735",
+    "track_rate": -0.03125,
+    "true_airspeed": 460,
+    "true_track": 100.01953125
+  },
+  "a800171980149d3b200ce05e1244": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 472,
+    "icao": "471F6D",
+    "roll": 0.0,
+    "squawk": "2275",
+    "track_rate": 0.03125,
+    "true_airspeed": 448,
+    "true_track": 103.7109375
+  },
+  "a8001719a54a1130e014004946e1": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6D",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 104.765625,
+    "squawk": "2275"
+  },
+  "a8001719a54a1130ffe400808901": {
+    "baro_vertical_rate": -128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6D",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 104.765625,
+    "squawk": "2275"
+  },
+  "a8001719c4600030aa0000f6c26a": {
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "471F6D",
+    "selected_altitude_mcp": 35008,
+    "squawk": "2275"
+  },
+  "a800178d10010080f50000d5893c": {
+    "bds": "BDS10",
+    "df": 21,
+    "icao": "484B00",
+    "squawk": "6276"
+  },
+  "a800179c80fb251f202c85785f58": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "484B92",
+    "squawk": "6273"
+  },
+  "a800179c839b1f1f206c85c375f4": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "484B92",
+    "squawk": "6273"
+  },
+  "a80017bdb33a6d30200400b5194e": {
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40087C",
+    "indicated_airspeed": 310,
+    "inertial_vertical_rate": 0,
+    "mach": 0.768,
+    "magnetic_heading": 143.96484375,
+    "squawk": "6377"
+  },
+  "a8001a038013bb3a7ffcdd0cd8c6": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "471F6C",
+    "roll": 0.0,
+    "squawk": "3414",
+    "track_rate": -0.03125,
+    "true_airspeed": 442,
+    "true_track": 83.84765625
+  },
+  "a8001a039e7a0d307fd7ff25cc05": {
+    "baro_vertical_rate": -192,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.772,
+    "magnetic_heading": 85.60546875,
+    "squawk": "3414"
+  },
+  "a8001a039e7a0d30a007ffb2bb13": {
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.776,
+    "magnetic_heading": 85.60546875,
+    "squawk": "3414"
+  },
+  "a8001a039e7a0d30a02ffffc931a": {
+    "baro_vertical_rate": 160,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6C",
+    "indicated_airspeed": 262,
+    "inertial_vertical_rate": -32,
+    "mach": 0.776,
+    "magnetic_heading": 85.60546875,
+    "squawk": "3414"
+  },
+  "a8001a03fff3bb3a7ffcddd08279": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 466,
+    "icao": "471F6C",
+    "roll": -0.17578125,
+    "squawk": "3414",
+    "track_rate": -0.03125,
+    "true_airspeed": 442,
+    "true_track": 83.84765625
+  },
+  "a8001a06a419f12dfe8fe156da44": {
+    "baro_vertical_rate": -1504,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C56E7",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -992,
+    "mach": 0.732,
+    "magnetic_heading": 101.42578125,
+    "squawk": "3412"
+  },
+  "a8001a06a419f12dff37e10cee28": {
+    "baro_vertical_rate": -832,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "3C56E7",
+    "indicated_airspeed": 248,
+    "inertial_vertical_rate": -992,
+    "mach": 0.732,
+    "magnetic_heading": 101.42578125,
+    "squawk": "3412"
+  },
+  "a8001a06b2c80030a40000d3a847": {
+    "bds": "BDS40,BDS45",
+    "df": 21,
+    "icao": "3C56E7",
+    "squawk": "3412"
+  },
+  "a8001a06fff469376004d2f6efe7": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 442,
+    "icao": "3C56E7",
+    "roll": -0.17578125,
+    "squawk": "3412",
+    "track_rate": 0.0,
+    "true_airspeed": 420,
+    "true_track": 99.140625
+  },
+  "a8001b029aaa412721dc38b0e39c": {
+    "baro_vertical_rate": 1888,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "471F6E",
+    "indicated_airspeed": 288,
+    "inertial_vertical_rate": 1792,
+    "mach": 0.624,
+    "magnetic_heading": 74.8828125,
+    "squawk": "3450"
+  },
+  "a8001b12a8e9f930fff40012dcb8": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4070EF",
+    "indicated_airspeed": 252,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 114.9609375,
+    "squawk": "3451"
+  },
+  "a8001b138072773a2004dc4b7f00": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 464,
+    "icao": "4CA5ED",
+    "roll": 0.52734375,
+    "squawk": "3455",
+    "track_rate": 0.0,
+    "true_airspeed": 440,
+    "true_track": 55.37109375
+  },
+  "a8001b1392e9ef2fffbffe61a1d3": {
+    "baro_vertical_rate": -288,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA5ED",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.764,
+    "magnetic_heading": 53.0859375,
+    "squawk": "3455"
+  },
+  "a8001b1392e9ef2fffe7fe8d9dc1": {
+    "baro_vertical_rate": -128,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA5ED",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.764,
+    "magnetic_heading": 53.0859375,
+    "squawk": "3455"
+  },
+  "a8001b13c8480030a80000d7044b": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "4CA5ED",
+    "selected_altitude_mcp": 37008,
+    "squawk": "3455"
+  },
+  "a8001b1d807be532e00cdd1cf6ba": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 406,
+    "icao": "4BAB24",
+    "roll": 0.52734375,
+    "squawk": "3257",
+    "track_rate": 0.03125,
+    "true_airspeed": 442,
+    "true_track": 267.5390625
+  },
+  "a8001b1d809be532e00cdd9e5ea7": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 406,
+    "icao": "4BAB24",
+    "roll": 0.703125,
+    "squawk": "3257",
+    "track_rate": 0.03125,
+    "true_airspeed": 442,
+    "true_track": 267.5390625
+  },
+  "a8001b1de009fb303da7bae3973e": {
+    "baro_vertical_rate": -2432,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4BAB24",
+    "indicated_airspeed": 253,
+    "inertial_vertical_rate": -2240,
+    "mach": 0.768,
+    "magnetic_heading": 270.0,
+    "squawk": "3257"
+  },
+  "a8001b1de009fb303dafb96c132c": {
+    "baro_vertical_rate": -2400,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4BAB24",
+    "indicated_airspeed": 253,
+    "inertial_vertical_rate": -2272,
+    "mach": 0.768,
+    "magnetic_heading": 270.0,
+    "squawk": "3257"
+  },
+  "a8001b35c059ad1522d45e784df2": {
+    "baro_vertical_rate": 2880,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA891",
+    "indicated_airspeed": 214,
+    "inertial_vertical_rate": 3008,
+    "mach": 0.336,
+    "magnetic_heading": 180.87890625,
+    "squawk": "3157"
+  },
+  "a8001b35f058351abe046eee09db": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CA891",
+    "squawk": "3157"
+  },
+  "a8001b35f0981f1a7e1c6e4785cc": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "4CA891",
+    "squawk": "3157"
+  },
+  "a8001c118010e33a2004e5029fc6": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 464,
+    "icao": "4CA618",
+    "roll": 0.0,
+    "squawk": "1035",
+    "track_rate": 0.0,
+    "true_airspeed": 458,
+    "true_track": 19.86328125
+  },
+  "a8001c1185aa0731e00c00689d6d": {
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA618",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 15.8203125,
+    "squawk": "1035"
+  },
+  "a8001c1185aa0731e01400f8296d": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4CA618",
+    "indicated_airspeed": 259,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 15.8203125,
+    "squawk": "1035"
+  },
+  "a8001e22c919fb31fffc00592f94": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "478537",
+    "indicated_airspeed": 253,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 205.48828125,
+    "squawk": "3530"
+  },
+  "a8001e22ffd90b363ffce4a161d5": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 432,
+    "icao": "478537",
+    "roll": -0.3515625,
+    "squawk": "3530",
+    "track_rate": -0.03125,
+    "true_airspeed": 456,
+    "true_track": 203.37890625
+  },
+  "a8001e32b4c000319400002f2361": {
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "42498D",
+    "selected_altitude_mcp": 27008,
+    "squawk": "3531"
+  },
+  "a8001e37cb1a0531e00400d48b1d": {
+    "baro_vertical_rate": 0,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "47945C",
+    "indicated_airspeed": 258,
+    "inertial_vertical_rate": 0,
+    "mach": 0.796,
+    "magnetic_heading": 211.11328125,
+    "squawk": "3537"
+  },
+  "a8001e8d8013c73abffcdf132d0b": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 468,
+    "icao": "40097C",
+    "roll": 0.0,
+    "squawk": "7236",
+    "track_rate": -0.03125,
+    "true_airspeed": 446,
+    "true_track": 84.90234375
+  },
+  "a8001e8d8033c73aa004df0ef832": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 468,
+    "icao": "40097C",
+    "roll": 0.17578125,
+    "squawk": "7236",
+    "track_rate": 0.0,
+    "true_airspeed": 446,
+    "true_track": 84.90234375
+  },
+  "a8001e8d9eda1130e00c0049738e": {
+    "baro_vertical_rate": 32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40097C",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 86.66015625,
+    "squawk": "7236"
+  },
+  "a8001e8d9eda1130e01400d9c78e": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40097C",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 0,
+    "mach": 0.78,
+    "magnetic_heading": 86.66015625,
+    "squawk": "7236"
+  },
+  "a8001e8d9eda1130e01401263387": {
+    "baro_vertical_rate": 64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40097C",
+    "indicated_airspeed": 264,
+    "inertial_vertical_rate": 32,
+    "mach": 0.78,
+    "magnetic_heading": 86.66015625,
+    "squawk": "7236"
+  },
+  "a8001e8dc46000319400009b6616": {
+    "baro_pressure_setting": 1025.0,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "40097C",
+    "selected_altitude_mcp": 35008,
+    "squawk": "7236"
+  },
+  "a8001ebcaee57730a80106de1344": {
+    "baro_pressure_setting": 1013.2,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "48548E",
+    "selected_altitude_fms": 24000,
+    "selected_altitude_mcp": 24000,
+    "squawk": "7333"
+  },
+  "a8001ebcda2a212122cc5b8fb2b0": {
+    "baro_vertical_rate": 2848,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "indicated_airspeed": 272,
+    "inertial_vertical_rate": 2912,
+    "mach": 0.528,
+    "magnetic_heading": 253.4765625,
+    "squawk": "7333"
+  },
+  "a8001ebcda2a212122d45ae0f2b9": {
+    "baro_vertical_rate": 2880,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "indicated_airspeed": 272,
+    "inertial_vertical_rate": 2880,
+    "mach": 0.528,
+    "magnetic_heading": 253.4765625,
+    "squawk": "7333"
+  },
+  "a8001ebcda3a212122cc5add87d1": {
+    "baro_vertical_rate": 2848,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "indicated_airspeed": 272,
+    "inertial_vertical_rate": 2880,
+    "mach": 0.528,
+    "magnetic_heading": 253.65234375,
+    "squawk": "7333"
+  },
+  "a8001ebcfe3b2b287fe4a7f48ff8": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "squawk": "7333"
+  },
+  "a8001ebcfe5b2b287fdca7491093": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "squawk": "7333"
+  },
+  "a8001ebcfe7b2d287fe4a749a8e7": {
+    "bds": "BDS50,BDS60",
+    "df": 21,
+    "icao": "48548E",
+    "squawk": "7333"
+  },
+  "a8001f24200d0070db48201d6449": {
+    "bds": "BDS20",
+    "callsign": "CPA064__",
+    "df": 21,
+    "icao": "780232",
+    "squawk": "3172"
+  },
+  "a8001f24bc95e4b0aa000024d2aa": {
+    "baro_pressure_setting": 1013.3,
+    "bds": "BDS40",
+    "df": 21,
+    "icao": "780232",
+    "selected_altitude_fms": 31008,
+    "selected_altitude_mcp": 31008,
+    "squawk": "3172"
+  },
+  "a8001f8a9aba49343dbfb9e37bdf": {
+    "baro_vertical_rate": -2336,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4851B1",
+    "indicated_airspeed": 292,
+    "inertial_vertical_rate": -2272,
+    "mach": 0.8320000000000001,
+    "magnetic_heading": 75.05859375,
+    "squawk": "7670"
+  },
+  "a8001f8da23a4f277fffff71462e": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "4010DD",
+    "indicated_airspeed": 295,
+    "inertial_vertical_rate": -32,
+    "mach": 0.628,
+    "magnetic_heading": 96.15234375,
+    "squawk": "7276"
+  },
+  "a8001f8dffd437313ffcc3a74202": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 392,
+    "icao": "4010DD",
+    "roll": -0.3515625,
+    "squawk": "7276",
+    "track_rate": -0.03125,
+    "true_airspeed": 390,
+    "true_track": 94.74609375
+  },
+  "a8001f8f80537734fffcca8796ac": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 422,
+    "icao": "40688A",
+    "roll": 0.3515625,
+    "squawk": "7676",
+    "track_rate": -0.03125,
+    "true_airspeed": 404,
+    "true_track": 77.87109375
+  },
+  "a8001f8f9c7a4529fffc001d1365": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40688A",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": 0,
+    "mach": 0.668,
+    "magnetic_heading": 79.98046875,
+    "squawk": "7676"
+  },
+  "a8001f8f9c8a4529fffc00327a10": {
+    "baro_vertical_rate": -32,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "40688A",
+    "indicated_airspeed": 290,
+    "inertial_vertical_rate": 0,
+    "mach": 0.668,
+    "magnetic_heading": 80.15625,
+    "squawk": "7676"
+  },
+  "a8280219200d43b8c928201464aa": {
+    "bds": "BDS20",
+    "callsign": "CTN82R__",
+    "df": 21,
+    "icao": "501D1D",
+    "squawk": "2205"
+  },
+  "a8280219e929ef2efff7febdc2c1": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "501D1D",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.748,
+    "magnetic_heading": 295.6640625,
+    "squawk": "2205"
+  },
+  "a8280219e949ef2efff7feaeada3": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "501D1D",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.748,
+    "magnetic_heading": 296.015625,
+    "squawk": "2205"
+  },
+  "a8280219e959ef2efff7fe036ccb": {
+    "baro_vertical_rate": -64,
+    "bds": "BDS60",
+    "df": 21,
+    "icao": "501D1D",
+    "indicated_airspeed": 247,
+    "inertial_vertical_rate": -64,
+    "mach": 0.748,
+    "magnetic_heading": 296.19140625,
+    "squawk": "2205"
+  },
+  "a8280219fc7d3f32bfbcd7b4e1d8": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 404,
+    "icao": "501D1D",
+    "roll": -5.09765625,
+    "squawk": "2205",
+    "track_rate": -0.28125,
+    "true_airspeed": 430,
+    "true_track": 297.94921875
+  },
+  "a8280219fc9d4332bfc4d89caa7e": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 404,
+    "icao": "501D1D",
+    "roll": -4.921875,
+    "squawk": "2205",
+    "track_rate": -0.25,
+    "true_airspeed": 432,
+    "true_track": 298.30078125
+  },
+  "a828162f80d49d35a004d1dac008": {
+    "bds": "BDS50",
+    "df": 21,
+    "groundspeed": 428,
+    "icao": "471F70",
+    "roll": 1.0546875,
+    "squawk": "2736",
+    "track_rate": 0.0,
+    "true_airspeed": 418,
+    "true_track": 103.7109375
+  }
+}
