@@ -8,6 +8,8 @@ Layout:
     [DF: 5][FS: 3][DR: 5][UM: 6][AC/ID: 13][AP: 24]
 """
 
+from typing import Any
+
 from pymodes._altcode import altcode_to_altitude
 from pymodes._idcode import idcode_to_squawk
 from pymodes.decoder import register
@@ -30,7 +32,8 @@ _FLIGHT_STATUS_TEXT = {
 class Surv(DecoderBase):
     """Decoder for DF4 surveillance altitude replies and DF5 identity replies."""
 
-    def decode(self) -> Decoded:
+    def decode(self, *, known: dict[str, Any] | None = None) -> Decoded:
+        _ = known  # accepted for signature uniformity; Surv never needs it
         result: Decoded = Decoded()
 
         # Flight status: bits 5-7

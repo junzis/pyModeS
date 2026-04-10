@@ -64,7 +64,7 @@ _COMMB_DISPATCH: dict[str, Callable[[int], dict[str, Any]]] = {
 class CommB(DecoderBase):
     """Decoder for DF20 Comm-B altitude replies and DF21 Comm-B identity replies."""
 
-    def decode(self) -> Decoded:
+    def decode(self, *, known: dict[str, Any] | None = None) -> Decoded:
         result: Decoded = Decoded()
 
         # Header field: altitude for DF20, squawk for DF21.
@@ -78,7 +78,9 @@ class CommB(DecoderBase):
 
         # BDS inference. The Plan 3 walking-skeleton scan is replaced
         # here with a single call to the two-phase infer() dispatch.
-        candidates = _infer.infer(self._payload, include_meteo=False)
+        # `known` is threaded through for Phase 3 disambiguation of
+        # BDS 5,0 / 6,0 when the caller supplies aircraft state.
+        candidates = _infer.infer(self._payload, include_meteo=False, known=known)
         if not candidates:
             return result
 

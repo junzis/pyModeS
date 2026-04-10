@@ -8,6 +8,8 @@ Message layout (56 bits):
     [DF: 5][CA: 3][AA: 24][PI: 24]
 """
 
+from typing import Any
+
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
 from pymodes.message import Decoded
@@ -29,7 +31,8 @@ _CAPABILITY_TEXT = {
 class AllCall(DecoderBase):
     """Decoder for DF11 all-call reply messages."""
 
-    def decode(self) -> Decoded:
+    def decode(self, *, known: dict[str, Any] | None = None) -> Decoded:
+        _ = known  # accepted for signature uniformity; AllCall never needs it
         ca = self._extract(5, 3)
         return Decoded(
             {

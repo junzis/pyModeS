@@ -69,3 +69,19 @@ class TestPipeDecoderSkeleton:
         result = pipe.decode("8D406B902015A678D4D220AA4BDA")
         for key in _FULL_SCHEMA:
             assert key in result
+
+
+class TestKnownKwargPlumbing:
+    def test_message_decode_accepts_known(self):
+        from pymodes import Message
+
+        msg = Message("8D406B902015A678D4D220AA4BDA")
+        # No-op for non-CommB messages, but the kwarg must be accepted
+        result = msg.decode(known={"groundspeed": 420})
+        assert result["df"] == 17
+
+    def test_core_decode_accepts_known(self):
+        from pymodes import decode
+
+        result = decode("8D406B902015A678D4D220AA4BDA", known={"groundspeed": 420})
+        assert result["df"] == 17

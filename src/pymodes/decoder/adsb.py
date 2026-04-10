@@ -55,7 +55,8 @@ _ADSB_DISPATCH: dict[int, tuple[str, Callable[..., dict[str, Any]]]] = {
 class ADSB(DecoderBase):
     """Decoder for DF17 (extended squitter) and DF18 (non-transponder ADS-B)."""
 
-    def decode(self) -> Decoded:
+    def decode(self, *, known: dict[str, Any] | None = None) -> Decoded:
+        _ = known  # accepted for signature uniformity; ADS-B never needs it
         # TC is at payload bits 0-4 (top 5 bits of the 56-bit payload).
         tc = (self._payload >> 51) & 0x1F
         result: Decoded = Decoded({"typecode": tc})

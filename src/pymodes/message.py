@@ -216,6 +216,7 @@ class Message:
         *,
         reference: tuple[float, float] | None = None,
         surface_ref: str | tuple[float, float] | None = None,
+        known: dict[str, Any] | None = None,
         full_dict: bool = False,
     ) -> Decoded:
         """Decode every field of this message.
@@ -239,6 +240,11 @@ class Message:
                 Must be within 45 NM of the true position. If omitted,
                 only raw CPR fields are returned. Unknown airport
                 codes raise ValueError.
+            known: Optional aircraft state dict (e.g. {"groundspeed":
+                420, "track": 90, "altitude": 35000}) used by the
+                Comm-B BDS inference to disambiguate BDS 5,0 vs 6,0
+                when both heuristic validators pass. Ignored for
+                non-Comm-B downlink formats.
             full_dict: When True, the result dict is augmented with
                 every key from `_FULL_SCHEMA`, defaulting missing
                 keys to `None`. Useful for pandas/parquet workflows
@@ -263,7 +269,7 @@ class Message:
             decoder = decoder_cls(
                 self._n, df=self.df, icao=self.icao, length=self._length
             )
-            result.update(decoder.decode())
+            result.update(decoder.decode(known=known))
 
         self._resolve_position(result, reference=reference, surface_ref=surface_ref)
 

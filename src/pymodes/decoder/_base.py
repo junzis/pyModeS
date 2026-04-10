@@ -7,6 +7,8 @@ unsigned bit fields from the full message, or use `self._payload`
 directly for payload-level positions.
 """
 
+from typing import Any
+
 from pymodes._bits import extract_unsigned
 from pymodes.message import Decoded
 
@@ -48,11 +50,19 @@ class DecoderBase:
         """
         return extract_unsigned(self._n, start, width, self._length)
 
-    def decode(self) -> Decoded:  # pragma: no cover - abstract
+    def decode(
+        self, *, known: dict[str, Any] | None = None
+    ) -> Decoded:  # pragma: no cover - abstract
         """Return a Decoded dict with DF-specific fields.
 
         Subclasses override this. The returned dict should contain
         only fields specific to this decoder — df, icao, and crc_valid
         are added by Message.decode() in the caller.
+
+        Args:
+            known: Optional aircraft state for Comm-B BDS 5,0/6,0
+                disambiguation. Only CommB consumes this; other
+                decoder classes accept and ignore it for signature
+                uniformity.
         """
         raise NotImplementedError

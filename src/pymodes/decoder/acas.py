@@ -24,6 +24,8 @@ DF16 only:  bits 32-87: MV (56) — ACAS RA message
             bits 88-111: AP (24)
 """
 
+from typing import Any
+
 from pymodes._altcode import altcode_to_altitude
 from pymodes.decoder import register
 from pymodes.decoder._base import DecoderBase
@@ -34,7 +36,8 @@ from pymodes.message import Decoded
 class ACAS(DecoderBase):
     """Decoder for DF0 and DF16 air-air surveillance messages."""
 
-    def decode(self) -> Decoded:
+    def decode(self, *, known: dict[str, Any] | None = None) -> Decoded:
+        _ = known  # accepted for signature uniformity; ACAS never needs it
         result: Decoded = Decoded()
 
         # Shared header fields (positions are identical for DF0 and DF16)
