@@ -24,8 +24,10 @@ even/odd CPR pairs without any reference and still accepts
 """
 
 from importlib.metadata import version as _version
+from typing import Any
 
 from pyModeS._pipe import PipeDecoder
+from pyModeS._v2_removed import v2_removed_error
 from pyModeS.core import decode
 from pyModeS.errors import (
     DecodeError,
@@ -48,3 +50,30 @@ __all__ = [
     "__version__",
     "decode",
 ]
+
+# Names that used to live directly under pyModeS in the v2 API.
+# Any attribute access like ``pyModeS.adsb`` or the equivalent
+# ``from pyModeS import adsb`` (after PEP 562) is caught below
+# and turned into a :class:`V2APIRemovedError` that points at
+# :func:`pyModeS.decode` and the migration guide. The stub files
+# at ``pyModeS/adsb.py`` etc. handle the ``from pyModeS.adsb
+# import X`` pattern; this hook handles the bare attribute path.
+_V2_REMOVED_NAMES: frozenset[str] = frozenset(
+    {
+        "adsb",
+        "commb",
+        "ehs",
+        "els",
+        "common",
+        "util",
+        "bds",
+        "streamer",
+        "extra",
+    }
+)
+
+
+def __getattr__(name: str) -> Any:
+    if name in _V2_REMOVED_NAMES:
+        raise v2_removed_error(f"pyModeS.{name}")
+    raise AttributeError(f"module 'pyModeS' has no attribute {name!r}")

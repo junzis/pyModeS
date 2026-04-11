@@ -7,9 +7,10 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 
-# C extensions
+# Compiled extensions (none shipped in v3 — pure Python — but
+# left in place to keep `.so` build artifacts out of accidental
+# commits if a user experiments locally).
 *.so
-src/pyModeS/
 
 # Distribution / packaging
 .Python
