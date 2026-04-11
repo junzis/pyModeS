@@ -34,15 +34,57 @@ the migration guide.
   commit in this release)
 - `modes` command-line tool with two subcommands:
   - `modes decode MESSAGE` for one-shot decoding (pretty or compact JSON)
+  - `modes decode HEX1,HEX2,HEX3` inline-batch mode with shared
+    `PipeDecoder` state so CPR pairs resolve across the batch
   - `modes decode --file PATH` for batch decoding a file of hex messages
   - `modes live --network HOST:PORT` for streaming TCP decode from a
     Mode-S Beast binary feed
-  - `modes live --dump-to FILE` to tee JSON lines to a file
-  - `modes live --tui` for an interactive rich-based aircraft table
-    (requires `pyModeS[tui]` extra)
+  - `modes live --dump-to FILE` to tee JSON lines to a file. Every
+    record carries both `raw_msg` (source hex) and `timestamp` so
+    captures are self-contained for offline re-decode
+  - `modes live --tui` for an interactive textual-based aircraft
+    table: keyboard navigation (j/k/g/G), live incremental search
+    (/) that filters as you type, sort cycling (s/r), responsive
+    column set (7/10/18 cols by terminal width). Requires
+    `pyModeS[tui]` extra
   - Graceful SIGINT/SIGTERM shutdown with final stats line
-- `pyModeS[tui]` optional dependency: pulls in `rich>=13.0` for the
-  `modes live --tui` interactive display
+- `pyModeS[tui]` optional dependency: pulls in `textual>=0.50` for
+  the `modes live --tui` interactive display
+- `pyModeS.util` public helpers for low-level message inspection
+  without going through `decode()`: `hex2bin`, `bin2int`, `hex2int`,
+  `bin2hex`, `crc`, `df`, `icao`, `typecode`, `altcode`, `idcode`,
+  `cprNL`. Thin wrappers over `_bits.py`, `_altcode.py`, `_idcode.py`
+  and `position/_cpr.py` with no logic duplication.
+- `scripts/smoke_test_alpha.sh` installs the freshly built wheel
+  into a clean Python 3.12 venv and verifies the public API end to
+  end (single-message decode, PipeDecoder baseline, batch CPR pair
+  resolution, error-dict on malformed input).
+
+### Fixed
+
+- BDS 5,0 / 6,0 Phase 3 disambiguation now works cold-start
+  (before any ADS-B frames have been cached). Root cause: the
+  BDS 5,0 validator accepted roll angles up to ±50°, the full
+  wire-format range, which let garbage payloads pass as track-
+  and-turn reports with physically implausible banks (observed
+  -44.5° on the TU Delft live feed). Tightened the gate to ±35°
+  to match the commercial-airliner envelope (30° bank ≈ 2 G in
+  a level turn).
+- BDS 6,0 scorer now has reference fields to compare against in
+  streaming mode. PipeDecoder derives approximate IAS and mach
+  from cached groundspeed + altitude using a minimal ISA
+  calculator in `pyModeS._aero` (zero-wind assumption, low-Mach
+  approximation). Previously the scorer's `ias`/`mach` slots
+  were always empty because ADS-B airborne-velocity BDS 0,9
+  subtypes 1/2 only emit groundspeed; the scorer then returned
+  +inf for every BDS 6,0 candidate and BDS 5,0 won every tie by
+  default.
+- `modes live --tui` no longer freezes after the "detected beast
+  format, resyncing" line. Two root causes: the sink context
+  manager wrap was lost during a prior refactor, and the
+  on-detect stderr print corrupted rich's alt-screen buffer.
+  Restored the context manager and silenced stderr writes when
+  `--tui` is active.
 
 ### Changed
 
@@ -57,16 +99,44 @@ the migration guide.
   `Message.__init__` as plain attributes instead of lazy
   `cached_property` descriptors (measurably faster on streaming
   decode loads, and the decode path always needs all four)
+- `modes live` stream timestamps are now derived from the Beast
+  48-bit MLAT counter, with tick rate auto-calibrated per
+  connection from the delta between consecutive `recv()` bursts.
+  Works on both dump1090 12 MHz counters and radarcape / GNS
+  AirSquitter 1 GHz nanosecond counters without configuration.
+  Gives sub-microsecond per-frame precision across a TCP burst,
+  replacing the previous coarse one-`time.time()`-per-batch
+  behaviour.
+- `modes live --tui` rewritten from `rich.live.Live` to a full
+  `textual.App` with a `DataTable` widget, interactive row
+  cursor, and per-tick diff-update of cells (only cells whose
+  values actually change are redrawn). The result: no more
+  whole-table flashing on each message, cursor and scroll
+  position survive refreshes, and the default sort is now by
+  ICAO address (stable) instead of last-seen (reshuffles on
+  every message). Dropped the `rich>=13.0` dependency in favour
+  of `textual>=0.50`.
 
 ### Removed
 
 - Cython extension (`c_common`) and its build dependency
-- Legacy function-per-field API (`pms.adsb.callsign`, etc.)
-- numpy hard dependency
-- `pyModeS.streamer` subpackage (deferred to a future CLI / streamer
-  spec)
-- `modeslive` CLI entry point (replaced by `modes live`; see
-  `docs/migration.md` for the rename notes)
+- Legacy function-per-field API (`pms.adsb.callsign`, `pms.commb.bds`,
+  `pms.common.hex2bin`, etc.). The former submodule paths
+  (`pyModeS.adsb`, `pyModeS.commb`, `pyModeS.ehs`, `pyModeS.els`,
+  `pyModeS.common`, `pyModeS.bds`, `pyModeS.streamer`,
+  `pyModeS.extra`) are intercepted by a meta-path finder in
+  `pyModeS._v2_removed` which raises `V2APIRemovedError` (an
+  `ImportError` subclass) with a migration hint pointing at
+  `pyModeS.decode()` and — for `pyModeS.common` specifically —
+  at the restored helpers in `pyModeS.util`. Both `from pyModeS.X
+  import Y` and bare attribute access (`pms.X`) hit the same
+  error message.
+- numpy hard dependency.
+- `modeslive` CLI entry point: replaced by `modes live` / `modes
+  decode`. The v3 package still registers `modeslive` as a console
+  script — running it prints a migration hint to stderr and exits
+  with code 2, rather than vanishing into a bare `command not
+  found` after a `pip install -U pyModeS`.
 
 ### Performance
 

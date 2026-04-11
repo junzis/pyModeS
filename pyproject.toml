@@ -118,6 +118,7 @@ dev-mode-dirs = ["src"]
 include = [
     "src/pyModeS",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "pyproject.toml",
 ]

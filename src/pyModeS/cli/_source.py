@@ -366,10 +366,7 @@ class NetworkSource:
             # burst's anchor and the previous one. Skip the very
             # first burst (no prior) and any burst whose wall-clock
             # delta is too small to give a stable estimate.
-            if (
-                self._prev_burst_wall is not None
-                and self._prev_burst_mlat is not None
-            ):
+            if self._prev_burst_wall is not None and self._prev_burst_mlat is not None:
                 dw = wall_now - self._prev_burst_wall
                 dm = burst_anchor_mlat - self._prev_burst_mlat
                 if dw >= _CALIB_MIN_DELTA_S and dm > 0:
