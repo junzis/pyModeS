@@ -1,7 +1,7 @@
 """Tests for the Comm-B BDS inference dispatch."""
 
-from pymodes import decode
-from pymodes.decoder.bds._infer import infer
+from pyModeS import decode
+from pyModeS.decoder.bds._infer import infer
 
 
 def payload_of(frame_hex: str) -> int:
@@ -92,7 +92,7 @@ class TestInferPhase3Disambiguation:
     AMBIGUOUS_PAYLOAD = 0xFFBAA11E200472
 
     def test_ambiguous_no_known_preserves_phase2_order(self):
-        from pymodes.decoder.bds._infer import infer
+        from pyModeS.decoder.bds._infer import infer
 
         result = infer(self.AMBIGUOUS_PAYLOAD)
         # Phase 2 dispatch order is _HEURISTIC = [4,0, 5,0, 6,0]
@@ -101,7 +101,7 @@ class TestInferPhase3Disambiguation:
         assert result == ["5,0", "6,0"]
 
     def test_ambiguous_known_groundspeed_picks_bds50(self):
-        from pymodes.decoder.bds._infer import infer
+        from pyModeS.decoder.bds._infer import infer
 
         # known carries a groundspeed near the BDS 5,0 decoded value (240).
         # Score for 5,0: |240 - 240| / 50 = 0.0 (other fields not in known)
@@ -111,7 +111,7 @@ class TestInferPhase3Disambiguation:
         assert result[0] == "5,0"
 
     def test_ambiguous_known_heading_picks_bds60(self):
-        from pymodes.decoder.bds._infer import infer
+        from pyModeS.decoder.bds._infer import infer
 
         # known carries a heading near the BDS 6,0 decoded value (359).
         # Score for 6,0: |359 - 359.12| / 30 ~= 0.004 (close to 0)
@@ -121,7 +121,7 @@ class TestInferPhase3Disambiguation:
         assert result[0] == "6,0"
 
     def test_ambiguous_known_neither_field_unchanged(self):
-        from pymodes.decoder.bds._infer import infer
+        from pyModeS.decoder.bds._infer import infer
 
         # known carries an irrelevant field; both candidates score inf
         # and Phase 2 order is preserved.

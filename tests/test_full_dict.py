@@ -1,7 +1,7 @@
 """Tests for full_dict=True mode."""
 
-from pymodes import decode
-from pymodes._schema import _FULL_SCHEMA
+from pyModeS import decode
+from pyModeS._schema import _FULL_SCHEMA
 
 
 class TestFullDict:

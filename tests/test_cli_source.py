@@ -1,22 +1,22 @@
-"""Tests for the pymodes.cli._source NetworkSource and beast frame parser."""
+"""Tests for the pyModeS.cli._source NetworkSource and beast frame parser."""
 
 from __future__ import annotations
 
 
 class TestDetectFormat:
     def test_beast_marker_at_start(self):
-        from pymodes.cli._source import _detect_format
+        from pyModeS.cli._source import _detect_format
 
         assert _detect_format(b"\x1a3\x00\x00\x00") is True
 
     def test_resync_past_garbage(self):
-        from pymodes.cli._source import _detect_format
+        from pyModeS.cli._source import _detect_format
 
         garbage = b"\x00\x01\x02\x03\x04\x05"
         assert _detect_format(garbage + b"\x1a3rest") is True
 
     def test_undetected_returns_false(self):
-        from pymodes.cli._source import _detect_format
+        from pyModeS.cli._source import _detect_format
 
         assert _detect_format(b"only random bytes no marker") is False
 
@@ -38,7 +38,7 @@ class TestBeastParser:
         return b"\x1a\x32" + b"\x00" * 7 + payload
 
     def test_single_long_frame(self):
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         frame = self._make_long_frame("8D406B902015A678D4D220AA4BDA")
         # Need a second esc-marker to terminate the current frame
@@ -48,7 +48,7 @@ class TestBeastParser:
         assert frames[0].upper() == "8D406B902015A678D4D220AA4BDA"
 
     def test_multiple_long_frames(self):
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         f1 = self._make_long_frame("8D406B902015A678D4D220AA4BDA")
         f2 = self._make_long_frame("8D485020994409940838175B284F")
@@ -59,7 +59,7 @@ class TestBeastParser:
         assert frames[1].upper() == "8D485020994409940838175B284F"
 
     def test_short_frame(self):
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         frame = self._make_short_frame("20000000000000")
         buf = frame + b"\x1a"
@@ -70,7 +70,7 @@ class TestBeastParser:
     def test_escaped_0x1a_in_payload(self):
         """Beast protocol: a literal 0x1a byte in the payload is encoded
         as two consecutive 0x1a bytes. The parser must un-escape."""
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         # Long frame with 0x1a in the middle of the payload
         payload = bytes.fromhex("8D406B902015A6781AD220AA4BDA")
@@ -85,7 +85,7 @@ class TestBeastParser:
         assert frames[0].upper() == "8D406B902015A6781AD220AA4BDA"
 
     def test_partial_frame_preserved_in_remainder(self):
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         f1 = self._make_long_frame("8D406B902015A678D4D220AA4BDA")
         # Incomplete second frame (just the header + a few payload bytes)
@@ -98,7 +98,7 @@ class TestBeastParser:
         assert b"\x1a\x33" in remainder
 
     def test_skips_mode_ac_frames(self):
-        from pymodes.cli._source import _parse_beast_buffer
+        from pyModeS.cli._source import _parse_beast_buffer
 
         # Mode AC is type 0x31, which the parser should drop.
         # Mode AC payload length is 2 bytes; total frame is 11 bytes

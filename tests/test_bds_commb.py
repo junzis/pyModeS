@@ -2,8 +2,8 @@
 
 import pytest
 
-from pymodes import decode
-from pymodes.decoder.bds import (
+from pyModeS import decode
+from pyModeS.decoder.bds import (
     bds10,
     bds17,
     bds20,
@@ -553,7 +553,7 @@ class TestCommBBds44RequiresIncludeMeteo:
         # BDS44 is meteorological and only appears when infer() is
         # called with include_meteo=True. CommB.decode() does not
         # enable this flag in Plan 3, so the register is not routed
-        # through pymodes.decode() directly.
+        # through pyModeS.decode() directly.
         result = decode("A0001692185BD5CF400000DFC696")
         assert result["df"] == 20
         assert result.get("bds") != "4,4"

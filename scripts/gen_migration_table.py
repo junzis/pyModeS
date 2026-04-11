@@ -1,6 +1,6 @@
 """Generate the renamed-keys markdown table for docs/migration.md.
 
-Reads ``pymodes._v2_compat.V2_DEPRECATED_KEYS`` and writes a markdown
+Reads ``pyModeS._v2_compat.V2_DEPRECATED_KEYS`` and writes a markdown
 table between marker comments in ``docs/migration.md``::
 
     <!-- RENAMED KEYS START -->
@@ -22,7 +22,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from pymodes._v2_compat import V2_DEPRECATED_KEYS
+from pyModeS._v2_compat import V2_DEPRECATED_KEYS
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 MIGRATION_PATH = REPO_ROOT / "docs" / "migration.md"
@@ -40,7 +40,7 @@ def _build_table() -> str:
             "`decode()`). See the equivalence table above._"
         )
     lines = [
-        "| pyModeS 2.x key | pymodes 3 key | Notes |",
+        "| pyModeS 2.x key | pyModeS 3 key | Notes |",
         "|---|---|---|",
     ]
     for v2_key in sorted(V2_DEPRECATED_KEYS.keys()):

@@ -1,4 +1,4 @@
-"""Build src/pymodes/data/airports.py from OurAirports CSV.
+"""Build src/pyModeS/data/airports.py from OurAirports CSV.
 
 Run periodically before a release to refresh the curated airport
 database. Not run at install time — the generated file is committed
@@ -6,7 +6,7 @@ to the repo so users don't pay download cost on install.
 
 Usage:
     uv run scripts/build_airport_db.py
-    uv run ruff format src/pymodes/data/airports.py
+    uv run ruff format src/pyModeS/data/airports.py
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 
 SOURCE = "https://davidmegginson.github.io/ourairports-data/airports.csv"
-OUTPUT = Path(__file__).parent.parent / "src" / "pymodes" / "data" / "airports.py"
+OUTPUT = Path(__file__).parent.parent / "src" / "pyModeS" / "data" / "airports.py"
 ALLOWED_TYPES = ("large_airport", "medium_airport")
 
 HEADER = '''"""Curated airport database.

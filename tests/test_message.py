@@ -1,11 +1,11 @@
-"""Tests for pymodes.message — Decoded and Message base class."""
+"""Tests for pyModeS.message — Decoded and Message base class."""
 
 import json
 
 import pytest
 
-from pymodes.errors import InvalidHexError, InvalidLengthError
-from pymodes.message import Decoded, Message
+from pyModeS.errors import InvalidHexError, InvalidLengthError
+from pyModeS.message import Decoded, Message
 
 
 class TestDecoded:
@@ -67,7 +67,7 @@ class TestDecoded:
         assert result.heading is None
 
     def test_attribute_names_do_not_collide_with_dict_methods(self):
-        # Sanity: pymodes field names like 'df', 'icao', 'typecode' don't
+        # Sanity: pyModeS field names like 'df', 'icao', 'typecode' don't
         # collide with dict methods like 'keys', 'items', 'update'.
         # This test locks in that we won't accidentally name a field
         # something that shadows a dict method.
@@ -151,7 +151,7 @@ class TestMessageDfIcaoCrc:
         # DF4 encodes ICAO in the CRC remainder.
         # Build a synthetic DF4 message where parity = crc_of_header XOR icao
         # so the computed remainder equals icao.
-        from pymodes._bits import crc_remainder
+        from pyModeS._bits import crc_remainder
 
         icao = 0x400940
         # 56-bit message: [header:32][parity:24]

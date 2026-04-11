@@ -1,6 +1,6 @@
-site_name: pymodes
+site_name: pyModeS
 site_description: Fast, dictionary-first Python decoder for Mode-S and ADS-B
-site_url: https://pymodes.readthedocs.io
+site_url: https://pyModeS.readthedocs.io
 repo_url: https://github.com/junzis/pyModeS
 repo_name: junzis/pyModeS
 copyright: Copyright &copy; Junzi Sun and pyModeS contributors

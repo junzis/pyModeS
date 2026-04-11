@@ -12,7 +12,7 @@ Four single-core decode paths are measured, no parallel rs1090
 1. rs1090 Rust bindings, single-core: ``rs1090.decode(msgs, batch=n)``
 2. pyModeS 2.21.1 via ``[bench_pms_v2.decode(m, c_common) for m in msgs]``
 3. pyModeS 2.21.1 via ``[bench_pms_v2.decode(m, py_common) for m in msgs]``
-4. pymodes v3 via ``[pymodes.decode(m) for m in msgs]``
+4. pyModeS v3 via ``[pyModeS.decode(m) for m in msgs]``
 
 Methodology matches jet1090's ``%%timeit`` usage: 7 runs of 1 loop
 each, report mean ± stdev. That mirrors jet1090's published chart
@@ -47,20 +47,20 @@ import bench_pms_v2  # noqa: E402
 import pandas as pd  # noqa: E402  # type: ignore[import-not-found]
 import rs1090  # noqa: E402  # type: ignore[import-not-found]
 
+# v3
+import pyModeS  # noqa: E402
+
 # v2
 from pyModeS import c_common, py_common  # noqa: E402  # type: ignore[import-not-found]
 
-# v3
-import pymodes  # noqa: E402
 
+def _pyModeS_v3_version() -> str:
+    """Resolve pyModeS v3 version from pyproject.toml.
 
-def _pymodes_v3_version() -> str:
-    """Resolve pymodes v3 version from pyproject.toml.
-
-    Needed because ``pymodes.__version__`` goes through
-    ``importlib.metadata.version("pymodes")``, which in the v2-vs-v3
+    Needed because ``pyModeS.__version__`` goes through
+    ``importlib.metadata.version("pyModeS")``, which in the v2-vs-v3
     benchmark env collides with the installed ``pyModeS`` 2.21.1
-    distribution (both normalize to ``pymodes``) and returns 2.21.1
+    distribution (both normalize to ``pyModeS``) and returns 2.21.1
     instead of the v3 working-copy version.
     """
     pyproject = REPO_ROOT / "pyproject.toml"
@@ -70,7 +70,7 @@ def _pymodes_v3_version() -> str:
         data = tomllib.loads(pyproject.read_text())
         return str(data["project"]["version"])
     except Exception:
-        return pymodes.__version__
+        return pyModeS.__version__
 
 
 TIMED_ROUNDS = 7  # matches jet1090's %%timeit default (7 runs)
@@ -132,7 +132,7 @@ def main() -> None:
         [bench_pms_v2.decode(m, py_common) for m in msgs]
 
     def run_v3() -> None:
-        [pymodes.decode(m) for m in msgs]
+        [pyModeS.decode(m) for m in msgs]
 
     print("Benchmarking rs1090 single-core (batch=n)...", file=sys.stderr)
     t_rs, s_rs = _time(run_rs1090_single_core, "rs1090")
@@ -140,7 +140,7 @@ def main() -> None:
     t_c, s_c = _time(run_v2_c, "v2 c_common")
     print("Benchmarking pyModeS 2.21.1 (py_common)...", file=sys.stderr)
     t_py, s_py = _time(run_v2_py, "v2 py_common")
-    print("Benchmarking pymodes v3...", file=sys.stderr)
+    print("Benchmarking pyModeS v3...", file=sys.stderr)
     t_v3, s_v3 = _time(run_v3, "v3")
 
     def rate(t: float) -> int:
@@ -149,7 +149,7 @@ def main() -> None:
     def ratio(base: float, other: float) -> float:
         return base / other
 
-    # Baseline for the "vs v3" column: pymodes v3 single-message
+    # Baseline for the "vs v3" column: pyModeS v3 single-message
     lines = [
         f"# Single-core decode benchmark — {n} messages from long_flight.csv",
         "",
@@ -159,9 +159,9 @@ def main() -> None:
         "`batch=n` to force single-core).",
         "",
         f"Corpus: `{corpus_path}`",
-        f"pymodes version: `{_pymodes_v3_version()}`",
+        f"pyModeS version: `{_pyModeS_v3_version()}`",
         "",
-        "| Decoder | Wall time (mean) | Throughput | vs pymodes v3 |",
+        "| Decoder | Wall time (mean) | Throughput | vs pyModeS v3 |",
         "|---|---|---|---|",
         (
             f"| rs1090 (single-core) | {t_rs:.2f}s ± {s_rs:.2f} "
@@ -176,12 +176,12 @@ def main() -> None:
             f"| {rate(t_py):,} msg/s | {ratio(t_v3, t_py):.2f}× |"
         ),
         (
-            f"| **pymodes v3 (pure Python)** | **{t_v3:.2f}s ± {s_v3:.2f}** "
+            f"| **pyModeS v3 (pure Python)** | **{t_v3:.2f}s ± {s_v3:.2f}** "
             f"| **{rate(t_v3):,} msg/s** | **1.00×** |"
         ),
         "",
         (
-            f"**Headline:** pymodes v3 is {ratio(t_py, t_v3):.2f}× faster than "
+            f"**Headline:** pyModeS v3 is {ratio(t_py, t_v3):.2f}× faster than "
             f"pyModeS 2.21.1 py_common, {ratio(t_c, t_v3):.2f}× vs pyModeS "
             f"2.21.1 c_common (compiled C), and {ratio(t_rs, t_v3):.2f}× vs "
             "rs1090 single-core Rust."

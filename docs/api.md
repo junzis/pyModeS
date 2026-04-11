@@ -2,38 +2,38 @@
 
 ## Top-level
 
-::: pymodes.decode
+::: pyModeS.decode
 
 ## Core types
 
-::: pymodes.Message
+::: pyModeS.Message
 
-::: pymodes.Decoded
+::: pyModeS.Decoded
 
 ## Streaming decoder
 
-::: pymodes.PipeDecoder
+::: pyModeS.PipeDecoder
 
 ## Errors
 
-::: pymodes.DecodeError
+::: pyModeS.DecodeError
 
-::: pymodes.InvalidHexError
+::: pyModeS.InvalidHexError
 
-::: pymodes.InvalidLengthError
+::: pyModeS.InvalidLengthError
 
-::: pymodes.UnknownDFError
+::: pyModeS.UnknownDFError
 
 ## Position
 
-::: pymodes.position.airborne_position_with_ref
+::: pyModeS.position.airborne_position_with_ref
 
-::: pymodes.position.airborne_position_pair
+::: pyModeS.position.airborne_position_pair
 
-::: pymodes.position.surface_position_with_ref
+::: pyModeS.position.surface_position_with_ref
 
-::: pymodes.position.surface_position_pair
+::: pyModeS.position.surface_position_pair
 
-::: pymodes.position.cprNL
+::: pyModeS.position.cprNL
 
-::: pymodes.position.resolve_surface_ref
+::: pyModeS.position.resolve_surface_ref

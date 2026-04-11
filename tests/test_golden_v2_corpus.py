@@ -2,10 +2,10 @@
 
 Loads tests/fixtures/golden_v2.json (a deduplicated + per-DF-capped
 snapshot of pyModeS 2.21.1 output on tests/data/*.csv) and asserts
-that pymodes.decode() produces matching values for every v2-emitted
+that pyModeS.decode() produces matching values for every v2-emitted
 key.
 
-Renamed keys are mapped via pymodes._v2_compat.V2_DEPRECATED_KEYS.
+Renamed keys are mapped via pyModeS._v2_compat.V2_DEPRECATED_KEYS.
 Numeric fields with known small divergence use absolute tolerances
 from V2_VALUE_TOLERANCE. Unknown mismatches fail the test with a
 precise message identifying the hex and the mismatched key.
@@ -22,8 +22,8 @@ from typing import Any
 
 import pytest
 
-from pymodes import decode
-from pymodes._v2_compat import V2_DEPRECATED_KEYS, V2_VALUE_TOLERANCE
+from pyModeS import decode
+from pyModeS._v2_compat import V2_DEPRECATED_KEYS, V2_VALUE_TOLERANCE
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_v2.json"
 

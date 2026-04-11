@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.acas — DF0/16 air-air surveillance."""
+"""Tests for pyModeS.decoder.acas — DF0/16 air-air surveillance."""
 
-from pymodes import decode
-from pymodes._bits import crc_remainder
+from pyModeS import decode
+from pyModeS._bits import crc_remainder
 
 
 def _build_df0_msg(

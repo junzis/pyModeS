@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to pymodes are documented in this file.
+All notable changes to pyModeS are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
@@ -13,9 +13,9 @@ the migration guide.
 
 ### Added
 
-- Unified `pymodes.decode(msg)` returning a `Decoded` dict with every
+- Unified `pyModeS.decode(msg)` returning a `Decoded` dict with every
   decodable field populated in one call
-- Batch mode: `pymodes.decode(list_of_msgs, timestamps=...)` preserves
+- Batch mode: `pyModeS.decode(list_of_msgs, timestamps=...)` preserves
   list length (errors become error-dicts, no exceptions)
 - `PipeDecoder` stateful streaming decoder — per-ICAO state, CPR
   pair matching, TTL eviction, DF20/21 `icao_verified` promotion
@@ -39,14 +39,13 @@ the migration guide.
     Mode-S Beast binary feed
   - `modes live --dump-to FILE` to tee JSON lines to a file
   - `modes live --tui` for an interactive rich-based aircraft table
-    (requires `pymodes[tui]` extra)
+    (requires `pyModeS[tui]` extra)
   - Graceful SIGINT/SIGTERM shutdown with final stats line
-- `pymodes[tui]` optional dependency: pulls in `rich>=13.0` for the
+- `pyModeS[tui]` optional dependency: pulls in `rich>=13.0` for the
   `modes live --tui` interactive display
 
 ### Changed
 
-- Package renamed: `pyModeS` → `pymodes` (lowercase import)
 - Python 3.11+ minimum (was 3.9+)
 - Internal message representation: Python int + bit-shift primitives
   (replaces numpy arrays and the Cython `c_common` extension)
@@ -71,7 +70,7 @@ the migration guide.
 
 ### Performance
 
-pymodes v3 is **4.41× faster** than `pyModeS 2.21.1`
+pyModeS v3 is **4.41× faster** than `pyModeS 2.21.1`
 pure-Python, **2.44× faster** than `pyModeS 2.21.1`
 with the compiled `c_common` extension, and **2.71×
 faster** than rs1090 single-core Rust. Measured on jet1090's

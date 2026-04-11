@@ -1,8 +1,8 @@
-"""Tests for pymodes.position._cpr — CPR position decoding primitives."""
+"""Tests for pyModeS.position._cpr — CPR position decoding primitives."""
 
 import pytest
 
-from pymodes.position._cpr import airborne_position_with_ref, cprNL
+from pyModeS.position._cpr import airborne_position_with_ref, cprNL
 
 
 def _cpr_fields(hex_msg: str) -> tuple[int, int, int]:
@@ -111,7 +111,7 @@ class TestAirbornePositionWithRef:
 class TestAirbornePositionPair:
     def test_pair_odd_newer(self):
         """Matches v2 tests/test_adsb.py::test_adsb_position — odd frame is newer."""
-        from pymodes.position._cpr import airborne_position_pair
+        from pyModeS.position._cpr import airborne_position_pair
 
         _, elat, elon = _cpr_fields("8D40058B58C901375147EFD09357")
         _, olat, olon = _cpr_fields("8D40058B58C904A87F402D3B8C59")
@@ -129,7 +129,7 @@ class TestAirbornePositionPair:
         Expected values computed by running the same formula with
         even_is_newer=True.
         """
-        from pymodes.position._cpr import airborne_position_pair
+        from pyModeS.position._cpr import airborne_position_pair
 
         _, elat, elon = _cpr_fields("8D40058B58C901375147EFD09357")
         _, olat, olon = _cpr_fields("8D40058B58C904A87F402D3B8C59")
@@ -146,7 +146,7 @@ class TestAirbornePositionPair:
         cpr_lat_odd=114688 → lat≈66.36° (NL=24)
         Found by grid search over the NL formula.
         """
-        from pymodes.position._cpr import airborne_position_pair
+        from pyModeS.position._cpr import airborne_position_pair
 
         result = airborne_position_pair(8192, 0, 114688, 0, even_is_newer=True)
         assert result is None
@@ -162,7 +162,7 @@ class TestSurfacePositionWithRef:
 
     def test_lfbo_surface(self):
         """Real surface CPR vector resolved at LFBO airport reference."""
-        from pymodes.position._cpr import surface_position_with_ref
+        from pyModeS.position._cpr import surface_position_with_ref
 
         fmt, lat_cpr, lon_cpr = _cpr_fields(self.ODD_MSG)
         lat, lon = surface_position_with_ref(fmt, lat_cpr, lon_cpr, 43.63, 1.37)
@@ -177,7 +177,7 @@ class TestSurfacePositionPair:
 
     def test_lfbo_pair(self):
         """Real even/odd surface pair, odd-is-newer branch."""
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         _, elat, elon = _cpr_fields(self.EVEN_MSG)
         _, olat, olon = _cpr_fields(self.ODD_MSG)
@@ -197,7 +197,7 @@ class TestSurfacePositionPair:
 
     def test_lfbo_pair_even_newer(self):
         """Same pair, but exercise the even_is_newer=True branch (ni=max(nl,1))."""
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         _, elat, elon = _cpr_fields(self.EVEN_MSG)
         _, olat, olon = _cpr_fields(self.ODD_MSG)
@@ -219,7 +219,7 @@ class TestSurfacePositionPair:
 
     def test_southern_hemisphere(self):
         """Negative lat_ref → S-hemisphere mirror (lat ≈ -46° of the +43°)."""
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         _, elat, elon = _cpr_fields(self.EVEN_MSG)
         _, olat, olon = _cpr_fields(self.ODD_MSG)
@@ -239,7 +239,7 @@ class TestSurfacePositionPair:
 
     def test_quadrant_wrap_180(self):
         """Receiver 180° away → algorithm picks the +180 quadrant candidate."""
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         _, elat, elon = _cpr_fields(self.EVEN_MSG)
         _, olat, olon = _cpr_fields(self.ODD_MSG)
@@ -259,7 +259,7 @@ class TestSurfacePositionPair:
 
     def test_quadrant_wrap_90(self):
         """Receiver 90° away → algorithm picks the +90 quadrant candidate."""
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         _, elat, elon = _cpr_fields(self.EVEN_MSG)
         _, olat, olon = _cpr_fields(self.ODD_MSG)
@@ -283,7 +283,7 @@ class TestSurfacePositionPair:
         Found by grid search: cpr_lat_even=28672, cpr_lat_odd=122880 produce
         lat_even_n ≈ 25.828° (NL=54), lat_odd_n ≈ 25.837° (NL=53).
         """
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         result = surface_position_pair(
             28672,
@@ -303,7 +303,7 @@ class TestSurfacePositionPair:
         distinct from the Christchurch pair already covered above. The v2
         assertion was ``abs(lon_ref - lon) < 0.05``.
         """
-        from pymodes.position._cpr import surface_position_pair
+        from pyModeS.position._cpr import surface_position_pair
 
         # msg0 (even, t=1565608663102), msg1 (odd, t=1565608666214) → odd is newer
         _, elat, elon = _cpr_fields("8FE48C033A9FA184B934E744C6FD")

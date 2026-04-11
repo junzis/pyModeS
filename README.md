@@ -1,4 +1,4 @@
-# pymodes
+# pyModeS
 
 Fast, ergonomic, dictionary-first decoder for Mode-S and ADS-B messages in
 pure Python. Ground-up v3 rewrite of `pyModeS` — 2.44× faster than
@@ -11,7 +11,7 @@ returning a plain dict.
 ## Install
 
 ```sh
-pip install "pymodes>=3"
+pip install "pyModeS>=3"
 ```
 
 Python 3.11+ required.
@@ -20,13 +20,13 @@ Python 3.11+ required.
 
 ### Single-message decode
 
-`pymodes.decode()` returns a `Decoded` dict with every decodable
+`pyModeS.decode()` returns a `Decoded` dict with every decodable
 field populated in one pass.
 
 ```python
-import pymodes
+import pyModeS
 
-result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
+result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
 print(result)
 # {
 #     'df': 17,
@@ -49,9 +49,9 @@ uses the timestamps to resolve CPR pairs and disambiguate
 ambiguous Comm-B registers.
 
 ```python
-import pymodes
+import pyModeS
 
-results = pymodes.decode(
+results = pyModeS.decode(
     [
         "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
         "8D485020994409940838175B284F",  # DF17 BDS 0,9 airborne velocity
@@ -74,10 +74,10 @@ code (looked up in the shipped airport database) or an explicit
 `(lat, lon)` tuple.
 
 ```python
-import pymodes
+import pyModeS
 
 # Real DF18 surface movement on LFBO (Toulouse-Blagnac).
-r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
+r = pyModeS.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
 print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 ```
 
@@ -89,7 +89,7 @@ TTL, and flags DF20/21 messages as `icao_verified` when their
 CRC-derived ICAO was already seen in a clean DF17/18 plaintext.
 
 ```python
-from pymodes import PipeDecoder
+from pyModeS import PipeDecoder
 
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, timestamp in stream:
@@ -103,7 +103,7 @@ See [`docs/quickstart.md`](./docs/quickstart.md) for the full tour
 
 ## CLI
 
-pymodes ships with a `modes` command-line tool for ad-hoc decoding
+pyModeS ships with a `modes` command-line tool for ad-hoc decoding
 and live streaming.
 
 ### `modes decode` — one-shot and file mode
@@ -140,8 +140,8 @@ modes live --network host:30005 --dump-to flight.jsonl
 # Stream from the TU Delft public feed (live aircraft over Europe)
 modes live --network airsquitter.lr.tudelft.nl:10006
 
-# Interactive live aircraft table (requires pymodes[tui] extra)
-pip install "pymodes[tui]"
+# Interactive live aircraft table (requires pyModeS[tui] extra)
+pip install "pyModeS[tui]"
 modes live --network host:30005 --tui
 ```
 
@@ -170,19 +170,17 @@ Measured on jet1090's
 (172,432 Beast-format messages, 7 runs × 1 loop, mean timings,
 single-core only):
 
-| Decoder | Wall time | Throughput | vs pymodes v3 |
+| Decoder | Wall time | Throughput | vs pyModeS v3 |
 |---|---|---|---|
-| rs1090 (single-core Rust) | 5.60s ± 0.01 | 30,798 msg/s | 0.37× |
-| pyModeS 2.21.1 (c_common, compiled C) | 5.03s ± 0.01 | 34,303 msg/s | 0.41× |
-| pyModeS 2.21.1 (py_common, pure Python) | 9.09s ± 0.02 | 18,959 msg/s | 0.23× |
-| **pymodes v3 (pure Python)** | **2.06s ± 0.01** | **83,549 msg/s** | **1.00×** |
+| **pyModeS v3 (pure Python)** | **2.06s ± 0.01** | **83,549 msg/s** | **1.00×** |
+| pyModeS 2.21.1 (Python with compiled C) | 5.03s ± 0.01 | 34,303 msg/s | 0.41× |
+| rs1090 (Rust) | 5.60s ± 0.01 | 30,798 msg/s | 0.37× |
+| pyModeS 2.21.1 (Python) | 9.09s ± 0.02 | 18,959 msg/s | 0.23× |
 
-pymodes v3 is **2.44× faster** than `pyModeS 2.21.1`'s compiled C
+pyModeS v3 is **2.44× faster** than `pyModeS 2.21.1`'s compiled C
 extension, **4.41× faster** than `pyModeS 2.21.1` pure-Python, and
 **2.71× faster** than rs1090's single-core Rust — all while remaining
-pure Python with no C/Cython build. For maximum throughput
-(multi-core, compiled), [rs1090](https://github.com/xoolive/jet1090)
-is the state of the art at ~250k msg/s.
+pure Python with no C/Cython build.
 
 Reproduce with `scripts/benchmark_decode.py`.
 
@@ -213,7 +211,7 @@ Reproduce with `scripts/benchmark_decode.py`.
 
 ## Migrating from pyModeS 2.x
 
-pymodes 3 is **not backwards-compatible** with pyModeS 2.x. The
+pyModeS 3 is **not backwards-compatible** with pyModeS 2.x. The
 function-per-field API (`pms.adsb.callsign(msg)`, ...) is replaced
 by a single `decode()` returning a dict. See the [migration
 guide](https://github.com/junzis/pyModeS/blob/main/docs/migration.md) for the full equivalence table.
@@ -225,7 +223,7 @@ pip install "pyModeS<3"
 ```
 
 Both v2 and v3 coexist on PyPI because they use different import
-names (`pyModeS` vs `pymodes`).
+names (`pyModeS` vs `pyModeS`).
 
 ## Links
 
@@ -236,18 +234,16 @@ names (`pyModeS` vs `pymodes`).
 
 ## Attribution
 
-pyModeS is a project created by Junzi Sun, who works at
-[TU Delft](https://www.tudelft.nl/en/),
-[Aerospace Engineering Faculty](https://www.tudelft.nl/en/ae/),
-[CNS/ATM research group](http://cs.lr.tudelft.nl/atm/). It is
+pyModeS is a project created by Junzi Sun, who works at TU Delft,
+[Aerospace Engineering Faculty](https://tudelft.nl/en/ae/). It is
 supported by many
 [contributors](https://github.com/junzis/pyModeS/graphs/contributors)
 from different institutions.
 
-If you use pymodes in academic work, please cite:
+If you use pyModeS in academic work, please cite:
 
 ```bibtex
-@article{sun2019pymodes,
+@article{sun2019pyModeS,
     author={J. {Sun} and H. {V\^u} and J. {Ellerbroek} and J. M. {Hoekstra}},
     journal={IEEE Transactions on Intelligent Transportation Systems},
     title={pyModeS: Decoding Mode-S Surveillance Data for Open Air Transportation Research},

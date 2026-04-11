@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.bds.bds05 — ADS-B airborne position (BDS 0,5)."""
+"""Tests for pyModeS.decoder.bds.bds05 — ADS-B airborne position (BDS 0,5)."""
 
-from pymodes import decode
-from pymodes.decoder.bds.bds05 import decode_bds05  # noqa: F401
+from pyModeS import decode
+from pyModeS.decoder.bds.bds05 import decode_bds05  # noqa: F401
 
 
 class TestBds05Altitude:

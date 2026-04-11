@@ -1,11 +1,11 @@
-"""Smoke test for pymodes._uncertainty lookup tables.
+"""Smoke test for pyModeS._uncertainty lookup tables.
 
 These are data-only tables ported verbatim from v2. The smoke test
 confirms a single lookup returns the expected value so that a typo
 in the port is caught at import time.
 """
 
-from pymodes._uncertainty import (
+from pyModeS._uncertainty import (
     NA,
     SIL,
     NACp,

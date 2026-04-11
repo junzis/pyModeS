@@ -59,7 +59,7 @@ def bench(name: str, fn: Callable[[], object], n: int) -> float:
 
 
 def main() -> int:
-    from pymodes.position._cpr import (
+    from pyModeS.position._cpr import (
         airborne_position_with_ref,
         cprNL,
     )

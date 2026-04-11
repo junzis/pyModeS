@@ -1,8 +1,8 @@
-"""Tests for pymodes._schema."""
+"""Tests for pyModeS._schema."""
 
 from typing import Any, ClassVar
 
-from pymodes._schema import _FULL_SCHEMA
+from pyModeS._schema import _FULL_SCHEMA
 
 
 class TestSchemaShape:
@@ -71,7 +71,7 @@ class TestSchemaDriftDetection:
     ]
 
     def test_no_decoder_emits_undeclared_key(self):
-        from pymodes import decode
+        from pyModeS import decode
 
         emitted: set[str] = set()
         decoded_count = 0

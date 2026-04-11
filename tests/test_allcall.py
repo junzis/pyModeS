@@ -1,6 +1,6 @@
-"""Tests for pymodes.decoder.allcall — DF11 all-call reply."""
+"""Tests for pyModeS.decoder.allcall — DF11 all-call reply."""
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestDf11Basic:
@@ -63,7 +63,7 @@ class TestV2VectorSurvey:
     tests/test_allcall.py. v2 asserts icao=="484FDE", capability==5,
     and interrogator()=="SI6". v3 decodes the ICAO and capability;
     the II/SI interrogator code decode is intentionally deferred
-    (see pymodes._pipe comment on DF11 trust-set exclusion).
+    (see pyModeS._pipe comment on DF11 trust-set exclusion).
     """
 
     def test_v2_df11_icao_484fde(self):

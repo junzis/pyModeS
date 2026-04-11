@@ -1,9 +1,9 @@
 ---
-title: pymodes
+title: pyModeS
 ---
 
 {%
   include-markdown "../README.md"
-  start="# pymodes"
+  start="# pyModeS"
   comments=false
 %}

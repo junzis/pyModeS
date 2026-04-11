@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.bds.bds65 — ADS-B operational status (BDS 6,5)."""
+"""Tests for pyModeS.decoder.bds.bds65 — ADS-B operational status (BDS 6,5)."""
 
-from pymodes import decode
-from pymodes.decoder.bds.bds65 import decode_bds65
+from pyModeS import decode
+from pyModeS.decoder.bds.bds65 import decode_bds65
 
 
 class TestBds65Airborne:
@@ -37,7 +37,7 @@ class TestBds65Airborne:
 
     def test_dispatch_via_adsb_class(self):
         # Build the same synthetic TC=31 as a full DF17 message.
-        from pymodes._bits import crc_remainder
+        from pyModeS._bits import crc_remainder
 
         tc = 31
         payload = tc << 51  # minimum viable TC=31 payload

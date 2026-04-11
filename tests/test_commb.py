@@ -1,9 +1,9 @@
-"""Tests for pymodes.decoder.commb — CommB class for DF20/21."""
+"""Tests for pyModeS.decoder.commb — CommB class for DF20/21."""
 
 import pytest
 
-from pymodes import decode
-from pymodes.errors import InvalidHexError
+from pyModeS import decode
+from pyModeS.errors import InvalidHexError
 
 
 class TestCommBHeaderDecoding:

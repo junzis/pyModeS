@@ -1,8 +1,8 @@
-"""Tests for pymodes.position._airports — surface-reference lookup."""
+"""Tests for pyModeS.position._airports — surface-reference lookup."""
 
 import pytest
 
-from pymodes.position._airports import resolve_surface_ref
+from pyModeS.position._airports import resolve_surface_ref
 
 
 class TestResolveSurfaceRef:
@@ -23,7 +23,7 @@ class TestResolveSurfaceRef:
             resolve_surface_ref("ZZZZ")
 
     def test_dataset_contains_expected_airports(self):
-        from pymodes.data.airports import AIRPORTS
+        from pyModeS.data.airports import AIRPORTS
 
         for code in ("EHAM", "KJFK", "NZCH", "LFPG", "EGLL", "RJTT"):
             assert code in AIRPORTS

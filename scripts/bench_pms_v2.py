@@ -4,7 +4,7 @@ Source: jet1090 python/examples/bench_pms.py
 URL:    https://github.com/xoolive/jet1090
 Commit: da4ed8509ce948d8816ecb047cc8b010cd618494
 
-Vendored so that scripts/benchmark_decode.py can measure pymodes v3
+Vendored so that scripts/benchmark_decode.py can measure pyModeS v3
 against the SAME v2 dispatch path jet1090 measured in its published
 benchmark chart — apples-to-apples, no methodology drift.
 

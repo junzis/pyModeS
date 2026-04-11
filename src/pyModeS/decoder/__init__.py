@@ -1,0 +1,50 @@
+"""Decoder classes for pyModeS, organized by DF family.
+
+Each decoder class handles one or more downlink formats:
+
+- AllCall: DF11
+- Surv:    DF4, DF5
+- ACAS:    DF0, DF16
+- ADSB:    DF17, DF18
+- CommB:   DF20, DF21
+
+Message.decode() dispatches to the correct class via _DECODERS below.
+Entries are added by the task that implements each decoder class.
+"""
+
+from collections.abc import Callable
+
+from pyModeS.decoder._base import DecoderBase
+
+# DF → decoder class. Populated by each decoder module as it is added.
+_DECODERS: dict[int, type[DecoderBase]] = {}
+
+
+def register(
+    *dfs: int,
+) -> Callable[[type[DecoderBase]], type[DecoderBase]]:
+    """Decorator that registers a decoder class for one or more DFs.
+
+    Usage:
+        @register(11)
+        class AllCall(DecoderBase):
+            ...
+    """
+
+    def _wrap(cls: type[DecoderBase]) -> type[DecoderBase]:
+        for df in dfs:
+            _DECODERS[df] = cls
+        return cls
+
+    return _wrap
+
+
+# Import decoder modules to populate _DECODERS via @register decorators.
+# These imports are at the bottom to avoid circular dependencies.
+from pyModeS.decoder import (  # noqa: E402
+    acas,  # noqa: F401
+    adsb,  # noqa: F401
+    allcall,  # noqa: F401
+    commb,  # noqa: F401
+    surv,  # noqa: F401
+)

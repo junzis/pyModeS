@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from pymodes.cli._args import build_parser
+from pyModeS.cli._args import build_parser
 
 
 class TestRootParser:
@@ -75,7 +75,7 @@ class TestDecodeSubcommand:
 
     def test_decode_file_with_reference_errors(self):
         """--reference is incompatible with --file (many aircraft)."""
-        from pymodes.cli._args import validate_args
+        from pyModeS.cli._args import validate_args
 
         parser = build_parser()
         args = parser.parse_args(
@@ -138,7 +138,7 @@ class TestLiveSubcommand:
 
     def test_live_tui_with_dump_to_errors(self):
         """--tui is incompatible with --dump-to (TUI owns terminal)."""
-        from pymodes.cli._args import validate_args
+        from pyModeS.cli._args import validate_args
 
         parser = build_parser()
         args = parser.parse_args(
@@ -150,7 +150,7 @@ class TestLiveSubcommand:
 
     def test_live_tui_with_quiet_errors(self):
         """--tui is incompatible with --quiet (nothing to suppress)."""
-        from pymodes.cli._args import validate_args
+        from pyModeS.cli._args import validate_args
 
         parser = build_parser()
         args = parser.parse_args(["live", "--network", "host:1234", "--tui", "--quiet"])

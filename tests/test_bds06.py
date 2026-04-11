@@ -1,6 +1,6 @@
-"""Tests for pymodes.decoder.bds.bds06 — ADS-B surface position (BDS 0,6)."""
+"""Tests for pyModeS.decoder.bds.bds06 — ADS-B surface position (BDS 0,6)."""
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestBds06MovementRanges:

@@ -28,21 +28,21 @@ echo ">>> 3. Live against TU Delft feed (5 second sample)"
 set +e
 timeout --signal=INT 5 uv run modes live \
     --network airsquitter.lr.tudelft.nl:10006 \
-    > /tmp/pymodes_live_sample.jsonl 2>/tmp/pymodes_live_sample.err
+    > /tmp/pyModeS_live_sample.jsonl 2>/tmp/pyModeS_live_sample.err
 rc=$?
 set -e
 if [ $rc -ne 0 ] && [ $rc -ne 124 ]; then
     echo "    FAILED: modes live exit code $rc"
-    cat /tmp/pymodes_live_sample.err
+    cat /tmp/pyModeS_live_sample.err
     exit 1
 fi
-n_lines=$(wc -l < /tmp/pymodes_live_sample.jsonl)
+n_lines=$(wc -l < /tmp/pyModeS_live_sample.jsonl)
 if [ "$n_lines" -lt 1 ]; then
     echo "    FAILED: no JSON lines captured"
-    cat /tmp/pymodes_live_sample.err
+    cat /tmp/pyModeS_live_sample.err
     exit 1
 fi
-head -1 /tmp/pymodes_live_sample.jsonl | grep -q '"df"'
+head -1 /tmp/pyModeS_live_sample.jsonl | grep -q '"df"'
 echo "    PASSED ($n_lines lines captured)"
 
 echo

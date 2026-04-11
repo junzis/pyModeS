@@ -1,6 +1,6 @@
 # PipeDecoder
 
-`PipeDecoder` is pymodes' stateful streaming decoder. It processes
+`PipeDecoder` is pyModeS' stateful streaming decoder. It processes
 one message at a time and maintains per-ICAO state across calls, so:
 
 - **CPR pairs** — an even/odd pair of airborne position frames
@@ -16,7 +16,7 @@ one message at a time and maintains per-ICAO state across calls, so:
 ## Basic usage
 
 ```python
-from pymodes import PipeDecoder
+from pyModeS import PipeDecoder
 
 pipe = PipeDecoder(surface_ref="EHAM", pair_window=10.0, eviction_ttl=300.0)
 
@@ -67,7 +67,7 @@ multiple threads feed it concurrently:
 
 ```python
 import threading
-from pymodes import PipeDecoder
+from pyModeS import PipeDecoder
 
 pipe = PipeDecoder()
 lock = threading.Lock()

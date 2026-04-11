@@ -1,6 +1,6 @@
-"""Tests for pymodes.decoder.bds.bds61 — ADS-B aircraft status (BDS 6,1)."""
+"""Tests for pyModeS.decoder.bds.bds61 — ADS-B aircraft status (BDS 6,1)."""
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestBds61Emergency:

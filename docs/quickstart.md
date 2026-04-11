@@ -3,9 +3,9 @@
 ## Single-message decode
 
 ```python
-import pymodes
+import pyModeS
 
-result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
+result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
 print(result)
 # {
 #     'df': 17,
@@ -39,7 +39,7 @@ typecodes, and Comm-B registers — the dispatcher picks the right
 decoder per message:
 
 ```python
-results = pymodes.decode(
+results = pyModeS.decode(
     [
         "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
         "8D485020994409940838175B284F",  # DF17 BDS 0,9 airborne velocity
@@ -70,7 +70,7 @@ so the output list length always matches the input length.
 - Verify DF20/21 ICAO addresses against ones learned from DF17/18
 
 ```python
-from pymodes import PipeDecoder
+from pyModeS import PipeDecoder
 
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, timestamp in stream:
@@ -92,11 +92,11 @@ explicit `(lat, lon)` tuple:
 ```python
 # Airport code — real DF18 surface movement from the jet1090 corpus,
 # aircraft on LFBO (Toulouse-Blagnac) taxiway
-r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
+r = pyModeS.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
 print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 
 # Explicit tuple (e.g., receiver location)
-r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref=(43.63, 1.37))
+r = pyModeS.decode("903a23ff426a4e65f7487a775d17", surface_ref=(43.63, 1.37))
 ```
 
 ## Full-dict mode
@@ -104,7 +104,7 @@ r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref=(43.63, 1.37))
 For pandas / parquet workflows that need uniform column shapes:
 
 ```python
-result = pymodes.decode("8D406B902015A678D4D220AA4BDA", full_dict=True)
+result = pyModeS.decode("8D406B902015A678D4D220AA4BDA", full_dict=True)
 # Result contains all ~123 schema keys; missing values default to None
 ```
 
@@ -113,10 +113,10 @@ result = pymodes.decode("8D406B902015A678D4D220AA4BDA", full_dict=True)
 Malformed input raises an exception in single-message mode:
 
 ```python
-from pymodes.errors import InvalidHexError
+from pyModeS.errors import InvalidHexError
 
 try:
-    pymodes.decode("not hex")
+    pyModeS.decode("not hex")
 except InvalidHexError:
     pass
 ```
@@ -124,7 +124,7 @@ except InvalidHexError:
 In batch mode, the same input becomes an error-dict instead:
 
 ```python
-results = pymodes.decode(
+results = pyModeS.decode(
     ["not hex", "8D406B902015A678D4D220AA4BDA"],
     timestamps=[0, 1],
 )
@@ -134,8 +134,8 @@ assert results[1]["icao"] == "406B90"
 
 ## CLI
 
-pymodes ships with a `modes` command-line tool, installed as a
-console script when you run `pip install pymodes`.
+pyModeS ships with a `modes` command-line tool, installed as a
+console script when you run `pip install pyModeS`.
 
 ### `modes decode`
 
@@ -220,7 +220,7 @@ Flags:
 - `--dump-to FILE` — tee JSON lines to a file in addition to
   stdout (incompatible with `--tui`)
 - `--tui` — interactive live aircraft table (requires
-  `pymodes[tui]` extra; incompatible with `--dump-to` and
+  `pyModeS[tui]` extra; incompatible with `--dump-to` and
   `--quiet`)
 - `--quiet` — suppress stdout (use with `--dump-to`)
 
@@ -237,7 +237,7 @@ modes live --network airsquitter.lr.tudelft.nl:10006
 modes live --network host:30005 --dump-to flight.jsonl
 
 # Interactive TUI
-pip install "pymodes[tui]"
+pip install "pyModeS[tui]"
 modes live --network host:30005 --tui
 ```
 

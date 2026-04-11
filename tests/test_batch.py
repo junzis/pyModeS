@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestBatchDecode:
@@ -68,7 +68,7 @@ class TestBatchDecode:
             assert "error" in r
 
     def test_batch_with_full_dict(self):
-        from pymodes._schema import _FULL_SCHEMA
+        from pyModeS._schema import _FULL_SCHEMA
 
         results = decode(
             ["8D406B902015A678D4D220AA4BDA"],

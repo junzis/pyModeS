@@ -10,7 +10,7 @@ import pytest
 
 def _run(argv: list[str], capsys: pytest.CaptureFixture[str]) -> tuple[int, str, str]:
     """Invoke cli.main with argv; return (exit_code, stdout, stderr)."""
-    from pymodes.cli import main
+    from pyModeS.cli import main
 
     exit_code = main(argv)
     captured = capsys.readouterr()
@@ -40,7 +40,7 @@ class TestDecodeSingleMessage:
         assert data["icao"] == "406B90"
 
     def test_full_dict(self, capsys):
-        from pymodes._schema import _FULL_SCHEMA
+        from pyModeS._schema import _FULL_SCHEMA
 
         code, out, _err = _run(
             ["decode", "8D406B902015A678D4D220AA4BDA", "--full-dict"], capsys

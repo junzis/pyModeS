@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.bds.bds08 — ADS-B identification (BDS 0,8)."""
+"""Tests for pyModeS.decoder.bds.bds08 — ADS-B identification (BDS 0,8)."""
 
-from pymodes import decode
-from pymodes.decoder.bds.bds08 import decode_bds08
+from pyModeS import decode
+from pyModeS.decoder.bds.bds08 import decode_bds08
 
 
 class TestBds08CallsignAndCategory:
@@ -24,7 +24,7 @@ class TestBds08CallsignAndCategory:
 
 class TestBds08EndToEnd:
     def test_decode_df17_identification_message(self):
-        # Full round-trip via pymodes.decode()
+        # Full round-trip via pyModeS.decode()
         # NOTE: This test will fail after Task 5 because no ADSB class
         # is registered yet. Task 6 will make it pass.
         result = decode("8D406B902015A678D4D220AA4BDA")

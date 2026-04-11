@@ -1,6 +1,6 @@
-"""Tests for the Q=0 Gillham gray-code path in pymodes._altcode."""
+"""Tests for the Q=0 Gillham gray-code path in pyModeS._altcode."""
 
-from pymodes._altcode import altcode_to_altitude
+from pyModeS._altcode import altcode_to_altitude
 
 
 class TestAltcodeGrayCode:

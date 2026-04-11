@@ -2,14 +2,14 @@
 
 import pytest
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestMessageDecodeDirect:
     """Direct Message.decode() kwarg path."""
 
     def test_message_decode_with_reference(self):
-        from pymodes import Message
+        from pyModeS import Message
 
         msg = Message("8D40058B58C901375147EFD09357")
         result = msg.decode(reference=(49.0, 6.0))
@@ -17,7 +17,7 @@ class TestMessageDecodeDirect:
         assert result["longitude"] == pytest.approx(6.06785, abs=0.001)
 
     def test_message_decode_with_surface_ref(self):
-        from pymodes import Message
+        from pyModeS import Message
 
         # Real DF18 surface movement from jet1090 corpus (LFBO taxiway).
         msg = Message("903a23ff426a4e65f7487a775d17")
@@ -26,7 +26,7 @@ class TestMessageDecodeDirect:
         assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_message_decode_no_context(self):
-        from pymodes import Message
+        from pyModeS import Message
 
         msg = Message("8D40058B58C901375147EFD09357")
         result = msg.decode()

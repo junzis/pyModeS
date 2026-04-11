@@ -1,6 +1,6 @@
-# Migrating from pyModeS 2.x to pymodes 3
+# Migrating from pyModeS 2.x to pyModeS 3
 
-pymodes 3 is a ground-up rewrite with a cleaner API, faster internals,
+pyModeS 3 is a ground-up rewrite with a cleaner API, faster internals,
 and no Cython extension. It is **not backwards-compatible** with
 pyModeS 2.x.
 
@@ -16,13 +16,13 @@ pyModeS 2.21.1 continues to work and will remain available on PyPI.
 
 ```sh
 # v3
-pip install "pymodes>=3"
+pip install "pyModeS>=3"
 
 # v2 (legacy)
 pip install "pyModeS<3"
 ```
 
-Both can coexist on PyPI because v3 uses the lowercase `pymodes` name
+Both can coexist on PyPI because v3 uses the lowercase `pyModeS` name
 and v2 uses the camelCase `pyModeS` name — they're distinct
 distributions that never collide during import.
 
@@ -33,9 +33,9 @@ distributions that never collide during import.
 import pyModeS as pms
 pms.adsb.typecode("8D...")
 
-# pymodes 3
-import pymodes
-result = pymodes.decode("8D...")
+# pyModeS 3
+import pyModeS
+result = pyModeS.decode("8D...")
 result["typecode"]
 ```
 
@@ -46,12 +46,12 @@ pyModeS 2.x has a function-per-field API: you call
 `pms.adsb.velocity(msg)`, and so on. Each call re-parses the message
 header.
 
-pymodes 3 has a single `decode()` function that returns every
+pyModeS 3 has a single `decode()` function that returns every
 decodable field in one pass:
 
 ```python
-import pymodes
-result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
+import pyModeS
+result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
 # Read whatever you need from the returned dict:
 callsign = result.get("callsign")
 altitude = result.get("altitude")
@@ -69,36 +69,36 @@ result.callsign  # same as result["callsign"]
 
 ## Equivalence table
 
-| pyModeS 2.x call | pymodes 3 equivalent |
+| pyModeS 2.x call | pyModeS 3 equivalent |
 |---|---|
-| `pms.common.df(msg)` | `pymodes.decode(msg)["df"]` |
-| `pms.common.icao(msg)` | `pymodes.decode(msg)["icao"]` |
-| `pms.common.typecode(msg)` | `pymodes.decode(msg)["typecode"]` |
-| `pms.common.altcode(msg)` | `pymodes.decode(msg)["altitude"]` (DF4/20) |
-| `pms.common.idcode(msg)` | `pymodes.decode(msg)["squawk"]` (DF5/21) |
-| `pms.adsb.callsign(msg)` | `pymodes.decode(msg)["callsign"]` |
-| `pms.adsb.category(msg)` | `pymodes.decode(msg)["category"]` |
-| `pms.adsb.altitude(msg)` | `pymodes.decode(msg)["altitude"]` |
-| `pms.adsb.velocity(msg)` | `pymodes.decode(msg)` → `groundspeed`, `track`, `vertical_rate`, or `airspeed`/`airspeed_type`/`heading` for subtypes 3/4 |
-| `pms.adsb.oe_flag(msg)` | `pymodes.decode(msg)["cpr_format"]` |
-| `pms.adsb.position(m0, m1, t0, t1)` | `pymodes.decode([m0, m1], timestamps=[t0, t1])` |
-| `pms.adsb.position_with_ref(msg, lat, lon)` | `pymodes.decode(msg, reference=(lat, lon))` |
-| `pms.adsb.surface_position_with_ref(msg, lat, lon)` | `pymodes.decode(msg, surface_ref=(lat, lon))` |
-| `pms.bds.infer(msg, mrar=True)` | `pymodes.decode(msg)["bds"]` (for DF20/21) |
-| `pms.commb.cs20(msg)` | `pymodes.decode(msg)["callsign"]` (for BDS 2,0) |
-| `pms.commb.selalt40mcp(msg)` | `pymodes.decode(msg)["selected_altitude_mcp"]` |
-| `pms.commb.selalt40fms(msg)` | `pymodes.decode(msg)["selected_altitude_fms"]` |
-| `pms.commb.p40baro(msg)` | `pymodes.decode(msg)["baro_pressure_setting"]` |
-| `pms.commb.roll50(msg)` | `pymodes.decode(msg)["roll"]` |
-| `pms.commb.trk50(msg)` | `pymodes.decode(msg)["true_track"]` |
-| `pms.commb.gs50(msg)` | `pymodes.decode(msg)["groundspeed"]` |
-| `pms.commb.tas50(msg)` | `pymodes.decode(msg)["true_airspeed"]` |
-| `pms.commb.rtrk50(msg)` | `pymodes.decode(msg)["track_rate"]` |
-| `pms.commb.hdg60(msg)` | `pymodes.decode(msg)["magnetic_heading"]` |
-| `pms.commb.ias60(msg)` | `pymodes.decode(msg)["indicated_airspeed"]` |
-| `pms.commb.mach60(msg)` | `pymodes.decode(msg)["mach"]` |
-| `pms.commb.vr60baro(msg)` | `pymodes.decode(msg)["baro_vertical_rate"]` |
-| `pms.commb.vr60ins(msg)` | `pymodes.decode(msg)["inertial_vertical_rate"]` |
+| `pms.common.df(msg)` | `pyModeS.decode(msg)["df"]` |
+| `pms.common.icao(msg)` | `pyModeS.decode(msg)["icao"]` |
+| `pms.common.typecode(msg)` | `pyModeS.decode(msg)["typecode"]` |
+| `pms.common.altcode(msg)` | `pyModeS.decode(msg)["altitude"]` (DF4/20) |
+| `pms.common.idcode(msg)` | `pyModeS.decode(msg)["squawk"]` (DF5/21) |
+| `pms.adsb.callsign(msg)` | `pyModeS.decode(msg)["callsign"]` |
+| `pms.adsb.category(msg)` | `pyModeS.decode(msg)["category"]` |
+| `pms.adsb.altitude(msg)` | `pyModeS.decode(msg)["altitude"]` |
+| `pms.adsb.velocity(msg)` | `pyModeS.decode(msg)` → `groundspeed`, `track`, `vertical_rate`, or `airspeed`/`airspeed_type`/`heading` for subtypes 3/4 |
+| `pms.adsb.oe_flag(msg)` | `pyModeS.decode(msg)["cpr_format"]` |
+| `pms.adsb.position(m0, m1, t0, t1)` | `pyModeS.decode([m0, m1], timestamps=[t0, t1])` |
+| `pms.adsb.position_with_ref(msg, lat, lon)` | `pyModeS.decode(msg, reference=(lat, lon))` |
+| `pms.adsb.surface_position_with_ref(msg, lat, lon)` | `pyModeS.decode(msg, surface_ref=(lat, lon))` |
+| `pms.bds.infer(msg, mrar=True)` | `pyModeS.decode(msg)["bds"]` (for DF20/21) |
+| `pms.commb.cs20(msg)` | `pyModeS.decode(msg)["callsign"]` (for BDS 2,0) |
+| `pms.commb.selalt40mcp(msg)` | `pyModeS.decode(msg)["selected_altitude_mcp"]` |
+| `pms.commb.selalt40fms(msg)` | `pyModeS.decode(msg)["selected_altitude_fms"]` |
+| `pms.commb.p40baro(msg)` | `pyModeS.decode(msg)["baro_pressure_setting"]` |
+| `pms.commb.roll50(msg)` | `pyModeS.decode(msg)["roll"]` |
+| `pms.commb.trk50(msg)` | `pyModeS.decode(msg)["true_track"]` |
+| `pms.commb.gs50(msg)` | `pyModeS.decode(msg)["groundspeed"]` |
+| `pms.commb.tas50(msg)` | `pyModeS.decode(msg)["true_airspeed"]` |
+| `pms.commb.rtrk50(msg)` | `pyModeS.decode(msg)["track_rate"]` |
+| `pms.commb.hdg60(msg)` | `pyModeS.decode(msg)["magnetic_heading"]` |
+| `pms.commb.ias60(msg)` | `pyModeS.decode(msg)["indicated_airspeed"]` |
+| `pms.commb.mach60(msg)` | `pyModeS.decode(msg)["mach"]` |
+| `pms.commb.vr60baro(msg)` | `pyModeS.decode(msg)["baro_vertical_rate"]` |
+| `pms.commb.vr60ins(msg)` | `pyModeS.decode(msg)["inertial_vertical_rate"]` |
 
 See the [API reference](api.md) for the full list of decoded fields.
 
@@ -146,8 +146,8 @@ for msg in stream:
                 ac_states[icao]["t_odd"],
             )
 
-# pymodes 3 — one line of state
-from pymodes import PipeDecoder
+# pyModeS 3 — one line of state
+from pyModeS import PipeDecoder
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, t in stream:
     result = pipe.decode(msg, timestamp=t)
@@ -169,7 +169,7 @@ and thread-safety notes.
 ## CLI rename: `modeslive` → `modes live`
 
 pyModeS 2.x shipped a single console script called `modeslive`.
-pymodes 3 replaces it with a new `modes` command that has subcommands:
+pyModeS 3 replaces it with a new `modes` command that has subcommands:
 
 ```sh
 # v2
@@ -191,8 +191,8 @@ Notable differences:
   by default — pipe to `jq`, redirect to a file, or stream into
   a parquet writer.
 - **Optional TUI.** The interactive aircraft table is now
-  `modes live --tui`, which requires the `pymodes[tui]` extra
-  (`pip install "pymodes[tui]"`). Powered by `rich` instead of
+  `modes live --tui`, which requires the `pyModeS[tui]` extra
+  (`pip install "pyModeS[tui]"`). Powered by `rich` instead of
   `curses`.
 - **RTL-SDR.** Deferred to a follow-up release. For now, pipe
   through `dump1090 --net` and connect via `--network
@@ -217,5 +217,5 @@ pyModeS<3
 ```
 
 and migrate incrementally. v3 and v2 install under different import
-names (`pymodes` vs `pyModeS`), so they can coexist in the same
+names (`pyModeS` vs `pyModeS`), so they can coexist in the same
 virtualenv during migration — import whichever you need per module.

@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.surv — DF4/5 surveillance replies."""
+"""Tests for pyModeS.decoder.surv — DF4/5 surveillance replies."""
 
-from pymodes import decode
-from pymodes._bits import crc_remainder
+from pyModeS import decode
+from pyModeS._bits import crc_remainder
 
 
 def _build_surv_msg(header: int, icao: int) -> str:
@@ -77,7 +77,7 @@ class TestV2VectorSurvey:
     """Plan 5 Task 3: real-world vectors lifted from pyModeS v2.21.1's
     tests/test_surv.py. The v2 tests call the low-level surv.altitude /
     surv.fs / surv.um / surv.identity helpers on these hexes; v3 goes
-    through pymodes.decode(). These are the only live DF4/DF5 vectors
+    through pyModeS.decode(). These are the only live DF4/DF5 vectors
     v2 shipped, so we keep them as a coverage anchor here.
     """
 

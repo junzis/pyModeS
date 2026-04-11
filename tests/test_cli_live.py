@@ -24,7 +24,7 @@ class TestLiveMainLoop:
     @pytest.fixture(autouse=True)
     def _patch_source(self, monkeypatch):
         """Replace NetworkSource with a FakeSource for every test."""
-        import pymodes.cli.live as live_mod
+        import pyModeS.cli.live as live_mod
 
         def _fake_network_source(host, port, **kwargs):
             return self._fake_source
@@ -39,7 +39,7 @@ class TestLiveMainLoop:
                 ("8D485020994409940838175B284F", 1001.0),
             ]
         )
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(["live", "--network", "host.example:30005"])
         assert code == 0
@@ -54,7 +54,7 @@ class TestLiveMainLoop:
     def test_dump_to_file(self, capsys, tmp_path):
         self._fake_source = FakeSource([("8D406B902015A678D4D220AA4BDA", 1000.0)])
         outfile = tmp_path / "dump.jsonl"
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(["live", "--network", "h:1", "--dump-to", str(outfile)])
         assert code == 0
@@ -68,7 +68,7 @@ class TestLiveMainLoop:
     def test_quiet_suppresses_stdout(self, capsys, tmp_path):
         self._fake_source = FakeSource([("8D406B902015A678D4D220AA4BDA", 1000.0)])
         outfile = tmp_path / "dump.jsonl"
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(
             [
@@ -90,7 +90,7 @@ class TestLiveMainLoop:
     def test_surface_ref_forwarded_to_pipe(self, capsys):
         # Use a real surface vector; lat/lon should appear in the output
         self._fake_source = FakeSource([("903a23ff426a4e65f7487a775d17", 1000.0)])
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(["live", "--network", "h:1", "--surface-ref", "LFBO"])
         assert code == 0
@@ -100,10 +100,10 @@ class TestLiveMainLoop:
         assert abs(data["latitude"] - 43.62646) < 0.001
 
     def test_full_dict(self, capsys):
-        from pymodes._schema import _FULL_SCHEMA
+        from pyModeS._schema import _FULL_SCHEMA
 
         self._fake_source = FakeSource([("8D406B902015A678D4D220AA4BDA", 1000.0)])
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(["live", "--network", "h:1", "--full-dict"])
         assert code == 0
@@ -117,25 +117,25 @@ class TestLiveMainLoop:
         self._fake_source = FakeSource([])
         # Force the textual import to fail as if it's not installed.
         # Patching builtins.__import__ is sticky; instead, inject a
-        # fake that raises when `pymodes.cli._tui` is imported.
+        # fake that raises when `pyModeS.cli._tui` is imported.
         import sys as _sys
 
         class _RaisingFinder:
             def find_spec(self, name, path=None, target=None):
-                if name == "pymodes.cli._tui":
+                if name == "pyModeS.cli._tui":
                     raise ImportError("no textual installed")
                 return None
 
         monkeypatch.setattr(_sys, "meta_path", [_RaisingFinder(), *_sys.meta_path])
         # Also clear any cached import
-        _sys.modules.pop("pymodes.cli._tui", None)
+        _sys.modules.pop("pyModeS.cli._tui", None)
 
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         code = main(["live", "--network", "h:1", "--tui"])
         assert code == 3
         captured = capsys.readouterr()
-        assert "pymodes[tui]" in captured.err
+        assert "pyModeS[tui]" in captured.err
         assert "textual" in captured.err
 
 
@@ -148,7 +148,7 @@ class TestLiveGracefulShutdown:
         stop-flag branch directly: it monkeypatches the source to
         yield one frame then set the module-level stop flag.
         """
-        import pymodes.cli.live as live_mod
+        import pyModeS.cli.live as live_mod
 
         stop_holder: dict[str, Any] = {}
 
@@ -174,7 +174,7 @@ class TestLiveGracefulShutdown:
         monkeypatch.setattr(live_mod, "NetworkSource", _fake_network_source)
         monkeypatch.setattr(live_mod, "_install_signal_handlers", capturing_install)
 
-        from pymodes.cli import main
+        from pyModeS.cli import main
 
         result: dict[str, Any] = {"code": None}
 

@@ -1,8 +1,8 @@
-"""Tests for pymodes.PipeDecoder."""
+"""Tests for pyModeS.PipeDecoder."""
 
 import pytest
 
-from pymodes import PipeDecoder
+from pyModeS import PipeDecoder
 
 
 class TestPipeDecoderSkeleton:
@@ -65,7 +65,7 @@ class TestPipeDecoderSkeleton:
         assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
     def test_full_dict_propagates_to_decode(self):
-        from pymodes._schema import _FULL_SCHEMA
+        from pyModeS._schema import _FULL_SCHEMA
 
         pipe = PipeDecoder(full_dict=True)
         result = pipe.decode("8D406B902015A678D4D220AA4BDA")
@@ -75,7 +75,7 @@ class TestPipeDecoderSkeleton:
 
 class TestKnownKwargPlumbing:
     def test_message_decode_accepts_known(self):
-        from pymodes import Message
+        from pyModeS import Message
 
         msg = Message("8D406B902015A678D4D220AA4BDA")
         # No-op for non-CommB messages, but the kwarg must be accepted
@@ -83,7 +83,7 @@ class TestKnownKwargPlumbing:
         assert result["df"] == 17
 
     def test_core_decode_accepts_known(self):
-        from pymodes import decode
+        from pyModeS import decode
 
         result = decode("8D406B902015A678D4D220AA4BDA", known={"groundspeed": 420})
         assert result["df"] == 17
@@ -103,7 +103,7 @@ class TestStateTracking:
     def test_known_passed_to_subsequent_decode(self, monkeypatch):
         # Verify that prior groundspeed/track is forwarded as known=
         # to the next decode. Capture via monkeypatch on Message.decode.
-        from pymodes import Message
+        from pyModeS import Message
 
         captured: list[dict | None] = []
         original_decode = Message.decode
@@ -150,7 +150,7 @@ class TestStateTracking:
         # `_DECODED_TO_KNOWN`, so the first decode leaves state with
         # only `_last_seen`. The second decode filters out that key
         # and passes `known=None` to Message.decode (not an empty dict).
-        from pymodes import Message
+        from pyModeS import Message
 
         captured: list[dict | None] = []
         original_decode = Message.decode
@@ -184,7 +184,7 @@ class TestEndToEndDisambiguation:
     """
 
     def test_velocity_then_ambiguous_commb_picks_bds60(self):
-        from pymodes.decoder.bds._infer import infer
+        from pyModeS.decoder.bds._infer import infer
 
         # The ambiguous payload (from tests/test_bds_commb.py) decodes
         # plausibly as both BDS 5,0 (groundspeed=240) and BDS 6,0
@@ -260,8 +260,8 @@ class TestKnownKeyInvariant:
     """
 
     def test_score_field_known_keys_are_populated_by_pipe(self):
-        from pymodes._pipe import _DECODED_TO_KNOWN
-        from pymodes.decoder.bds._infer import (
+        from pyModeS._pipe import _DECODED_TO_KNOWN
+        from pyModeS.decoder.bds._infer import (
             _SCORE_FIELDS_BDS50,
             _SCORE_FIELDS_BDS60,
         )
@@ -426,12 +426,12 @@ class TestCprPairAccumulation:
         # popped from pending but no lat/lon is merged into the result.
         # Easier to monkeypatch the pair solver than to hand-construct
         # a pair straddling a zone boundary. _pipe.py lazy-imports the
-        # resolver from `pymodes.position`, so we patch the re-export
+        # resolver from `pyModeS.position`, so we patch the re-export
         # there (not the underlying _cpr module).
-        import pymodes.position
+        import pyModeS.position
 
         monkeypatch.setattr(
-            pymodes.position, "airborne_position_pair", lambda *a, **kw: None
+            pyModeS.position, "airborne_position_pair", lambda *a, **kw: None
         )
 
         pipe = PipeDecoder()

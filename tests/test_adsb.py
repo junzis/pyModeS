@@ -1,6 +1,6 @@
-"""Tests for pymodes.decoder.adsb — ADSB class dispatch for DF17/18."""
+"""Tests for pyModeS.decoder.adsb — ADSB class dispatch for DF17/18."""
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestAdsbDispatchIdentification:
@@ -28,7 +28,7 @@ class TestAdsbDispatchIdentification:
         # dispatch table. The ADSB class returns just {typecode: 0}
         # so the Decoded dict has df + icao + crc_valid + typecode
         # but NO `bds` key and no BDS fields.
-        from pymodes._bits import crc_remainder
+        from pyModeS._bits import crc_remainder
 
         n = int("8D406B902015A678D4D220AA4BDA", 16)
         # ME starts at message bit 32. TC is bits 32-36 (MSB-first).
@@ -60,7 +60,7 @@ class TestAdsbBds61Subtype2:
         n = (17 << 107) | (0x406B90 << 80) | (payload << 24)
 
         # Fix up the CRC so crc_valid is True.
-        from pymodes._bits import crc_remainder
+        from pyModeS._bits import crc_remainder
 
         n_no_crc = n & ~0xFFFFFF
         n_no_crc |= crc_remainder(n_no_crc, 112)

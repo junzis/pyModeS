@@ -1,0 +1,360 @@
+"""Message base class and Decoded return type for pyModeS v3.
+
+This module defines two public types:
+
+- Decoded: the dict subclass returned by decode() calls. Adds
+  attribute access and a to_json() helper while behaving as a plain
+  dict for json.dumps, pandas, iteration, and all dict operations.
+
+- Message: the canonical internal representation of a Mode-S message.
+  Holds a single int (56 or 112 bits). Header fields (df, icao, crc,
+  crc_valid) are computed eagerly in __init__ as plain instance
+  attributes — ~15% faster than the descriptor indirection of
+  cached_property on streaming decode workloads, and the decode()
+  hot path always needs all four anyway. typecode remains lazy
+  (cached_property) because it's DF17/18-only and often unread.
+"""
+
+import json
+from functools import cached_property
+from typing import Any, Self
+
+from pyModeS._bits import crc_remainder, extract_unsigned
+from pyModeS.errors import InvalidHexError, InvalidLengthError, UnknownDFError
+
+_HEX_CHARS = frozenset("0123456789abcdefABCDEF")
+_VALID_LENGTHS = (56, 112)
+_HEX_LENGTHS = (14, 28)
+
+
+class Decoded(dict[str, Any]):
+    """A decoded Mode-S message.
+
+    Behaves as a plain dict in every way that matters: JSON-serializable
+    via `json.dumps`, works with `pd.DataFrame([msg1, msg2, ...])`,
+    iterable, unpackable via `**`, supports `.get("key")` for missing keys.
+
+    Adds attribute access as a convenience:
+        msg["typecode"]  # standard dict access
+        msg.typecode     # attribute access — equivalent
+
+    Missing-key semantics differ by access style:
+        msg.get("foo")     # → None (safe lookup)
+        msg["foo"]         # → KeyError (dict semantics)
+        msg.foo            # → AttributeError (attribute semantics)
+    """
+
+    def __getattr__(self, key: str) -> Any:
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(key) from None
+
+    def to_json(self, *, indent: int | None = None) -> str:
+        """Serialize to a JSON string.
+
+        Uses `default=str` as a defensive fallback for any
+        non-JSON-native value, but every pyModeS-decoded field is
+        already JSON-native (int, float, str, bool, None, list, dict).
+        """
+        return json.dumps(self, indent=indent, default=str)
+
+
+class Message:
+    """Canonical internal representation of a Mode-S message.
+
+    Stores the message as a Python int of 56 or 112 bits. Header
+    fields (df, icao, crc, crc_valid) are computed eagerly in
+    __init__ as plain instance attributes.
+
+    Construction:
+        Message("8D406B902015A678D4D220AA4BDA")  # long from hex
+        Message("20000000000000")                 # short from hex
+        Message(0x8D406B9020..., length=112)      # from int with explicit length
+
+    Alternative construction from the payload alone:
+        Message.from_payload("2015A678D4D220", df=17, icao="406B90")
+
+    Note: no `__slots__` — the remaining ``typecode`` cached_property
+    stores its cached value in ``__dict__``, so slot-based instances
+    are incompatible. Per the v3 design, the small per-instance memory
+    overhead is acceptable.
+    """
+
+    def __init__(
+        self,
+        msg: str | int | bytes,
+        /,
+        *,
+        length: int | None = None,
+        icao_hint: str | None = None,
+    ) -> None:
+        if isinstance(msg, str):
+            self._n, self._length = self._parse_hex(msg)
+        elif isinstance(msg, bytes):
+            self._n = int.from_bytes(msg, "big")
+            self._length = len(msg) * 8
+            if self._length not in _VALID_LENGTHS:
+                raise InvalidLengthError(actual=len(msg) * 2, expected=_HEX_LENGTHS)
+        elif isinstance(msg, int):
+            self._n = msg
+            self._length = length if length is not None else 112
+            if self._length not in _VALID_LENGTHS:
+                raise InvalidLengthError(
+                    actual=self._length // 4, expected=_HEX_LENGTHS
+                )
+        else:
+            raise TypeError(f"msg must be str, int, or bytes; got {type(msg).__name__}")
+
+        # Optional out-of-band ICAO hint for DF20/21 (and other
+        # CRC-ICAO formats). Stored so `icao` can prefer it over the
+        # CRC-derived value, and so `decode()` can set `icao_verified`.
+        self._icao_hint = (
+            self._normalize_icao(icao_hint) if icao_hint is not None else None
+        )
+        self._init_header_fields()
+
+    def _init_header_fields(self) -> None:
+        """Eagerly compute df, icao, crc, crc_valid.
+
+        Called from ``__init__`` and ``from_payload`` after ``_n``,
+        ``_length``, and ``_icao_hint`` are set. Populates plain
+        instance attributes so Message.decode() can read them directly
+        without descriptor indirection through cached_property.
+
+        Bit-extraction is inlined here (rather than calling
+        ``extract_unsigned``) because this runs in the decode hot path
+        on every message and the inline form saves a function call
+        per field.
+        """
+        n = self._n
+        length = self._length
+        self.df: int = (n >> (length - 5)) & 0x1F
+        self.crc: int = crc_remainder(n, length)
+        if self.df in (11, 17, 18):
+            icao_int = (n >> (length - 32)) & 0xFFFFFF
+            self.icao: str = f"{icao_int:06X}"
+        elif self._icao_hint is not None:
+            self.icao = self._icao_hint
+        else:
+            # DF0/4/5/16/20/21: ICAO is the CRC remainder.
+            self.icao = f"{self.crc:06X}"
+        if self.df in (17, 18):
+            self.crc_valid: bool = self.crc == 0
+        else:
+            # DF0/4/5/11/16/20/21: CRC encodes ICAO (+ optional BDS
+            # overlay); the remainder is always a valid 24-bit ICAO-
+            # shaped value. Stronger verification comes from the
+            # trusted-ICAO set in PipeDecoder via icao_verified.
+            self.crc_valid = self.df in (0, 4, 5, 11, 16, 20, 21)
+
+    @staticmethod
+    def _parse_hex(hexstr: str) -> tuple[int, int]:
+        """Parse a hex string to (int value, bit length). Raises on error.
+
+        Hex-char validation is delegated to ``int(hexstr, 16)`` rather than
+        a Python-level ``all(c in _HEX_CHARS for c in hexstr)`` loop. The
+        built-in parse is an order of magnitude faster and raises
+        ``ValueError`` on the first invalid character, which we translate
+        into :class:`InvalidHexError` for the public API.
+
+        Hex validity is checked before length so that an obviously-invalid
+        input like ``"XYZ"`` raises :class:`InvalidHexError` rather than
+        :class:`InvalidLengthError`, matching the pre-optimization contract.
+        """
+        try:
+            value = int(hexstr, 16)
+        except ValueError as e:
+            raise InvalidHexError(hexstr) from e
+        if len(hexstr) not in _HEX_LENGTHS:
+            raise InvalidLengthError(actual=len(hexstr), expected=_HEX_LENGTHS)
+        return value, len(hexstr) * 4
+
+    @staticmethod
+    def _normalize_icao(icao: str) -> str:
+        """Validate and uppercase a 6-character hex ICAO address."""
+        if len(icao) != 6 or not all(c in _HEX_CHARS for c in icao):
+            raise InvalidHexError(icao)
+        return icao.upper()
+
+    @classmethod
+    def from_payload(cls, payload: str, *, df: int, icao: str) -> Self:
+        """Construct a Message from the 56-bit payload alone plus explicit headers.
+
+        Useful when the full message is not available (e.g., logs that
+        strip the outer CRC and header) but the caller knows the
+        downlink format and ICAO out of band.
+
+        Args:
+            payload: The 56-bit payload (ADS-B ME / Comm-B MB) as 14
+                hex characters.
+            df: Downlink format (used to build the synthetic full message).
+            icao: 24-bit ICAO address as a 6-character hex string.
+
+        Returns:
+            A Message with `_length == 112` representing a synthetic long
+            message: header(df) + icao + payload + zero CRC. The CRC
+            will not validate; `crc_valid` returns False.
+        """
+        if len(payload) != 14 or not all(c in _HEX_CHARS for c in payload):
+            raise InvalidLengthError(actual=len(payload), expected=(14,))
+        icao = cls._normalize_icao(icao)
+        if df < 0 or df > 31:
+            raise UnknownDFError(df)
+
+        payload_int = int(payload, 16)
+        icao_int = int(icao, 16)
+        # Build 112-bit message: [df:5][ca:3][icao:24][payload:56][parity:24]
+        # For from_payload we set ca=0 and parity=0 (synthetic, CRC not valid).
+        n = (df << 107) | (icao_int << 80) | (payload_int << 24)
+        obj = cls.__new__(cls)
+        obj._n = n
+        obj._length = 112
+        # Treat the caller-supplied icao as an out-of-band hint so
+        # decode() can surface icao_verified=True for DF20/21 and so
+        # non-ADS-B DFs pick up the hint rather than a garbage CRC.
+        obj._icao_hint = icao
+        obj._init_header_fields()
+        return obj
+
+    @cached_property
+    def typecode(self) -> int | None:
+        """ADS-B type code (bits 32-36), only defined for DF17/18."""
+        if self.df not in (17, 18):
+            return None
+        return extract_unsigned(self._n, 32, 5, self._length)
+
+    def decode(
+        self,
+        *,
+        reference: tuple[float, float] | None = None,
+        surface_ref: str | tuple[float, float] | None = None,
+        known: dict[str, Any] | None = None,
+        full_dict: bool = False,
+    ) -> Decoded:
+        """Decode every field of this message.
+
+        Returns a Decoded dict containing df, icao, crc_valid, and
+        whatever DF-specific fields the appropriate decoder class
+        extracts. For DF20/21 the dict also includes `icao_verified`
+        (True when an `icao_hint` was supplied at construction time,
+        False when the ICAO was derived from the CRC remainder).
+
+        Args:
+            reference: Optional (lat, lon) for single-message airborne
+                CPR resolution (BDS 0,5). Must be within 180 NM of the
+                true position. If provided and the decoded message is
+                an airborne position, the result dict gains `latitude`
+                and `longitude` fields.
+            surface_ref: Optional reference for surface CPR (BDS 0,6)
+                resolution. Either an ICAO airport code (e.g. "EHAM")
+                looked up in the shipped database, or an explicit
+                (lat, lon) tuple (typically the receiver location).
+                Must be within 45 NM of the true position. If omitted,
+                only raw CPR fields are returned. Unknown airport
+                codes raise ValueError.
+            known: Optional aircraft state dict (e.g. {"groundspeed":
+                420, "track": 90, "altitude": 35000}) used by the
+                Comm-B BDS inference to disambiguate BDS 5,0 vs 6,0
+                when both heuristic validators pass. Ignored for
+                non-Comm-B downlink formats.
+            full_dict: When True, the result dict is augmented with
+                every key from `_FULL_SCHEMA`, defaulting missing
+                keys to `None`. Useful for pandas/parquet workflows
+                that need a uniform shape across messages.
+        """
+        result: Decoded = Decoded(
+            {
+                "df": self.df,
+                "icao": self.icao,
+                "crc_valid": self.crc_valid,
+            }
+        )
+
+        if self.df in (20, 21):
+            result["icao_verified"] = self._icao_hint is not None
+
+        decoder_cls = _DECODERS.get(self.df)
+        if decoder_cls is not None:
+            decoder = decoder_cls(
+                self._n, df=self.df, icao=self.icao, length=self._length
+            )
+            result.update(decoder.decode(known=known))
+
+        self._resolve_position(result, reference=reference, surface_ref=surface_ref)
+
+        if full_dict:
+            self._populate_full_dict(result)
+
+        return result
+
+    @staticmethod
+    def _populate_full_dict(result: Decoded) -> None:
+        """Fill missing _FULL_SCHEMA keys with None in place."""
+        from pyModeS._schema import _FULL_SCHEMA
+
+        for key in _FULL_SCHEMA:
+            if key not in result:
+                result[key] = None
+
+    @staticmethod
+    def _resolve_position(
+        result: Decoded,
+        *,
+        reference: tuple[float, float] | None,
+        surface_ref: str | tuple[float, float] | None,
+    ) -> None:
+        """Resolve single-msg CPR lat/lon in-place.
+
+        Only runs for BDS 0,5 (airborne, needs `reference`) or BDS 0,6
+        (surface, needs `surface_ref`). Pair resolution is handled by
+        PipeDecoder in phase 9.
+        """
+        bds = result.get("bds")
+        if bds not in ("0,5", "0,6"):
+            return
+        if "cpr_format" not in result:
+            return
+
+        # Import locally to avoid loading position module at import time
+        from pyModeS.position import (
+            airborne_position_with_ref,
+            resolve_surface_ref,
+            surface_position_with_ref,
+        )
+
+        cpr_format = result["cpr_format"]
+        cpr_lat = result["cpr_lat"]
+        cpr_lon = result["cpr_lon"]
+
+        if bds == "0,5":
+            if reference is None:
+                return
+            lat_ref, lon_ref = reference
+            lat, lon = airborne_position_with_ref(
+                cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
+            )
+        else:  # 0,6
+            if surface_ref is None:
+                return
+            lat_ref, lon_ref = resolve_surface_ref(surface_ref)
+            lat, lon = surface_position_with_ref(
+                cpr_format, cpr_lat, cpr_lon, lat_ref, lon_ref
+            )
+
+        result["latitude"] = lat
+        result["longitude"] = lon
+
+
+# Deferred module-level import of the DF → decoder dispatch table.
+#
+# The decoder package imports ``Decoded`` from this module at load time,
+# so we cannot ``from pyModeS.decoder import _DECODERS`` at the top of
+# the file — Python would re-enter pyModeS.message mid-load. But by the
+# time we reach this line, both ``Decoded`` and ``Message`` are fully
+# defined, so the decoder package can safely resolve its ``Decoded``
+# dependency while importing. Running the import here (once) lets
+# ``Message.decode()`` reference ``_DECODERS`` as a plain module global
+# instead of paying ``from pyModeS.decoder import _DECODERS`` on every
+# call, which the profiler showed as ~4% of decode-hot-path time.
+from pyModeS.decoder import _DECODERS  # noqa: E402

@@ -1,6 +1,6 @@
-"""Tests for pymodes.decoder.bds.bds62 — ADS-B target state and status (BDS 6,2)."""
+"""Tests for pyModeS.decoder.bds.bds62 — ADS-B target state and status (BDS 6,2)."""
 
-from pymodes import decode
+from pyModeS import decode
 
 
 class TestBds62:

@@ -1,7 +1,7 @@
-"""Tests for pymodes.decoder.bds.bds09 — ADS-B airborne velocity (BDS 0,9, TC=19)."""
+"""Tests for pyModeS.decoder.bds.bds09 — ADS-B airborne velocity (BDS 0,9, TC=19)."""
 
-from pymodes import decode
-from pymodes.decoder.bds.bds09 import decode_bds09  # noqa: F401
+from pyModeS import decode
+from pyModeS.decoder.bds.bds09 import decode_bds09  # noqa: F401
 
 
 class TestBds09GroundSpeed:

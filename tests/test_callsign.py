@@ -1,6 +1,6 @@
-"""Tests for pymodes._callsign 6-bit-per-char callsign decoder."""
+"""Tests for pyModeS._callsign 6-bit-per-char callsign decoder."""
 
-from pymodes._callsign import decode_callsign, is_valid_callsign_char
+from pyModeS._callsign import decode_callsign, is_valid_callsign_char
 
 
 class TestDecodeCallsign:

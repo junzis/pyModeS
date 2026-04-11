@@ -1,12 +1,12 @@
-"""Tests for pymodes.core.decode() top-level function."""
+"""Tests for pyModeS.core.decode() top-level function."""
 
 import json
 
 import pytest
 
-from pymodes import decode
-from pymodes.errors import InvalidHexError, InvalidLengthError
-from pymodes.message import Decoded
+from pyModeS import decode
+from pyModeS.errors import InvalidHexError, InvalidLengthError
+from pyModeS.message import Decoded
 
 
 class TestDecodeSingleMessage:

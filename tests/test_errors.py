@@ -1,8 +1,8 @@
-"""Tests for pymodes.errors exception hierarchy."""
+"""Tests for pyModeS.errors exception hierarchy."""
 
 import pytest
 
-from pymodes.errors import (
+from pyModeS.errors import (
     DecodeError,
     InvalidHexError,
     InvalidLengthError,
