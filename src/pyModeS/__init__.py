@@ -27,7 +27,11 @@ from importlib.metadata import version as _version
 from typing import Any
 
 from pyModeS._pipe import PipeDecoder
-from pyModeS._v2_removed import v2_removed_error
+from pyModeS._v2_removed import (
+    _V2_REMOVED_NAMES,
+    install_v2_removed_finder,
+    raise_v2_removed,
+)
 from pyModeS.core import decode
 from pyModeS.errors import (
     DecodeError,
@@ -36,6 +40,12 @@ from pyModeS.errors import (
     UnknownDFError,
 )
 from pyModeS.message import Decoded, Message
+
+# Intercept every `import pyModeS.<v2_removed>` at the import-
+# system level with a single meta-path finder — see
+# pyModeS/_v2_removed.py for the full list and the loader that
+# raises on exec.
+install_v2_removed_finder()
 
 __version__ = _version("pyModeS")
 
@@ -51,28 +61,14 @@ __all__ = [
     "decode",
 ]
 
-# Names that used to live directly under pyModeS in the v2 API.
-# Any attribute access like ``pyModeS.adsb`` or the equivalent
-# ``from pyModeS import adsb`` (after PEP 562) is caught below
-# and turned into a :class:`V2APIRemovedError` that points at
-# :func:`pyModeS.decode` and the migration guide. The stub files
-# at ``pyModeS/adsb.py`` etc. handle the ``from pyModeS.adsb
-# import X`` pattern; this hook handles the bare attribute path.
-_V2_REMOVED_NAMES: frozenset[str] = frozenset(
-    {
-        "adsb",
-        "commb",
-        "ehs",
-        "els",
-        "common",
-        "bds",
-        "streamer",
-        "extra",
-    }
-)
 
-
+# ``pyModeS.adsb`` bare attribute access (after ``import pyModeS``)
+# doesn't trip the import system, so the meta-path finder never
+# sees it. PEP 562 gives us this package-level hook as the fallback:
+# anything in ``_V2_REMOVED_NAMES`` (defined in _v2_removed.py) is
+# routed through the same ``raise_v2_removed`` helper the loader
+# uses, so the error text stays uniform.
 def __getattr__(name: str) -> Any:
     if name in _V2_REMOVED_NAMES:
-        raise v2_removed_error(f"pyModeS.{name}")
+        raise_v2_removed(f"pyModeS.{name}")
     raise AttributeError(f"module 'pyModeS' has no attribute {name!r}")
