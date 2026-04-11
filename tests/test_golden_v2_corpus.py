@@ -3,12 +3,10 @@
 Loads tests/fixtures/golden_v2.json (a deduplicated + per-DF-capped
 snapshot of pyModeS 2.21.1 output on tests/data/*.csv) and asserts
 that pyModeS.decode() produces matching values for every v2-emitted
-key.
-
-Renamed keys are mapped via pyModeS._v2_compat.V2_DEPRECATED_KEYS.
-Numeric fields with known small divergence use absolute tolerances
-from V2_VALUE_TOLERANCE. Unknown mismatches fail the test with a
-precise message identifying the hex and the mismatched key.
+key. The field-name surface is identical between v2 and v3, so the
+comparison is direct (no rename bridge, no numeric-tolerance table)
+aside from a handful of string-normalization helpers below for
+v2-style quirks like '_'-padded callsigns and lowercase ICAOs.
 
 If the snapshot itself recorded a v2 error for a given message
 (``_v2_error`` key), the comparison is skipped for that message.
@@ -23,7 +21,6 @@ from typing import Any
 import pytest
 
 from pyModeS import decode
-from pyModeS._v2_compat import V2_DEPRECATED_KEYS, V2_VALUE_TOLERANCE
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "golden_v2.json"
 
@@ -110,10 +107,11 @@ def test_v3_matches_v2_golden(msg: str) -> None:
     v3_output = decode(msg)
 
     for v2_key, v2_value in v2_output.items():
-        v3_key = V2_DEPRECATED_KEYS.get(v2_key, v2_key)
-
-        # Normalize the bds key v2↔v3 style difference in the test,
-        # not in the snapshot, so the snapshot stays faithful to v2.
+        # Field names are identical between v2 and v3, so the key
+        # is the same on both sides. Normalize v2-side string
+        # quirks (BDS style, lowercase ICAO, '_'-padded callsigns)
+        # in the test rather than in the snapshot so the snapshot
+        # stays faithful to v2.
         if v2_key == "bds":
             v2_value = _bds_normalize(v2_value)
         if v2_key == "icao":
@@ -121,23 +119,14 @@ def test_v3_matches_v2_golden(msg: str) -> None:
         if v2_key == "callsign":
             v2_value = _callsign_normalize(v2_value)
 
-        v3_value = v3_output.get(v3_key)
+        v3_value = v3_output.get(v2_key)
         if v2_key == "icao":
             v3_value = _icao_normalize(v3_value)
-        tol = V2_VALUE_TOLERANCE.get(v3_key)
 
         if isinstance(v2_value, set):
             # bds: v2 emitted a candidate list, v3 picked one; match
             # if v3's single winner is one of v2's candidates.
             assert v3_value in v2_value, _mismatch(msg, v2_key, v2_value, v3_value)
-        elif (
-            tol is not None
-            and isinstance(v3_value, (int, float))
-            and isinstance(v2_value, (int, float))
-        ):
-            assert abs(v3_value - v2_value) < tol, _mismatch(
-                msg, v2_key, v2_value, v3_value
-            )
         else:
             assert v3_value == v2_value, _mismatch(msg, v2_key, v2_value, v3_value)
 

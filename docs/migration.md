@@ -104,18 +104,10 @@ See the [API reference](api.md) for the full list of decoded fields.
 
 ## Renamed keys
 
-Some field names may change in v3 for clarity or consistency with
-the canonical schema. If any renames exist, this table lists them:
-
-<!-- RENAMED KEYS START -->
-_No pyModeS 2.21.1 field names were renamed in v3. The field-name surface is identical across the two versions; only the invocation shape changed (function-per-field → single `decode()`). See the equivalence table above._
-<!-- RENAMED KEYS END -->
-
-Regenerate this section by running:
-
-```sh
-uv run python scripts/gen_migration_table.py
-```
+No pyModeS 2.21.1 field names were renamed in v3. The field-name
+surface is identical across the two versions; only the invocation
+shape changed (function-per-field → single `decode()`). See the
+equivalence table above.
 
 ## Live streams
 

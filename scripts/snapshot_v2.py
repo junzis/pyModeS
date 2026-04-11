@@ -10,7 +10,6 @@ bucket at 200 messages, dispatches to v2 functions based on DF/TC/BDS,
 and writes tests/fixtures/golden_v2.json sorted by hex.
 
 The output is committed to the repo. Re-run this script only when:
-- V2_DEPRECATED_KEYS or V2_VALUE_TOLERANCE change in meaning
 - The dispatch table below gains new v2 function coverage
 - The source CSVs in tests/data/ change
 """
