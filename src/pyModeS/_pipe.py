@@ -33,6 +33,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from pyModeS._aero import gs_to_ias, gs_to_mach
 from pyModeS.errors import InvalidHexError, InvalidLengthError
 from pyModeS.message import Decoded, Message
 
@@ -133,6 +134,23 @@ class PipeDecoder:
         known: dict[str, Any] | None
         if prior_state:
             known = {k: v for k, v in prior_state.items() if not k.startswith("_")}
+            # Derive the BDS 6,0 scoring fields (ias, mach) and the
+            # BDS 5,0 tas slot from cached groundspeed + altitude
+            # when the caller hasn't supplied observed values. Most
+            # airborne-velocity frames (BDS 0,9 subtype 1/2) give us
+            # gs but never populate ias/mach/tas directly, which
+            # used to leave BDS 6,0 scoring without any matching
+            # reference field. TAS=GS under the zero-wind
+            # assumption in `_aero`.
+            gs = known.get("groundspeed")
+            alt = known.get("altitude")
+            if gs is not None and alt is not None:
+                if "ias" not in known:
+                    known["ias"] = gs_to_ias(gs, alt)
+                if "mach" not in known:
+                    known["mach"] = gs_to_mach(gs, alt)
+                if "tas" not in known:
+                    known["tas"] = gs
             if not known:
                 known = None
         else:
