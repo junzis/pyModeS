@@ -113,7 +113,7 @@ and live streaming.
 modes decode 8D406B902015A678D4D220AA4BDA
 
 # Decode several messages inline — comma-separated, emits JSON lines
-modes decode 8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59
+modes decode 8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59,8D406B902015A678D4D220AA4BDA
 
 # With airborne CPR reference (single message only)
 modes decode 8D40058B58C901375147EFD09357 --reference 49.0 6.0
