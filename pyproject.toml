@@ -7,8 +7,11 @@ license = { text = "GNU GPL v3" }
 readme = "README.md"
 classifiers = [
     "Development Status :: 4 - Beta",
+    "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
     "Topic :: Software Development :: Libraries",
+    "Topic :: Scientific/Engineering",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
@@ -17,15 +20,15 @@ classifiers = [
     "Typing :: Typed",
 ]
 requires-python = ">=3.11"
-dependencies = [
-    "numpy>=1.26",
-]
+# v3 has no runtime dependencies. The decoder is pure Python on
+# top of stdlib (int shifts + math + socket + json + argparse).
+# The optional `tui` extra pulls in `rich` for `modes live --tui`.
+dependencies = []
 
 [project.scripts]
 modes = "pymodes.cli:main"
 
 [project.optional-dependencies]
-rtlsdr = ["pyrtlsdr>=0.2.93"]
 tui = ["rich>=13.0"]
 
 [project.urls]
@@ -39,6 +42,10 @@ dev = [
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.15.8",
+    # rich is declared as an optional runtime extra (`pymodes[tui]`),
+    # but it's also a dev requirement so mypy can statically check
+    # src/pymodes/cli/_tui.py on a fresh clone.
+    "rich>=13.0",
 ]
 
 [tool.ruff]
