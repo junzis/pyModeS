@@ -604,6 +604,46 @@ class TestBds50Validator:
         )
         assert bds50.is_bds50(payload) is False
 
+    def test_roll_above_35_deg_rejected(self):
+        # Commercial airliners physically rarely exceed 30° bank
+        # (2 G in a level turn). v3 tightens the validator to ±35°
+        # because real-world ambiguous 5,0/6,0 Comm-B payloads
+        # often pass both validators while yielding a physically
+        # implausible roll in the 5,0 interpretation — observed
+        # on the TU Delft live feed as a -44.5° bank from an
+        # aircraft with no cached ADS-B state. Rejecting out of
+        # envelope moves the discrimination from the Phase 3
+        # scorer (requires cache) to the validator (cold-start).
+        #
+        # Construct a roll-only payload encoding -40°:
+        #   raw = round(-40 * 256 / 45) = -228
+        #   two's complement 10-bit = 1024 - 228 = 796
+        #   sign bit (top) = 1, 9-bit mag = 284
+        status = 1 << (55 - 0)  # roll status = 1
+        sign_mag = (1 << 9) | 284  # sign=1, mag=284 → value = 796
+        payload = status | (sign_mag << (55 - 10))
+        assert bds50.is_bds50(payload) is False
+
+        # Double-check the encoding by letting the decoder read
+        # it back — if this drifts the bit-layout documentation
+        # was silently wrong.
+        decoded = bds50.decode_bds50(payload)
+        assert decoded["roll"] == pytest.approx(-40.08, abs=0.05)
+
+    def test_roll_within_envelope_accepts(self):
+        # Sanity: a realistic 30° bank still passes the validator
+        # so the tighter gate doesn't over-reject normal aggressive
+        # turns (hub ATC vectors, high-bank holds, etc.).
+        #
+        # +30° encoding: raw = round(30 * 256 / 45) = 171, sign=0.
+        status = 1 << (55 - 0)
+        sign_mag = 171  # sign=0, mag=171
+        payload = status | (sign_mag << (55 - 10))
+        assert bds50.is_bds50(payload) is True
+
+        decoded = bds50.decode_bds50(payload)
+        assert decoded["roll"] == pytest.approx(30.06, abs=0.05)
+
 
 class TestBds50Decoder:
     def test_golden_full_vector(self):

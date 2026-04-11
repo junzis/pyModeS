@@ -21,7 +21,18 @@ Payload layout (56 bits, 0-indexed from payload MSB):
     bits 46-55 : true airspeed (10 bits, scale 2 = kt)
 
 Validator range checks:
-    |roll| <= 50 deg
+    |roll| <= 35 deg    — tightened from the 50° the wire format
+                          permits. Commercial airliners physically
+                          rarely exceed 30° bank (2 G in a level
+                          turn), so anything beyond ~35° is strong
+                          signal that the payload is actually
+                          garbage or a different BDS register
+                          masquerading as 5,0. The 5,0/6,0
+                          disambiguation scorer still handles the
+                          in-envelope ambiguous cases; this gate
+                          rejects out-of-envelope mis-classifications
+                          at the validator stage, before they ever
+                          reach the scorer.
     groundspeed <= 600 kt
     true_airspeed <= 600 kt
     |true_airspeed - groundspeed| <= 200 kt when both present
@@ -67,7 +78,7 @@ def is_bds50(payload: int) -> bool:
     # Range checks (only for fields whose status is 1).
     if roll_status:
         roll_deg = signed(roll_mag, 9, roll_sign) * 45.0 / 256.0
-        if abs(roll_deg) > 50.0:
+        if abs(roll_deg) > 35.0:
             return False
 
     if gs_status:
