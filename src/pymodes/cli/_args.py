@@ -159,15 +159,23 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
     Calls ``parser.error(msg)`` — which prints the message to stderr
     and exits 2 — on the first violation.
     """
-    if (
-        args.command == "decode"
-        and args.file is not None
-        and args.reference is not None
-    ):
-        parser.error(
-            "--reference is only valid with a single positional MESSAGE "
-            "(use PipeDecoder's CPR pair matching for batch/file mode)."
-        )
+    if args.command == "decode":
+        if args.file is not None and args.reference is not None:
+            parser.error(
+                "--reference is only valid with a single positional MESSAGE "
+                "(use PipeDecoder's CPR pair matching for batch/file mode)."
+            )
+        # Inline batch (comma-separated MESSAGE) has the same "multiple
+        # aircraft, no single reference" constraint as --file mode.
+        if (
+            args.message is not None
+            and "," in args.message
+            and args.reference is not None
+        ):
+            parser.error(
+                "--reference is only valid with a single positional MESSAGE "
+                "(comma-separated batch uses PipeDecoder's CPR pair matching)."
+            )
 
     if args.command == "live":
         if args.tui and args.dump_to is not None:

@@ -144,15 +144,25 @@ modes decode [--compact] [--full-dict] [--surface-ref REF]
              (MESSAGE [--reference LAT LON] | --file PATH)
 ```
 
-One-shot decode of a single hex message, or batch decode of a file
-of hex messages (one per line, or `timestamp,hex` CSV).
+Three input shapes:
+
+- **Single message** — `modes decode HEX` prints a pretty-printed
+  JSON object (or one-line compact JSON with `--compact`).
+- **Inline batch** — `modes decode HEX1,HEX2,HEX3` comma-separated
+  messages. Emits one compact JSON line per message, sharing a
+  transient `PipeDecoder` so CPR pairs resolve automatically.
+- **File mode** — `modes decode --file PATH` reads from a file (one
+  hex per line or `timestamp,hex` CSV). Use `-` as `PATH` for stdin.
 
 Flags:
 
 - `--compact` — emit one-line JSON instead of pretty-printed
+  (applies to the single-message shape; batch shapes are always
+  compact JSON lines)
 - `--full-dict` — populate every key in the canonical schema
 - `--reference LAT LON` — airborne CPR reference (only valid with
-  a single positional MESSAGE — not with `--file`)
+  a single positional MESSAGE — not with `--file` or comma-batch,
+  since one reference cannot apply to multiple aircraft)
 - `--surface-ref REF` — surface CPR reference (airport ICAO code
   like `LFBO`, or a `lat,lon` string)
 - `--file PATH` — read from a file; use `-` for stdin
@@ -165,6 +175,9 @@ modes decode 8D406B902015A678D4D220AA4BDA
 
 # Single message + airborne reference
 modes decode 8D40058B58C901375147EFD09357 --reference 49.0 6.0
+
+# Inline batch — comma-separated, emits JSON lines
+modes decode 8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59
 
 # Single message, compact JSON for piping
 modes decode 8D406B902015A678D4D220AA4BDA --compact | jq .

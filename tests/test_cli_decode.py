@@ -88,6 +88,110 @@ class TestDecodeSingleMessage:
         assert out == ""
 
 
+class TestDecodeInlineBatch:
+    def test_comma_separated_emits_json_lines(self, capsys):
+        code, out, _err = _run(
+            [
+                "decode",
+                "8D406B902015A678D4D220AA4BDA,8D485020994409940838175B284F",
+            ],
+            capsys,
+        )
+        assert code == 0
+        lines = [line for line in out.splitlines() if line.strip()]
+        assert len(lines) == 2
+        assert json.loads(lines[0])["icao"] == "406B90"
+        assert json.loads(lines[1])["icao"] == "485020"
+        # Batch output is always compact JSON lines (not pretty), so
+        # no leading indentation whitespace on the JSON objects.
+        assert all(not line.startswith("  ") for line in lines)
+
+    def test_comma_separated_tolerates_spaces(self, capsys):
+        code, out, _err = _run(
+            [
+                "decode",
+                "8D406B902015A678D4D220AA4BDA, 8D485020994409940838175B284F ",
+            ],
+            capsys,
+        )
+        assert code == 0
+        lines = [line for line in out.splitlines() if line.strip()]
+        assert len(lines) == 2
+        assert json.loads(lines[1])["icao"] == "485020"
+
+    def test_comma_separated_cpr_pair_resolves(self, capsys):
+        # Two airborne CPR frames from the same aircraft — the
+        # transient PipeDecoder should resolve them into lat/lon.
+        code, out, _err = _run(
+            [
+                "decode",
+                "8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59",
+            ],
+            capsys,
+        )
+        assert code == 0
+        lines = [line for line in out.splitlines() if line.strip()]
+        assert len(lines) == 2
+        second = json.loads(lines[1])
+        assert "latitude" in second
+
+    def test_comma_separated_with_malformed_message(self, capsys):
+        # Mixed valid/invalid — invalid ones become error-dicts in
+        # the output stream; exit code stays 0.
+        code, out, _err = _run(
+            [
+                "decode",
+                "8D406B902015A678D4D220AA4BDA,NOTHEX,8D485020994409940838175B284F",
+            ],
+            capsys,
+        )
+        assert code == 0
+        lines = [line for line in out.splitlines() if line.strip()]
+        assert len(lines) == 3
+        assert json.loads(lines[0])["icao"] == "406B90"
+        assert "error" in json.loads(lines[1])
+        assert json.loads(lines[2])["icao"] == "485020"
+
+    def test_comma_separated_with_reference_errors(self, capsys):
+        # --reference is a single-aircraft hint; it cannot apply to
+        # multiple comma-separated messages at different positions.
+        # argparse.parser.error() raises SystemExit(2), so we catch
+        # it and inspect stderr for the explanation.
+        with pytest.raises(SystemExit) as excinfo:
+            _run(
+                [
+                    "decode",
+                    "8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59",
+                    "--reference",
+                    "49.0",
+                    "6.0",
+                ],
+                capsys,
+            )
+        assert excinfo.value.code == 2
+        captured = capsys.readouterr()
+        assert "--reference" in captured.err
+
+    def test_comma_separated_with_surface_ref(self, capsys):
+        # Surface CPR reference does apply uniformly (all aircraft on
+        # the same airport taxiway), so it's legal in batch mode.
+        code, out, _err = _run(
+            [
+                "decode",
+                "903a23ff426a4e65f7487a775d17,903a23ff426a38565950432ebf95",
+                "--surface-ref",
+                "LFBO",
+            ],
+            capsys,
+        )
+        assert code == 0
+        lines = [line for line in out.splitlines() if line.strip()]
+        assert len(lines) == 2
+        for line in lines:
+            data = json.loads(line)
+            assert abs(data["latitude"] - 43.62646) < 0.01
+
+
 class TestDecodeFile:
     def test_file_hex_per_line(self, tmp_path, capsys):
         p = tmp_path / "input.log"

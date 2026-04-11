@@ -1,19 +1,23 @@
 """Implementation of ``modes decode`` subcommand.
 
-Two modes:
+Three input shapes:
 
-- Single-message: ``modes decode HEX`` → one JSON object on stdout
-- File-based: ``modes decode --file PATH`` → one JSON line per input
+- Single-message: ``modes decode HEX`` → one pretty-printed JSON
+  object on stdout (or compact with ``--compact``).
+- Inline batch: ``modes decode HEX1,HEX2,HEX3`` → one compact JSON
+  line per message on stdout. Whitespace around each hex is stripped.
+- File-based: ``modes decode --file PATH`` → one compact JSON line
+  per input. Use ``-`` as ``PATH`` for stdin. File format is
+  auto-detected: if the first non-blank line has two comma-separated
+  fields and the first parses as ``float``, the file is treated as
+  ``timestamp,hex`` CSV and timestamps are forwarded to PipeDecoder.
+  Otherwise the file is treated as one hex message per line.
 
-The file path ``-`` reads from stdin. File format is auto-detected
-by inspecting the first non-blank line: if it has two comma-separated
-fields and the first parses as ``float``, the file is treated as
-``timestamp,hex`` CSV and timestamps are passed through to PipeDecoder
-via ``pymodes.decode(list, timestamps=[...])``. Otherwise the file is
-treated as one hex message per line.
-
-Malformed lines in ``--file`` mode produce error-dicts in the output
-stream (matching the existing batch-mode contract) rather than aborting.
+Malformed messages in batch (inline or file) mode produce error-dicts
+in the output stream (matching the existing batch-mode contract)
+rather than aborting. ``--reference`` is rejected in both batch modes
+because a single airborne reference cannot meaningfully apply to
+multiple aircraft at different positions.
 """
 
 from __future__ import annotations
@@ -25,11 +29,14 @@ from pathlib import Path
 from typing import Any
 
 from pymodes import decode as pymodes_decode
+from pymodes.message import Decoded
 
 
 def run(args: argparse.Namespace) -> int:
     """Entry point for ``modes decode``. Returns exit code."""
     if args.message is not None:
+        if "," in args.message:
+            return _run_inline_batch(args)
         return _run_single(args)
     return _run_file(args)
 
@@ -71,10 +78,16 @@ def _run_single(args: argparse.Namespace) -> int:
     return 0
 
 
+def _run_inline_batch(args: argparse.Namespace) -> int:
+    """Inline-batch path: split the comma-separated MESSAGE and emit JSON lines."""
+    hexes = [h.strip() for h in args.message.split(",") if h.strip()]
+    if not hexes:
+        return 0
+    return _emit_batch(hexes, None, args)
+
+
 def _run_file(args: argparse.Namespace) -> int:
     """File-based path: emit one JSON line per input message."""
-    surface_ref = _parse_surface_ref(args.surface_ref)
-
     try:
         hexes, timestamps = _read_file(args.file)
     except FileNotFoundError as e:
@@ -87,16 +100,37 @@ def _run_file(args: argparse.Namespace) -> int:
     if not hexes:
         return 0
 
-    # Batch decode via pymodes.decode(list, timestamps=...) — errors in
-    # individual messages become error-dicts in the results list, not
-    # exceptions. That matches the existing batch-mode contract.
-    results = pymodes_decode(
+    return _emit_batch(hexes, timestamps, args)
+
+
+def _emit_batch(
+    hexes: list[str],
+    timestamps: list[float] | None,
+    args: argparse.Namespace,
+) -> int:
+    """Batch decode and emit one JSON line per message to stdout.
+
+    Shared by the inline (``HEX1,HEX2``) and file-based (``--file PATH``)
+    input shapes. Uses ``pymodes.decode(list, timestamps=...)``'s
+    batch-mode contract: individual message errors become error-dicts
+    in the results list, so the stream stays line-aligned with input.
+
+    When the caller doesn't have real timestamps (inline batch and the
+    plain-hex file format), we synthesize list-position timestamps
+    here. That's exactly what ``pymodes.core.decode`` would do
+    internally anyway — doing it at the CLI layer suppresses core's
+    "no timestamps provided" stderr warning for the common case where
+    a user pastes hex messages into a terminal.
+    """
+    surface_ref = _parse_surface_ref(args.surface_ref)
+    if timestamps is None:
+        timestamps = [float(i) for i in range(len(hexes))]
+    results: list[Decoded] = pymodes_decode(
         hexes,
         timestamps=timestamps,
         surface_ref=surface_ref,
         full_dict=args.full_dict,
     )
-
     for result in results:
         print(json.dumps(result, separators=(",", ":"), default=str))
     return 0
