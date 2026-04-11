@@ -18,14 +18,15 @@ from pyModeS._v2_removed import V2APIRemovedError, modeslive_main
 
 # Every v2 submodule name that should hit a removal shim. Mirrors
 # ``_V2_REMOVED_NAMES`` in ``pyModeS/__init__.py`` — the two lists
-# are kept in sync by a cross-check test below.
+# are kept in sync by a cross-check test below. ``util`` is not
+# here: v3 restored it as a real public module and has its own
+# tests in ``tests/test_util.py``.
 _V2_NAMES: tuple[str, ...] = (
     "adsb",
     "commb",
     "ehs",
     "els",
     "common",
-    "util",
     "bds",
     "streamer",
     "extra",
@@ -101,6 +102,35 @@ def test_v3_api_still_works_after_shim_touch() -> None:
     # v3 API still works
     result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
     assert result["callsign"] == "EZY85MH"
+
+
+def test_common_error_message_points_at_util_module() -> None:
+    """The ``pyModeS.common`` stub's error must specifically tell
+    users that the bit/hex/CRC helpers moved to ``pyModeS.util``
+    in v3 — the generic ``decode()`` pointer isn't enough for
+    ``hex2bin``/``crc``-style use cases."""
+    import sys
+
+    sys.modules.pop("pyModeS.common", None)
+    with pytest.raises(V2APIRemovedError) as info:
+        importlib.import_module("pyModeS.common")
+    msg = str(info.value)
+    assert "pyModeS.util" in msg
+    assert "hex2bin" in msg
+    assert "crc" in msg
+
+
+def test_util_is_not_a_deprecation_stub() -> None:
+    """v3 restored ``pyModeS.util``, so it must import cleanly
+    and expose the canonical helpers — not raise."""
+    import pyModeS.util
+
+    assert callable(pyModeS.util.hex2bin)
+    assert callable(pyModeS.util.crc)
+    # And it should not appear in the removed-names set.
+    from pyModeS import _V2_REMOVED_NAMES
+
+    assert "util" not in _V2_REMOVED_NAMES
 
 
 def test_modeslive_main_prints_migration_hint(

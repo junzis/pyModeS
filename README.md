@@ -101,6 +101,23 @@ for msg, timestamp in stream:
 See [`docs/quickstart.md`](./docs/quickstart.md) for the full tour
 (full-dict mode, error handling, attribute access).
 
+### Low-level helpers
+
+For ad-hoc message inspection that doesn't need a full decode,
+`pyModeS.util` exposes thin wrappers around the bit/hex/CRC
+primitives: `hex2bin`, `bin2int`, `hex2int`, `bin2hex`, `crc`,
+`df`, `icao`, `typecode`, `altcode`, `idcode`, `cprNL`.
+
+```python
+from pyModeS.util import hex2bin, crc, icao, typecode
+
+msg = "8D406B902015A678D4D220AA4BDA"
+hex2bin(msg)[:16]   # '1000110101000000'
+crc(msg)            # 0 — valid DF17
+icao(msg)           # '406B90'
+typecode(msg)       # 4 — ADS-B identification
+```
+
 ## CLI
 
 pyModeS ships with a `modes` command-line tool for ad-hoc decoding

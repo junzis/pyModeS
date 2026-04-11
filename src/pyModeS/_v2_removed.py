@@ -27,14 +27,20 @@ class V2APIRemovedError(ImportError):
     """
 
 
-def v2_removed_error(qualname: str) -> V2APIRemovedError:
+def v2_removed_error(qualname: str, *, hint: str | None = None) -> V2APIRemovedError:
     """Build a :class:`V2APIRemovedError` for the given v2 name.
 
     ``qualname`` is the dotted path the user tried to touch, e.g.
-    ``"pyModeS.adsb"`` or ``"pyModeS.common.hex2bin"``. It's shown
+    ``"pyModeS.adsb"`` or ``"pyModeS.common"``. It's shown
     verbatim in the message so users see exactly which legacy
     import broke.
+
+    ``hint`` is an optional extra paragraph slotted between the
+    generic ``decode()`` example and the migration-guide link.
+    Used by shims whose replacement isn't ``decode()`` — e.g.
+    ``pyModeS.common`` routes users to ``pyModeS.util`` instead.
     """
+    hint_block = f"\n{hint}\n" if hint else ""
     message = (
         f"{qualname} is part of the pyModeS v2 API, which was "
         "removed in v3.\n"
@@ -47,6 +53,7 @@ def v2_removed_error(qualname: str) -> V2APIRemovedError:
         "    result = pyModeS.decode(msg)\n"
         '    callsign = result["callsign"]\n'
         '    altitude = result["altitude"]\n'
+        f"{hint_block}"
         "\n"
         f"Migration guide: {_MIGRATION_URL}\n"
         "\n"

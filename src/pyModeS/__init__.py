@@ -65,7 +65,6 @@ _V2_REMOVED_NAMES: frozenset[str] = frozenset(
         "ehs",
         "els",
         "common",
-        "util",
         "bds",
         "streamer",
         "extra",

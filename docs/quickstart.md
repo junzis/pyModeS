@@ -99,6 +99,45 @@ print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 r = pyModeS.decode("903a23ff426a4e65f7487a775d17", surface_ref=(43.63, 1.37))
 ```
 
+## Low-level helpers (`pyModeS.util`)
+
+`pyModeS.decode(msg)` returns every decodable field in one pass,
+so most users never need lower-level primitives. The
+`pyModeS.util` module exists for the exceptions — ad-hoc message
+inspection, custom CRC gating in front of a pipeline, or tools
+that need a raw bit string:
+
+```python
+from pyModeS.util import hex2bin, bin2int, hex2int, bin2hex
+from pyModeS.util import crc, df, icao, typecode, altcode, idcode, cprNL
+
+msg = "8D406B902015A678D4D220AA4BDA"
+
+hex2bin(msg)[:16]   # '1000110101000000' — 4 bits per hex char
+bin2int("10001101") # 141
+df(msg)             # 17
+icao(msg)           # '406B90'
+typecode(msg)       # 4 — ADS-B identification
+crc(msg)            # 0 — valid DF17 extended squitter
+
+# For Comm-B replies the CRC recovers the ICAO address directly
+icao("A000178D10010080F50000D5893C")  # '8BDCDB'
+
+# Altitude / squawk helpers pull from the AC/ID fields in
+# DF0/4/16/20 and DF5/21 respectively
+altcode("A000178D10010080F50000D5893C")  # None — AC is zero
+idcode("A8000D9FA55A032DBFFC000D8123")   # '5667'
+
+# CPR longitude-zone count, the same table the decoder uses
+cprNL(52.0)   # 36
+cprNL(0.0)    # 59
+```
+
+These are thin wrappers around `pyModeS._bits`, `_altcode`,
+`_idcode`, and `position._cpr` — changing the primitives auto-
+flows through. Importing from `pyModeS.common` (the v2 location)
+raises `V2APIRemovedError` with a pointer to this module.
+
 ## Full-dict mode
 
 For pandas / parquet workflows that need uniform column shapes:
