@@ -54,3 +54,40 @@ def v2_removed_error(qualname: str) -> V2APIRemovedError:
         '    pip install "pyModeS<3"'
     )
     return V2APIRemovedError(message)
+
+
+def modeslive_main() -> int:
+    """Console-script entry point for the removed ``modeslive``.
+
+    v2 shipped a ``modeslive`` console script for its beast
+    streamer. v3 replaces it with ``modes live`` and ``modes
+    decode``. Registering this stub as ``modeslive`` in
+    pyproject.toml gives users who still type the old command
+    a clear migration hint instead of ``command not found``.
+
+    Returns exit code 2 (conventional for usage errors), ignores
+    argv — any flags the user passed to the old command are
+    irrelevant because nothing is going to run.
+    """
+    import sys
+
+    message = (
+        "modeslive: error: the v2 `modeslive` command was removed "
+        "in pyModeS v3.\n"
+        "\n"
+        "pyModeS v3 replaces it with the `modes` CLI:\n"
+        "\n"
+        "    modes live --network HOST:PORT    "
+        "# stream from a TCP beast feed\n"
+        "    modes decode HEX                  "
+        "# one-shot hex decode\n"
+        "    modes decode --file PATH          "
+        "# batch decode from file / stdin\n"
+        "\n"
+        f"Migration guide: {_MIGRATION_URL}\n"
+        "\n"
+        "If you need the old `modeslive` command, pin v2:\n"
+        '    pip install "pyModeS<3"'
+    )
+    print(message, file=sys.stderr)
+    return 2

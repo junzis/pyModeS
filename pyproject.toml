@@ -27,6 +27,11 @@ dependencies = []
 
 [project.scripts]
 modes = "pyModeS.cli:main"
+# `modeslive` was v2's beast streamer console script. It's not
+# used in v3 — kept registered here so `modeslive` at the shell
+# prints a migration hint pointing at `modes live` / `modes
+# decode` instead of shell "command not found".
+modeslive = "pyModeS._v2_removed:modeslive_main"
 
 [project.optional-dependencies]
 tui = ["textual>=0.50"]

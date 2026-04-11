@@ -14,7 +14,7 @@ import importlib
 
 import pytest
 
-from pyModeS._v2_removed import V2APIRemovedError
+from pyModeS._v2_removed import V2APIRemovedError, modeslive_main
 
 # Every v2 submodule name that should hit a removal shim. Mirrors
 # ``_V2_REMOVED_NAMES`` in ``pyModeS/__init__.py`` — the two lists
@@ -101,6 +101,26 @@ def test_v3_api_still_works_after_shim_touch() -> None:
     # v3 API still works
     result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
     assert result["callsign"] == "EZY85MH"
+
+
+def test_modeslive_main_prints_migration_hint(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """v2's ``modeslive`` console script now prints a migration
+    hint pointing at ``modes live`` / ``modes decode``, and
+    returns exit code 2 (usage error)."""
+    rc = modeslive_main()
+    assert rc == 2
+    captured = capsys.readouterr()
+    # Printed to stderr, not stdout
+    assert captured.out == ""
+    err = captured.err
+    assert "modeslive" in err
+    assert "removed in pyModeS v3" in err
+    assert "modes live" in err
+    assert "modes decode" in err
+    assert "migration.md" in err
+    assert '"pyModeS<3"' in err
 
 
 def test_removed_names_set_matches_test_list() -> None:
