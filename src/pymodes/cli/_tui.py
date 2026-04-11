@@ -41,6 +41,7 @@ from typing import Any, ClassVar
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
+from textual.coordinate import Coordinate
 from textual.screen import ModalScreen
 from textual.widgets import DataTable, Footer, Header, Input
 
@@ -391,12 +392,23 @@ class ModesLiveApp(App[int]):
         self._stop_flag: bool = False
         self._worker_thread: threading.Thread | None = None
 
-        # UI state
-        self._sort_index: int = 0  # index into _SORT_KEYS
-        self._sort_asc: bool = False  # default: most-recent first
+        # UI state. Default sort = icao ascending: gives a stable
+        # row order so rows don't visibly jump every tick. Sorting
+        # by last_seen (the old default) caused every arriving
+        # message to reshuffle the table and flash the view.
+        self._sort_index: int = _SORT_KEYS.index("icao")
+        self._sort_asc: bool = True
         self._search_query: str = ""
         self._columns: tuple[str, ...] = _COLUMNS_SM
         self._last_width: int = -1
+
+        # Cache of what's currently painted in the DataTable, used
+        # to drive diff updates so a per-tick refresh only touches
+        # cells whose values actually changed. A full clear+re-add
+        # is done only when the set or order of rows changes.
+        self._rendered_keys: list[str] = []
+        self._rendered_columns: tuple[str, ...] = ()
+        self._rendered_cells: dict[str, list[str]] = {}
 
     # ------------------------------------------------------------------
     # Composition + lifecycle
@@ -496,6 +508,11 @@ class ModesLiveApp(App[int]):
             return
         table.clear(columns=True)
         table.add_columns(*columns)
+        # Column set changed → invalidate the render cache so the
+        # next _refresh_table does a full rebuild.
+        self._rendered_keys = []
+        self._rendered_columns = columns
+        self._rendered_cells = {}
 
     def _refresh_table(self) -> None:
         try:
@@ -534,24 +551,71 @@ class ModesLiveApp(App[int]):
         if not self._sort_asc:
             filtered.reverse()
 
-        # Preserve cursor row if possible
-        prev_cursor = table.cursor_row
-
-        # Simple strategy: clear + re-add. O(n*cols) per tick is
-        # fine at 4 Hz with <=500 aircraft (2k cells/sec).
-        table.clear(columns=False)
+        desired_keys = [icao for icao, _ in filtered]
         columns = self._columns
+
+        # Fast path: if the set AND order of rows is unchanged,
+        # update only cells whose values actually changed. Avoids
+        # the clear-and-rebuild that wipes cursor/scroll state and
+        # makes the whole table flash every tick.
+        if desired_keys == self._rendered_keys and columns == self._rendered_columns:
+            for icao, state in filtered:
+                new_cells = _row_for_state(icao, state, now, columns)
+                old_cells = self._rendered_cells.get(icao)
+                if old_cells == new_cells:
+                    continue
+                try:
+                    row_idx = table.get_row_index(icao)
+                except Exception:
+                    continue
+                for col_idx, new_val in enumerate(new_cells):
+                    if (
+                        old_cells is not None
+                        and col_idx < len(old_cells)
+                        and old_cells[col_idx] == new_val
+                    ):
+                        continue
+                    with contextlib.suppress(Exception):
+                        table.update_cell_at(
+                            Coordinate(row_idx, col_idx),
+                            new_val,
+                            update_width=False,
+                        )
+                self._rendered_cells[icao] = new_cells
+            return
+
+        # Rebuild path: row set or order changed (new aircraft,
+        # expired aircraft, user-triggered sort change). Save the
+        # ICAO under the cursor and the scroll offset so the view
+        # stays anchored across the rebuild.
+        prev_icao: str | None = None
+        try:
+            if table.row_count and table.cursor_row >= 0:
+                cell_key = table.coordinate_to_cell_key(Coordinate(table.cursor_row, 0))
+                prev_icao = cell_key.row_key.value
+        except Exception:
+            pass
+        prev_scroll_y = table.scroll_y
+
+        table.clear(columns=False)
+        rendered_cells: dict[str, list[str]] = {}
         for icao, state in filtered:
             cells = _row_for_state(icao, state, now, columns)
             table.add_row(*cells, key=icao)
+            rendered_cells[icao] = cells
+        self._rendered_cells = rendered_cells
+        self._rendered_keys = desired_keys
+        self._rendered_columns = columns
 
-        # Restore cursor if the new table has at least that many
-        # rows; otherwise clamp to the last row.
-        if table.row_count:
-            new_cursor = min(prev_cursor, table.row_count - 1)
-            if new_cursor >= 0:
-                with contextlib.suppress(Exception):
-                    table.move_cursor(row=new_cursor)
+        # Restore cursor by ICAO key (not by row index — indices
+        # shift after a re-sort). scroll=False keeps the viewport
+        # where it was; scroll_to below then pins it exactly.
+        if prev_icao is not None:
+            with contextlib.suppress(Exception):
+                new_row = table.get_row_index(prev_icao)
+                table.move_cursor(row=new_row, scroll=False)
+        with contextlib.suppress(Exception):
+            table.scroll_to(y=prev_scroll_y, animate=False)
 
     def _refresh_title(self) -> None:
         now = _now()
