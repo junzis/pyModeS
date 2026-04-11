@@ -149,16 +149,20 @@ Three input shapes:
 - **Single message** — `modes decode HEX` prints a pretty-printed
   JSON object (or one-line compact JSON with `--compact`).
 - **Inline batch** — `modes decode HEX1,HEX2,HEX3` comma-separated
-  messages. Emits one compact JSON line per message, sharing a
-  transient `PipeDecoder` so CPR pairs resolve automatically.
+  messages, sharing a transient `PipeDecoder` so CPR pairs resolve
+  automatically.
 - **File mode** — `modes decode --file PATH` reads from a file (one
   hex per line or `timestamp,hex` CSV). Use `-` as `PATH` for stdin.
 
+Output format is **pretty-printed JSON by default** in all three
+shapes — one indented `{...}` block per message, separated by a
+blank line. Pass `--compact` to switch to one-line-per-message
+output that composes with `jq`, pandas, parquet writers, etc.
+
 Flags:
 
-- `--compact` — emit one-line JSON instead of pretty-printed
-  (applies to the single-message shape; batch shapes are always
-  compact JSON lines)
+- `--compact` — emit one-line JSON instead of pretty-printed. In
+  batch shapes this yields one JSON line per message (JSONL).
 - `--full-dict` — populate every key in the canonical schema
 - `--reference LAT LON` — airborne CPR reference (only valid with
   a single positional MESSAGE — not with `--file` or comma-batch,
@@ -176,8 +180,11 @@ modes decode 8D406B902015A678D4D220AA4BDA
 # Single message + airborne reference
 modes decode 8D40058B58C901375147EFD09357 --reference 49.0 6.0
 
-# Inline batch — comma-separated, emits JSON lines
+# Inline batch — comma-separated, one pretty JSON block per message
 modes decode 8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59
+
+# Inline batch compact output (JSONL) for piping to jq
+modes decode 8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59 --compact
 
 # Single message, compact JSON for piping
 modes decode 8D406B902015A678D4D220AA4BDA --compact | jq .

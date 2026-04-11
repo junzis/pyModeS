@@ -16,13 +16,16 @@ pip install "pymodes>=3"
 
 Python 3.11+ required.
 
-## Quickstart
+## Usage examples
+
+### Single-message decode
+
+`pymodes.decode()` returns a `Decoded` dict with every decodable
+field populated in one pass.
 
 ```python
 import pymodes
 
-# Single-message decode — returns a Decoded dict with every
-# decodable field populated in one pass.
 result = pymodes.decode("8D406B902015A678D4D220AA4BDA")
 print(result)
 # {
@@ -35,10 +38,19 @@ print(result)
 #     'category': 0,
 #     'wake_vortex': 'No category information',
 # }
+```
 
-# Batch decode mixing DF17 ident/velocity/pos + DF20/21 Comm-B.
-# Timestamps let the dispatcher resolve CPR pairs and disambiguate
-# ambiguous Comm-B registers.
+### Batch decode (mixed message types)
+
+Pass a list of hex strings and parallel timestamps. Any mix of
+downlink formats, typecodes, and Comm-B registers is fine —
+the dispatcher routes each message to the right decoder and
+uses the timestamps to resolve CPR pairs and disambiguate
+ambiguous Comm-B registers.
+
+```python
+import pymodes
+
 results = pymodes.decode(
     [
         "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
@@ -53,14 +65,32 @@ results = pymodes.decode(
 assert results[0]["callsign"] == "EZY85MH"
 assert results[1]["groundspeed"] == 159
 assert results[3]["latitude"] is not None  # CPR pair resolved
+```
 
-# Surface CPR — real DF18 surface movement on LFBO (Toulouse-Blagnac).
+### Surface position with airport reference
+
+Surface CPR needs a reference within ~45 NM. Pass an ICAO airport
+code (looked up in the shipped airport database) or an explicit
+`(lat, lon)` tuple.
+
+```python
+import pymodes
+
+# Real DF18 surface movement on LFBO (Toulouse-Blagnac).
 r = pymodes.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
 print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
+```
 
-# Streaming decoder with per-ICAO state, CPR pair matching,
-# TTL eviction, and DF20/21 ICAO verification.
+### Streaming decoder
+
+`PipeDecoder` is stateful — it holds per-ICAO state across calls,
+matches CPR pairs automatically, evicts stale aircraft after a
+TTL, and flags DF20/21 messages as `icao_verified` when their
+CRC-derived ICAO was already seen in a clean DF17/18 plaintext.
+
+```python
 from pymodes import PipeDecoder
+
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, timestamp in stream:
     decoded = pipe.decode(msg, timestamp=timestamp)

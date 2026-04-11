@@ -89,7 +89,8 @@ class TestDecodeSingleMessage:
 
 
 class TestDecodeInlineBatch:
-    def test_comma_separated_emits_json_lines(self, capsys):
+    def test_comma_separated_pretty_by_default(self, capsys):
+        """Default batch output is pretty JSON, one object per message."""
         code, out, _err = _run(
             [
                 "decode",
@@ -98,19 +99,40 @@ class TestDecodeInlineBatch:
             capsys,
         )
         assert code == 0
+        # Pretty output has indentation — at least one line starts
+        # with two spaces (json.dumps indent=2 level-1 lines)
+        assert "\n  " in out
+        # Both messages can be recovered by re-parsing the output as
+        # two JSON objects separated by blank lines
+        blocks = [b.strip() for b in out.split("\n\n") if b.strip()]
+        assert len(blocks) == 2
+        assert json.loads(blocks[0])["icao"] == "406B90"
+        assert json.loads(blocks[1])["icao"] == "485020"
+
+    def test_comma_separated_compact_is_one_line_per_message(self, capsys):
+        """--compact collapses each message to a single JSON line."""
+        code, out, _err = _run(
+            [
+                "decode",
+                "8D406B902015A678D4D220AA4BDA,8D485020994409940838175B284F",
+                "--compact",
+            ],
+            capsys,
+        )
+        assert code == 0
+        # No indented lines
+        assert "\n  " not in out
         lines = [line for line in out.splitlines() if line.strip()]
         assert len(lines) == 2
         assert json.loads(lines[0])["icao"] == "406B90"
         assert json.loads(lines[1])["icao"] == "485020"
-        # Batch output is always compact JSON lines (not pretty), so
-        # no leading indentation whitespace on the JSON objects.
-        assert all(not line.startswith("  ") for line in lines)
 
     def test_comma_separated_tolerates_spaces(self, capsys):
         code, out, _err = _run(
             [
                 "decode",
                 "8D406B902015A678D4D220AA4BDA, 8D485020994409940838175B284F ",
+                "--compact",
             ],
             capsys,
         )
@@ -126,6 +148,7 @@ class TestDecodeInlineBatch:
             [
                 "decode",
                 "8D40058B58C901375147EFD09357,8D40058B58C904A87F402D3B8C59",
+                "--compact",
             ],
             capsys,
         )
@@ -142,6 +165,7 @@ class TestDecodeInlineBatch:
             [
                 "decode",
                 "8D406B902015A678D4D220AA4BDA,NOTHEX,8D485020994409940838175B284F",
+                "--compact",
             ],
             capsys,
         )
@@ -181,6 +205,7 @@ class TestDecodeInlineBatch:
                 "903a23ff426a4e65f7487a775d17,903a23ff426a38565950432ebf95",
                 "--surface-ref",
                 "LFBO",
+                "--compact",
             ],
             capsys,
         )
@@ -196,7 +221,7 @@ class TestDecodeFile:
     def test_file_hex_per_line(self, tmp_path, capsys):
         p = tmp_path / "input.log"
         p.write_text("8D406B902015A678D4D220AA4BDA\n8D485020994409940838175B284F\n")
-        code, out, _err = _run(["decode", "--file", str(p)], capsys)
+        code, out, _err = _run(["decode", "--file", str(p), "--compact"], capsys)
         assert code == 0
         lines = [line for line in out.splitlines() if line.strip()]
         assert len(lines) == 2
@@ -209,7 +234,7 @@ class TestDecodeFile:
             "1446332400.0,8D40058B58C901375147EFD09357\n"
             "1446332405.0,8D40058B58C904A87F402D3B8C59\n"
         )
-        code, out, _err = _run(["decode", "--file", str(p)], capsys)
+        code, out, _err = _run(["decode", "--file", str(p), "--compact"], capsys)
         assert code == 0
         lines = [line for line in out.splitlines() if line.strip()]
         assert len(lines) == 2
@@ -231,7 +256,7 @@ class TestDecodeFile:
         p.write_text(
             "8D406B902015A678D4D220AA4BDA\nNOT HEX\n8D485020994409940838175B284F\n"
         )
-        code, out, _err = _run(["decode", "--file", str(p)], capsys)
+        code, out, _err = _run(["decode", "--file", str(p), "--compact"], capsys)
         # Exit code is 0 because --file mode never aborts on individual errors
         assert code == 0
         lines = [line for line in out.splitlines() if line.strip()]

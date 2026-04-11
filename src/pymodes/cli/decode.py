@@ -108,12 +108,22 @@ def _emit_batch(
     timestamps: list[float] | None,
     args: argparse.Namespace,
 ) -> int:
-    """Batch decode and emit one JSON line per message to stdout.
+    """Batch decode and emit results to stdout.
 
     Shared by the inline (``HEX1,HEX2``) and file-based (``--file PATH``)
     input shapes. Uses ``pymodes.decode(list, timestamps=...)``'s
     batch-mode contract: individual message errors become error-dicts
     in the results list, so the stream stays line-aligned with input.
+
+    Output format:
+
+    - Default: one pretty-printed JSON object per message, separated
+      by a blank line. One parameter per line — the same shape as
+      the single-message pretty output, just repeated for each item
+      in the batch. Human-readable when pasting a few messages into
+      a terminal and eyeballing the decoded fields.
+    - ``--compact``: one compact JSON line per message — pipe-friendly,
+      composable with ``jq``, suitable for redirecting to a file.
 
     When the caller doesn't have real timestamps (inline batch and the
     plain-hex file format), we synthesize list-position timestamps
@@ -131,8 +141,17 @@ def _emit_batch(
         surface_ref=surface_ref,
         full_dict=args.full_dict,
     )
-    for result in results:
-        print(json.dumps(result, separators=(",", ":"), default=str))
+
+    if args.compact:
+        for result in results:
+            print(json.dumps(result, separators=(",", ":"), default=str))
+        return 0
+
+    # Pretty: one JSON object per message, blank line between.
+    for i, result in enumerate(results):
+        if i > 0:
+            print()
+        print(json.dumps(result, indent=2, sort_keys=True, default=str))
     return 0
 
 
