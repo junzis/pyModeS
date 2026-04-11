@@ -42,7 +42,6 @@ from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container
 from textual.coordinate import Coordinate
-from textual.screen import ModalScreen
 from textual.widgets import DataTable, Footer, Header, Input
 
 from pymodes import PipeDecoder
@@ -289,48 +288,6 @@ def _sort_value(icao: str, state: dict[str, Any], key: str) -> Any:
     return 0
 
 
-class _SearchScreen(ModalScreen[str]):
-    """Tiny modal with a single ``Input`` for the search query.
-
-    Dismisses with the typed string on Enter, or an empty string on
-    Escape. ``ModesLiveApp`` uses the returned value to update the
-    search filter.
-    """
-
-    BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
-        Binding("escape", "cancel", "Cancel", priority=True),
-    ]
-
-    CSS = """
-    _SearchScreen {
-        align: center middle;
-    }
-    _SearchScreen > Container {
-        width: 60;
-        height: 3;
-        border: round $accent;
-        background: $surface;
-    }
-    _SearchScreen Input {
-        border: none;
-    }
-    """
-
-    def __init__(self, initial: str = "") -> None:
-        super().__init__()
-        self._initial = initial
-
-    def compose(self) -> ComposeResult:
-        with Container():
-            yield Input(value=self._initial, placeholder="search icao or callsign")
-
-    def on_input_submitted(self, event: Input.Submitted) -> None:
-        self.dismiss(event.value)
-
-    def action_cancel(self) -> None:
-        self.dismiss("")
-
-
 class ModesLiveApp(App[int]):
     """Interactive textual App for ``modes live --tui``.
 
@@ -353,11 +310,20 @@ class ModesLiveApp(App[int]):
         height: 1fr;
         border: round $accent;
     }
+    #search {
+        height: 1;
+        border: none;
+        background: $surface;
+    }
     """
 
+    # q/escape are NOT priority so the Input widget receives them
+    # while the user is typing a search query. action_quit is
+    # context-aware: it cancels an active search first and only
+    # exits the app when the search bar is hidden.
     BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
-        Binding("q", "quit", "Quit", priority=True),
-        Binding("escape", "quit", "Quit", priority=True, show=False),
+        Binding("q", "quit", "Quit"),
+        Binding("escape", "quit", "Quit", show=False),
         Binding("j", "cursor_down", "Down", show=False),
         Binding("k", "cursor_up", "Up", show=False),
         Binding("g", "cursor_home", "Top"),
@@ -399,6 +365,8 @@ class ModesLiveApp(App[int]):
         self._sort_index: int = _SORT_KEYS.index("icao")
         self._sort_asc: bool = True
         self._search_query: str = ""
+        self._search_backup: str = ""
+        self._search_visible: bool = False
         self._columns: tuple[str, ...] = _COLUMNS_SM
         self._last_width: int = -1
 
@@ -422,9 +390,13 @@ class ModesLiveApp(App[int]):
                 cursor_type="row",
                 zebra_stripes=True,
             )
+        yield Input(id="search", placeholder="search icao or callsign")
         yield Footer()
 
     def on_mount(self) -> None:
+        # Hide the inline search bar until the user presses "/".
+        self.query_one("#search", Input).display = False
+
         # Configure the DataTable columns based on the initial
         # terminal width.
         self._apply_column_set(self.size.width)
@@ -681,12 +653,57 @@ class ModesLiveApp(App[int]):
         self._refresh_title()
 
     def action_toggle_search(self) -> None:
-        def _on_result(value: str | None) -> None:
-            self._search_query = value or ""
+        try:
+            search = self.query_one("#search", Input)
+        except Exception:
+            return
+        if not self._search_visible:
+            # Opening the bar: remember the committed query so
+            # escape can roll back if the user cancels.
+            self._search_backup = self._search_query
+            search.value = self._search_query
+            search.display = True
+            self._search_visible = True
+        search.focus()
+
+    async def action_quit(self) -> None:
+        # Context-aware: while the search bar is open, escape/q
+        # discards the in-progress query and closes the bar rather
+        # than quitting the app. This lets the Input widget also
+        # receive q as a typed character (q is not priority).
+        if self._search_visible:
+            self._search_query = self._search_backup
+            self._hide_search()
             self._refresh_table()
             self._refresh_title()
+            return
+        self.exit(0)
 
-        self.push_screen(_SearchScreen(self._search_query), _on_result)
+    def _hide_search(self) -> None:
+        try:
+            search = self.query_one("#search", Input)
+            search.display = False
+        except Exception:
+            pass
+        self._search_visible = False
+        with contextlib.suppress(Exception):
+            self.query_one("#aircraft", DataTable).focus()
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        # Live search: filter the table as the user types.
+        if event.input.id != "search":
+            return
+        self._search_query = event.value
+        self._refresh_table()
+        self._refresh_title()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        # Enter commits the query (already applied via
+        # on_input_changed). Hide the bar and return focus to
+        # the table.
+        if event.input.id != "search":
+            return
+        self._hide_search()
 
 
 def _now() -> float:
