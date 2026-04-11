@@ -207,12 +207,19 @@ class NetworkSource:
         connect_timeout: float = 5.0,
         read_timeout: float = 30.0,
         on_detect: Callable[[str], None] | None = None,
+        silent: bool = False,
     ) -> None:
         self.host = host
         self.port = port
         self.connect_timeout = connect_timeout
         self.read_timeout = read_timeout
         self.on_detect = on_detect
+        # When silent is True, suppress the reconnect WARNING that
+        # __iter__ prints to stderr. Used by ``modes live --tui``
+        # which cannot tolerate arbitrary stderr writes inside
+        # rich.live.Live's alt-screen buffer without corrupting the
+        # rendered table.
+        self.silent = silent
         self._sock: socket.socket | None = None
         self._buf: bytes = b""
         self._detected: bool = False
@@ -227,11 +234,12 @@ class NetworkSource:
             except UnsupportedStreamError:
                 raise
             except (OSError, TimeoutError) as e:
-                print(
-                    f"[pymodes.live] connection dropped ({e}); "
-                    f"retrying in {backoff:.1f}s",
-                    file=sys.stderr,
-                )
+                if not self.silent:
+                    print(
+                        f"[pymodes.live] connection dropped ({e}); "
+                        f"retrying in {backoff:.1f}s",
+                        file=sys.stderr,
+                    )
                 time.sleep(backoff)
                 backoff = min(backoff * 2, 10.0)
                 self._detected = False

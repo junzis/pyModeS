@@ -69,18 +69,27 @@ def run(args: argparse.Namespace) -> int:
     stop = _StopFlag()
     _install_signal_handlers(stop)
 
-    # Network source
+    # Network source. In --tui mode we suppress every stderr
+    # notification (format detection, reconnect warnings, periodic
+    # stats) because rich.live.Live holds the alternate screen
+    # buffer and a raw `print(..., file=sys.stderr)` writes into
+    # the middle of rich's render area, corrupting the cursor
+    # tracking and leaving the display stuck. The TUI footer
+    # already surfaces the running stats via TuiSink's table
+    # title, so no information is lost.
+    silence_stderr = args.quiet or args.tui
     source = NetworkSource(
         host,
         port,
-        on_detect=lambda fmt: (
+        on_detect=(
             None
-            if args.quiet
-            else print(
+            if silence_stderr
+            else lambda fmt: print(
                 f"[pymodes.live] detected {fmt} format, resyncing",
                 file=sys.stderr,
             )
         ),
+        silent=silence_stderr,
     )
 
     last_stats_ts = time.monotonic()
@@ -94,7 +103,7 @@ def run(args: argparse.Namespace) -> int:
                 result = pipe.decode(hex_msg, timestamp=ts)
                 sink.write(result)
                 now = time.monotonic()
-                if now - last_stats_ts >= 60.0:
+                if now - last_stats_ts >= 60.0 and not silence_stderr:
                     _emit_stats_line(pipe, args.quiet)
                     last_stats_ts = now
         except UnsupportedStreamError as e:
@@ -107,11 +116,27 @@ def run(args: argparse.Namespace) -> int:
             return 1
         return 0
 
+    # Enter the sink as a context manager when it supports one
+    # (TuiSink holds a rich.live.Live alt-screen). Non-TUI sinks
+    # are plain objects with just write()/close() — take the
+    # direct path so we can close them in the finally clause.
     try:
-        code = _loop()
-    finally:
-        sink.close()
+        if hasattr(sink, "__enter__"):
+            with sink:
+                code = _loop()
+        else:
+            try:
+                code = _loop()
+            finally:
+                sink.close()
+    except BaseException:
+        # TuiSink's __exit__ will restore the terminal; still
+        # re-raise so callers see the underlying error.
+        raise
 
+    # Final stats line lands AFTER the TUI's alt-screen has been
+    # restored (either because __exit__ ran above, or because we
+    # used the non-TUI path), so it appears on the normal terminal.
     _emit_stats_line(pipe, args.quiet, prefix="final")
     return code
 
