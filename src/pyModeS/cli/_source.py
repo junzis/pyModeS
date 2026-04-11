@@ -40,6 +40,29 @@ _BODY_LEN_SHORT = 7 + 7  # type 0x32
 _BODY_LEN_LONG = 7 + 14  # type 0x33
 _BODY_LEN_MODE_AC = 7 + 2  # type 0x31
 
+# MLAT counter tick rates we've seen in the wild:
+#
+#   12 MHz  — plain dump1090 / piaware / readsb. Counter is a
+#             free-running local oscillator, wraps every ~6.5 h.
+#
+#   1 GHz   — radarcape / GNS AirSquitter / jetvision. Counter is
+#             nanoseconds since UTC midnight (or a local-time
+#             midnight — TU Delft's public feed is UTC+1 for
+#             example), wraps at the next midnight.
+#
+# Rather than hard-coding 12 MHz and being wrong on radarcape
+# feeds (wall-clock 83x too fast), NetworkSource auto-calibrates
+# the rate from the observed delta between consecutive recv()
+# bursts. See ``_rate_estimate`` in ``_read_loop``.
+_MLAT_HZ_DUMP1090: float = 12_000_000.0
+_MLAT_HZ_RADARCAPE: float = 1_000_000_000.0
+
+# Minimum wall-clock delta between calibration samples — a new
+# rate estimate is only accepted when the two anchoring bursts
+# are spaced at least this far apart. Avoids dividing by tiny
+# jitter in the wall-clock timestamps.
+_CALIB_MIN_DELTA_S: float = 0.1
+
 
 class UnsupportedStreamError(RuntimeError):
     """Raised when the network stream is not Mode-S Beast binary format."""
@@ -91,21 +114,30 @@ def _walk_body(buf: bytes, start: int, body_len: int) -> tuple[list[int], int]:
     return body, j
 
 
-def _parse_beast_buffer(buf: bytes) -> tuple[list[str], bytes]:
-    """Parse a beast-format byte buffer into hex strings + remainder.
+def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
+    """Parse a beast-format byte buffer into frames + remainder.
 
     Scans forward through ``buf`` looking for frame starts (0x1a).
     For each recognised frame (types 0x32 and 0x33), un-escapes the
-    body and extracts the payload hex. Mode AC (0x31) and status
-    (0x34) frames are skipped but still advance the parse cursor.
-    Unknown type bytes are also skipped.
+    body and extracts the 48-bit MLAT counter and the payload hex.
+    Mode AC (0x31) and status (0x34) frames are skipped but still
+    advance the parse cursor. Unknown type bytes are also skipped.
 
-    Returns (frames, remainder) where remainder is the tail of the
-    buffer containing any incomplete trailing frame (from the last
-    0x1a that couldn't be fully parsed). The caller should prepend
-    the remainder to the next chunk of bytes before the next parse.
+    Returns ``(frames, remainder)`` where ``frames`` is a list of
+    ``(mlat_ticks, payload_hex)`` tuples and ``remainder`` is the
+    tail of the buffer containing any incomplete trailing frame
+    (from the last 0x1a that couldn't be fully parsed). The caller
+    should prepend the remainder to the next chunk of bytes before
+    the next parse.
+
+    ``mlat_ticks`` is the big-endian 48-bit counter at the head of
+    the beast body. Interpretation (unix time vs free-running) is
+    receiver-dependent; :class:`NetworkSource` anchors the first
+    frame's MLAT against ``time.time()`` and computes per-frame
+    wall-clock from the 12 MHz tick rate used by dump1090-compatible
+    feeds.
     """
-    frames: list[str] = []
+    frames: list[tuple[int, str]] = []
     i = 0
     last_consumed = 0
 
@@ -164,8 +196,13 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[str], bytes]:
             # next call can continue from this frame's 0x1a.
             break
 
+        # Body layout (after un-escape): MLAT(6) + SIG(1) + PAYLOAD.
+        # The MLAT counter is big-endian 48-bit; NetworkSource turns
+        # it into a wall-clock timestamp via an anchor set on the
+        # first frame.
+        mlat_ticks = int.from_bytes(bytes(body[:6]), "big")
         payload_bytes = bytes(body[payload_offset:])
-        frames.append(payload_bytes.hex().upper())
+        frames.append((mlat_ticks, payload_bytes.hex().upper()))
         i = next_i
         last_consumed = next_i
 
@@ -223,6 +260,14 @@ class NetworkSource:
         self._sock: socket.socket | None = None
         self._buf: bytes = b""
         self._detected: bool = False
+        # MLAT-to-wall-clock calibration state. A per-recv() anchor
+        # (wall time + first-frame MLAT in the burst) drives per-
+        # frame interpolation within the burst; the rate is learned
+        # from the delta between consecutive bursts. Both reset on
+        # reconnect so the post-reconnect burst anchors freshly.
+        self._prev_burst_wall: float | None = None
+        self._prev_burst_mlat: int | None = None
+        self._rate_estimate: float | None = None
 
     def __iter__(self) -> Iterator[tuple[str, float]]:
         backoff = 0.5
@@ -244,6 +289,14 @@ class NetworkSource:
                 backoff = min(backoff * 2, 10.0)
                 self._detected = False
                 self._buf = b""
+                # New TCP connection → the receiver's MLAT epoch
+                # may be unrelated to the previous one (and on
+                # radarcape feeds may even change after midnight).
+                # Drop the calibration state so the next burst
+                # re-anchors.
+                self._prev_burst_wall = None
+                self._prev_burst_mlat = None
+                self._rate_estimate = None
 
     def _connect(self) -> None:
         self._sock = socket.create_connection(
@@ -252,12 +305,34 @@ class NetworkSource:
         self._sock.settimeout(self.read_timeout)
 
     def _read_loop(self) -> Iterator[tuple[str, float]]:
-        """Inner loop: read bytes, parse beast frames, yield (hex, ts)."""
+        """Inner loop: read bytes, parse beast frames, yield (hex, ts).
+
+        Per-frame timestamp strategy:
+
+        - Take ``wall_now = time.time()`` once per ``recv()`` burst.
+        - Use the first frame's MLAT in the burst as a local
+          anchor; every frame in the burst is then assigned
+          ``wall_now + (frame.mlat - first_mlat) / rate``. This
+          gives sub-microsecond within-burst precision (at 1 GHz
+          radarcape) or sub-100 ns precision (12 MHz dump1090),
+          both of which are much finer than what TCP batching
+          leaves us with if we just stamp ``time.time()`` once
+          per batch.
+        - ``rate`` is auto-calibrated against the delta between
+          consecutive burst anchors: ``(mlat_N - mlat_{N-1}) /
+          (wall_N - wall_{N-1})``. The very first burst has no
+          prior anchor, so all its frames fall back to
+          ``wall_now``; by the second burst onward, interpolation
+          kicks in. The estimator is receiver-agnostic — it works
+          the same for 12 MHz dump1090 counters and radarcape
+          nanosecond counters with no configuration.
+        """
         assert self._sock is not None
         while True:
             chunk = self._sock.recv(8192)
             if not chunk:
                 raise OSError("connection closed by remote")
+            wall_now = time.time()
             self._buf += chunk
 
             # On first real data, verify the stream is beast format
@@ -280,6 +355,36 @@ class NetworkSource:
             frames, remainder = _parse_beast_buffer(self._buf)
             self._buf = remainder
 
-            now = time.time()
-            for hex_msg in frames:
-                yield hex_msg, now
+            if not frames:
+                continue
+
+            # Per-burst anchor: the first frame's MLAT pairs with
+            # wall_now. Interpolate later frames against that.
+            burst_anchor_mlat = frames[0][0]
+
+            # Update the rate estimate from the delta between this
+            # burst's anchor and the previous one. Skip the very
+            # first burst (no prior) and any burst whose wall-clock
+            # delta is too small to give a stable estimate.
+            if (
+                self._prev_burst_wall is not None
+                and self._prev_burst_mlat is not None
+            ):
+                dw = wall_now - self._prev_burst_wall
+                dm = burst_anchor_mlat - self._prev_burst_mlat
+                if dw >= _CALIB_MIN_DELTA_S and dm > 0:
+                    self._rate_estimate = dm / dw
+            self._prev_burst_wall = wall_now
+            self._prev_burst_mlat = burst_anchor_mlat
+
+            rate = self._rate_estimate
+            for mlat, hex_msg in frames:
+                if rate is not None and rate > 0:
+                    ts = wall_now + (mlat - burst_anchor_mlat) / rate
+                else:
+                    # Pre-calibration fallback: every frame in the
+                    # burst gets the same wall_now reading. Lasts
+                    # only until the second burst (typically <1 s
+                    # on a busy feed).
+                    ts = wall_now
+                yield hex_msg, ts
