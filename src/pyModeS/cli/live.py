@@ -111,6 +111,12 @@ def run(args: argparse.Namespace) -> int:
                 if stop.stopped:
                     break
                 result = pipe.decode(hex_msg, timestamp=ts)
+                # Preserve the source hex on every emitted record so
+                # `--dump-to` captures are self-contained for offline
+                # analysis. PipeDecoder already sets raw_msg on error
+                # results; set it unconditionally here to cover the
+                # success path without depending on decoder internals.
+                result["raw_msg"] = hex_msg
                 sink.write(result)
                 now = time.monotonic()
                 if now - last_stats_ts >= 60.0 and not silence_stderr:

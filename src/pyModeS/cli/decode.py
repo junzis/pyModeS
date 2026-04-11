@@ -71,6 +71,12 @@ def _run_single(args: argparse.Namespace) -> int:
         print(f"modes decode: error: {e}", file=sys.stderr)
         return 1
 
+    # Always stamp the source hex so the emitted JSON is a
+    # self-contained record — matches `modes live --dump-to`
+    # behaviour so captures from either CLI path can be re-run
+    # offline.
+    result["raw_msg"] = args.message
+
     if args.compact:
         print(json.dumps(result, separators=(",", ":"), default=str))
     else:
@@ -141,6 +147,13 @@ def _emit_batch(
         surface_ref=surface_ref,
         full_dict=args.full_dict,
     )
+
+    # Stamp the source hex on every result (pyModeS_decode already
+    # does this for error dicts; we set it unconditionally here so
+    # success records carry it too, keeping the batch output
+    # self-describing).
+    for hex_msg, result in zip(hexes, results, strict=True):
+        result["raw_msg"] = hex_msg
 
     if args.compact:
         for result in results:
