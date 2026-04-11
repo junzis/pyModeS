@@ -22,14 +22,14 @@ classifiers = [
 requires-python = ">=3.11"
 # v3 has no runtime dependencies. The decoder is pure Python on
 # top of stdlib (int shifts + math + socket + json + argparse).
-# The optional `tui` extra pulls in `rich` for `modes live --tui`.
+# The optional `tui` extra pulls in `textual` for `modes live --tui`.
 dependencies = []
 
 [project.scripts]
 modes = "pymodes.cli:main"
 
 [project.optional-dependencies]
-tui = ["rich>=13.0"]
+tui = ["textual>=0.50"]
 
 [project.urls]
 homepage = "https://mode-s.org"
@@ -42,10 +42,10 @@ dev = [
     "pytest>=7.2.0",
     "pytest-cov>=4.0.0",
     "ruff>=0.15.8",
-    # rich is declared as an optional runtime extra (`pymodes[tui]`),
-    # but it's also a dev requirement so mypy can statically check
-    # src/pymodes/cli/_tui.py on a fresh clone.
-    "rich>=13.0",
+    # textual is declared as an optional runtime extra
+    # (`pymodes[tui]`), but it's also a dev requirement so mypy can
+    # statically check src/pymodes/cli/_tui.py on a fresh clone.
+    "textual>=0.50",
 ]
 
 [tool.ruff]

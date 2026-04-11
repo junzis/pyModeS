@@ -1,146 +1,658 @@
-"""Optional rich-based TUI for ``modes live --tui``.
+"""Interactive textual-based TUI for ``modes live --tui``.
 
-This module is lazy-imported by ``cli/live.py`` ONLY when the ``--tui``
-flag is set. If ``rich`` is not installed, the import fails and the
-caller converts the ImportError into a clean exit-3 with an install
-hint pointing at ``pip install "pymodes[tui]"``.
+Drop-in replacement for the old rich-based TuiSink. Gives users
+keyboard navigation (j/k/g/G), sort cycling (s), sort direction
+toggle (r), and incremental search (/) over the live aircraft
+table — matching the UX of jet1090's Rust/ratatui console.
 
-Rendering strategy: the TuiSink maintains its own per-ICAO sliding
-state, merging in fields from every decoded message that arrives.
-On each ``write(decoded)`` call the row for that ICAO is updated and
-the table is re-rendered via ``rich.live.Live``. Re-render cost is
-tiny compared to the decode cost, so we re-render on every message
-rather than on a timer.
+This module is lazy-imported ONLY when --tui is set, so users
+without the ``pymodes[tui]`` extra pay zero cost. The caller in
+``pymodes.cli.live`` catches the ImportError and surfaces a clean
+exit-3 with an install hint.
+
+Architecture:
+
+- ``ModesLiveApp`` is a textual App with a single DataTable widget.
+- On mount, we spawn a daemon worker thread that drains the
+  blocking ``NetworkSource`` iterator, calls ``PipeDecoder.decode``
+  on each frame, and merges the decoded fields into a shared
+  ``dict[icao, state]`` that the UI thread reads from.
+- A 250 ms ``set_interval`` timer snapshots the shared dict,
+  applies any active search filter and sort, and rewrites the
+  DataTable rows. At 4 Hz with <=500 aircraft this is O(2000
+  cells/second) — negligible cost.
+- Terminal width changes trigger a column-set swap (7 / 10 / 18
+  columns) matching jet1090's breakpoints.
+
+Thread safety: the shared dict sees single-key writes from the
+worker thread (GIL-atomic under CPython) and snapshot reads from
+the UI thread via ``list(state.items())``. No locks needed.
 """
 
 from __future__ import annotations
 
-import sys
-import time
-from types import TracebackType
-from typing import Any
+import argparse
+import contextlib
+import threading
+from datetime import UTC, datetime
+from typing import Any, ClassVar
 
-# This import raises ImportError if rich is missing — intentional,
-# caller (cli/live.py) catches it and emits a clean exit-3.
-from rich.console import Console
-from rich.live import Live
-from rich.table import Table
+# textual is optional; caller guards the import.
+from textual.app import App, ComposeResult
+from textual.binding import Binding
+from textual.containers import Container
+from textual.screen import ModalScreen
+from textual.widgets import DataTable, Footer, Header, Input
 
-from pymodes.message import Decoded
+from pymodes import PipeDecoder
+from pymodes.cli._source import NetworkSource, UnsupportedStreamError
+
+# Fields the worker thread copies out of each decoded message into
+# the per-ICAO shared state dict. Covers every column across every
+# responsive breakpoint. Comm-B and ADS-B use slightly different
+# names for several concepts (vertical rate, track, altitude);
+# both are captured so the UI can render whichever was most
+# recently observed.
+_TRACKED_FIELDS: tuple[str, ...] = (
+    "callsign",
+    "squawk",
+    "latitude",
+    "longitude",
+    "altitude",
+    "selected_altitude_mcp",
+    "selected_altitude_fms",
+    "groundspeed",
+    "true_airspeed",
+    "indicated_airspeed",
+    "mach",
+    "vertical_rate",
+    "baro_vertical_rate",
+    "inertial_vertical_rate",
+    "track",
+    "true_track",
+    "heading",
+    "magnetic_heading",
+    "roll",
+    "nac_p",
+)
+
+# Sort keys cycled by the `s` binding. Order mirrors the sequence
+# jet1090 exposes in its console.
+_SORT_KEYS: tuple[str, ...] = (
+    "last_seen",
+    "icao",
+    "callsign",
+    "altitude",
+    "groundspeed",
+    "vertical_rate",
+)
+
+# Human labels shown in the SUB_TITLE for the currently active
+# sort key. Keys match _SORT_KEYS.
+_SORT_LABELS: dict[str, str] = {
+    "last_seen": "last",
+    "icao": "icao",
+    "callsign": "callsign",
+    "altitude": "alt",
+    "groundspeed": "gs",
+    "vertical_rate": "vrate",
+}
+
+# Aircraft older than this are hidden from the table (matches
+# PipeDecoder.eviction_ttl default of 300 seconds).
+_INTERACTIVE_EXPIRE: float = 300.0
 
 
-class TuiSink:
-    """rich-based live aircraft table.
+def _fmt_float(v: Any, digits: int = 4) -> str:
+    """Format a float with a fixed decimal count; empty if None."""
+    if v is None:
+        return ""
+    try:
+        return f"{float(v):.{digits}f}"
+    except (TypeError, ValueError):
+        return ""
 
-    Maintains a sliding view over recently-seen aircraft keyed by
-    ICAO. On every ``write(decoded)`` call the row for that ICAO is
-    updated in-place and the table is re-rendered via
-    ``rich.live.Live``.
 
-    The TUI takes over the terminal (``screen=True`` puts rich into
-    the alternate screen mode) so stdout JSON lines are NOT emitted
-    when ``--tui`` is active. argparse enforces the ``--tui`` +
-    ``--dump-to`` and ``--tui`` + ``--quiet`` mutexes.
+def _fmt_int(v: Any) -> str:
+    """Format an int; empty if None."""
+    if v is None:
+        return ""
+    try:
+        return f"{int(v)}"
+    except (TypeError, ValueError):
+        return ""
 
-    Output goes to ``sys.stderr`` so any stray stdout writes from
-    other code paths don't garble the rendered table.
+
+def _fmt_last_seen(v: Any, now: float) -> str:
+    """Seconds-since string; empty when <=1s old (avoids 0s flicker)."""
+    if v is None:
+        return ""
+    try:
+        age = now - float(v)
+    except (TypeError, ValueError):
+        return ""
+    if age <= 1.0:
+        return ""
+    return f"{int(age)}s"
+
+
+def _fmt_time(v: Any) -> str:
+    """Render a unix timestamp as HH:MM UTC; empty if None."""
+    if v is None:
+        return ""
+    try:
+        return datetime.fromtimestamp(float(v), tz=UTC).strftime("%H:%M")
+    except (TypeError, ValueError, OSError):
+        return ""
+
+
+# Column sets per terminal-width bracket. Keys are the breakpoint
+# upper bounds (inclusive); the values are the ordered column id
+# lists. ``_COLUMNS_XL`` is used for >130.
+_COLUMNS_XS: tuple[str, ...] = (
+    "icao",
+    "callsign",
+    "lat",
+    "lon",
+    "alt",
+    "gs",
+    "trk",
+)
+_COLUMNS_SM: tuple[str, ...] = (
+    "icao",
+    "callsign",
+    "sqwk",
+    "lat",
+    "lon",
+    "alt",
+    "gs",
+    "vrate",
+    "trk",
+    "last",
+)
+_COLUMNS_LG: tuple[str, ...] = (
+    "icao",
+    "callsign",
+    "sqwk",
+    "lat",
+    "lon",
+    "alt",
+    "sel",
+    "gs",
+    "tas",
+    "ias",
+    "mach",
+    "vrate",
+    "trk",
+    "hdg",
+    "roll",
+    "nac",
+    "last",
+    "first",
+)
+
+
+def _pick_columns(width: int) -> tuple[str, ...]:
+    """Return the column id tuple appropriate for ``width``."""
+    if width <= 70:
+        return _COLUMNS_XS
+    if width <= 100:
+        return _COLUMNS_SM
+    return _COLUMNS_LG
+
+
+def _row_for_state(
+    icao: str,
+    state: dict[str, Any],
+    now: float,
+    columns: tuple[str, ...],
+) -> list[str]:
+    """Build the ordered cell value list for one aircraft row.
+
+    The output length is exactly ``len(columns)`` so the caller can
+    splat it into ``DataTable.add_row``.
+    """
+    cells: list[str] = []
+    for col in columns:
+        if col == "icao":
+            cells.append(icao.upper())
+        elif col == "callsign":
+            cells.append(str(state.get("callsign") or ""))
+        elif col == "sqwk":
+            cells.append(str(state.get("squawk") or ""))
+        elif col == "lat":
+            cells.append(_fmt_float(state.get("latitude"), 3))
+        elif col == "lon":
+            cells.append(_fmt_float(state.get("longitude"), 3))
+        elif col == "alt":
+            cells.append(_fmt_int(state.get("altitude")))
+        elif col == "sel":
+            cells.append(
+                _fmt_int(
+                    state.get("selected_altitude_mcp")
+                    or state.get("selected_altitude_fms")
+                )
+            )
+        elif col == "gs":
+            cells.append(_fmt_int(state.get("groundspeed")))
+        elif col == "tas":
+            cells.append(_fmt_int(state.get("true_airspeed")))
+        elif col == "ias":
+            cells.append(_fmt_int(state.get("indicated_airspeed")))
+        elif col == "mach":
+            cells.append(_fmt_float(state.get("mach"), 2))
+        elif col == "vrate":
+            cells.append(
+                _fmt_int(state.get("vertical_rate") or state.get("baro_vertical_rate"))
+            )
+        elif col == "trk":
+            cells.append(_fmt_int(state.get("track") or state.get("true_track")))
+        elif col == "hdg":
+            cells.append(
+                _fmt_int(state.get("heading") or state.get("magnetic_heading"))
+            )
+        elif col == "roll":
+            cells.append(_fmt_float(state.get("roll"), 1))
+        elif col == "nac":
+            cells.append(_fmt_int(state.get("nac_p")))
+        elif col == "last":
+            cells.append(_fmt_last_seen(state.get("_last_seen"), now))
+        elif col == "first":
+            cells.append(_fmt_time(state.get("_first_seen")))
+        else:  # pragma: no cover - defensive
+            cells.append("")
+    return cells
+
+
+def _sort_value(icao: str, state: dict[str, Any], key: str) -> Any:
+    """Return a sortable value for the given sort key.
+
+    Missing fields always sort to the end (largest value under
+    ascending, smallest under descending).
+    """
+    if key == "last_seen":
+        return state.get("_last_seen", 0.0)
+    if key == "icao":
+        return icao
+    if key == "callsign":
+        return state.get("callsign") or "\uffff"
+    if key == "altitude":
+        v = state.get("altitude")
+        return float("inf") if v is None else float(v)
+    if key == "groundspeed":
+        v = state.get("groundspeed")
+        return float("inf") if v is None else float(v)
+    if key == "vertical_rate":
+        v = state.get("vertical_rate") or state.get("baro_vertical_rate")
+        return float("inf") if v is None else float(v)
+    return 0
+
+
+class _SearchScreen(ModalScreen[str]):
+    """Tiny modal with a single ``Input`` for the search query.
+
+    Dismisses with the typed string on Enter, or an empty string on
+    Escape. ``ModesLiveApp`` uses the returned value to update the
+    search filter.
     """
 
-    def __init__(self) -> None:
-        self._console = Console(file=sys.stderr)
-        self._state: dict[str, dict[str, Any]] = {}
-        self._last_seen: dict[str, float] = {}
-        self._total = 0
-        self._live: Live | None = None
+    BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
+        Binding("escape", "cancel", "Cancel", priority=True),
+    ]
 
-    def __enter__(self) -> TuiSink:
-        self._live = Live(
-            self._render(),
-            console=self._console,
-            refresh_per_second=4,
-            screen=True,
-        )
-        self._live.__enter__()
-        return self
+    CSS = """
+    _SearchScreen {
+        align: center middle;
+    }
+    _SearchScreen > Container {
+        width: 60;
+        height: 3;
+        border: round $accent;
+        background: $surface;
+    }
+    _SearchScreen Input {
+        border: none;
+    }
+    """
 
-    def __exit__(
+    def __init__(self, initial: str = "") -> None:
+        super().__init__()
+        self._initial = initial
+
+    def compose(self) -> ComposeResult:
+        with Container():
+            yield Input(value=self._initial, placeholder="search icao or callsign")
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        self.dismiss(event.value)
+
+    def action_cancel(self) -> None:
+        self.dismiss("")
+
+
+class ModesLiveApp(App[int]):
+    """Interactive textual App for ``modes live --tui``.
+
+    Owns the terminal, spawns a worker thread to drain
+    ``NetworkSource``, and paints the shared per-aircraft state
+    dict into a ``DataTable`` on a 4 Hz timer.
+    """
+
+    TITLE = "pymodes live"
+
+    CSS = """
+    Screen {
+        layout: vertical;
+    }
+    #aircraft-container {
+        height: 1fr;
+        padding: 0 1;
+    }
+    DataTable {
+        height: 1fr;
+        border: round $accent;
+    }
+    """
+
+    BINDINGS: ClassVar[list[Binding | tuple[str, str] | tuple[str, str, str]]] = [
+        Binding("q", "quit", "Quit", priority=True),
+        Binding("escape", "quit", "Quit", priority=True, show=False),
+        Binding("j", "cursor_down", "Down", show=False),
+        Binding("k", "cursor_up", "Up", show=False),
+        Binding("g", "cursor_home", "Top"),
+        Binding("G", "cursor_end", "Bottom"),
+        Binding("s", "cycle_sort", "Sort"),
+        Binding("r", "toggle_sort_dir", "Reverse"),
+        Binding("slash", "toggle_search", "Search"),
+    ]
+
+    def __init__(
         self,
-        exc_type: type[BaseException] | None,
-        exc: BaseException | None,
-        tb: TracebackType | None,
+        args: argparse.Namespace,
+        pipe: PipeDecoder,
+        source: NetworkSource,
     ) -> None:
-        if self._live is not None:
-            self._live.__exit__(exc_type, exc, tb)
-            self._live = None
+        super().__init__()
+        self._args = args
+        self._pipe = pipe
+        self._source = source
+        self._host = source.host
+        self._port = source.port
+        self.sub_title = f"{self._host}:{self._port}"
 
-    def write(self, decoded: Decoded) -> None:
-        self._total += 1
-        icao = decoded.get("icao")
-        if not icao:
-            return
-        state = self._state.setdefault(icao, {})
-        # Merge non-null fields into the per-ICAO sliding state
-        for key in (
-            "callsign",
-            "altitude",
-            "groundspeed",
-            "track",
-            "latitude",
-            "longitude",
-        ):
-            val = decoded.get(key)
-            if val is not None:
-                state[key] = val
-        self._last_seen[icao] = time.monotonic()
+        # Shared per-aircraft state. Writes from the worker thread
+        # are single-key dict assignments (GIL-atomic under
+        # CPython); reads from the UI thread snapshot via
+        # ``list(state.items())`` to dodge "dict changed during
+        # iteration" errors.
+        self._state: dict[str, dict[str, Any]] = {}
+        self._msg_count: int = 0
+        self._worker_error: BaseException | None = None
+        self._stop_flag: bool = False
+        self._worker_thread: threading.Thread | None = None
 
-        if self._live is not None:
-            self._live.update(self._render())
+        # UI state
+        self._sort_index: int = 0  # index into _SORT_KEYS
+        self._sort_asc: bool = False  # default: most-recent first
+        self._search_query: str = ""
+        self._columns: tuple[str, ...] = _COLUMNS_SM
+        self._last_width: int = -1
 
-    def close(self) -> None:
-        if self._live is not None:
-            self._live.__exit__(None, None, None)
-            self._live = None
+    # ------------------------------------------------------------------
+    # Composition + lifecycle
+    # ------------------------------------------------------------------
 
-    def _render(self) -> Table:
-        now = time.monotonic()
-        table = Table(
-            title=f"pymodes live — {self._total} msgs, {len(self._state)} a/c",
-            show_lines=False,
-            expand=True,
-        )
-        table.add_column("ICAO", style="cyan", no_wrap=True)
-        table.add_column("Callsign", style="green", no_wrap=True)
-        table.add_column("Alt(ft)", justify="right")
-        table.add_column("GS(kt)", justify="right")
-        table.add_column("Trk(°)", justify="right")
-        table.add_column("Lat", justify="right")
-        table.add_column("Lon", justify="right")
-        table.add_column("Seen", justify="right")
-
-        # Sort by most-recently-seen first, cap display at 50 rows
-        ordered = sorted(
-            self._state.items(),
-            key=lambda item: self._last_seen.get(item[0], 0.0),
-            reverse=True,
-        )
-        for icao, state in ordered[:50]:
-            seen_ago = now - self._last_seen.get(icao, now)
-            table.add_row(
-                icao,
-                str(state.get("callsign") or ""),
-                str(state.get("altitude") or ""),
-                str(state.get("groundspeed") or ""),
-                (f"{state['track']:.1f}" if state.get("track") is not None else ""),
-                (
-                    f"{state['latitude']:.4f}"
-                    if state.get("latitude") is not None
-                    else ""
-                ),
-                (
-                    f"{state['longitude']:.4f}"
-                    if state.get("longitude") is not None
-                    else ""
-                ),
-                f"{seen_ago:.1f}s",
+    def compose(self) -> ComposeResult:
+        yield Header(show_clock=True)
+        with Container(id="aircraft-container"):
+            yield DataTable(
+                id="aircraft",
+                cursor_type="row",
+                zebra_stripes=True,
             )
-        return table
+        yield Footer()
+
+    def on_mount(self) -> None:
+        # Configure the DataTable columns based on the initial
+        # terminal width.
+        self._apply_column_set(self.size.width)
+
+        # Start the worker thread that drains NetworkSource.
+        self._worker_thread = threading.Thread(
+            target=self._worker_loop, daemon=True, name="pymodes-live-tui-worker"
+        )
+        self._worker_thread.start()
+
+        # 4 Hz table refresh and 1 Hz title refresh.
+        self.set_interval(0.25, self._refresh_table)
+        self.set_interval(1.0, self._refresh_title)
+
+    def on_unmount(self) -> None:
+        # Signal the worker to stop and try to unblock a recv() by
+        # closing the underlying socket. The thread is a daemon so
+        # if it stays blocked (e.g. recv() not raising on close on
+        # some platforms) Python will still exit.
+        self._stop_flag = True
+        sock = getattr(self._source, "_sock", None)
+        if sock is not None:
+            with contextlib.suppress(Exception):
+                sock.close()
+
+    def on_resize(self, event: Any) -> None:
+        # Re-lay out columns if the width bracket changed.
+        self._apply_column_set(self.size.width)
+
+    # ------------------------------------------------------------------
+    # Worker thread
+    # ------------------------------------------------------------------
+
+    def _worker_loop(self) -> None:
+        try:
+            for hex_msg, ts in self._source:
+                if self._stop_flag:
+                    break
+                try:
+                    decoded = self._pipe.decode(hex_msg, timestamp=ts)
+                except Exception:
+                    self._msg_count += 1
+                    continue
+                self._msg_count += 1
+                icao = decoded.get("icao")
+                if not icao:
+                    continue
+                state = self._state.get(icao)
+                if state is None:
+                    state = {"_first_seen": ts, "_last_seen": ts}
+                    self._state[icao] = state
+                for key in _TRACKED_FIELDS:
+                    val = decoded.get(key)
+                    if val is not None:
+                        state[key] = val
+                state["_last_seen"] = ts
+        except UnsupportedStreamError as e:
+            self._worker_error = e
+            with contextlib.suppress(Exception):
+                self.call_from_thread(self.exit, 2)
+        except Exception as e:
+            if self._stop_flag:
+                return
+            self._worker_error = e
+            with contextlib.suppress(Exception):
+                self.call_from_thread(self.exit, 1)
+
+    # ------------------------------------------------------------------
+    # Periodic refresh
+    # ------------------------------------------------------------------
+
+    def _apply_column_set(self, width: int) -> None:
+        columns = _pick_columns(width)
+        if columns == self._columns and self._last_width >= 0:
+            return
+        self._columns = columns
+        self._last_width = width
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+        table.clear(columns=True)
+        table.add_columns(*columns)
+
+    def _refresh_table(self) -> None:
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+
+        # React to width bracket changes even if on_resize didn't
+        # fire (textual occasionally coalesces resize events).
+        if _pick_columns(self.size.width) != self._columns:
+            self._apply_column_set(self.size.width)
+
+        now = _now()
+        cutoff = now - _INTERACTIVE_EXPIRE
+
+        # Snapshot — dict may mutate from the worker thread between
+        # calls, so copy the items out first.
+        snapshot: list[tuple[str, dict[str, Any]]] = list(self._state.items())
+
+        # Filter
+        filtered: list[tuple[str, dict[str, Any]]] = []
+        query = self._search_query.lower()
+        for icao, state in snapshot:
+            last_seen = state.get("_last_seen", 0.0)
+            if last_seen < cutoff:
+                continue
+            if query:
+                callsign = str(state.get("callsign") or "").lower()
+                if query not in icao.lower() and query not in callsign:
+                    continue
+            filtered.append((icao, state))
+
+        # Sort
+        key = _SORT_KEYS[self._sort_index]
+        filtered.sort(key=lambda item: _sort_value(item[0], item[1], key))
+        if not self._sort_asc:
+            filtered.reverse()
+
+        # Preserve cursor row if possible
+        prev_cursor = table.cursor_row
+
+        # Simple strategy: clear + re-add. O(n*cols) per tick is
+        # fine at 4 Hz with <=500 aircraft (2k cells/sec).
+        table.clear(columns=False)
+        columns = self._columns
+        for icao, state in filtered:
+            cells = _row_for_state(icao, state, now, columns)
+            table.add_row(*cells, key=icao)
+
+        # Restore cursor if the new table has at least that many
+        # rows; otherwise clamp to the last row.
+        if table.row_count:
+            new_cursor = min(prev_cursor, table.row_count - 1)
+            if new_cursor >= 0:
+                with contextlib.suppress(Exception):
+                    table.move_cursor(row=new_cursor)
+
+    def _refresh_title(self) -> None:
+        now = _now()
+        cutoff = now - _INTERACTIVE_EXPIRE
+        n_aircraft = sum(
+            1
+            for st in list(self._state.values())
+            if st.get("_last_seen", 0.0) >= cutoff
+        )
+        sort_label = _SORT_LABELS.get(_SORT_KEYS[self._sort_index], "?")
+        direction = "asc" if self._sort_asc else "desc"
+        search_bit = f" /{self._search_query}" if self._search_query else ""
+        self.sub_title = (
+            f"{self._host}:{self._port}  "
+            f"{n_aircraft} a/c  {self._msg_count} msgs  "
+            f"sort={sort_label}:{direction}{search_bit}"
+        )
+
+    # ------------------------------------------------------------------
+    # Actions
+    # ------------------------------------------------------------------
+
+    def action_cursor_down(self) -> None:
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+        table.action_cursor_down()
+
+    def action_cursor_up(self) -> None:
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+        table.action_cursor_up()
+
+    def action_cursor_home(self) -> None:
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+        if table.row_count:
+            with contextlib.suppress(Exception):
+                table.move_cursor(row=0)
+
+    def action_cursor_end(self) -> None:
+        try:
+            table = self.query_one("#aircraft", DataTable)
+        except Exception:
+            return
+        if table.row_count:
+            with contextlib.suppress(Exception):
+                table.move_cursor(row=table.row_count - 1)
+
+    def action_cycle_sort(self) -> None:
+        self._sort_index = (self._sort_index + 1) % len(_SORT_KEYS)
+        self._refresh_table()
+        self._refresh_title()
+
+    def action_toggle_sort_dir(self) -> None:
+        self._sort_asc = not self._sort_asc
+        self._refresh_table()
+        self._refresh_title()
+
+    def action_toggle_search(self) -> None:
+        def _on_result(value: str | None) -> None:
+            self._search_query = value or ""
+            self._refresh_table()
+            self._refresh_title()
+
+        self.push_screen(_SearchScreen(self._search_query), _on_result)
+
+
+def _now() -> float:
+    import time
+
+    return time.time()
+
+
+def run_tui_app(
+    args: argparse.Namespace,
+    pipe: PipeDecoder,
+    source: NetworkSource,
+) -> int:
+    """Run the textual App until the user quits.
+
+    Returns the exit code: 0 for a clean quit, 1 for an internal
+    error, 2 for an UnsupportedStreamError raised by the worker
+    thread.
+    """
+    app = ModesLiveApp(args, pipe, source)
+    exit_code = app.run()
+    err = app._worker_error
+    if err is not None:
+        import sys
+
+        if isinstance(err, UnsupportedStreamError):
+            print(f"modes live: error: {err}", file=sys.stderr)
+            return 2
+        print(f"modes live: error: {err}", file=sys.stderr)
+        return 1
+    if isinstance(exit_code, int):
+        return exit_code
+    return 0

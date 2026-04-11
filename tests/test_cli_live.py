@@ -112,9 +112,10 @@ class TestLiveMainLoop:
         for key in _FULL_SCHEMA:
             assert key in data
 
-    def test_tui_without_rich_exits_three(self, capsys, monkeypatch):
+    def test_tui_without_textual_exits_three(self, capsys, monkeypatch):
+        """--tui without the textual optional extra exits 3 with install hint."""
         self._fake_source = FakeSource([])
-        # Force the rich import to fail as if it's not installed.
+        # Force the textual import to fail as if it's not installed.
         # Patching builtins.__import__ is sticky; instead, inject a
         # fake that raises when `pymodes.cli._tui` is imported.
         import sys as _sys
@@ -122,7 +123,7 @@ class TestLiveMainLoop:
         class _RaisingFinder:
             def find_spec(self, name, path=None, target=None):
                 if name == "pymodes.cli._tui":
-                    raise ImportError("no rich installed")
+                    raise ImportError("no textual installed")
                 return None
 
         monkeypatch.setattr(_sys, "meta_path", [_RaisingFinder(), *_sys.meta_path])
@@ -135,6 +136,7 @@ class TestLiveMainLoop:
         assert code == 3
         captured = capsys.readouterr()
         assert "pymodes[tui]" in captured.err
+        assert "textual" in captured.err
 
 
 class TestLiveGracefulShutdown:

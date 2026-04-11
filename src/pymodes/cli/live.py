@@ -1,6 +1,6 @@
 """Main loop for ``modes live`` — streaming TCP decode.
 
-Pipeline::
+Pipeline (non-TUI path)::
 
     NetworkSource (TCP + beast frame parser)
         │ yields (hex, timestamp)
@@ -8,7 +8,11 @@ Pipeline::
     PipeDecoder
         │ per-ICAO state, CPR pair matching, TTL eviction
         ▼
-    Sink (JsonLinesSink | TeeSink | NullSink | TuiSink)
+    Sink (JsonLinesSink | TeeSink | NullSink)
+
+TUI path: the textual ``ModesLiveApp`` owns the NetworkSource and
+PipeDecoder directly — sinks don't apply because the app paints a
+DataTable rather than emitting JSON lines.
 
 Signal handling: SIGINT and SIGTERM set a stop flag that the iterator
 loop checks after each message. The main loop then flushes the sink,
@@ -39,10 +43,6 @@ class _StopFlag:
         self.stopped = False
 
 
-class _TuiImportError(RuntimeError):
-    """Raised when --tui is set but `rich` is missing."""
-
-
 def run(args: argparse.Namespace) -> int:
     """Entry point for ``modes live``. Returns exit code."""
     host, port = _parse_network(args.network)
@@ -58,26 +58,36 @@ def run(args: argparse.Namespace) -> int:
 
     pipe = PipeDecoder(surface_ref=surface_ref, full_dict=args.full_dict)
 
-    # Construct the sink
-    try:
-        sink = _build_sink(args)
-    except _TuiImportError as e:
-        print(str(e), file=sys.stderr)
-        return 3
+    # TUI path takes its own branch — textual owns the event loop
+    # and drives the source + pipe itself, so the sink pipeline
+    # doesn't apply. We lazy-import _tui so the textual package is
+    # only required when --tui is actually set; if it's missing we
+    # emit an exit-3 with an install hint.
+    if args.tui:
+        try:
+            from pymodes.cli._tui import run_tui_app
+        except ImportError as e:
+            print(
+                "modes live: error: --tui requires the optional "
+                "`textual` package.\n"
+                '  install via: pip install "pymodes[tui]"\n'
+                f"  (original import error: {e})",
+                file=sys.stderr,
+            )
+            return 3
+        # silent=True because textual owns the terminal; any stderr
+        # writes inside the alt-screen would corrupt the display.
+        source = NetworkSource(host, port, on_detect=None, silent=True)
+        return run_tui_app(args, pipe, source)
+
+    # Non-TUI sink pipeline
+    sink = _build_sink(args)
 
     # Signal handling
     stop = _StopFlag()
     _install_signal_handlers(stop)
 
-    # Network source. In --tui mode we suppress every stderr
-    # notification (format detection, reconnect warnings, periodic
-    # stats) because rich.live.Live holds the alternate screen
-    # buffer and a raw `print(..., file=sys.stderr)` writes into
-    # the middle of rich's render area, corrupting the cursor
-    # tracking and leaving the display stuck. The TUI footer
-    # already surfaces the running stats via TuiSink's table
-    # title, so no information is lost.
-    silence_stderr = args.quiet or args.tui
+    silence_stderr = args.quiet
     source = NetworkSource(
         host,
         port,
@@ -116,27 +126,11 @@ def run(args: argparse.Namespace) -> int:
             return 1
         return 0
 
-    # Enter the sink as a context manager when it supports one
-    # (TuiSink holds a rich.live.Live alt-screen). Non-TUI sinks
-    # are plain objects with just write()/close() — take the
-    # direct path so we can close them in the finally clause.
     try:
-        if hasattr(sink, "__enter__"):
-            with sink:
-                code = _loop()
-        else:
-            try:
-                code = _loop()
-            finally:
-                sink.close()
-    except BaseException:
-        # TuiSink's __exit__ will restore the terminal; still
-        # re-raise so callers see the underlying error.
-        raise
+        code = _loop()
+    finally:
+        sink.close()
 
-    # Final stats line lands AFTER the TUI's alt-screen has been
-    # restored (either because __exit__ ran above, or because we
-    # used the non-TUI path), so it appears on the normal terminal.
     _emit_stats_line(pipe, args.quiet, prefix="final")
     return code
 
@@ -163,25 +157,15 @@ def _parse_surface_ref(value: str | None) -> Any:
     return value
 
 
-def _build_sink(args: argparse.Namespace) -> Any:
-    """Construct the appropriate sink for the given args.
+def _build_sink(
+    args: argparse.Namespace,
+) -> JsonLinesSink | NullSink | TeeSink:
+    """Construct the appropriate non-TUI sink for the given args.
 
-    Raises _TuiImportError when --tui is set but the `rich` optional
-    extra is not installed. Caller translates that into exit code 3.
+    The TUI path does NOT go through this function — it has its
+    own branch in ``run()`` that hands the NetworkSource straight
+    to the textual App.
     """
-    if args.tui:
-        # Lazy-import _tui.py so we only pay the rich import cost
-        # when the user actually asks for the TUI.
-        try:
-            from pymodes.cli._tui import TuiSink
-        except ImportError as e:
-            raise _TuiImportError(
-                "modes live: error: --tui requires the optional `rich` package.\n"
-                '  install via: pip install "pymodes[tui]"\n'
-                f"  (original import error: {e})"
-            ) from e
-        return TuiSink()
-
     stdout_sink: JsonLinesSink | NullSink = (
         NullSink() if args.quiet else JsonLinesSink(sys.stdout)
     )
