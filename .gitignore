@@ -6,6 +6,8 @@ tmp/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.ipynb_checkpoints/
+.mypy_cache/
 
 # Compiled extensions (none shipped in v3 — pure Python — but
 # left in place to keep `.so` build artifacts out of accidental
