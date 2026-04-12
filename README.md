@@ -1,10 +1,6 @@
 # pyModeS
 
-Fast, ergonomic, dictionary-first decoder for Mode-S and ADS-B messages in
-pure Python. Ground-up v3 rewrite of `pyModeS` — 2.44× faster than
-`pyModeS 2.21.1`'s compiled C extension on a realistic workload, with no
-Cython build, no numpy hard dependency, and a single unified `decode()`
-returning a plain dict.
+Fast decoder for Mode-S and ADS-B messages in Python. Ground-up v3 rewrite of `pyModeS` with a single unified `decode()` function.
 
 [![license](https://img.shields.io/badge/license-GPL--3.0-blue)](https://github.com/junzis/pyModeS/blob/main/LICENSE)
 
@@ -20,13 +16,13 @@ Python 3.11+ required.
 
 ### Single-message decode
 
-`pyModeS.decode()` returns a `Decoded` dict with every decodable
+The `decode()` function returns a `Decoded` dict with every decodable
 field populated in one pass.
 
 ```python
-import pyModeS
+from pyModeS import decode
 
-result = pyModeS.decode("8D406B902015A678D4D220AA4BDA")
+result = decode("8D406B902015A678D4D220AA4BDA")
 print(result)
 # {
 #     'df': 17,
@@ -49,9 +45,9 @@ uses the timestamps to resolve CPR pairs and disambiguate
 ambiguous Comm-B registers.
 
 ```python
-import pyModeS
+from pyModeS import decode
 
-results = pyModeS.decode(
+results = decode(
     [
         "8D406B902015A678D4D220AA4BDA",  # DF17 BDS 0,8 identification
         "8D485020994409940838175B284F",  # DF17 BDS 0,9 airborne velocity
@@ -74,10 +70,10 @@ code (looked up in the shipped airport database) or an explicit
 `(lat, lon)` tuple.
 
 ```python
-import pyModeS
+from pyModeS import decode
 
 # Real DF18 surface movement on LFBO (Toulouse-Blagnac).
-r = pyModeS.decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
+r = decode("903a23ff426a4e65f7487a775d17", surface_ref="LFBO")
 print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 ```
 
@@ -241,6 +237,19 @@ pip install "pyModeS<3"
 
 Both v2 and v3 coexist on PyPI because they use different import
 names (`pyModeS` vs `pyModeS`).
+
+## Documentation
+
+The full docs live under `docs/` and are published via MkDocs + Material.
+To rebuild locally:
+
+```sh
+# One-shot build (strict mode fails on warnings). Output → site/
+uv run --with mkdocs-material --with mkdocs-include-markdown-plugin --with "mkdocstrings[python]" mkdocs build --clean --strict
+
+# Live-reload dev server at http://127.0.0.1:8000
+uv run --with mkdocs-material --with mkdocs-include-markdown-plugin --with "mkdocstrings[python]" mkdocs serve
+```
 
 ## Links
 

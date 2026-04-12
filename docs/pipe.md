@@ -1,6 +1,6 @@
 # PipeDecoder
 
-`PipeDecoder` is pyModeS' stateful streaming decoder. It processes
+`PipeDecoder` is pyModeS' new stateful streaming decoder. It processes
 one message at a time and maintains per-ICAO state across calls, so:
 
 - **CPR pairs** — an even/odd pair of airborne position frames
@@ -22,8 +22,7 @@ pipe = PipeDecoder(surface_ref="EHAM", pair_window=10.0, eviction_ttl=300.0)
 
 for raw_msg, timestamp in stream:
     result = pipe.decode(raw_msg, timestamp=timestamp)
-    if "error" in result:
-        continue
+    pirnt(result)
     ...
 
 print(pipe.stats)  # counters
@@ -61,7 +60,7 @@ call with a timestamp, entries older than `eviction_ttl` are dropped.
 
 ## Thread safety
 
-`PipeDecoder` is **not thread-safe**. Every `decode()` call mutates
+`PipeDecoder` is **not thread-safe** by default. Every `decode()` call mutates
 internal state without locking. Wrap the instance with a lock if
 multiple threads feed it concurrently:
 
@@ -77,8 +76,9 @@ def decode_one(msg: str, ts: float):
         return pipe.decode(msg, timestamp=ts)
 ```
 
-For single-producer pipelines (one reader thread draining a socket)
-no locking is needed — just don't share the decoder across threads.
+However, in most use cases, for single-producer pipelines (one reader thread 
+draining a socket) no locking is needed, just don't share the decoder across 
+threads.
 
 ## Stats
 

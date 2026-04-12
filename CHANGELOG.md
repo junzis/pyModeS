@@ -137,22 +137,3 @@ the migration guide.
   script — running it prints a migration hint to stderr and exits
   with code 2, rather than vanishing into a bare `command not
   found` after a `pip install -U pyModeS`.
-
-### Performance
-
-pyModeS v3 is **4.41× faster** than `pyModeS 2.21.1`
-pure-Python, **2.44× faster** than `pyModeS 2.21.1`
-with the compiled `c_common` extension, and **2.71×
-faster** than rs1090 single-core Rust. Measured on jet1090's
-`long_flight.csv` (172,432 Beast-format messages, 7 runs × 1 loop,
-single-core). See `scripts/benchmark_decode.py`.
-
-The speedup comes from:
-- A 256-entry CRC-24 lookup table replacing the bit-by-bit CRC
-  remainder loop (cross-checked against FlightAware dump1090)
-- Byte-level hex parsing via `int(hexstr, 16)` instead of
-  Python-level hex-char validation
-- Eager computation of Message header fields in `__init__` instead
-  of `cached_property` descriptor indirection
-- Hoisting the decoder dispatch table import out of the per-call
-  decode hot path
