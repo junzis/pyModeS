@@ -306,9 +306,9 @@ class Message:
     ) -> None:
         """Resolve single-msg CPR lat/lon in-place.
 
-        Only runs for BDS 0,5 (airborne, needs `reference`) or BDS 0,6
-        (surface, needs `surface_ref`). Pair resolution is handled by
-        PipeDecoder in phase 9.
+        Only runs for BDS 0,5 (airborne, needs ``reference``) or BDS 0,6
+        (surface, needs ``surface_ref``). Even/odd pair resolution across
+        multiple messages is handled by :class:`pyModeS.PipeDecoder`.
         """
         bds = result.get("bds")
         if bds not in ("0,5", "0,6"):

@@ -32,10 +32,8 @@ TID format:
          bits 43-49 = 7-bit range raw n (NM = (n-1)/10 if n > 0 else None);
          bits 50-55 = 6-bit bearing raw n (degrees = 6*(n-1)+3 if n > 0 else None).
 
-v2 has no field-level decoder for BDS30 (only the `is30` validator).
-This module adds a full decoder aligned with jet1090 because BDS61
-subtype 2 (ADS-B ACAS RA broadcast) embeds the same structure and
-will consume this decoder in Plan 3 Task 12.
+BDS61 subtype 2 (ADS-B ACAS RA broadcast) embeds the same structure
+and calls into this decoder.
 """
 
 from typing import Any

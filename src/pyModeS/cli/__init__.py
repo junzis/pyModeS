@@ -3,7 +3,7 @@
 Two subcommands:
 
 - ``modes decode`` — one-shot or file-based hex → JSON decoder
-- ``modes live`` — streaming TCP → PipeDecoder → JSON-lines or rich TUI
+- ``modes live`` — streaming TCP → PipeDecoder → JSON-lines or textual TUI
 
 The entry point is registered in ``pyproject.toml`` as ``modes``. The
 full implementation lives in the sibling modules in this package:
@@ -23,12 +23,7 @@ __all__ = ["main"]
 
 
 def _load_runner(submodule: str) -> Callable[[argparse.Namespace], int]:
-    """Lazily import ``pyModeS.cli.<submodule>.run``.
-
-    Uses :func:`importlib.import_module` so mypy does not try to
-    resolve the submodule statically — the ``decode`` and ``live``
-    modules land in later Plan 6 tasks.
-    """
+    """Lazily import ``pyModeS.cli.<submodule>.run``."""
     module = importlib.import_module(f"pyModeS.cli.{submodule}")
     runner: Callable[[argparse.Namespace], int] = module.run
     return runner

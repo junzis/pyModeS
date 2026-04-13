@@ -18,11 +18,6 @@ heuristic validators for 4,0 / 5,0 / 6,0 (and 4,4 / 4,5 when
 `include_meteo=True`). The first candidate becomes `bds` in the
 result dict; if multiple candidates survive the scan they are also
 returned as `bds_candidates`.
-
-During the walking-skeleton phase (before every BDS register is
-added), `_COMMB_DISPATCH` is empty and `CommB.decode()` returns only
-the header field. Each BDS task extends the dispatch and the result
-grows incrementally.
 """
 
 from collections.abc import Callable
@@ -46,7 +41,7 @@ from pyModeS.decoder.bds import (
 )
 from pyModeS.message import Decoded
 
-# BDS code -> decoder. Populated by each BDS task as it lands.
+# BDS code → decoder function.
 _COMMB_DISPATCH: dict[str, Callable[[int], dict[str, Any]]] = {
     "1,0": bds10.decode_bds10,
     "1,7": bds17.decode_bds17,
@@ -76,10 +71,9 @@ class CommB(DecoderBase):
         else:  # DF21
             result["squawk"] = idcode_to_squawk(ac_or_id)
 
-        # BDS inference. The Plan 3 walking-skeleton scan is replaced
-        # here with a single call to the two-phase infer() dispatch.
-        # `known` is threaded through for Phase 3 disambiguation of
-        # BDS 5,0 / 6,0 when the caller supplies aircraft state.
+        # BDS inference. `known` is threaded through for Phase 3
+        # disambiguation of BDS 5,0 / 6,0 when the caller supplies
+        # aircraft state.
         candidates = _infer.infer(self._payload, include_meteo=False, known=known)
         if not candidates:
             return result

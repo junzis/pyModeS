@@ -24,12 +24,15 @@ Phase 2 -- heuristic slow path
     ``include_meteo=True``.
 
 Phase 3 -- reference-assisted disambiguation
-    When multiple candidates survive Phase 2 and the caller passes
-    ``known=`` aircraft state (altitude, groundspeed, track), the
-    candidates can be scored against the reference and the best
-    single match returned. Plan 3 defers this -- ``infer()`` returns
-    the raw candidate list and the CommB class exposes it as
-    ``bds_candidates`` so callers can choose.
+    When multiple heuristic candidates (5,0 / 6,0) survive Phase 2
+    and the caller passes ``known=`` aircraft state (groundspeed,
+    track, heading, IAS, mach), each candidate is decoded and
+    scored against the reference; the best match is moved to the
+    front of the heuristic block. Format-ID candidates in front
+    and meteo candidates at the back keep their positions. When
+    the scorer can't disambiguate (e.g. no cached state at all),
+    ``infer()`` returns the raw candidate list and the CommB class
+    exposes it as ``bds_candidates`` so callers can choose.
 """
 
 from collections.abc import Callable
@@ -115,8 +118,8 @@ def _score_candidate(bds_code: str, payload: int, known: dict[str, Any]) -> floa
 
 
 # Validators keyed by BDS code, used by `matches()` for third-party
-# callers that only want a single-register check. Task 11 promoted the
-# primary dispatch path to `infer()` below.
+# callers that only want a single-register check. The primary
+# dispatch path goes through `infer()` below, not this table.
 _VALIDATORS: dict[str, Callable[[int], bool]] = {
     code: fn for code, _id, fn in _FORMAT_ID
 }

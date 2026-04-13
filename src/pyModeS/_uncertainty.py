@@ -1,10 +1,9 @@
 """Uncertainty parameter lookup tables for ADS-B NUC/NIC/NAC/SIL decoding.
 
-Ported verbatim from v2's src/pyModeS/decoder/uncertainty.py. Used by
-BDS 0,5 (airborne position), BDS 0,9 (airborne velocity), and BDS 6,5
-(operational status) to resolve typecode + subtype + supplement bits
-into horizontal / vertical radius-of-containment, accuracy bounds,
-and integrity level figures.
+Used by BDS 0,5 (airborne position), BDS 0,9 (airborne velocity),
+and BDS 6,5 (operational status) to resolve typecode + subtype +
+supplement bits into horizontal / vertical radius-of-containment,
+accuracy bounds, and integrity level figures.
 """
 
 from __future__ import annotations

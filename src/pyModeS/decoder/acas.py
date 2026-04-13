@@ -4,9 +4,10 @@ Both messages are TCAS/ACAS collision-avoidance replies. DF0 is 56 bits;
 DF16 extends DF0 with a 56-bit MV (ACAS RA / broadcast) payload, making
 the full message 112 bits.
 
-Phase 1 handles the shared header fields (VS, CC, SL, RI, AC) and exposes
-the MV field as a raw 14-char hex string for DF16. Full MV / BDS 3,0
-decoding (ACAS Resolution Advisory semantics) is deferred to phase 6.
+This decoder handles the shared header fields (VS, CC, SL, RI, AC) and
+exposes the MV field as a raw 14-char hex string for DF16. Full
+MV / BDS 3,0 decoding (ACAS Resolution Advisory semantics) is
+handled separately in :mod:`pyModeS.decoder.bds.bds30`.
 
 Layout shared:
     bits 0-4:   DF (5)

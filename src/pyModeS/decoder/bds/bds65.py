@@ -6,39 +6,33 @@ Subtypes by ADS-B version:
 - v1 (DO-260A) and v2 (DO-260B): subtype 0 (airborne) and
   subtype 1 (surface) are both defined.
 
-BDS65 is complicated. The field layout differs substantially across
-ADS-B versions, and the sub-field breakdown of the capability_class
-(bits 8-23) and operational_mode (bits 24-39) regions depends on
-both subtype and version. Plan 2 ships a minimal, robust decoder
-that extracts the reliably-positioned fields and exposes
-capability_class / operational_mode as raw 16-bit ints.
-
-TODO (deferred): full version-aware sub-field breakdown of
-capability_class and operational_mode (ACAS/CDTI/ARV/TS/TC for
-airborne, POE/1090ES/GRND/UATin/NACv/NICc for surface, GPS antenna
-offset and L/W codes for surface, GVA, BAI, and per-version NIC
-supplement variants). See jet1090 crates/rs1090/src/decode/bds/
-bds65.rs for the full reference structure. Will land in a follow-up
-once captured vectors for each (version, subtype) combination are
-available.
+The field layout differs across ADS-B versions, and the sub-field
+breakdown of the capability_class (bits 8-23) and operational_mode
+(bits 24-39) regions depends on both subtype and version. This
+decoder extracts the reliably-positioned fields and exposes
+capability_class / operational_mode as raw 16-bit ints. A full
+version-aware sub-field breakdown (ACAS/CDTI/ARV/TS/TC for airborne,
+POE/1090ES/GRND/UATin/NACv/NICc for surface, etc.) is a future
+enhancement — see jet1090 ``crates/rs1090/src/decode/bds/bds65.rs``
+for the reference structure.
 
 Payload layout (always-extracted bits, common across versions):
     bits 0-4:    TC (= 31)
     bits 5-7:    subtype
-    bits 8-23:   capability class codes (16 bits, raw; sub-fields TODO)
-    bits 24-39:  operational mode codes (16 bits, raw; sub-fields TODO)
+    bits 8-23:   capability class codes (16 bits, raw)
+    bits 24-39:  operational mode codes (16 bits, raw)
     bits 40-42:  ADS-B version (3 bits)
     bit 43:      NIC supplement A
     bits 44-47:  NAC_p (4 bits)
-    bits 48-49:  reserved / GVA (2 bits, TODO)
+    bits 48-49:  reserved / GVA (2 bits)
     bits 50-51:  SIL (2 bits)
-    bit 52:      NIC_baro -- airborne subtype 0 AND version >= 1 only.
+    bit 52:      NIC_baro — airborne subtype 0 AND version >= 1 only.
                  (Note: NIC_baro also appears in BDS62 at payload
-                 bit 43 with no version gating -- the two fields
+                 bit 43 with no version gating — the two fields
                  are independent.)
     bit 53:      HRD (heading reference direction: 0 = true north,
                  1 = magnetic north)
-    bit 54:      SIL supplement -- ADS-B v2 only
+    bit 54:      SIL supplement — ADS-B v2 only
     bit 55:      reserved
 """
 
@@ -79,8 +73,8 @@ def decode_bds65(payload: int) -> dict[str, Any]:
     }
 
     # NIC_baro: airborne only, and only for ADS-B v1 and v2.
-    # For v0, bit 52 has a different meaning; for surface subtype,
-    # the bit is reserved or carries a track/heading flag (TODO).
+    # For v0 the bit has a different meaning; for surface subtype,
+    # the bit is reserved or carries a track/heading flag.
     if subtype == 0 and version >= 1:
         result["nic_baro"] = (payload >> 3) & 0x1
 

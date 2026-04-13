@@ -1,19 +1,14 @@
 """CPR position decoding primitives.
 
-Consolidates three concerns from the pyModeS v2 tree into one
-module (git 70cb484^ as the reference revision):
+Three helpers live here:
 
-- ``cprNL`` — from ``py_common.py``. The v2 trig formula is
-  replaced here by a bisect over a precomputed NL(lat) boundary
-  table for O(log n) lookup without numpy.
-- ``airborne_position_*`` — from ``bds05.py``. Numerical logic
-  unchanged; ``numpy`` calls are swapped for stdlib ``math``.
-- ``surface_position_*`` — from ``bds06.py``. Same port shape
-  as airborne.
-
-Boundary table, wrapping rules, and zone-check semantics match
-v2 byte-for-byte; the v3 speedup comes from dropping numpy and
-the per-call trig evaluation in ``cprNL``.
+- ``cprNL(lat)`` returns the CPR longitude-zone count. Implemented
+  as a bisect over a precomputed NL(lat) boundary table, giving
+  O(log n) lookup without numpy or per-call trig evaluation.
+- ``airborne_position_*`` resolves DF17/18 BDS 0,5 lat/lon from an
+  even/odd CPR pair or a known reference position.
+- ``surface_position_*`` is the same for BDS 0,6, with a tighter
+  45 NM reference-tolerance window.
 """
 
 from bisect import bisect_right
@@ -21,10 +16,11 @@ from math import floor
 
 # Latitude boundaries where NL() steps down, in ascending order.
 # Entry i is the latitude at which NL transitions from (59 - i) to
-# (59 - i - 1). Derived once from the v2 trig formula (see the
-# `if __name__ == "__main__"` block at the bottom of this file for
-# the regeneration recipe). Stable across releases: the formula has
-# no free parameters beyond nz=15, which is fixed by DO-260B.
+# (59 - i - 1). Derived once from the closed-form NL(lat) trig
+# expression (see the ``if __name__ == "__main__"`` block at the
+# bottom of this file for the regeneration recipe). Stable across
+# releases: the formula has no free parameters beyond nz=15, which
+# is fixed by DO-260B.
 _NL_BOUNDARIES: tuple[float, ...] = (
     10.47047129996848,  # NL=59→58
     14.828174368686794,  # NL=58→57

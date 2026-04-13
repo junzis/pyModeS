@@ -25,9 +25,9 @@ Payload layout (56 bits, 0-indexed from payload MSB):
     bits 39-50 : radio height (12 bits, scale 16 ft)
     bits 51-55 : reserved (must be zero)
 
-v2 has a bug where temperature was decoded regardless of the status
-bit at payload bit 15. v3 respects the status bit — this is
-Decision D for Plan 3, aligning with jet1090 and the ICAO spec.
+Temperature is only decoded when its status bit (payload bit 15) is
+set, following the ICAO spec and jet1090. pyModeS 2.x had a bug
+where it decoded temperature unconditionally.
 """
 
 from typing import Any

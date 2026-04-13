@@ -7,17 +7,16 @@ Two typecode ranges:
 Payload layout (56 bits, 0-indexed from MSB of payload):
     bits 0-4:    TC
     bits 5-6:    SS (surveillance status)
-    bit 7:       NIC_B / SAF (single antenna flag for v2)
+    bit 7:       NIC_B (ADS-B v1/v2) or SAF (single antenna flag, v0)
     bits 8-19:   AC (12-bit altitude code)
     bit 20:      T (time sync bit)
     bit 21:      F (CPR format: 0 = even, 1 = odd)
     bits 22-38:  CPR latitude (17 bits, raw)
     bits 39-55:  CPR longitude (17 bits, raw)
 
-CPR decoding (lat/lon resolution from an even/odd frame pair) is
-deferred to Plan 4. This decoder exposes the raw CPR fields as ints;
-callers that want decoded lat/lon will use the CPR helper added in
-that plan.
+CPR lat/lon resolution from an even/odd frame pair is handled by
+:mod:`pyModeS.position._cpr`; this decoder exposes the raw 17-bit
+CPR fields as ints and leaves the pair-matching to callers.
 """
 
 from typing import Any
@@ -48,11 +47,10 @@ def decode_bds05(payload: int, *, tc: int) -> dict[str, Any]:
 
     altitude: int | None
     if 9 <= tc <= 18:
-        # Barometric altitude: insert a zero M bit at position 6 of a
-        # 13-bit altcode. v2 reference: altbin[0:6] + "0" + altbin[6:]
-        # Top 6 bits of AC (positions 0-5) shift left by 7; the M bit
-        # at position 6 is 0; bottom 6 bits of AC (positions 6-11)
-        # become altcode bits 7-12.
+        # Barometric altitude: insert a zero M bit at position 6 of
+        # the 13-bit altcode. Top 6 bits of AC (positions 0-5) shift
+        # left by 7; the M bit at position 6 is 0; bottom 6 bits of
+        # AC (positions 6-11) become altcode bits 7-12.
         altcode = ((ac >> 6) << 7) | (ac & 0x3F)
         altitude = altcode_to_altitude(altcode)
     elif 20 <= tc <= 22:
