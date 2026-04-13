@@ -53,9 +53,10 @@ jobs:
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN_PYMODES }}
+        # OIDC trusted publishing: PyPI verifies the GitHub run
+        # identity via short-lived tokens, so no secret is needed.
+        # Configured at https://pypi.org/manage/project/pyModeS/
+        # settings/publishing/ against the `pypi` GitHub environment.
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
