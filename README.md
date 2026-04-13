@@ -235,8 +235,10 @@ If you aren't ready to migrate:
 pip install "pyModeS<3"
 ```
 
-Both v2 and v3 coexist on PyPI because they use different import
-names (`pyModeS` vs `pyModeS`).
+v3 replaces v2 on the same PyPI slot and import name, so
+`pip install -U pyModeS` upgrades existing v2 users to v3
+(and triggers the v2-API removal shims — see the migration
+guide). Pinning `<3` keeps you on the 2.x line.
 
 ## Documentation
 

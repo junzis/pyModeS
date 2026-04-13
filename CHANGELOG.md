@@ -5,9 +5,9 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [3.0.0] — 2026-04-13
 
-First alpha of the v3 ground-up rewrite. **Not backwards-compatible
+First release of the v3 ground-up rewrite. **Not backwards-compatible
 with pyModeS 2.x.** See [docs/migration.md](./docs/migration.md) for
 the migration guide.
 

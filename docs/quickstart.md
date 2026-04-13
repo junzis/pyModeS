@@ -248,7 +248,7 @@ modes live --network HOST:PORT [--surface-ref REF]
 Opens a TCP connection to a Mode-S Beast binary feed (dump1090's
 default port 30005, dump1090-fa, readsb, piaware, AirSquitter) and
 emits decoded JSON lines to stdout as they arrive. Legacy AVR raw
-text format is not supported in the alpha.
+text format is not supported in v3.
 
 Flags:
 

@@ -7,7 +7,7 @@ hex strings, and yields ``(hex_msg, timestamp)`` tuples.
 Only Mode-S Beast binary is supported — that covers dump1090's default
 port 30005, dump1090-fa, readsb, piaware, the AirSquitter receiver,
 and most modern Mode-S feeds. The legacy AVR raw text format (port
-30002) is out of scope for the alpha and can be added later if a user
+30002) is out of scope for v3 and can be added later if a user
 requests it.
 
 Beast format (per Mode-S Beast wire protocol, cross-checked against
