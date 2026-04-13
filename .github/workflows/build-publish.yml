@@ -27,6 +27,12 @@ jobs:
       - name: Build
         run: uv build
 
+      - name: Smoke-test the built wheel
+        # Installs the wheel into a fresh venv and verifies the
+        # public API works end to end. Fails the build if the
+        # wheel is structurally broken or the API regressed.
+        run: scripts/smoke_test.sh
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist

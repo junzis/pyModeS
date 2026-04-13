@@ -55,7 +55,7 @@ the migration guide.
   `bin2hex`, `crc`, `df`, `icao`, `typecode`, `altcode`, `idcode`,
   `cprNL`. Thin wrappers over `_bits.py`, `_altcode.py`, `_idcode.py`
   and `position/_cpr.py` with no logic duplication.
-- `scripts/smoke_test_alpha.sh` installs the freshly built wheel
+- `scripts/smoke_test.sh` installs the freshly built wheel
   into a clean Python 3.12 venv and verifies the public API end to
   end (single-message decode, PipeDecoder baseline, batch CPR pair
   resolution, error-dict on malformed input).
