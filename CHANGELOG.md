@@ -5,6 +5,49 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.1.0] — 2026-04-14
+
+Streaming-robustness release. Adds defences against phantom positions
+at stream start and against DF20 CRC-collisions that attribute a
+Comm-B reply to the wrong aircraft.
+
+### Added
+
+- `PipeDecoder` bootstrap cluster analysis for the first position per
+  ICAO: lat/lon emission is held until `_BOOTSTRAP_K` (=5) candidate
+  positions agree under a motion-consistency check. Prevents an
+  initial phantom frame from anchoring the rolling position history.
+  On each decode the held result dicts are retro-filled once the
+  cluster locks. Scattered buffers reset and accumulate a fresh K.
+- `PipeDecoder` altitude cross-check on DF20 Comm-B replies: if the
+  message's 13-bit AC-code disagrees with the ICAO's most recent
+  ADS-B-derived altitude by more than `_altitude_tolerance(dt)` (a
+  linearly growing, floored-and-capped window), the BDS payload
+  fields are stripped from the result and `altitude_mismatch=True`
+  is set. The AC-code altitude itself is preserved so callers see
+  why the frame was flagged.
+- `PipeDecoder.flush()` method that finalizes any still-bootstrapping
+  ICAOs, running cluster analysis on whatever candidates are
+  buffered (even if fewer than K) and retro-filling the held result
+  dicts in place. Automatically called by the batch `decode(list,
+  timestamps=list)` code path so batch callers get positions on
+  every resolvable frame without having to reach into `PipeDecoder`.
+- Four new per-stream stat counters exposed via `PipeDecoder.stats`:
+  `altitude_mismatch`, `position_rejected`, `bootstrap_held`,
+  `bootstrap_reset`.
+
+### Fixed
+
+- `airborne_position_pair` now rejects CPR pairs that resolve to
+  physically impossible latitudes (|lat| > 90). Root cause: real
+  DF17 pairs that straddle a `cprNL` zone can slip past the
+  pre-pair `NL(lat_even) == NL(lat_odd)` check and produce
+  latitudes in [90, 270) — e.g. an aircraft climbing out of
+  Amsterdam resolving to lat ≈ 113° over the Bering Sea.
+  Observed on ICAO 485A33 (2025-04-13 19:34:57 UTC, OpenSky feed)
+  — now rejected at the pair resolver rather than poisoning the
+  receiver's position history.
+
 ## [3.0.0] — 2026-04-13
 
 First release of the v3 ground-up rewrite. **Not backwards-compatible
