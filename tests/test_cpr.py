@@ -151,6 +151,24 @@ class TestAirbornePositionPair:
         result = airborne_position_pair(8192, 0, 114688, 0, even_is_newer=True)
         assert result is None
 
+    def test_pair_impossible_latitude_returns_none(self):
+        """A pair that slips past the cprNL check but resolves to an
+        impossible latitude (|lat| > 90) must be rejected.
+
+        Real DF17 pair from OpenSky (ICAO 485A33, 2025-04-13 19:34:57):
+          even: 8f485a33397c737a27d1b18072cd (cpr_lat=113939, cpr_lon=119217)
+          odd:  8d485a33581d663872e86a3bbfff (cpr_lat=72761,  cpr_lon=59498)
+        Prior to the sanity guard these resolved to lat≈113.22°,
+        producing a position over the Bering Sea for an aircraft that
+        was climbing out of Amsterdam.
+        """
+        from pyModeS.position._cpr import airborne_position_pair
+
+        result = airborne_position_pair(
+            113939, 119217, 72761, 59498, even_is_newer=False
+        )
+        assert result is None
+
 
 class TestSurfacePositionWithRef:
     # Real DF18 BDS 0,6 surface movement pair from jet1090's

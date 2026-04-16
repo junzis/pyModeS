@@ -1,5 +1,7 @@
 """Tests for pyModeS.PipeDecoder."""
 
+from typing import ClassVar
+
 import pytest
 
 from pyModeS import PipeDecoder
@@ -13,6 +15,10 @@ class TestPipeDecoderSkeleton:
             "decoded": 0,
             "crc_fail": 0,
             "pending_pairs": 0,
+            "altitude_mismatch": 0,
+            "position_rejected": 0,
+            "bootstrap_held": 0,
+            "bootstrap_reset": 0,
         }
 
     def test_decode_single_message(self):
@@ -54,6 +60,10 @@ class TestPipeDecoderSkeleton:
             "decoded": 0,
             "crc_fail": 0,
             "pending_pairs": 0,
+            "altitude_mismatch": 0,
+            "position_rejected": 0,
+            "bootstrap_held": 0,
+            "bootstrap_reset": 0,
         }
 
     def test_surface_ref_propagates_to_decode(self):
@@ -318,9 +328,119 @@ class TestIcaoVerification:
         assert "406B90" not in pipe._trusted_icaos
 
 
+class TestAltitudeMismatch:
+    # Reference DF20 frame shared across these tests:
+    #   ICAO = 4243D0, AC-code altitude = 3300 ft, BDS 5,0
+    #   (roll, true_track, groundspeed, track_rate, true_airspeed)
+    DF20 = "a000029cffbaa11e2004727281f1"
+
+    def test_matching_anchor_keeps_bds_payload(self):
+        pipe = PipeDecoder()
+        # Pretend the aircraft is actually at ~3300 ft (the DF20's AC-code
+        # reports 3300 ft); BDS payload must be preserved.
+        pipe._adsb_altitude["4243D0"] = (1000.0, 3300.0)
+        result = pipe.decode(self.DF20, timestamp=1001.0)
+        assert result.get("altitude_mismatch") is None
+        assert result["bds"] == "5,0"
+        assert result["roll"] == pytest.approx(-0.527, abs=0.01)
+        assert pipe.stats["altitude_mismatch"] == 0
+
+    def test_mismatching_anchor_strips_bds_payload(self):
+        pipe = PipeDecoder()
+        # Anchor says the aircraft is at FL370; DF20's AC-code says 3300 ft.
+        # Diff ≈ 33 700 ft — far outside any tolerance — likely a CRC
+        # collision from another aircraft.
+        pipe._adsb_altitude["4243D0"] = (1000.0, 37000.0)
+        result = pipe.decode(self.DF20, timestamp=1001.0)
+        assert result["altitude_mismatch"] is True
+        assert result.get("bds") is None
+        assert result.get("roll") is None
+        assert result.get("true_track") is None
+        assert result.get("groundspeed") is None
+        # The header AC-code altitude itself is preserved so callers
+        # can see why the message was rejected.
+        assert result["altitude"] == 3300
+        assert pipe.stats["altitude_mismatch"] == 1
+
+    def test_no_anchor_passes_through(self):
+        pipe = PipeDecoder()
+        # Nothing in _adsb_altitude for this ICAO — can't cross-check.
+        result = pipe.decode(self.DF20, timestamp=1001.0)
+        assert result.get("altitude_mismatch") is None
+        assert result["bds"] == "5,0"
+        assert pipe.stats["altitude_mismatch"] == 0
+
+    def test_stale_anchor_does_not_reject(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        # Anchor is a full 10 min old — trust it no more.
+        pipe._adsb_altitude["4243D0"] = (0.0, 37000.0)
+        result = pipe.decode(self.DF20, timestamp=601.0)
+        assert result.get("altitude_mismatch") is None
+        assert result["bds"] == "5,0"
+
+    def test_rejection_does_not_pollute_state(self):
+        pipe = PipeDecoder()
+        pipe._adsb_altitude["4243D0"] = (1000.0, 37000.0)
+        pipe.decode(self.DF20, timestamp=1001.0)
+        # BDS 5,0 fields (groundspeed, true_track, true_airspeed, roll)
+        # would normally be merged into per-ICAO state — rejection must
+        # suppress that so a later ambiguous Comm-B isn't scored against
+        # spurious values.
+        assert "4243D0" not in pipe._state
+
+    def test_adsb_anchor_populated_by_df17_position(self):
+        pipe = PipeDecoder()
+        # Real airborne position vector (BDS 0,5), altitude = 39000 ft,
+        # ICAO 40058B. This message alone populates the anchor even
+        # without its CPR pair (anchor only needs altitude, not lat/lon).
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        anchor = pipe._adsb_altitude.get("40058B")
+        assert anchor is not None
+        assert anchor == (1000.0, 39000.0)
+
+    def test_tolerance_scales_with_time_gap(self):
+        pipe = PipeDecoder()
+        # Anchor at 35 000 ft. After 30 s the aircraft could (at 100 ft/s
+        # max) be at most 3 000 ft off — a DF20 reporting 37 500 ft
+        # (diff 2 500) stays within tolerance; 40 000 ft (diff 5 000)
+        # does not. Using synthetic altitudes here rather than hand-
+        # constructing DF20 frames: bypass the DF20 decode by
+        # calling the internal check directly.
+        pipe._adsb_altitude["4243D0"] = (0.0, 35000.0)
+        result = {"altitude": 37500}
+        rejected = pipe._reject_on_altitude_mismatch(result, "4243D0", 30.0)
+        assert rejected is False
+        result = {"altitude": 40500}  # diff 5500, tol=max(500, min(3000,5000))=3000
+        rejected = pipe._reject_on_altitude_mismatch(result, "4243D0", 30.0)
+        assert rejected is True
+
+    def test_reset_clears_adsb_altitude(self):
+        pipe = PipeDecoder()
+        pipe._adsb_altitude["4243D0"] = (1000.0, 37000.0)
+        pipe.reset()
+        assert pipe._adsb_altitude == {}
+
+    def test_eviction_drops_stale_adsb_altitude(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        pipe._adsb_altitude["4243D0"] = (0.0, 37000.0)
+        # Next decode at t=100 (beyond the 60 s TTL) triggers eviction.
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=100.0)
+        assert "4243D0" not in pipe._adsb_altitude
+
+
 class TestCprPairAccumulation:
+    # Many of these tests look at the CPR resolution math, not the
+    # bootstrap cluster analysis. Pre-seed `_position_history` so the
+    # ICAO is treated as already locked and the resolved lat/lon
+    # propagates to the result dict.
+    ICAO_40058B_SEED: ClassVar[list[tuple[float, float, float]]] = [
+        (49.81, 6.08, 1446332395.0),
+        (49.82, 6.09, 1446332398.0),
+    ]
+
     def test_airborne_pair_resolves_lat_lon(self):
         pipe = PipeDecoder()
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
         # v2 test vector pair from tests/test_cpr.py
         pipe.decode(
             "8D40058B58C901375147EFD09357",  # even
@@ -366,6 +486,7 @@ class TestCprPairAccumulation:
         # Real DF18 even/odd surface pair from jet1090 corpus (LFBO
         # taxiway). Replaces the earlier synthetic NZCH pair.
         pipe = PipeDecoder(surface_ref="LFBO")
+        pipe._position_history["3A23FF"] = [(43.63, 1.37, -1.0)]
         # First frame (even) — surface_ref already resolves it via
         # single-message path, so latitude is set after this call.
         # The pair logic stores it as pending anyway for the next.
@@ -394,6 +515,7 @@ class TestCprPairAccumulation:
         # dictates the reported position, the expected lat/lon differs
         # slightly from the even-first test.
         pipe = PipeDecoder()
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
         pipe.decode(
             "8D40058B58C904A87F402D3B8C59",  # odd, arrives first
             timestamp=1446332400.0,
@@ -501,3 +623,202 @@ class TestEviction:
         assert "_marker" not in pipe._state["485020"]
         # And _last_seen reflects the new timestamp
         assert pipe._state["485020"]["_last_seen"] == 100.0
+
+
+class TestPositionMotionConsistency:
+    ICAO = "40058B"
+
+    def test_inconsistent_jump_rejected(self):
+        # Seed two close positions, then inject a "jump" position far
+        # beyond any aircraft's achievable distance.
+        pipe = PipeDecoder()
+        pipe._position_history[self.ICAO] = [
+            (49.81, 6.08, 1000.0),
+            (49.82, 6.09, 1001.0),
+        ]
+        # Manually invoke the helper with a position in Siberia; dt=5s
+        # would allow ~4 km at 1500 kt + 2 km margin ≈ 6 km; we're
+        # giving it thousands of km.
+        assert pipe._motion_consistent(self.ICAO, 70.0, 160.0, 1006.0) is False
+
+    def test_consistent_continuation_accepted(self):
+        pipe = PipeDecoder()
+        pipe._position_history[self.ICAO] = [
+            (49.81, 6.08, 1000.0),
+            (49.82, 6.09, 1001.0),
+        ]
+        # A plausible next sample — aircraft moves a few km in 2 s
+        assert pipe._motion_consistent(self.ICAO, 49.83, 6.11, 1003.0) is True
+
+    def test_empty_history_returns_true(self):
+        # The helper alone (not the full bootstrap pipeline) returns
+        # True when the ICAO isn't in _position_history — but in the
+        # real decode path, pre-lock ICAOs are routed to _bootstrap
+        # instead so this branch never emits lat/lon.
+        pipe = PipeDecoder()
+        assert pipe._motion_consistent(self.ICAO, 70.0, 160.0, 1001.0) is True
+
+    def test_haversine_against_known_distance(self):
+        from pyModeS._pipe import _haversine_km
+
+        # Amsterdam -> Madrid ≈ 1480 km
+        d = _haversine_km(52.308, 4.763, 40.472, -3.561)
+        assert 1450 < d < 1520
+
+    def test_rejection_increments_stat_and_clears_fields(self):
+        # Use the real CPR pair that we know resolves around (49.82,
+        # 6.08). Seed the history far away so the resolved pair is
+        # rejected by motion_consistency.
+        pipe = PipeDecoder()
+        pipe._position_history[self.ICAO] = [
+            (70.0, -40.0, 990.0),
+            (70.1, -40.1, 995.0),
+        ]
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        r = pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1003.0)
+        # Pair was resolved but rejected — lat/lon must be absent or None
+        assert r.get("latitude") in (None, 0, False) or r["latitude"] is None
+        assert pipe.stats["position_rejected"] == 1
+        # Ring buffer still updated with the rejected position
+        assert len(pipe._position_history[self.ICAO]) == 3
+
+    def test_eviction_prunes_old_position_history(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe._position_history[self.ICAO] = [
+            (49.81, 6.08, 0.0),
+            (49.82, 6.09, 5.0),
+        ]
+        # Next decode with timestamp=100 s triggers eviction; both
+        # history entries are older than ttl=10 → buffer cleared.
+        pipe.decode("8D485020994409940838175B284F", timestamp=100.0)
+        assert self.ICAO not in pipe._position_history
+
+    def test_reset_clears_position_history(self):
+        pipe = PipeDecoder()
+        pipe._position_history[self.ICAO] = [(49.81, 6.08, 1000.0)]
+        pipe.reset()
+        assert pipe._position_history == {}
+
+    def test_max_speed_configurable(self):
+        # Tight max_speed — a 10 NM jump in 1 s should be rejected
+        # even though default 1500 kt would have allowed it.
+        pipe = PipeDecoder(max_speed_kt=100.0, motion_margin_km=0.1)
+        pipe._position_history[self.ICAO] = [
+            (49.80, 6.00, 1000.0),
+            (49.81, 6.01, 1001.0),
+        ]
+        # 1 s later, 20 km away → at 100 kt = 52 m/s this is impossible
+        assert pipe._motion_consistent(self.ICAO, 49.90, 6.30, 1002.0) is False
+
+
+class TestPositionBootstrap:
+    ICAO = "40058B"
+    # A set of K=5 mutually-consistent positions walking near Amsterdam
+    # (aircraft cruising at ~500 kt).
+    GOOD_CLUSTER: ClassVar[list[tuple[float, float, float]]] = [
+        (52.30, 4.76, 1000.0),
+        (52.31, 4.77, 1001.0),
+        (52.32, 4.79, 1002.0),
+        (52.33, 4.81, 1003.0),
+        (52.34, 4.82, 1004.0),
+    ]
+
+    def test_hold_until_bootstrap_k_reached(self):
+        """First K-1 pairs hold lat/lon in the bootstrap buffer; the
+        result's `latitude` is None and the stat increments."""
+        from pyModeS._pipe import _BOOTSTRAP_K
+
+        pipe = PipeDecoder()
+        for _i, (lat, lon, t) in enumerate(self.GOOD_CLUSTER[: _BOOTSTRAP_K - 1]):
+            pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
+        # Still held — no history yet
+        assert self.ICAO not in pipe._position_history
+        assert len(pipe._bootstrap[self.ICAO]) == _BOOTSTRAP_K - 1
+        assert pipe.stats["bootstrap_held"] == _BOOTSTRAP_K - 1
+
+    def test_cluster_locks_on_kth_consistent_candidate(self):
+        """When K mutually-consistent candidates accumulate, cluster
+        analysis promotes them all into _position_history and clears
+        the bootstrap buffer."""
+        pipe = PipeDecoder()
+        for lat, lon, t in self.GOOD_CLUSTER:
+            pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
+        assert self.ICAO in pipe._position_history
+        assert self.ICAO not in pipe._bootstrap
+        # All five candidates were consistent → all kept (up to ring size).
+        assert len(pipe._position_history[self.ICAO]) == 5
+        assert pipe.stats["bootstrap_reset"] == 0
+
+    def test_bootstrap_picks_majority_cluster(self):
+        """Feed 3 real positions + 2 scattered phantoms. The cluster
+        analysis should lock on the 3 reals; phantoms are dropped."""
+        pipe = PipeDecoder()
+        # 3 reals around Amsterdam
+        reals = self.GOOD_CLUSTER[:3]
+        # 2 phantoms scattered across the world
+        phantoms = [(70.0, -40.0, 999.5), (-30.0, 120.0, 1001.5)]
+        for lat, lon, t in reals + phantoms:
+            pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
+        # Locked on the reals
+        assert self.ICAO in pipe._position_history
+        hist = pipe._position_history[self.ICAO]
+        # All cluster members should be near Amsterdam, not Siberia/Indian
+        for lat, lon, _ in hist:
+            assert 50 < lat < 55
+            assert 0 < lon < 10
+
+    def test_bootstrap_resets_when_all_phantoms(self):
+        """All K candidates are mutually inconsistent (random scatter) —
+        cluster analysis finds no anchor; buffer is reset and stat
+        increments."""
+        pipe = PipeDecoder()
+        # Five phantoms spread around the globe
+        scattered = [
+            (70.0, -40.0, 1000.0),
+            (-30.0, 120.0, 1001.0),
+            (10.0, -150.0, 1002.0),
+            (60.0, 80.0, 1003.0),
+            (-60.0, 40.0, 1004.0),
+        ]
+        for lat, lon, t in scattered:
+            pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
+        assert self.ICAO not in pipe._position_history
+        # Buffer reset → empty and accumulating afresh
+        assert pipe._bootstrap[self.ICAO] == []
+        assert pipe.stats["bootstrap_reset"] == 1
+
+    def test_end_to_end_lock_after_five_real_pairs(self):
+        """Integration through the real pair-decode path.
+
+        The first 5 pairs are held during bootstrap; when the 5th
+        arrives, cluster analysis picks the consistent group and
+        retroactively fills in ``latitude``/``longitude`` on the
+        earlier result dicts. The 6th pair is emitted through the
+        normal motion-consistency check.
+        """
+        pipe = PipeDecoder()
+        results = []
+        for i in range(6):
+            pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0 + 2 * i)
+            r = pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1001.0 + 2 * i)
+            results.append(r)
+        # All six now have lat/lon — the first five via retro-fill on
+        # lock, the sixth via the steady-state motion-consistency check.
+        for r in results:
+            assert r["latitude"] == pytest.approx(49.81755, abs=0.001)
+            assert r["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_bootstrap_eviction_clears_stale_candidates(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        # Accumulate two stale candidates
+        for lat, lon, t in self.GOOD_CLUSTER[:2]:
+            pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
+        # Trigger eviction by decoding a fresh message 100 s later
+        pipe.decode("8D485020994409940838175B284F", timestamp=1100.0)
+        assert self.ICAO not in pipe._bootstrap
+
+    def test_reset_clears_bootstrap(self):
+        pipe = PipeDecoder()
+        pipe._bootstrap_accumulate({}, self.ICAO, 52.0, 4.0, 1000.0)
+        pipe.reset()
+        assert pipe._bootstrap == {}

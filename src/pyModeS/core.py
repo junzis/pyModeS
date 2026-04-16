@@ -192,4 +192,12 @@ def _decode_batch(
         )
 
     pipe = PipeDecoder(surface_ref=surface_ref, full_dict=full_dict)
-    return [pipe.decode(m, timestamp=t) for m, t in zip(msgs, timestamps, strict=True)]
+    results = [
+        pipe.decode(m, timestamp=t) for m, t in zip(msgs, timestamps, strict=True)
+    ]
+    # Batch callers want lat/lon on every held position they can get —
+    # flush the bootstrap buffers so cluster analysis runs on whatever
+    # candidates arrived (even if fewer than _BOOTSTRAP_K) and the
+    # held result dicts get retro-filled in place.
+    pipe.flush()
+    return results

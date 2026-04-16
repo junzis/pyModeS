@@ -204,6 +204,14 @@ def airborne_position_pair(
     if lon > 180:
         lon -= 360
 
+    # Final sanity guard. The normalization above only folds results in
+    # [270, 360) back to [-90, 0); pairs that produce latitudes in
+    # [90, 270) are physically impossible (outside the poles) and
+    # typically come from frames straddling a cprNL zone where the
+    # accidental equality fooled the cprNL check — reject them.
+    if abs(lat) > 90 or abs(lon) > 180:
+        return None
+
     return lat, lon
 
 
