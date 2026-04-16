@@ -57,14 +57,12 @@ assert r["bds"] == "0,8", r
 assert r["callsign"] == "EZY85MH", r
 assert r["category"] == 0, r
 
-# PipeDecoder construction + stats baseline
+# PipeDecoder construction + stats baseline. Check the counters we
+# have always guaranteed rather than pinning the full dict — newer
+# releases can add counters without breaking this smoke test.
 p = PipeDecoder()
-assert p.stats == {
-    "total": 0,
-    "decoded": 0,
-    "crc_fail": 0,
-    "pending_pairs": 0,
-}, p.stats
+for _k in ("total", "decoded", "crc_fail", "pending_pairs"):
+    assert p.stats[_k] == 0, p.stats
 
 # Batch mode with CPR pair resolution on an even/odd airborne
 # position pair (same ICAO, closely-spaced timestamps).
