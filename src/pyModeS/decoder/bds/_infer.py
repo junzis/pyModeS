@@ -224,8 +224,7 @@ def infer(
 
     if df != 20 and df != 21:
         raise ValueError(
-            "infer() only supports DF 17/18 (ADS-B) or DF 20/21 (Comm-B),"
-            f" got df={df}"
+            f"infer() only supports DF 17/18 (ADS-B) or DF 20/21 (Comm-B), got df={df}"
         )
 
     if payload == 0:
@@ -276,9 +275,7 @@ def infer(
             )
             pre = candidates[:first_heuristic_idx]
             tail = [
-                c
-                for c in candidates[first_heuristic_idx:]
-                if c not in ("5,0", "6,0")
+                c for c in candidates[first_heuristic_idx:] if c not in ("5,0", "6,0")
             ]
             candidates = pre + scored + tail
 
