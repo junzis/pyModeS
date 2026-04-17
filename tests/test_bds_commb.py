@@ -806,6 +806,15 @@ class TestBds45Validator:
         payload = 1 << (55 - 37)
         assert bds45.is_bds45(payload) is False
 
+    def test_bds17_shaped_payload_rejected(self):
+        # A real BDS 1,7 capability report (capability bits + 32
+        # trailing zero bits) used to be accepted by is_bds45
+        # because its random mid-word bits happened to pass the
+        # status/range heuristics. The tightened validator rejects
+        # anything matching the stricter BDS 1,7 pattern.
+        bds17_payload = 0xFF81C300000000
+        assert bds45.is_bds45(bds17_payload) is False
+
 
 class TestBds45Decoder:
     def test_golden_temperature_only(self):

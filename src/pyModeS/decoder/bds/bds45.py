@@ -33,11 +33,21 @@ where it decoded temperature unconditionally.
 from typing import Any
 
 from pyModeS.decoder.bds._helpers import signed, wrong_status
+from pyModeS.decoder.bds.bds17 import is_bds17
 
 
 def is_bds45(payload: int) -> bool:
     """Return True if `payload` is a plausible BDS 4,5 MHR."""
     if payload == 0:
+        return False
+
+    # Disambiguate from BDS 1,7 (GICB Capability Report). A BDS 1,7
+    # payload has 32 trailing zero bits, which trivially satisfies
+    # 4,5's 5-bit reserved check; its top-24 capability map then
+    # passes 4,5's status/range heuristics often enough to cause
+    # ~97% of real BDS 1,7 traffic to match here. The 1,7 pattern
+    # (bit 6 set + 32 trailing zeros) is strictly more specific.
+    if is_bds17(payload):
         return False
 
     # Reserved bits 51-55 must all be zero.
