@@ -1,6 +1,12 @@
-"""Two-phase BDS inference dispatch for Comm-B (DF20/21).
+"""BDS inference dispatch for ADS-B ES (DF17/18) and Comm-B (DF20/21).
 
-Phase 1 -- format-ID fast path
+ADS-B ES path (DF 17/18)
+    ES ME payloads carry an explicit Type Code (TC) in the top 5 bits.
+    ``infer()`` extracts TC and maps it to the ICAO-standard BDS-like
+    code via ``_infer_es()``. This path ignores ``include_meteo`` and
+    ``known`` (the TC is deterministic; no heuristic is needed).
+
+Phase 1 -- format-ID fast path (Comm-B only)
     The top 8 bits of the payload (bits 0-7) contain an explicit
     BDS identifier for registers 1,0 / 2,0 / 3,0. We check these
     first: the validator is still run so reserved-bit and field-range
@@ -12,7 +18,7 @@ Phase 1 -- format-ID fast path
     map. Its entry uses ``None`` as the expected prefix and runs its
     validator directly.
 
-Phase 2 -- heuristic slow path
+Phase 2 -- heuristic slow path (Comm-B only)
     Registers 4,0 / 5,0 / 6,0 have no format identifier and must be
     detected by status-bit and range heuristics. Each heuristic
     validator is run unconditionally and every match is added to the
@@ -23,7 +29,7 @@ Phase 2 -- heuristic slow path
     and produce false positives unless the caller opts in via
     ``include_meteo=True``.
 
-Phase 3 -- reference-assisted disambiguation
+Phase 3 -- reference-assisted disambiguation (Comm-B only)
     When multiple heuristic candidates (5,0 / 6,0) survive Phase 2
     and the caller passes ``known=`` aircraft state (groundspeed,
     track, heading, IAS, mach), each candidate is decoded and
@@ -135,33 +141,93 @@ def matches(bds_code: str, payload: int) -> bool:
     return validator(payload)
 
 
+def _infer_es(payload: int) -> list[str]:
+    """Classify an ADS-B ES (DF 17/18) payload by Type Code.
+
+    TC is the top 5 bits of the 56-bit ME field: ``(payload >> 51) & 0x1F``.
+
+    Returns:
+        A single-element list with the ICAO-standard BDS-like code, or
+        an empty list for reserved / unused Type Codes (0, 23-27, 30).
+    """
+    tc = (payload >> 51) & 0x1F
+    if 1 <= tc <= 4:
+        return ["0,8"]
+    if 5 <= tc <= 8:
+        return ["0,6"]
+    if 9 <= tc <= 18 or 20 <= tc <= 22:
+        return ["0,5"]
+    if tc == 19:
+        return ["0,9"]
+    if tc == 28:
+        return ["6,1"]
+    if tc == 29:
+        return ["6,2"]
+    if tc == 31:
+        return ["6,5"]
+    return []
+
+
 def infer(
     payload: int,
+    df: int,
     *,
     include_meteo: bool = False,
     known: dict[str, Any] | None = None,
 ) -> list[str]:
-    """Return plausible BDS codes for a Comm-B payload.
+    """Return plausible BDS codes for a payload, routing on DF.
 
-    The first element (when non-empty) is the best candidate -- either
-    the format-ID'd register (Phase 1) or the first heuristic match
-    (Phase 2). Any additional heuristic matches follow.
+    **ADS-B ES path (DF 17 or 18)**
+        The Type Code in the top 5 bits of the 56-bit ME field
+        unambiguously identifies the message type. ``include_meteo``
+        and ``known`` are ignored on this path -- the TC is
+        deterministic and no heuristic scoring is needed.
+
+    **Comm-B path (DF 20 or 21)**
+        Three-phase scan:
+
+        Phase 1 -- format-ID fast path.
+            The first element (when non-empty) is the best candidate --
+            either the format-ID'd register (Phase 1) or the first
+            heuristic match (Phase 2). Any additional heuristic matches
+            follow.
+
+        Phase 2 -- heuristic slow path.
+            BDS 4,0 / 5,0 / 6,0 validators run unconditionally.
+            BDS 4,4 / 4,5 are tried only when ``include_meteo=True``.
+
+        Phase 3 -- known-state disambiguation.
+            When multiple heuristic candidates (BDS 5,0 / 6,0) survive
+            Phase 2, each is scored against the known aircraft state and
+            the best match is moved to the front.
 
     Args:
-        payload: The 56-bit Comm-B payload as a Python int.
-        include_meteo: When True, also try BDS 4,4 and 4,5 heuristic
-            validators. Defaults to False because these share bit
-            patterns with non-meteorological traffic.
-        known: Optional aircraft state for reference-assisted
-            disambiguation. When multiple heuristic candidates
-            (BDS 5,0 / 6,0) survive Phase 2, each is scored against
-            the known state and the best match is moved to the front
-            of the heuristic block.
+        payload: The 56-bit payload (ME field for ES, MB field for
+            Comm-B) as a Python int.
+        df: Downlink Format. Must be 17, 18 (ADS-B ES) or 20, 21
+            (Comm-B). Any other value raises ``ValueError``.
+        include_meteo: Comm-B only. When True, also try BDS 4,4 and
+            4,5 heuristic validators. Ignored for DF 17/18.
+        known: Comm-B only. Optional aircraft state for Phase 3
+            disambiguation of BDS 5,0 / 6,0. Ignored for DF 17/18.
 
     Returns:
-        A list of BDS code strings (e.g. "1,0", "5,0"). Empty list if
-        nothing plausible matched or `payload == 0`.
+        A list of BDS code strings (e.g. ``"1,0"``, ``"5,0"``,
+        ``"0,5"``). Empty list if nothing plausible matched or
+        ``payload == 0``.
+
+    Raises:
+        ValueError: If ``df`` is not 17, 18, 20, or 21.
     """
+    if df == 17 or df == 18:
+        return _infer_es(payload)
+
+    if df != 20 and df != 21:
+        raise ValueError(
+            "infer() only supports DF 17/18 (ADS-B) or DF 20/21 (Comm-B),"
+            f" got df={df}"
+        )
+
     if payload == 0:
         return []
 
@@ -210,7 +276,9 @@ def infer(
             )
             pre = candidates[:first_heuristic_idx]
             tail = [
-                c for c in candidates[first_heuristic_idx:] if c not in ("5,0", "6,0")
+                c
+                for c in candidates[first_heuristic_idx:]
+                if c not in ("5,0", "6,0")
             ]
             candidates = pre + scored + tail
 

@@ -202,7 +202,7 @@ class TestEndToEndDisambiguation:
         # dispatch order returns 5,0 first.
         ambiguous_payload = 0xFFBAA11E200472
         # Sanity-check: bare infer with no known returns 5,0 first
-        assert infer(ambiguous_payload)[0] == "5,0"
+        assert infer(ambiguous_payload, 20)[0] == "5,0"
 
         # Pre-populate state for the ICAO this Comm-B is from. The
         # Comm-B vector "a000029cffbaa11e2004727281f1" CRC-derives

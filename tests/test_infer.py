@@ -1,5 +1,7 @@
 """Tests for the Comm-B BDS inference dispatch."""
 
+import pytest
+
 from pyModeS import decode
 from pyModeS.decoder.bds._infer import infer
 
@@ -16,20 +18,20 @@ class TestInferFastPath:
 
     def test_bds10(self):
         payload = payload_of("A800178D10010080F50000D5893C")
-        assert infer(payload) == ["1,0"]
+        assert infer(payload, 20) == ["1,0"]
 
     def test_bds17(self):
         payload = payload_of("A0000638FA81C10000000081A92F")
-        assert infer(payload) == ["1,7"]
+        assert infer(payload, 20) == ["1,7"]
 
     def test_bds20(self):
         payload = payload_of("A000083E202CC371C31DE0AA1CCF")
-        assert infer(payload) == ["2,0"]
+        assert infer(payload, 20) == ["2,0"]
 
     def test_bds30(self):
         # Synthetic BDS30 with issued_ra bit set.
         payload = 0x30_80_00_00_00_00_00
-        assert infer(payload) == ["3,0"]
+        assert infer(payload, 20) == ["3,0"]
 
 
 class TestInferSlowPath:
@@ -40,37 +42,37 @@ class TestInferSlowPath:
 
     def test_bds40(self):
         payload = payload_of("A000029C85E42F313000007047D3")
-        assert "4,0" in infer(payload)
+        assert "4,0" in infer(payload, 20)
 
     def test_bds50(self):
         payload = payload_of("A000139381951536E024D4CCF6B5")
-        assert "5,0" in infer(payload)
+        assert "5,0" in infer(payload, 20)
 
     def test_bds60(self):
         payload = payload_of("A00004128F39F91A7E27C46ADC21")
-        assert "6,0" in infer(payload)
+        assert "6,0" in infer(payload, 20)
 
     def test_bds44_hidden_without_include_meteo(self):
         payload = payload_of("A0001692185BD5CF400000DFC696")
-        assert "4,4" not in infer(payload, include_meteo=False)
-        assert "4,4" in infer(payload, include_meteo=True)
+        assert "4,4" not in infer(payload, 20, include_meteo=False)
+        assert "4,4" in infer(payload, 20, include_meteo=True)
 
     def test_bds45_hidden_without_include_meteo(self):
         payload = payload_of("A00004190001FB80000000000000")
-        assert "4,5" not in infer(payload, include_meteo=False)
-        assert "4,5" in infer(payload, include_meteo=True)
+        assert "4,5" not in infer(payload, 20, include_meteo=False)
+        assert "4,5" in infer(payload, 20, include_meteo=True)
 
 
 class TestInferEmptyAndAmbiguous:
     def test_all_zeros_returns_empty(self):
-        assert infer(0) == []
+        assert infer(0, 20) == []
 
     def test_commb_returns_bds_candidates_when_ambiguous(self):
         # BDS50 and BDS60 have no format ID; some messages satisfy both
         # validators. Construct one by finding a test vector that both
         # bds50.is_bds50 and bds60.is_bds60 accept.
         payload = payload_of("A8001EBCFFFB23286004A73F6A5B")
-        candidates = infer(payload)
+        candidates = infer(payload, 20)
         if len(candidates) > 1:
             result = decode("A8001EBCFFFB23286004A73F6A5B")
             assert "bds_candidates" in result
@@ -94,7 +96,7 @@ class TestInferPhase3Disambiguation:
     def test_ambiguous_no_known_preserves_phase2_order(self):
         from pyModeS.decoder.bds._infer import infer
 
-        result = infer(self.AMBIGUOUS_PAYLOAD)
+        result = infer(self.AMBIGUOUS_PAYLOAD, 20)
         # Phase 2 dispatch order is _HEURISTIC = [4,0, 5,0, 6,0]
         # so the result should have both 5,0 and 6,0 in that order
         # (4,0 doesn't match this payload).
@@ -107,7 +109,7 @@ class TestInferPhase3Disambiguation:
         # Score for 5,0: |240 - 240| / 50 = 0.0 (other fields not in known)
         # Score for 6,0: no fields match known -> inf
         # 5,0 wins.
-        result = infer(self.AMBIGUOUS_PAYLOAD, known={"groundspeed": 240})
+        result = infer(self.AMBIGUOUS_PAYLOAD, 20, known={"groundspeed": 240})
         assert result[0] == "5,0"
 
     def test_ambiguous_known_heading_picks_bds60(self):
@@ -117,7 +119,7 @@ class TestInferPhase3Disambiguation:
         # Score for 6,0: |359 - 359.12| / 30 ~= 0.004 (close to 0)
         # Score for 5,0: no fields match known -> inf
         # 6,0 wins.
-        result = infer(self.AMBIGUOUS_PAYLOAD, known={"heading": 359})
+        result = infer(self.AMBIGUOUS_PAYLOAD, 20, known={"heading": 359})
         assert result[0] == "6,0"
 
     def test_ambiguous_known_neither_field_unchanged(self):
@@ -125,5 +127,54 @@ class TestInferPhase3Disambiguation:
 
         # known carries an irrelevant field; both candidates score inf
         # and Phase 2 order is preserved.
-        result = infer(self.AMBIGUOUS_PAYLOAD, known={"altitude": 35000})
+        result = infer(self.AMBIGUOUS_PAYLOAD, 20, known={"altitude": 35000})
         assert result == ["5,0", "6,0"]
+
+
+class TestInferEs:
+    def _mk_es(self, tc: int, rest: int = 0) -> int:
+        """Construct a 56-bit ES ME field with given TC in bits [0:5]."""
+        return (tc << 51) | (rest & ((1 << 51) - 1))
+
+    def test_identification_tc4(self):
+        assert infer(self._mk_es(4), 17) == ["0,8"]
+        assert infer(self._mk_es(1), 17) == ["0,8"]
+
+    def test_surface_position_tc5_to_8(self):
+        assert infer(self._mk_es(5), 17) == ["0,6"]
+        assert infer(self._mk_es(8), 17) == ["0,6"]
+
+    def test_airborne_position_baro(self):
+        assert infer(self._mk_es(9), 17) == ["0,5"]
+        assert infer(self._mk_es(18), 17) == ["0,5"]
+
+    def test_airborne_velocity_tc19(self):
+        assert infer(self._mk_es(19), 17) == ["0,9"]
+
+    def test_airborne_position_gnss(self):
+        assert infer(self._mk_es(20), 17) == ["0,5"]
+        assert infer(self._mk_es(22), 17) == ["0,5"]
+
+    def test_aircraft_status_tc28(self):
+        assert infer(self._mk_es(28), 17) == ["6,1"]
+
+    def test_target_state_tc29(self):
+        assert infer(self._mk_es(29), 17) == ["6,2"]
+
+    def test_operational_status_tc31(self):
+        assert infer(self._mk_es(31), 17) == ["6,5"]
+
+    def test_df18_same_as_df17(self):
+        assert infer(self._mk_es(4), 18) == ["0,8"]
+
+    def test_reserved_tc_returns_empty(self):
+        assert infer(self._mk_es(0), 17) == []
+        assert infer(self._mk_es(23), 17) == []
+        assert infer(self._mk_es(27), 17) == []
+        assert infer(self._mk_es(30), 17) == []
+
+    def test_bad_df_raises(self):
+        with pytest.raises(ValueError, match="DF 17/18"):
+            infer(0, 11)
+        with pytest.raises(ValueError, match="DF 17/18"):
+            infer(0, 4)

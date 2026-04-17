@@ -74,7 +74,9 @@ class CommB(DecoderBase):
         # BDS inference. `known` is threaded through for Phase 3
         # disambiguation of BDS 5,0 / 6,0 when the caller supplies
         # aircraft state.
-        candidates = _infer.infer(self._payload, include_meteo=False, known=known)
+        candidates = _infer.infer(
+            self._payload, self._df, include_meteo=False, known=known
+        )
         if not candidates:
             return result
 
