@@ -16,6 +16,7 @@ class TestPipeDecoderSkeleton:
             "crc_fail": 0,
             "pending_pairs": 0,
             "altitude_mismatch": 0,
+            "velocity_mismatch": 0,
             "position_rejected": 0,
             "bootstrap_held": 0,
             "bootstrap_reset": 0,
@@ -61,6 +62,7 @@ class TestPipeDecoderSkeleton:
             "crc_fail": 0,
             "pending_pairs": 0,
             "altitude_mismatch": 0,
+            "velocity_mismatch": 0,
             "position_rejected": 0,
             "bootstrap_held": 0,
             "bootstrap_reset": 0,
@@ -428,6 +430,372 @@ class TestAltitudeMismatch:
         assert "4243D0" not in pipe._adsb_altitude
 
 
+class TestDF17AltitudeMismatch:
+    """DF17/18 TC=5-18 airborne positions carry their own AC-code
+    altitude (BDS 0,5). A CRC-lucky FRUIT phantom whose altitude jumps
+    thousands of feet from the running ADS-B anchor should be rejected
+    before it can contaminate the altitude trace or poison CPR pairing.
+    """
+
+    # Real-world phantom lifted from EDDB->EHAM KLM90J on 2025-04-13:
+    # surrounding TC=11 frames all decode to 34 000 ft; this one decodes
+    # to 27 900 ft while sitting in a stable cruise segment.
+    REAL_POS = "8D48455658AF82FB9200E0A1E0EF"  # alt=34000
+    PHANTOM_POS = "8D4845565C6AAA206D6E6095C950"  # alt=27900
+
+    def test_matching_anchor_keeps_position(self):
+        pipe = PipeDecoder()
+        pipe._adsb_altitude["484556"] = (1000.0, 34000.0)
+        r = pipe.decode(self.REAL_POS, timestamp=1001.0)
+        assert r.get("altitude_mismatch") is None
+        assert r["altitude"] == 34000
+        assert r["cpr_lat"] is not None
+
+    def test_mismatching_anchor_flags_and_clears_cpr(self):
+        pipe = PipeDecoder()
+        pipe._adsb_altitude["484556"] = (1000.0, 34000.0)
+        r = pipe.decode(self.PHANTOM_POS, timestamp=1001.0)
+        assert r["altitude_mismatch"] is True
+        # Header AC-code altitude preserved so callers see why flagged.
+        assert r["altitude"] == 27900
+        # cpr fields scrubbed so the phantom can't pair with neighbours.
+        assert r.get("cpr_lat") is None
+        assert r.get("cpr_lon") is None
+        assert pipe.stats["altitude_mismatch"] == 1
+
+    def test_no_anchor_passes_through(self):
+        pipe = PipeDecoder()
+        r = pipe.decode(self.PHANTOM_POS, timestamp=1001.0)
+        assert r.get("altitude_mismatch") is None
+        assert r["altitude"] == 27900
+
+    def test_stale_anchor_does_not_reject(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        pipe._adsb_altitude["484556"] = (0.0, 34000.0)
+        r = pipe.decode(self.PHANTOM_POS, timestamp=601.0)
+        assert r.get("altitude_mismatch") is None
+
+    def test_rejection_does_not_update_anchor(self):
+        pipe = PipeDecoder()
+        pipe._adsb_altitude["484556"] = (1000.0, 34000.0)
+        pipe.decode(self.PHANTOM_POS, timestamp=1001.0)
+        # Anchor must not have been overwritten with the phantom's 27 900 ft.
+        assert pipe._adsb_altitude["484556"] == (1000.0, 34000.0)
+
+
+class TestVelocityMismatch:
+    # Real-world phantom lifted from OpenSky traffic for ICAO 484556
+    # on 2025-04-13 04:37 UTC (EDDB->EHAM flight). The surrounding
+    # CRC-valid TC=19 samples decode to (gs=445 kt, track=272°); the
+    # phantom below sits 1.6 s after a real sample and decodes to
+    # (gs=558 kt, track=340.9°) — a +113 kt, +69° jump that's
+    # dynamically impossible on an airliner.
+    REAL_VEL = "8D484556990DBE023008844B0DE0"  # gs=445, trk=272°
+    PHANTOM_VEL = "8D484556990CB8423008844B2DE1"  # gs=558, trk=340.9°
+
+    def test_matching_anchor_keeps_velocity(self):
+        pipe = PipeDecoder()
+        # Anchor close to the real sample's values — the real msg
+        # should pass untouched.
+        pipe._adsb_velocity["484556"] = (1000.0, 445.0, 272.0)
+        result = pipe.decode(self.REAL_VEL, timestamp=1001.6)
+        assert result.get("velocity_mismatch") is None
+        assert result["groundspeed"] == 445
+        assert result["track"] == pytest.approx(272.06, abs=0.1)
+
+    def test_mismatching_anchor_strips_velocity(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["484556"] = (1000.0, 445.0, 272.0)
+        result = pipe.decode(self.PHANTOM_VEL, timestamp=1001.6)
+        assert result["velocity_mismatch"] is True
+        assert result.get("groundspeed") is None
+        assert result.get("track") is None
+        assert result.get("vertical_rate") is None
+        assert pipe.stats["velocity_mismatch"] == 1
+
+    def test_no_anchor_passes_and_populates(self):
+        pipe = PipeDecoder()
+        result = pipe.decode(self.REAL_VEL, timestamp=1000.0)
+        assert result.get("velocity_mismatch") is None
+        assert result["groundspeed"] == 445
+        anchor = pipe._adsb_velocity.get("484556")
+        assert anchor is not None
+        assert anchor[0] == 1000.0
+        assert anchor[1] == 445.0
+        assert anchor[2] == pytest.approx(272.06, abs=0.1)
+
+    def test_stale_anchor_does_not_reject(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        # Anchor 10 min old — beyond TTL — skip the check.
+        pipe._adsb_velocity["484556"] = (0.0, 445.0, 272.0)
+        result = pipe.decode(self.PHANTOM_VEL, timestamp=601.0)
+        assert result.get("velocity_mismatch") is None
+
+    def test_rejection_does_not_pollute_anchor(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["484556"] = (1000.0, 445.0, 272.0)
+        pipe.decode(self.PHANTOM_VEL, timestamp=1001.6)
+        # The rejected phantom must not become the new anchor —
+        # otherwise the next real msg would be measured against 558/340.
+        anchor = pipe._adsb_velocity["484556"]
+        assert anchor == (1000.0, 445.0, 272.0)
+
+    def test_tolerance_scales_with_time_gap(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["4243D0"] = (0.0, 400.0, 90.0)
+        # 30 s later, a real +100 kt + 60° change is physically plausible
+        # (rate-3 turn + descent accel). Direct internal check.
+        result = {"groundspeed": 500, "track": 150.0}
+        rejected = pipe._reject_velocity_mismatch(result, "4243D0", 30.0)
+        assert rejected is False
+        # But a 1 s gap with a +100 kt jump is not plausible.
+        result = {"groundspeed": 500, "track": 92.0}
+        rejected = pipe._reject_velocity_mismatch(result, "4243D0", 1.0)
+        assert rejected is True
+
+    def test_reset_clears_adsb_velocity(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["484556"] = (1000.0, 445.0, 272.0)
+        pipe.reset()
+        assert pipe._adsb_velocity == {}
+
+    def test_eviction_drops_stale_adsb_velocity(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        pipe._adsb_velocity["484556"] = (0.0, 445.0, 272.0)
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=100.0)
+        assert "484556" not in pipe._adsb_velocity
+
+
+class TestVerticalRatePlausibility:
+    """TC=19 airborne-velocity frames carry vertical rate in a 9-bit
+    signed field (±16 384 fpm step 64). A CRC-lucky phantom whose gs
+    and track happen to match the real anchor but whose VR decodes to
+    an impossible value (commercial airliner envelope is ~±6 000 fpm)
+    should be rejected."""
+
+    # Real-world phantom from KLM1775 EHAM->EDDB on 2025-04-13 08:47:56:
+    # gs=481, track=82.8° (both match the aircraft), vr=-24 704 fpm.
+    PHANTOM_VR = "8D4867C29911DF07AE0F12C99EC9"
+
+    def test_implausible_vr_rejected_even_with_matching_anchor(self):
+        pipe = PipeDecoder()
+        # Anchor matches the phantom's gs/track, so the anchor check
+        # alone would pass. The VR check must still fire.
+        pipe._adsb_velocity["4867C2"] = (1000.0, 481.0, 82.8)
+        r = pipe.decode(self.PHANTOM_VR, timestamp=1001.0)
+        assert r["velocity_mismatch"] is True
+        assert r.get("groundspeed") is None
+        assert r.get("track") is None
+        assert r.get("vertical_rate") is None
+        assert pipe.stats["velocity_mismatch"] == 1
+
+    def test_normal_vr_passes(self):
+        pipe = PipeDecoder()
+        # A real TC=19 with reasonable VR (the earlier EDDB->EHAM
+        # KLM90J fixture — gs=445, track=272°, vr=+64).
+        r = pipe.decode("8D484556990DBE021008840E71C9", timestamp=1000.0)
+        assert r.get("velocity_mismatch") is None
+        assert r["vertical_rate"] == 64
+
+
+class TestBDS60HeadingMismatch:
+    """DF20/21 Comm-B BDS 6,0 carries magnetic_heading — it should
+    agree (within magnetic variation + wind-correction angle, ~60°)
+    with the aircraft's ADS-B track. A 150°+ disagreement is a
+    CRC-collision phantom from a different aircraft."""
+
+    # Real-world phantom from KLM1775 EHAM->EDDB on 2025-04-13 08:46:57:
+    # aircraft heading ~84°, this decodes as BDS 6,0 with hdg=240.8°.
+    PHANTOM_BDS60 = "A8000BBDD5AA7D2E606C03601B7F"
+
+    def test_matching_heading_keeps_bds60(self):
+        pipe = PipeDecoder()
+        # Real KLM1775 track ~84° — within tolerance of phantom hdg
+        # would mean no rejection. But the phantom decodes to 240°,
+        # so for THIS test use an anchor at 240° (flipped scenario).
+        pipe._adsb_velocity["4867C2"] = (1000.0, 481.0, 240.0)
+        r = pipe.decode(self.PHANTOM_BDS60, timestamp=1001.0)
+        assert r.get("velocity_mismatch") is None
+        assert r["bds"] == "6,0"
+        assert r["magnetic_heading"] == pytest.approx(240.8, abs=0.5)
+
+    def test_mismatching_heading_rejects_bds60(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["4867C2"] = (1000.0, 481.0, 84.0)
+        r = pipe.decode(self.PHANTOM_BDS60, timestamp=1001.0)
+        assert r["velocity_mismatch"] is True
+        assert r.get("bds") is None
+        assert r.get("magnetic_heading") is None
+        assert r.get("mach") is None
+        assert r.get("indicated_airspeed") is None
+        assert pipe.stats["velocity_mismatch"] == 1
+
+    def test_no_anchor_passes_through(self):
+        pipe = PipeDecoder()
+        r = pipe.decode(self.PHANTOM_BDS60, timestamp=1001.0)
+        assert r.get("velocity_mismatch") is None
+        assert r["bds"] == "6,0"
+
+    def test_stale_anchor_does_not_reject(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        pipe._adsb_velocity["4867C2"] = (0.0, 481.0, 84.0)
+        r = pipe.decode(self.PHANTOM_BDS60, timestamp=601.0)
+        assert r.get("velocity_mismatch") is None
+
+    def test_magnetic_variation_plus_wind_within_tolerance(self):
+        """A real BDS 6,0 whose magnetic heading differs from true
+        track by up to ~60° (worst-case magnetic variation + wind
+        correction) must not be mistakenly rejected. Direct call to
+        internal check with a synthetic diff of 55°."""
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["4867C2"] = (0.0, 481.0, 84.0)
+        result = {"magnetic_heading": 139.0}  # 55° off track
+        assert pipe._reject_bds60_heading_mismatch(result, "4867C2", 1.0) is False
+
+
+class TestBDS50VelocityMismatch:
+    """DF20/21 Comm-B BDS 5,0 carries groundspeed + true_track that
+    should agree with the per-ICAO ADS-B velocity anchor populated
+    from CRC-valid TC=19 frames. A wildly-off BDS 5,0 payload with
+    valid-range bits is almost certainly a CRC-collision phantom
+    from a nearby aircraft."""
+
+    # Real-world phantom from KLM88T EGLL->EHAM on 2025-04-19 11:16:
+    # aircraft at ~372 kt / 60° track, this DF21 frame decodes cleanly
+    # as BDS 5,0 with gs=250, tas=264, true_track=49.9°, roll=4.9°.
+    PHANTOM_BDS50 = "A800138D8392391F605C845078B7"
+
+    def test_matching_anchor_keeps_bds50(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["486651"] = (1000.0, 250.0, 50.0)  # anchor matches
+        r = pipe.decode(self.PHANTOM_BDS50, timestamp=1001.0)
+        assert r.get("velocity_mismatch") is None
+        assert r["bds"] == "5,0"
+        assert r["groundspeed"] == 250
+        assert r["true_airspeed"] == 264
+
+    def test_mismatching_gs_rejects_bds50(self):
+        pipe = PipeDecoder()
+        # Anchor says ~372 kt — phantom says 250 kt — Δ=122, tol=20 → reject
+        pipe._adsb_velocity["486651"] = (1000.0, 372.0, 60.0)
+        r = pipe.decode(self.PHANTOM_BDS50, timestamp=1001.0)
+        assert r["velocity_mismatch"] is True
+        assert r.get("bds") is None
+        assert r.get("groundspeed") is None
+        assert r.get("true_airspeed") is None
+        assert r.get("true_track") is None
+        assert r.get("roll") is None
+        assert r.get("track_rate") is None
+        assert pipe.stats["velocity_mismatch"] == 1
+
+    def test_no_anchor_passes_through(self):
+        pipe = PipeDecoder()
+        r = pipe.decode(self.PHANTOM_BDS50, timestamp=1001.0)
+        assert r.get("velocity_mismatch") is None
+        assert r["bds"] == "5,0"
+
+    def test_stale_anchor_does_not_reject(self):
+        pipe = PipeDecoder(eviction_ttl=60.0)
+        pipe._adsb_velocity["486651"] = (0.0, 372.0, 60.0)
+        r = pipe.decode(self.PHANTOM_BDS50, timestamp=601.0)
+        assert r.get("velocity_mismatch") is None
+
+    def test_rejection_does_not_pollute_state(self):
+        pipe = PipeDecoder()
+        pipe._adsb_velocity["486651"] = (1000.0, 372.0, 60.0)
+        pipe.decode(self.PHANTOM_BDS50, timestamp=1001.0)
+        # State[icao] would normally pick up gs/tas/track from a
+        # passing BDS 5,0 — rejection must suppress that so scoring
+        # on the next ambiguous Comm-B isn't driven by phantom values.
+        st = pipe._state.get("486651", {})
+        assert st.get("groundspeed") is None
+        assert st.get("track") is None
+
+
+class TestBothPairFramesCarryPosition:
+    """Each CPR pair produces two frames — an even and an odd. After the
+    pair resolves, the decoded lat/lon must appear on BOTH result dicts:
+    the later-arriving frame (via `_resolve_pair`) and the earlier
+    frame that was pending (via retro-fill using a stored reference)."""
+
+    # Real DF17 TC=11 pair for ICAO 40058B (from TestCprPairAccumulation
+    # fixtures) — resolves around (49.81755, 6.08442). 40058B is pre-
+    # seeded in _position_history in these tests so the ICAO is treated
+    # as locked and the motion-consistency path runs (not bootstrap).
+    PAIR_A = "8D40058B58C901375147EFD09357"
+    PAIR_B = "8D40058B58C904A87F402D3B8C59"
+
+    def test_locked_icao_fills_lat_lon_on_both_frames(self):
+        pipe = PipeDecoder()
+        pipe._position_history["40058B"] = [
+            (49.81, 6.08, 990.0),
+            (49.82, 6.09, 995.0),
+        ]
+        first = pipe.decode(self.PAIR_A, timestamp=1000.0)
+        second = pipe.decode(self.PAIR_B, timestamp=1001.0)
+        # Both dicts carry the resolved position.
+        assert first["latitude"] == pytest.approx(49.81755, abs=0.001)
+        assert first["longitude"] == pytest.approx(6.08442, abs=0.001)
+        assert second["latitude"] == pytest.approx(49.81755, abs=0.001)
+        assert second["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_bootstrap_retrofills_both_frames_of_every_pair(self):
+        pipe = PipeDecoder()
+        first_frames = []
+        second_frames = []
+        for i in range(5):
+            first_frames.append(pipe.decode(self.PAIR_A, timestamp=1000.0 + 2 * i))
+            second_frames.append(pipe.decode(self.PAIR_B, timestamp=1001.0 + 2 * i))
+        # After the 5th pair the cluster locks and retro-fill runs over
+        # every cluster member's held dicts — that's both halves of all
+        # five pairs.
+        assert "40058B" in pipe._position_history
+        for r in first_frames + second_frames:
+            assert r["latitude"] == pytest.approx(49.81755, abs=0.001)
+            assert r["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_superseded_same_parity_frame_retrofilled(self):
+        """Two F=0 frames arrive before any F=1. Under the old single-
+        entry pending, the first F=0 was orphaned (result dict returned
+        with latitude=None, never retro-filled). The pending deque pairs
+        the arriving F=1 with EVERY fresh same-parity entry so both F=0
+        frames get a lat/lon.
+        """
+        pipe = PipeDecoder()
+        pipe._position_history["40058B"] = [
+            (49.81, 6.08, 990.0),
+            (49.82, 6.09, 995.0),
+        ]
+        # Two F=0 frames first (same cpr for simplicity; a real stream
+        # would have slightly-different cpr values reflecting aircraft
+        # motion, but the code path is identical).
+        first_f0 = pipe.decode(self.PAIR_A, timestamp=1000.0)
+        second_f0 = pipe.decode(self.PAIR_A, timestamp=1000.5)
+        # F=1 arrives — pairs with the most-recent F=0 AND retro-fills
+        # the orphaned first F=0 by resolving its own independent pair
+        # against the same F=1 cpr.
+        f1 = pipe.decode(self.PAIR_B, timestamp=1001.0)
+        for r in (first_f0, second_f0, f1):
+            assert r["latitude"] == pytest.approx(49.81755, abs=0.001)
+            assert r["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_motion_reject_clears_both_frames(self):
+        pipe = PipeDecoder()
+        # Seed history on the wrong continent so the real Luxembourg
+        # pair fails motion-consistency.
+        pipe._position_history["40058B"] = [
+            (70.0, -40.0, 990.0),
+            (70.1, -40.1, 995.0),
+        ]
+        first = pipe.decode(self.PAIR_A, timestamp=1000.0)
+        second = pipe.decode(self.PAIR_B, timestamp=1001.0)
+        assert first.get("latitude") is None
+        assert first.get("longitude") is None
+        assert second.get("latitude") is None
+        assert second.get("longitude") is None
+        assert pipe.stats["position_rejected"] == 1
+
+
 class TestCprPairAccumulation:
     # Many of these tests look at the CPR resolution math, not the
     # bootstrap cluster analysis. Pre-seed `_position_history` so the
@@ -498,13 +866,15 @@ class TestCprPairAccumulation:
         assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
         assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
-    def test_same_parity_overwrites_pending(self):
+    def test_same_parity_appends_to_deque(self):
         pipe = PipeDecoder()
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
-        # Decode another even frame from the same ICAO — should
-        # overwrite the older pending entry, not add a second
+        # Decode another even frame from the same ICAO — pending is a
+        # deque per parity, so both entries accumulate (they'll both
+        # get paired against the next opposite-parity arrival).
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=1001.0)
-        assert pipe.stats["pending_pairs"] == 1
+        assert pipe.stats["pending_pairs"] == 2
+        assert len(pipe._pending_even["40058B"]) == 2
 
     def test_odd_first_pair_resolves(self):
         # Mirror of the airborne_pair test with frames reversed: the

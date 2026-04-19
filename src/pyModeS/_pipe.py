@@ -140,6 +140,26 @@ def _altitude_tolerance(dt: float) -> float:
     return max(500.0, min(dt * 100.0, 5000.0))
 
 
+def _groundspeed_tolerance(dt: float) -> float:
+    """Max plausible |gs_now - gs_anchor| in kt after dt seconds.
+
+    5 kt/s covers aggressive jet accel/decel plus ~30 kt wind gusts,
+    floored at 20 kt (sample-to-sample noise + 1-kt LSB), capped at
+    200 kt so a stale anchor can't rubber-stamp arbitrary jumps.
+    """
+    return max(20.0, min(dt * 5.0, 200.0))
+
+
+def _track_tolerance(dt: float) -> float:
+    """Max plausible circular |track_now - track_anchor| in degrees.
+
+    10°/s covers a rate-3 (9°/s) commercial turn with margin, floored
+    at 20° for sample noise, effectively unconstrained past ~16 s
+    (capped at 180° — the maximum circular distance).
+    """
+    return max(20.0, min(dt * 10.0, 180.0))
+
+
 class PipeDecoder:
     """Stateful Mode-S decoder with per-ICAO state and CPR pair matching.
 
@@ -157,6 +177,7 @@ class PipeDecoder:
 
     __slots__ = (
         "_adsb_altitude",
+        "_adsb_velocity",
         "_bootstrap",
         "_eviction_ttl",
         "_full_dict",
@@ -193,8 +214,15 @@ class PipeDecoder:
         self._max_speed_kmps = max_speed_kt * 1.852 / 3600.0
         self._motion_margin_km = motion_margin_km
         self._state: dict[str, dict[str, Any]] = {}
-        self._pending_even: dict[str, tuple[float, int, int]] = {}
-        self._pending_odd: dict[str, tuple[float, int, int]] = {}
+        # Pending CPR frames: keyed by ICAO, each value is a list of
+        # (timestamp, cpr_lat, cpr_lon, result_dict) entries sorted by
+        # timestamp. Keeping a deque per parity (instead of a single
+        # slot) ensures that when two same-parity frames arrive before
+        # an opposite-parity does, the earlier frame isn't silently
+        # dropped: on the next opposite arrival we pair it with every
+        # fresh deque entry, giving each its own resolved position.
+        self._pending_even: dict[str, list[tuple[float, int, int, Decoded]]] = {}
+        self._pending_odd: dict[str, list[tuple[float, int, int, Decoded]]] = {}
         self._trusted_icaos: set[str] = set()
         # ADS-B-derived altitude anchor per ICAO, used to reject DF20
         # messages whose AC-code altitude is inconsistent with the
@@ -203,6 +231,14 @@ class PipeDecoder:
         # Populated only from CRC-valid DF17/18 airborne positions
         # (BDS 0,5); value is (timestamp, altitude_ft).
         self._adsb_altitude: dict[str, tuple[float, float]] = {}
+        # ADS-B-derived velocity anchor per ICAO, used to reject DF17/18
+        # TC=19 airborne-velocity messages whose decoded groundspeed or
+        # track jumps implausibly from the last CRC-valid sample (a
+        # signature of a bit-corruption phantom that happened to pass
+        # CRC with the ICAO field intact). Value is
+        # (timestamp, groundspeed_kt, track_deg) and only updated on
+        # messages that *pass* the cross-check.
+        self._adsb_velocity: dict[str, tuple[float, float, float]] = {}
         # Rolling window of the last _POSITION_HISTORY_SIZE resolved
         # (lat, lon, timestamp) tuples per ICAO. Only populated AFTER
         # the per-ICAO bootstrap cluster analysis has locked in an
@@ -217,13 +253,17 @@ class PipeDecoder:
         # cluster locks, we retroactively set latitude/longitude on
         # those dicts so batch callers (who keep the list around) still
         # see the resolved positions for their early samples.
-        self._bootstrap: dict[str, list[tuple[float, float, float, Decoded]]] = {}
+        # Each bootstrap entry stores a *list* of result dicts — both
+        # halves of a CPR pair resolve to the same lat/lon and should
+        # both be retro-filled when the cluster locks.
+        self._bootstrap: dict[str, list[tuple[float, float, float, list[Decoded]]]] = {}
         self._stats: dict[str, int] = {
             "total": 0,
             "decoded": 0,
             "crc_fail": 0,
             "pending_pairs": 0,
             "altitude_mismatch": 0,
+            "velocity_mismatch": 0,
             "position_rejected": 0,
             "bootstrap_held": 0,
             "bootstrap_reset": 0,
@@ -321,9 +361,23 @@ class PipeDecoder:
             # State would be poisoned if updated from this message.
             return result
 
+        # Altitude cross-check for CRC-valid DF17/18 airborne-position
+        # (BDS 0,5) frames. A CRC-lucky FRUIT phantom can produce an
+        # altitude thousands of feet off from the running anchor; reject
+        # those so they don't pollute the altitude trace or pair into
+        # garbage CPR positions.
+        if (
+            message.df in (17, 18)
+            and result.get("crc_valid") is True
+            and result.get("bds") == "0,5"
+            and timestamp is not None
+            and self._reject_df17_altitude_mismatch(result, icao, timestamp)
+        ):
+            return result
+
         # ADS-B position altitude becomes the per-ICAO anchor for the
-        # next round of DF20 cross-checks. Only plain-text-ICAO frames
-        # with verified CRC qualify.
+        # next round of DF20 and DF17 cross-checks. Only plain-text-ICAO
+        # frames with verified CRC qualify.
         if (
             message.df in (17, 18)
             and result.get("crc_valid") is True
@@ -332,6 +386,63 @@ class PipeDecoder:
             and timestamp is not None
         ):
             self._adsb_altitude[icao] = (timestamp, float(result["altitude"]))
+
+        # Velocity cross-check: DF17/18 TC=19 subtype 1/2 carries gs +
+        # track. A single frame whose values jump implausibly from the
+        # most recent CRC-valid anchor is almost certainly a CRC-lucky
+        # bit-corruption phantom attributed to this ICAO by mistake.
+        # Rejection scrubs the velocity fields AND skips the anchor
+        # update below so the phantom can't poison future checks.
+        if (
+            message.df in (17, 18)
+            and result.get("typecode") == 19
+            and result.get("crc_valid") is True
+            and timestamp is not None
+            and self._reject_velocity_mismatch(result, icao, timestamp)
+        ):
+            return result
+
+        # ADS-B velocity becomes the per-ICAO anchor for the next
+        # TC=19 cross-check — only when both gs and track are present
+        # (subtype 1/2) and the message passed the check above.
+        if (
+            message.df in (17, 18)
+            and result.get("typecode") == 19
+            and result.get("crc_valid") is True
+            and result.get("groundspeed") is not None
+            and result.get("track") is not None
+            and timestamp is not None
+        ):
+            self._adsb_velocity[icao] = (
+                timestamp,
+                float(result["groundspeed"]),
+                float(result["track"]),
+            )
+
+        # Comm-B BDS 5,0 (track-and-turn) velocity cross-check. A DF20/21
+        # reply can pass CRC (XOR'd with ICAO) while originating from a
+        # different aircraft whose bits happen to land in BDS 5,0's valid
+        # range. Reuse the per-ICAO ADS-B velocity anchor to reject
+        # those when gs/true_track disagrees with recent TC=19.
+        if (
+            message.df in (20, 21)
+            and result.get("bds") == "5,0"
+            and timestamp is not None
+            and self._reject_bds50_velocity_mismatch(result, icao, timestamp)
+        ):
+            return result
+
+        # Same idea for BDS 6,0 (heading and speed): magnetic heading is
+        # the cleanest discriminator (±60° covers magnetic variation and
+        # wind correction). Mach and IAS are intentionally not checked —
+        # they overlap too much with real variation across wind/altitude.
+        if (
+            message.df in (20, 21)
+            and result.get("bds") == "6,0"
+            and timestamp is not None
+            and self._reject_bds60_heading_mismatch(result, icao, timestamp)
+        ):
+            return result
 
         self._handle_cpr_pair(result, icao, timestamp)
         self._update_state(icao, result, timestamp)
@@ -370,6 +481,196 @@ class PipeDecoder:
         self._stats["altitude_mismatch"] += 1
         return True
 
+    def _reject_df17_altitude_mismatch(
+        self,
+        result: Decoded,
+        icao: str,
+        timestamp: float,
+    ) -> bool:
+        """Flag & scrub a CRC-valid DF17/18 BDS 0,5 position whose
+        altitude disagrees with the recent ADS-B altitude anchor.
+
+        A FRUIT phantom that survives CRC can land with plausible ICAO
+        bits but a garbage AC-code altitude. The header altitude is
+        preserved (so callers see what was flagged); the CPR fields are
+        cleared so the phantom can't pair with nearby real frames and
+        produce a far-off position that the motion check would catch
+        only after more work.
+
+        Returns True if rejected (caller skips anchor update and all
+        downstream state mutations).
+        """
+        new_alt = result.get("altitude")
+        if new_alt is None:
+            return False
+        anchor = self._adsb_altitude.get(icao)
+        if anchor is None:
+            return False
+        adsb_t, adsb_alt = anchor
+        dt = abs(timestamp - adsb_t)
+        if dt > self._eviction_ttl:
+            return False
+        if abs(new_alt - adsb_alt) <= _altitude_tolerance(dt):
+            return False
+
+        result["altitude_mismatch"] = True
+        for key in ("cpr_lat", "cpr_lon", "cpr_format"):
+            if key in result:
+                result[key] = None
+        self._stats["altitude_mismatch"] += 1
+        return True
+
+    def _reject_velocity_mismatch(
+        self,
+        result: Decoded,
+        icao: str,
+        timestamp: float,
+    ) -> bool:
+        """Flag & scrub this TC=19 result if gs/track disagrees with the
+        recent anchor, OR if the decoded vertical rate exceeds the
+        physical envelope of a commercial aircraft (~±6000 fpm; we use
+        ±10 000 fpm as an absolute cutoff).
+
+        Returns True if rejected (caller skips state/anchor update).
+        The VR check fires even without an anchor and even when gs/track
+        pass, so a phantom whose gs/track match the anchor but whose VR
+        is garbage (-24 704 fpm from a single corrupted frame) is still
+        caught.
+        """
+        vr = result.get("vertical_rate")
+        vr_implausible = vr is not None and abs(vr) > 10000.0
+
+        anchor_mismatch = False
+        gs = result.get("groundspeed")
+        track = result.get("track")
+        if gs is not None and track is not None:
+            anchor = self._adsb_velocity.get(icao)
+            if anchor is not None:
+                a_t, a_gs, a_track = anchor
+                dt = abs(timestamp - a_t)
+                if dt <= self._eviction_ttl:
+                    d_gs = abs(gs - a_gs)
+                    d_track = abs(track - a_track) % 360.0
+                    if d_track > 180.0:
+                        d_track = 360.0 - d_track
+                    if d_gs > _groundspeed_tolerance(dt) or d_track > _track_tolerance(
+                        dt
+                    ):
+                        anchor_mismatch = True
+
+        if not (vr_implausible or anchor_mismatch):
+            return False
+
+        result["velocity_mismatch"] = True
+        # Scrub velocity fields — the caller would otherwise merge them
+        # into state, propagating the phantom's values downstream.
+        for key in (
+            "groundspeed",
+            "track",
+            "vertical_rate",
+            "heading",
+            "airspeed",
+            "airspeed_type",
+            "velocity_type",
+        ):
+            if key in result:
+                result[key] = None
+        self._stats["velocity_mismatch"] += 1
+        return True
+
+    def _reject_bds50_velocity_mismatch(
+        self,
+        result: Decoded,
+        icao: str,
+        timestamp: float,
+    ) -> bool:
+        """Flag & scrub a DF20/21 BDS 5,0 reply whose gs or true_track
+        disagrees with the per-ICAO ADS-B velocity anchor.
+
+        Mirrors `_reject_velocity_mismatch` but reads `true_track`
+        (BDS 5,0's heading field) instead of `track` (TC=19's).
+
+        Returns True if rejected (caller skips handle_cpr_pair and
+        _update_state so the phantom's values don't propagate).
+        """
+        gs = result.get("groundspeed")
+        track = result.get("true_track")
+        if gs is None and track is None:
+            return False
+        anchor = self._adsb_velocity.get(icao)
+        if anchor is None:
+            return False
+        a_t, a_gs, a_track = anchor
+        dt = abs(timestamp - a_t)
+        if dt > self._eviction_ttl:
+            return False
+
+        gs_ok = True
+        track_ok = True
+        if gs is not None:
+            gs_ok = abs(gs - a_gs) <= _groundspeed_tolerance(dt)
+        if track is not None:
+            d_track = abs(track - a_track) % 360.0
+            if d_track > 180.0:
+                d_track = 360.0 - d_track
+            track_ok = d_track <= _track_tolerance(dt)
+
+        if gs_ok and track_ok:
+            return False
+
+        result["velocity_mismatch"] = True
+        # Scrub the whole BDS payload — the fields might individually
+        # look valid but the frame is from a different aircraft.
+        for key in _BDS_FIELDS_TO_CLEAR:
+            if key in result:
+                result[key] = None
+        self._stats["velocity_mismatch"] += 1
+        return True
+
+    def _reject_bds60_heading_mismatch(
+        self,
+        result: Decoded,
+        icao: str,
+        timestamp: float,
+    ) -> bool:
+        """Flag & scrub a DF20/21 BDS 6,0 reply whose magnetic_heading
+        disagrees with the per-ICAO ADS-B track anchor by more than
+        magnetic variation + wind-correction angle can legitimately
+        explain.
+
+        Tolerance: ``max(60°, min(Δt · 10°, 180°))``. The 60° floor
+        covers worst-case magnetic variation (±20°) + strong-crosswind
+        wind-correction angle (±20°) + short lag during turns; the
+        per-second slope matches the rate-3 turn envelope used elsewhere.
+
+        Returns True if rejected.
+        """
+        hdg = result.get("magnetic_heading")
+        if hdg is None:
+            return False
+        anchor = self._adsb_velocity.get(icao)
+        if anchor is None:
+            return False
+        a_t, _a_gs, a_track = anchor
+        dt = abs(timestamp - a_t)
+        if dt > self._eviction_ttl:
+            return False
+
+        d = abs(hdg - a_track) % 360.0
+        if d > 180.0:
+            d = 360.0 - d
+
+        tol = max(60.0, min(dt * 10.0, 180.0))
+        if d <= tol:
+            return False
+
+        result["velocity_mismatch"] = True
+        for key in _BDS_FIELDS_TO_CLEAR:
+            if key in result:
+                result[key] = None
+        self._stats["velocity_mismatch"] += 1
+        return True
+
     def _evict_expired(self, now: float) -> None:
         """Drop state and pending CPR entries older than eviction_ttl.
 
@@ -380,12 +681,21 @@ class PipeDecoder:
         """
         cutoff = now - self._eviction_ttl
 
-        # Evict pending CPR frames (and decrement the stat)
+        # Evict pending CPR frames (and decrement the stat). Per-ICAO
+        # value is a deque; trim entries older than cutoff and drop the
+        # key if the deque empties out.
         for pending in (self._pending_even, self._pending_odd):
-            stale = [icao for icao, (t, _, _) in pending.items() if t < cutoff]
-            for icao in stale:
-                pending.pop(icao, None)
-                self._stats["pending_pairs"] = max(0, self._stats["pending_pairs"] - 1)
+            for icao in list(pending):
+                deque = pending[icao]
+                fresh_deque = [e for e in deque if e[0] >= cutoff]
+                dropped = len(deque) - len(fresh_deque)
+                if fresh_deque:
+                    pending[icao] = fresh_deque
+                else:
+                    pending.pop(icao, None)
+                self._stats["pending_pairs"] = max(
+                    0, self._stats["pending_pairs"] - dropped
+                )
 
         # Evict per-ICAO state. Only entries with a _last_seen timestamp
         # are evictable; entries without (decoded with timestamp=None)
@@ -405,6 +715,13 @@ class PipeDecoder:
         ]
         for icao in stale_anchors:
             self._adsb_altitude.pop(icao, None)
+
+        # Same for velocity anchors.
+        stale_vel = [
+            icao for icao, (t, _, _) in self._adsb_velocity.items() if t < cutoff
+        ]
+        for icao in stale_vel:
+            self._adsb_velocity.pop(icao, None)
 
         # Prune position-history entries older than cutoff; drop the
         # ICAO key entirely once its buffer is empty.
@@ -522,13 +839,14 @@ class PipeDecoder:
         )
         cluster: list[tuple[float, float, float]] = []
         for i in cluster_indices:
-            lat, lon, t, result_dict = candidates[i]
-            # Retroactively emit the resolved position on the held
-            # result dict so callers who kept it (e.g. batch-mode
-            # consumers via ``pms.decode(list)``) now see a valid
-            # lat/lon.
-            result_dict["latitude"] = lat
-            result_dict["longitude"] = lon
+            lat, lon, t, result_dicts = candidates[i]
+            # Retroactively emit the resolved position on every held
+            # result dict for this pair — typically both the even and
+            # odd frame — so callers who kept references (e.g. batch-
+            # mode consumers) now see a valid lat/lon on both halves.
+            for rd in result_dicts:
+                rd["latitude"] = lat
+                rd["longitude"] = lon
             cluster.append((lat, lon, t))
         # Seed the history with the (up to _POSITION_HISTORY_SIZE) most
         # recent members of the cluster.
@@ -538,23 +856,30 @@ class PipeDecoder:
 
     def _bootstrap_accumulate(
         self,
-        result: Decoded,
+        results: Decoded | list[Decoded],
         icao: str,
         lat: float,
         lon: float,
         timestamp: float,
     ) -> None:
-        """Hold a pre-lock candidate position. Clears lat/lon from the
-        result (we don't emit unverified positions) and — when the buffer
-        reaches _BOOTSTRAP_K — triggers cluster analysis.
+        """Hold a pre-lock candidate position. Clears lat/lon from all
+        supplied result dicts (we don't emit unverified positions) and —
+        when the buffer reaches _BOOTSTRAP_K — triggers cluster analysis.
+
+        ``results`` accepts a single dict (back-compat for tests that
+        supply synthetic candidates) or a list of dicts. In the normal
+        decode path the caller passes both halves of the resolved pair
+        so both get retro-filled together when a cluster locks.
         """
+        result_dicts = results if isinstance(results, list) else [results]
         buf = self._bootstrap.setdefault(icao, [])
-        buf.append((lat, lon, timestamp, result))
+        buf.append((lat, lon, timestamp, result_dicts))
         # Don't emit lat/lon while the anchor is still being chosen;
-        # the CPR raw fields remain on the result so callers can see
+        # the CPR raw fields remain on each result so callers can see
         # that a pair was seen.
-        result["latitude"] = None
-        result["longitude"] = None
+        for rd in result_dicts:
+            rd["latitude"] = None
+            rd["longitude"] = None
         self._stats["bootstrap_held"] += 1
 
         if len(buf) >= _BOOTSTRAP_K and not self._bootstrap_try_lock(
@@ -582,9 +907,10 @@ class PipeDecoder:
         for icao in list(self._bootstrap):
             buf = self._bootstrap[icao]
             if len(buf) == 1:
-                lat, lon, t, result_dict = buf[0]
-                result_dict["latitude"] = lat
-                result_dict["longitude"] = lon
+                lat, lon, t, result_dicts = buf[0]
+                for rd in result_dicts:
+                    rd["latitude"] = lat
+                    rd["longitude"] = lon
                 self._position_history[icao] = [(lat, lon, t)]
                 self._bootstrap.pop(icao, None)
             else:
@@ -619,43 +945,80 @@ class PipeDecoder:
             this_pending = self._pending_odd
             other_pending = self._pending_even
 
-        opposite = other_pending.get(icao)
-        if opposite is not None:
-            opp_t, opp_lat, opp_lon = opposite
-            if abs(timestamp - opp_t) <= self._pair_window:
-                # Pair found — resolve and pop
-                self._resolve_pair(
-                    result,
-                    bds,
-                    cpr_format,
-                    cpr_lat,
-                    cpr_lon,
-                    opp_lat,
-                    opp_lon,
-                )
-                # Position-filter dispatch: bootstrapping ICAOs have
-                # their candidates held in `_bootstrap` until a cluster
-                # analysis picks a good anchor; locked ICAOs fall
-                # through to the motion-consistency check.
-                lat = result.get("latitude")
-                lon = result.get("longitude")
-                if lat is not None and lon is not None:
-                    if icao in self._position_history:
-                        if not self._motion_consistent(icao, lat, lon, timestamp):
-                            result["latitude"] = None
-                            result["longitude"] = None
-                            self._stats["position_rejected"] += 1
-                        self._update_position_history(icao, lat, lon, timestamp)
-                    else:
-                        self._bootstrap_accumulate(result, icao, lat, lon, timestamp)
-                other_pending.pop(icao, None)
-                self._stats["pending_pairs"] = max(0, self._stats["pending_pairs"] - 1)
-                return
+        opposite_deque = other_pending.get(icao, [])
+        fresh = [
+            e for e in opposite_deque if abs(timestamp - e[0]) <= self._pair_window
+        ]
 
-        # No pair (or out of window) — store this frame as pending
-        if icao not in this_pending:
-            self._stats["pending_pairs"] += 1
-        this_pending[icao] = (timestamp, cpr_lat, cpr_lon)
+        if fresh:
+            # Primary = the most-recent fresh opposite. That pair gives
+            # the best estimate of the current (arriving) frame's
+            # position; older fresh opposites become "orphan pairs"
+            # resolved independently so each gets its own lat/lon.
+            fresh.sort(key=lambda e: e[0], reverse=True)
+            _primary_t, primary_lat, primary_lon, primary_result = fresh[0]
+
+            self._resolve_pair(
+                result, bds, cpr_format, cpr_lat, cpr_lon, primary_lat, primary_lon
+            )
+            lat = result.get("latitude")
+            lon = result.get("longitude")
+
+            paired_dicts: list[Decoded] = [result, primary_result]
+            if lat is not None and lon is not None:
+                primary_result["latitude"] = lat
+                primary_result["longitude"] = lon
+
+            # Orphan pairs — each opposite entry older than the primary
+            # pairs independently with the arriving frame's cpr values.
+            for _o_t, o_lat, o_lon, o_result in fresh[1:]:
+                temp: Decoded = Decoded({"cpr_format": cpr_format})
+                self._resolve_pair(
+                    temp, bds, cpr_format, cpr_lat, cpr_lon, o_lat, o_lon
+                )
+                o_lat_out = temp.get("latitude")
+                o_lon_out = temp.get("longitude")
+                if o_lat_out is not None:
+                    o_result["latitude"] = o_lat_out
+                    o_result["longitude"] = o_lon_out
+                paired_dicts.append(o_result)
+
+            # Fresh opposites have all been consumed; only stale entries
+            # remain in the deque (they'll be evicted at next
+            # `_evict_expired`, but keeping them until then is harmless).
+            stale = [
+                e for e in opposite_deque if abs(timestamp - e[0]) > self._pair_window
+            ]
+            if stale:
+                other_pending[icao] = stale
+            else:
+                other_pending.pop(icao, None)
+            self._stats["pending_pairs"] = max(
+                0, self._stats["pending_pairs"] - len(fresh)
+            )
+
+            # Position-filter dispatch: bootstrapping ICAOs hold every
+            # paired dict (primary + orphans) as a single candidate so
+            # that nothing unverified reaches the caller; locked ICAOs
+            # run the motion check against the primary resolution and
+            # share the verdict with the orphans.
+            if lat is not None and lon is not None:
+                if icao in self._position_history:
+                    if not self._motion_consistent(icao, lat, lon, timestamp):
+                        for d in paired_dicts:
+                            d["latitude"] = None
+                            d["longitude"] = None
+                        self._stats["position_rejected"] += 1
+                    self._update_position_history(icao, lat, lon, timestamp)
+                else:
+                    self._bootstrap_accumulate(paired_dicts, icao, lat, lon, timestamp)
+            return
+
+        # No fresh opposite — append this frame to its own parity deque,
+        # keeping a reference to its result dict for later retro-fill.
+        deque = this_pending.setdefault(icao, [])
+        deque.append((timestamp, cpr_lat, cpr_lon, result))
+        self._stats["pending_pairs"] += 1
 
     def _resolve_pair(
         self,
@@ -752,6 +1115,7 @@ class PipeDecoder:
         self._pending_odd.clear()
         self._trusted_icaos.clear()
         self._adsb_altitude.clear()
+        self._adsb_velocity.clear()
         self._position_history.clear()
         self._bootstrap.clear()
         for k in self._stats:
