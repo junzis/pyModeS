@@ -3,7 +3,7 @@ revision = 3
 requires-python = ">=3.11"
 
 [options]
-exclude-newer = "2026-04-10T12:06:19.621540635Z"
+exclude-newer = "2026-04-12T18:51:16.524371655Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -418,7 +418,7 @@ wheels = [
 
 [[package]]
 name = "pymodes"
-version = "3.2.0"
+version = "3.3.0"
 source = { editable = "." }
 
 [package.optional-dependencies]
