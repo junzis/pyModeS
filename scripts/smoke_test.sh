@@ -74,9 +74,10 @@ results = pyModeS.decode(
     timestamps=[1.0, 2.0],
 )
 assert len(results) == 2
-# First frame yields no position yet (no pair partner).
-assert results[0].get("latitude") is None, results[0]
 # Second frame completes the pair — latitude/longitude filled.
+# (v3.3+ also retro-fills the first half when the bootstrap cluster
+# locks, so results[0] may have a position too — we don't pin either
+# way here.)
 assert results[1]["latitude"] is not None, results[1]
 assert results[1]["longitude"] is not None, results[1]
 # Sanity-check the decoded coordinates land in the expected
