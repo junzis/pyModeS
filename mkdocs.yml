@@ -48,6 +48,7 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - PipeDecoder: pipe.md
+  - Interesting messages: interesting_messages.md
   - Migration from v2: migration.md
   - API Reference: api.md
   - Changelog: changelog.md
