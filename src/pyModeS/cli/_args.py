@@ -137,6 +137,19 @@ def _add_live_parser(
         help="Tee JSON lines to a file in addition to stdout.",
     )
     live_p.add_argument(
+        "--csv",
+        metavar="FILE",
+        default=None,
+        help="Tee decoded JSON lines to a CSV file in addition to stdout.",
+    )
+    live_p.add_argument(
+        "--ac-filter",                          
+        metavar="ICAO",                         
+        default=None,
+        help="Only write messages from this aircraft ICAO address to the CSV "
+             "(e.g. 4B1A2C). Requires --csv.",
+    )
+    live_p.add_argument(
         "--tui",
         action="store_true",
         help="Interactive rich-based aircraft table (requires pyModeS[tui]).",
