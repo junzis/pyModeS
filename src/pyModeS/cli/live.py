@@ -32,7 +32,7 @@ from types import FrameType
 from typing import Any
 
 from pyModeS import PipeDecoder
-from pyModeS.cli._sink import JsonLinesSink, NullSink, TeeSink
+from pyModeS.cli._sink import JsonLinesSink, NullSink, TeeSink, CsvSink
 from pyModeS.cli._source import NetworkSource, UnsupportedStreamError
 
 
@@ -171,21 +171,21 @@ def _parse_surface_ref(value: str | None) -> Any:
 
 def _build_sink(
     args: argparse.Namespace,
-) -> JsonLinesSink | NullSink | TeeSink:
-    """Construct the appropriate non-TUI sink for the given args.
-
-    The TUI path does NOT go through this function — it has its
-    own branch in ``run()`` that hands the NetworkSource straight
-    to the textual App.
-    """
+) -> JsonLinesSink | NullSink | TeeSink | CsvSink:
     stdout_sink: JsonLinesSink | NullSink = (
         NullSink() if args.quiet else JsonLinesSink(sys.stdout)
     )
+    if args.dump_to is not None and args.csv is not None:
+        file_sink = JsonLinesSink.to_file(args.dump_to)
+        csv_sink = CsvSink(args.csv, ac_filter=args.ac_filter)
+        return TeeSink(stdout_sink, TeeSink(file_sink, csv_sink))
     if args.dump_to is not None:
         file_sink = JsonLinesSink.to_file(args.dump_to)
         return TeeSink(stdout_sink, file_sink)
+    if args.csv is not None:
+        csv_sink = CsvSink(args.csv, ac_filter=args.ac_filter)
+        return TeeSink(stdout_sink, csv_sink)
     return stdout_sink
-
 
 def _install_signal_handlers(stop: _StopFlag) -> None:
     def _handler(signum: int, frame: FrameType | None) -> None:

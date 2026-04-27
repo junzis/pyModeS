@@ -76,3 +76,7 @@ target/
 .venv
 env/
 venv/
+
+# Dump
+/dump
+*.csv
