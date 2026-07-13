@@ -5,6 +5,27 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- `PipeDecoder` no longer scans every per-ICAO cache on every timestamped
+  message. Full TTL eviction is throttled to a configurable one-second
+  interval by default, capped at the TTL itself. A bounded per-ICAO check
+  still expires state exactly before it is used, so sweep throttling cannot
+  change BDS inference at the TTL boundary. Set `eviction_interval=0` for
+  the former sweep-per-message memory-reclamation behavior.
+- Timestamped messages that contain no fields used for stateful
+  disambiguation no longer create empty per-ICAO state entries. Existing
+  useful state is still refreshed when such a message arrives.
+- State updates skip field extraction for downlink formats that cannot
+  contribute to stateful inference.
+
+### Added
+
+- `scripts/stream_filtered.py`, a configurable live/replay Beast example
+  demonstrating high-volume DF/typecode prefiltering before `PipeDecoder`.
+
 ## [3.1.0] — 2026-04-14
 
 Streaming-robustness release. Adds defences against phantom positions
@@ -98,7 +119,7 @@ the migration guide.
   `bin2hex`, `crc`, `df`, `icao`, `typecode`, `altcode`, `idcode`,
   `cprNL`. Thin wrappers over `_bits.py`, `_altcode.py`, `_idcode.py`
   and `position/_cpr.py` with no logic duplication.
-- `scripts/smoke_test.sh` installs the freshly built wheel
+- `scripts/smoke_test_wheel.sh` installs the freshly built wheel
   into a clean Python 3.12 venv and verifies the public API end to
   end (single-message decode, PipeDecoder baseline, batch CPR pair
   resolution, error-dict on malformed input).

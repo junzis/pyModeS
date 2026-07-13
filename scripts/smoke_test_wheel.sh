@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
-# Alpha smoke test: install the freshly-built wheel into a clean
-# venv and verify the public API works end-to-end. Run manually,
-# not in CI.
+# Wheel smoke test: install the freshly-built wheel into a clean
+# venv and verify the public API works end-to-end. Used by the publish
+# workflow and available for manual release checks.
 #
-# Usage: scripts/smoke_test_alpha.sh [/path/to/wheel]
+# Usage: scripts/smoke_test_wheel.sh [/path/to/wheel]
 #
-# If no argument: uses the most recently built dist/*.whl. PyPI
-# normalises the distribution name to lowercase (PEP 503), so the
-# wheel file on disk is named `pymodes-3.0.0.dev0-*.whl` even
-# though the package imports as `pyModeS`.
+# If no argument: uses the most recently built dist/*.whl. PyPI normalises
+# the distribution name to lowercase (PEP 503), so wheel files use
+# `pymodes-*.whl` even though the package imports as `pyModeS`.
 
 set -euo pipefail
 
@@ -39,9 +38,7 @@ uv pip install --quiet --python "$TMPDIR/venv/bin/python" "$WHEEL"
 import pyModeS
 from pyModeS import PipeDecoder
 
-# Version sanity — whatever pyproject.toml says at build time.
-# Passes at 3.0.0.dev0 today, will still pass at 3.0.0a1 after
-# the pre-publish version bump.
+# Version sanity — this smoke test is for the v3 package line.
 print(f"pyModeS.__version__ = {pyModeS.__version__}")
 assert pyModeS.__version__.startswith("3."), (
     f"unexpected version: {pyModeS.__version__}"

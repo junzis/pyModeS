@@ -1,6 +1,6 @@
 """Curated airport database.
 
-Generated from OurAirports dataset by scripts/build_airport_db.py.
+Generated from OurAirports dataset by scripts/generate_airport_db.py.
 Source: https://davidmegginson.github.io/ourairports-data/airports.csv
 Filter: large_airport + medium_airport with an assigned 4-letter ICAO code.
 

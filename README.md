@@ -178,24 +178,24 @@ the full command reference.
 
 ## Performance
 
-Measured on jet1090's
-[`long_flight.csv`](https://github.com/xoolive/jet1090/blob/master/crates/rs1090/data/long_flight.csv)
-(172,432 Beast-format messages, 7 runs × 1 loop, mean timings,
-single-core only):
+The committed benchmarks run each released/working-tree version in an
+isolated environment and reject output mismatches before reporting timings.
+On the captured 176,612-frame mixed Beast feed, the header-prefiltered v3 path
+processes 88,933 incoming messages/s:
 
-| Decoder | Wall time | Throughput | vs pyModeS v3 |
-|---|---|---|---|
-| **pyModeS v3 (pure Python)** | **2.06s ± 0.01** | **83,549 msg/s** | **1.00×** |
-| pyModeS 2.21.1 (Python with compiled C) | 5.03s ± 0.01 | 34,303 msg/s | 0.41× |
-| rs1090 (Rust) | 5.60s ± 0.01 | 30,798 msg/s | 0.37× |
-| pyModeS 2.21.1 (Python) | 9.09s ± 0.02 | 18,959 msg/s | 0.23× |
+| Decoder path | Throughput |
+|---|---:|
+| pyModeS 2.21.1 selective helpers | 53,528 msg/s |
+| released v3.3.0 `PipeDecoder` | 3,935 msg/s |
+| updated v3 `PipeDecoder` | 50,542 msg/s |
+| updated v3 + header prefilter | **88,933 msg/s** |
 
-pyModeS v3 is **2.44× faster** than `pyModeS 2.21.1`'s compiled C
-extension, **4.41× faster** than `pyModeS 2.21.1` pure-Python, and
-**2.71× faster** than rs1090's single-core Rust — all while remaining
-pure Python with no C/Cython build.
+On the 2,000-aircraft synthetic PipeDecoder workload, updated v3 processes
+39,381 msg/s versus v2's 40,057 msg/s, with identical normalized output.
 
-Reproduce with `scripts/benchmark_decode.py`.
+See [`scripts/README.md`](./scripts/README.md) for the reproducible commands
+and [`scripts/benchmark_results/`](./scripts/benchmark_results/) for the full
+methodology, timings, and output digests.
 
 ## Supported messages
 

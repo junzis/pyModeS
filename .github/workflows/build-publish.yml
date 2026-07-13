@@ -31,7 +31,7 @@ jobs:
         # Installs the wheel into a fresh venv and verifies the
         # public API works end to end. Fails the build if the
         # wheel is structurally broken or the API regressed.
-        run: scripts/smoke_test.sh
+        run: scripts/smoke_test_wheel.sh
 
       - uses: actions/upload-artifact@v4
         with:

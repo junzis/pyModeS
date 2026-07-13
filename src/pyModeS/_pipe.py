@@ -82,6 +82,12 @@ _DECODED_TO_KNOWN: dict[str, str] = {
     "altitude": "altitude",  # informational; not in scoring tables
 }
 
+# Only these downlink formats can currently emit fields consumed by
+# stateful Comm-B inference. Keeping the set explicit lets the hot path
+# skip nine result-dict lookups for DF5/DF11 and unsupported DFs while
+# still refreshing useful state that already exists for the ICAO.
+_STATEFUL_DFS = frozenset((0, 4, 16, 17, 18, 20, 21))
+
 # BDS-payload fields cleared from a DF20 result that fails altitude
 # cross-check. The `altitude` field itself is preserved (it's the
 # 13-bit AC-code that triggered the mismatch — callers want it to
@@ -171,18 +177,25 @@ class PipeDecoder:
         pair_window: Maximum age difference (seconds) between an even
             and odd CPR frame for them to count as a pair. Default 10s.
         eviction_ttl: Per-ICAO state and pending CPR frames older than
-            this many seconds are dropped lazily on the next decode
-            call. Default 300s (5 minutes).
+            this many seconds are ignored immediately for the aircraft
+            being decoded and dropped globally by a periodic sweep.
+            Default 300s (5 minutes).
+        eviction_interval: Minimum timestamp gap between full cache
+            eviction sweeps. The effective interval is capped at
+            ``eviction_ttl``. Default 1s; set to 0 to sweep on every
+            timestamped decode call.
     """
 
     __slots__ = (
         "_adsb_altitude",
         "_adsb_velocity",
         "_bootstrap",
+        "_eviction_interval",
         "_eviction_ttl",
         "_full_dict",
         "_max_speed_kmps",
         "_motion_margin_km",
+        "_next_eviction_at",
         "_pair_window",
         "_pending_even",
         "_pending_odd",
@@ -200,13 +213,23 @@ class PipeDecoder:
         full_dict: bool = False,
         pair_window: float = 10.0,
         eviction_ttl: float = 300.0,
+        eviction_interval: float = 1.0,
         max_speed_kt: float = 1500.0,
         motion_margin_km: float = 2.0,
     ) -> None:
         self._surface_ref = surface_ref
         self._full_dict = full_dict
         self._pair_window = pair_window
+        if eviction_ttl < 0:
+            raise ValueError("eviction_ttl must be >= 0")
+        if eviction_interval < 0:
+            raise ValueError("eviction_interval must be >= 0")
         self._eviction_ttl = eviction_ttl
+        # Never delay a sweep by longer than the TTL itself. This keeps
+        # sub-second TTL configurations useful while avoiding an O(cache)
+        # walk for every message in normal high-rate streams.
+        self._eviction_interval = min(eviction_interval, eviction_ttl)
+        self._next_eviction_at = float("-inf")
         # 1500 kt is ~2x typical airliner cruise — loose enough not to
         # reject fast business jets or wind-boosted ground speed, tight
         # enough that a phantom position hundreds of km away cannot
@@ -284,7 +307,7 @@ class PipeDecoder:
         into state for future calls.
         """
         if timestamp is not None:
-            self._evict_expired(timestamp)
+            self._maybe_evict_expired(timestamp)
         self._stats["total"] += 1
 
         try:
@@ -293,13 +316,23 @@ class PipeDecoder:
             return Decoded({"error": str(e), "raw_msg": msg})
 
         # Look up prior state for this ICAO so the decoder can use it
-        # for Comm-B BDS 5,0/6,0 disambiguation. Filter out housekeeping
-        # keys (those starting with _) before passing as `known=`.
+        # for Comm-B BDS 5,0/6,0 disambiguation. Remove the internal
+        # timestamp before passing the state as `known=`.
         icao = message.icao
-        prior_state = self._state.get(icao)
+        if timestamp is not None:
+            # Full sweeps are deliberately throttled, but stale state must
+            # never influence the current aircraft's decode. This bounded
+            # per-ICAO prune preserves exact TTL semantics without bringing
+            # back an O(all active aircraft) operation on every message.
+            prior_state = self._evict_icao_expired(icao, message.df, timestamp)
+        else:
+            prior_state = self._state.get(icao)
         known: dict[str, Any] | None
         if prior_state:
-            known = {k: v for k, v in prior_state.items() if not k.startswith("_")}
+            # dict.copy() runs in C and is measurably cheaper in this hot
+            # path than filtering the small state dict with a Python loop.
+            known = prior_state.copy()
+            known.pop("_last_seen", None)
             # Derive the BDS 6,0 scoring fields (ias, mach) and the
             # BDS 5,0 tas slot from cached groundspeed + altitude
             # when the caller hasn't supplied observed values. Most
@@ -445,7 +478,7 @@ class PipeDecoder:
             return result
 
         self._handle_cpr_pair(result, icao, timestamp)
-        self._update_state(icao, result, timestamp)
+        self._update_state(icao, message.df, result, timestamp)
         return result
 
     def _reject_on_altitude_mismatch(
@@ -671,13 +704,28 @@ class PipeDecoder:
         self._stats["velocity_mismatch"] += 1
         return True
 
+    def _maybe_evict_expired(self, now: float) -> None:
+        """Run a full eviction sweep only when its interval is due.
+
+        A sweep touches every live per-ICAO cache, so running it for every
+        message makes decode cost proportional to the number of active
+        aircraft. At high message rates that dominates the actual decoder.
+        Timestamp throttling bounds stale memory retention by at most
+        ``eviction_interval`` while making sweep cost amortized. Exact
+        per-aircraft expiry happens separately before cached state is used.
+        """
+        if now < self._next_eviction_at:
+            return
+        self._evict_expired(now)
+        self._next_eviction_at = now + self._eviction_interval
+
     def _evict_expired(self, now: float) -> None:
         """Drop state and pending CPR entries older than eviction_ttl.
 
-        Runs lazily at the start of each decode() call when a timestamp
-        is provided. The trusted ICAO set is intentionally NOT evicted —
-        once a plain-text DF17/18 has been seen for an ICAO, it remains
-        trusted for the lifetime of the PipeDecoder (until reset()).
+        Called periodically by :meth:`_maybe_evict_expired`. The trusted
+        ICAO set is intentionally NOT evicted — once a plain-text DF17/18
+        has been seen for an ICAO, it remains trusted for the lifetime of
+        the PipeDecoder (until reset()).
         """
         cutoff = now - self._eviction_ttl
 
@@ -741,6 +789,76 @@ class PipeDecoder:
                 self._bootstrap[icao] = fresh_buf
             else:
                 del self._bootstrap[icao]
+
+    def _evict_icao_expired(
+        self, icao: str, downlink_format: int, now: float
+    ) -> dict[str, Any] | None:
+        """Drop expired caches and return usable state for one ICAO.
+
+        Periodic full sweeps keep total memory bounded, but their interval
+        must not extend the semantic lifetime of state used for Comm-B
+        inference or validation. Every collection touched here has a small,
+        fixed per-ICAO bound, so this remains O(1) with respect to the number
+        of active aircraft.
+        """
+        cutoff = now - self._eviction_ttl
+
+        state = self._state.get(icao)
+        if state is not None and state.get("_last_seen", float("inf")) < cutoff:
+            self._state.pop(icao, None)
+            state = None
+
+        # Short surveillance/ACAS messages cannot consume validation or
+        # CPR caches. Their altitude can still refresh `_state` later, but
+        # the state expiry above is the only exact-TTL work they need here.
+        if downlink_format not in (17, 18, 20, 21):
+            return state
+
+        if downlink_format in (17, 18, 20):
+            altitude_anchor = self._adsb_altitude.get(icao)
+            if altitude_anchor is not None and altitude_anchor[0] < cutoff:
+                self._adsb_altitude.pop(icao, None)
+
+        velocity_anchor = self._adsb_velocity.get(icao)
+        if velocity_anchor is not None and velocity_anchor[0] < cutoff:
+            self._adsb_velocity.pop(icao, None)
+
+        # Only ADS-B frames participate in CPR pairing, bootstrap, and
+        # position-history validation.
+        if downlink_format not in (17, 18):
+            return state
+
+        for pending in (self._pending_even, self._pending_odd):
+            entries = pending.get(icao)
+            if entries is None:
+                continue
+            fresh_entries = [entry for entry in entries if entry[0] >= cutoff]
+            dropped = len(entries) - len(fresh_entries)
+            if fresh_entries:
+                pending[icao] = fresh_entries
+            else:
+                pending.pop(icao, None)
+            self._stats["pending_pairs"] = max(
+                0, self._stats["pending_pairs"] - dropped
+            )
+
+        history = self._position_history.get(icao)
+        if history is not None:
+            fresh_history = [entry for entry in history if entry[2] >= cutoff]
+            if fresh_history:
+                self._position_history[icao] = fresh_history
+            else:
+                self._position_history.pop(icao, None)
+
+        bootstrap = self._bootstrap.get(icao)
+        if bootstrap is not None:
+            fresh_bootstrap = [entry for entry in bootstrap if entry[2] >= cutoff]
+            if fresh_bootstrap:
+                self._bootstrap[icao] = fresh_bootstrap
+            else:
+                self._bootstrap.pop(icao, None)
+
+        return state
 
     def _motion_consistent(
         self,
@@ -1074,10 +1192,17 @@ class PipeDecoder:
     def _update_state(
         self,
         icao: str,
+        downlink_format: int,
         result: Decoded,
         timestamp: float | None,
     ) -> None:
         """Merge tracked fields from the result into per-ICAO state."""
+        existing = self._state.get(icao)
+        if downlink_format not in _STATEFUL_DFS:
+            if existing is not None and timestamp is not None:
+                existing["_last_seen"] = timestamp
+            return
+
         new_fields: dict[str, Any] = {}
         for decoded_key, known_key in _DECODED_TO_KNOWN.items():
             val = result.get(decoded_key)
@@ -1095,10 +1220,18 @@ class PipeDecoder:
         elif airspeed is not None and airspeed_type == "TAS":
             new_fields["tas"] = airspeed
 
-        if not new_fields and timestamp is None:
+        if not new_fields:
+            # A timestamp alone is not useful state. Creating an entry here
+            # used to retain every parseable message's derived ICAO — even
+            # for untracked DFs and corrupt traffic — and made the periodic
+            # eviction scan much larger than the active-aircraft set.
+            if existing is not None and timestamp is not None:
+                existing["_last_seen"] = timestamp
             return
 
-        existing = self._state.setdefault(icao, {})
+        if existing is None:
+            existing = {}
+            self._state[icao] = existing
         existing.update(new_fields)
         if timestamp is not None:
             existing["_last_seen"] = timestamp
@@ -1118,5 +1251,6 @@ class PipeDecoder:
         self._adsb_velocity.clear()
         self._position_history.clear()
         self._bootstrap.clear()
+        self._next_eviction_at = float("-inf")
         for k in self._stats:
             self._stats[k] = 0

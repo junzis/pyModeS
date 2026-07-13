@@ -3,7 +3,8 @@
 Run with pyModeS 2.21.1 in a transient virtualenv (2.22.0 is not
 published on PyPI; 2.21.1 is the latest v2 release):
 
-    uv run --no-project --with pyModeS==2.21.1 python scripts/snapshot_v2.py
+    uv run --no-project --with pyModeS==2.21.1 \
+        python scripts/generate_v2_fixture.py
 
 Reads the three CSVs under tests/data/, dedups by hex, caps each DF
 bucket at 200 messages, dispatches to v2 functions based on DF/TC/BDS,

@@ -22,7 +22,12 @@ message at a time and maintains per-ICAO state across calls, so:
 ```python
 from pyModeS import PipeDecoder
 
-pipe = PipeDecoder(surface_ref="EHAM", pair_window=10.0, eviction_ttl=300.0)
+pipe = PipeDecoder(
+    surface_ref="EHAM",
+    pair_window=10.0,
+    eviction_ttl=300.0,
+    eviction_interval=1.0,
+)
 
 for raw_msg, timestamp in stream:
     result = pipe.decode(raw_msg, timestamp=timestamp)
@@ -43,8 +48,14 @@ pipe.reset()       # clear all state
 - `pair_window` — maximum age gap (seconds) between an even and odd
   CPR frame for them to count as a pair. Default `10.0`.
 - `eviction_ttl` — per-ICAO state and pending CPR frames older than
-  this are dropped lazily at the start of the next `decode()` call
-  with a timestamp. Default `300.0` (5 minutes).
+  this are ignored immediately when that ICAO is decoded again. A periodic
+  global sweep removes inactive aircraft from memory. Default `300.0`
+  (5 minutes).
+- `eviction_interval` — minimum timestamp gap between full cache sweeps.
+  Default `1.0` second, capped at `eviction_ttl`. This affects only when
+  inactive entries are reclaimed from memory; it does not extend the state
+  lifetime used for decoding. Set to `0` to sweep on every timestamped
+  message.
 - `max_speed_kt` — ceiling for the per-ICAO motion check (see
   [Validation](#validation)). Default `1500` — ~2× typical airliner
   cruise; loose enough to accept fast business jets and wind-boosted
@@ -69,8 +80,44 @@ and `altitude` are known but `ias`, `mach`, or `tas` aren't yet
 observed, they're derived via the ISA atmosphere model so BDS 6,0
 scoring still has a reference field.
 
-State entries carry a `_last_seen` timestamp. On each `decode()` call
-with a timestamp, entries older than `eviction_ttl` are dropped.
+State entries carry a `_last_seen` timestamp. Messages with no tracked
+fields do not create otherwise-empty state entries, but they do refresh
+an existing entry for that ICAO. Before cached state is consumed, the
+current ICAO is checked against `eviction_ttl` in constant time. Full cache
+eviction runs no more than once per `eviction_interval` to reclaim inactive
+aircraft. This keeps streaming decode cost independent of the total active-
+aircraft count without allowing stale state to affect inference.
+
+### High-volume pre-filtering
+
+`PipeDecoder` returns a complete decode for every message offered to it.
+If an application only consumes selected downlink formats or ADS-B type
+codes, inspect those header bits first with the lightweight public helpers:
+
+```python
+from pyModeS import PipeDecoder
+from pyModeS.util import df, typecode
+
+pipe = PipeDecoder()
+
+for raw_msg, timestamp in stream:
+    downlink_format = df(raw_msg)
+    if downlink_format not in (17, 20, 21):
+        continue
+    if downlink_format == 17 and typecode(raw_msg) in (28, 29, 31):
+        continue
+
+    result = pipe.decode(raw_msg, timestamp=timestamp)
+    ...
+```
+
+`df()` and `typecode()` only inspect the required header nibbles; they do
+not compute CRC or decode payload fields. Filtering before `decode()` also
+keeps messages irrelevant to the application out of the state caches.
+
+A configurable Beast-network example is in the repository at
+`scripts/stream_filtered.py`. It defaults to the DF17/20/21 filter above and
+can connect to a live feed or replay the committed mixed-traffic capture.
 
 ## Validation
 

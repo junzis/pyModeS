@@ -1,7 +1,7 @@
 """Benchmark v3 CPR against a verbatim port of v2's numpy implementation.
 
 Not a pytest unit test — run directly:
-    uv run --with numpy scripts/benchmark_cpr.py
+    uv run --with numpy python scripts/benchmark_cpr.py
 
 Fails with exit code 1 if v3 is slower than v2 on the hot path.
 """
@@ -49,12 +49,19 @@ def v2_airborne_with_ref(
     return lat, lon
 
 
-def bench(name: str, fn: Callable[[], object], n: int) -> float:
+def bench(
+    name: str,
+    fn: Callable[[], object],
+    iterations: int,
+    *,
+    operations_per_iteration: int = 1,
+) -> float:
     t0 = time.perf_counter_ns()
-    for _ in range(n):
+    for _ in range(iterations):
         fn()
     elapsed = (time.perf_counter_ns() - t0) / 1e9
-    print(f"  {name}: {elapsed:.3f}s ({n / elapsed:,.0f} ops/sec)")
+    operations = iterations * operations_per_iteration
+    print(f"  {name}: {elapsed:.3f}s ({operations / elapsed:,.0f} calls/sec)")
     return elapsed
 
 
@@ -72,11 +79,13 @@ def main() -> int:
         "  v2 (numpy trig)",
         lambda: [v2_cprNL(lat) for lat in lats],
         iters_nl,
+        operations_per_iteration=len(lats),
     )
     t_v3_nl = bench(
         "  v3 (bisect table)",
         lambda: [cprNL(lat) for lat in lats],
         iters_nl,
+        operations_per_iteration=len(lats),
     )
     speedup_nl = t_v2_nl / t_v3_nl
     print(f"  speedup: {speedup_nl:.2f}x\n")

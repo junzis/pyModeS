@@ -33,12 +33,13 @@ def _load_golden() -> dict[str, dict[str, Any]]:
         raise RuntimeError(
             f"golden_v2.json fixture not found at {FIXTURE_PATH}. "
             f"Run `uv run --no-project --with 'pyModeS==2.21.1' "
-            f"python scripts/snapshot_v2.py` to regenerate it."
+            f"python scripts/generate_v2_fixture.py` to regenerate it."
         ) from e
     except json.JSONDecodeError as e:
         raise RuntimeError(
             f"golden_v2.json at {FIXTURE_PATH} is malformed (JSON decode failed "
-            f"at line {e.lineno}). Re-run scripts/snapshot_v2.py to regenerate."
+            f"at line {e.lineno}). Re-run scripts/generate_v2_fixture.py "
+            "to regenerate."
         ) from e
     return data
 

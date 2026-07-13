@@ -102,6 +102,19 @@ class TestKnownKwargPlumbing:
 
 
 class TestStateTracking:
+    def test_timestamp_without_tracked_fields_does_not_create_state(self):
+        pipe = PipeDecoder()
+        # Identification has no fields used for downstream BDS 5,0/6,0
+        # disambiguation. A timestamp alone must not create cache state.
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
+        assert "406B90" not in pipe._state
+
+    def test_untracked_message_refreshes_existing_state(self):
+        pipe = PipeDecoder()
+        pipe._state["406B90"] = {"groundspeed": 400, "_last_seen": 900.0}
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
+        assert pipe._state["406B90"]["_last_seen"] == 1000.0
+
     def test_state_populated_after_velocity_decode(self):
         pipe = PipeDecoder()
         # DF17 BDS 0,9 ground velocity message — populates groundspeed and track
@@ -157,11 +170,10 @@ class TestStateTracking:
         state = pipe._state["485020"]
         assert state.get("_last_seen") == 2000.0
 
-    def test_known_none_when_state_only_has_housekeeping(self, monkeypatch):
+    def test_known_none_when_message_has_no_tracked_state(self, monkeypatch):
         # A BDS 0,8 identification message emits no field in
-        # `_DECODED_TO_KNOWN`, so the first decode leaves state with
-        # only `_last_seen`. The second decode filters out that key
-        # and passes `known=None` to Message.decode (not an empty dict).
+        # `_DECODED_TO_KNOWN`, so it creates no state. Repeated decodes
+        # therefore pass `known=None` to Message.decode.
         from pyModeS import Message
 
         captured: list[dict | None] = []
@@ -176,11 +188,10 @@ class TestStateTracking:
         # First decode: BDS 0,8 identification — emits callsign,
         # category, wake_vortex, none of which are in _DECODED_TO_KNOWN.
         pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
-        state = pipe._state["406B90"]
-        # Confirm the state only contains the _last_seen housekeeping key
-        assert set(state.keys()) == {"_last_seen"}
+        assert "406B90" not in pipe._state
         # Second decode, same ICAO: known must be None (not {})
         pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1001.0)
+        assert captured[0] is None
         assert captured[1] is None
 
 
@@ -936,6 +947,62 @@ class TestCprPairAccumulation:
 
 
 class TestEviction:
+    class CountingPipe(PipeDecoder):
+        __slots__ = ("sweeps",)
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.sweeps = 0
+
+        def _evict_expired(self, now):
+            self.sweeps += 1
+            super()._evict_expired(now)
+
+    def test_sweep_is_throttled_within_default_interval(self):
+        pipe = self.CountingPipe()
+        for i in range(100):
+            pipe.decode(
+                "8D406B902015A678D4D220AA4BDA",
+                timestamp=1000.0 + i / 1000,
+            )
+        assert pipe.sweeps == 1
+
+    def test_sweep_runs_again_when_interval_is_due(self):
+        pipe = self.CountingPipe(eviction_interval=1.0)
+        for timestamp in (1000.0, 1000.999, 1001.0, 1001.5, 1002.0):
+            pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=timestamp)
+        assert pipe.sweeps == 3
+
+    def test_zero_interval_preserves_sweep_per_message_behavior(self):
+        pipe = self.CountingPipe(eviction_interval=0.0)
+        for timestamp in (1000.0, 1000.1, 1000.2):
+            pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=timestamp)
+        assert pipe.sweeps == 3
+
+    def test_interval_is_capped_at_short_ttl(self):
+        pipe = self.CountingPipe(eviction_ttl=0.1, eviction_interval=1.0)
+        for timestamp in (1000.0, 1000.05, 1000.1):
+            pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=timestamp)
+        assert pipe.sweeps == 2
+
+    @pytest.mark.parametrize(
+        ("kwargs", "message"),
+        [
+            ({"eviction_ttl": -1.0}, "eviction_ttl must be >= 0"),
+            ({"eviction_interval": -1.0}, "eviction_interval must be >= 0"),
+        ],
+    )
+    def test_negative_eviction_configuration_rejected(self, kwargs, message):
+        with pytest.raises(ValueError, match=message):
+            PipeDecoder(**kwargs)
+
+    def test_reset_restarts_eviction_schedule(self):
+        pipe = self.CountingPipe()
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
+        pipe.reset()
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.1)
+        assert pipe.sweeps == 2
+
     def test_old_pending_pair_evicted(self):
         pipe = PipeDecoder(eviction_ttl=10.0, pair_window=10.0)
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=0.0)
@@ -993,6 +1060,21 @@ class TestEviction:
         assert "_marker" not in pipe._state["485020"]
         # And _last_seen reflects the new timestamp
         assert pipe._state["485020"]["_last_seen"] == 100.0
+
+    def test_throttled_sweep_does_not_extend_state_ttl(self):
+        # The global sweep at 299.9 schedules the next sweep for 300.9.
+        # Even so, state that expires at t=300 must not influence the
+        # same ICAO's ambiguous Comm-B decode at t=300.5.
+        pipe = PipeDecoder(eviction_ttl=300.0, eviction_interval=1.0)
+        pipe._state["4243D0"] = {"heading": 359.0, "_last_seen": 0.0}
+
+        pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=299.9)
+        result = pipe.decode("A000029CFFBAA11E2004727281F1", timestamp=300.5)
+
+        # Stale heading would incorrectly score BDS 6,0 ahead of the
+        # stateless BDS 5,0 winner.
+        assert result.get("bds") == "5,0"
+        assert "heading" not in pipe._state["4243D0"]
 
 
 class TestPositionMotionConsistency:

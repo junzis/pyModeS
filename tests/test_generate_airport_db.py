@@ -1,4 +1,4 @@
-"""Offline smoke test for scripts/build_airport_db.py.
+"""Offline smoke test for scripts/generate_airport_db.py.
 
 We do not hit the network in CI. Instead we exercise filter_and_sort
 and write_module with a synthetic row set and verify the output
@@ -10,11 +10,11 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
-SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "build_airport_db.py"
+SCRIPT_PATH = Path(__file__).parent.parent / "scripts" / "generate_airport_db.py"
 
 
 def _load_script() -> object:
-    spec = importlib.util.spec_from_file_location("build_airport_db", SCRIPT_PATH)
+    spec = importlib.util.spec_from_file_location("generate_airport_db", SCRIPT_PATH)
     assert spec is not None
     assert spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
