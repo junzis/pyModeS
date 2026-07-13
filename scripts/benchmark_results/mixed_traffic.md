@@ -9,21 +9,21 @@ ADS-B type codes: 0: 1, 4: 919, 7: 208, 10: 40, 11: 7,663, 12: 887, 19: 8,529, 2
 Timing: 1 discarded warmup(s), 3 measured round(s), median wall time reported.
 Host: `Linux-7.0.12-1-cachyos-x86_64-with-glibc2.43`.
 
-V2 performs early DF filtering and selective field decoding. The released and unfiltered updated v3 paths offer every frame to `PipeDecoder`, matching the supplied processor. The prefiltered updated path includes cheap header filtering inside its timed loop. All v3 paths must produce identical event output.
+V2 performs early DF filtering and selective field decoding. The previous-release and unfiltered working-tree v3 paths offer every frame to `PipeDecoder`, matching the supplied v3 processor. The prefiltered working-tree path includes cheap header filtering inside its timed loop. All v3 paths must produce identical event output.
 
 | Decoder | Version | Median | Throughput | vs v3.3.0 | Events | State / velocity anchors |
 |---|---:|---:|---:|---:|---:|---:|
-| v2.21.1 | 2.21.1 | 3.299s | 53,528 msg/s | 13.60x | 32,891 | n/a |
-| v3.3.0 | 3.3.0 | 44.878s | 3,935 msg/s | 1.00x | 28,404 | 365 / 300 |
-| updated v3 | 3.3.0 | 3.494s | 50,542 msg/s | 12.84x | 28,404 | 344 / 300 |
-| updated v3 + header prefilter | 3.3.0 | 1.986s | 88,933 msg/s | 22.60x | 28,404 | 337 / 300 |
+| v2.21.1 | 2.21.1 | 3.332s | 52,998 msg/s | 13.60x | 32,891 | n/a |
+| v3.3.0 | 3.3.0 | 45.325s | 3,897 msg/s | 1.00x | 28,404 | 365 / 300 |
+| v3.4.0 | 3.4.0 | 3.587s | 49,243 msg/s | 12.64x | 28,404 | 344 / 300 |
+| v3.4.0 + header prefilter | 3.4.0 | 2.055s | 85,963 msg/s | 22.06x | 28,404 | 337 / 300 |
 
-Released/updated v3 output check: **PASS** — 28,404 events, digest `21f7798793dc031c50d766ff1cb2f51246619e59ed8a88e582a7a74796ed99c2`.
+Cross-version v3 output check: **PASS** — 28,404 events, digest `21f7798793dc031c50d766ff1cb2f51246619e59ed8a88e582a7a74796ed99c2`.
 V2 event totals are reported but not compared for equality because its CPR validation and Comm-B inference intentionally differ from v3.
 
 Samples (seconds):
 
-- v2.21.1: 3.327, 3.299, 3.291
-- v3.3.0: 44.878, 45.419, 44.495
-- updated v3: 3.478, 3.511, 3.494
-- updated v3 + header prefilter: 1.986, 1.986, 2.014
+- v2.21.1: 3.370, 3.325, 3.332
+- v3.3.0: 45.026, 45.355, 45.325
+- v3.4.0: 3.541, 3.587, 3.640
+- v3.4.0 + header prefilter: 2.066, 2.055, 2.007

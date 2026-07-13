@@ -10,14 +10,14 @@ Each version ran in a separate `uv run --no-project` environment. v2 uses its pu
 
 | Decoder | Version | Python | Median | Throughput | vs v3.3.0 | State / anchors |
 |---|---:|---:|---:|---:|---:|---:|
-| v2.21.1 | 2.21.1 | 3.13.13 | 0.749s | 40,057 msg/s | 13.44x | n/a |
-| v3.3.0 | 3.3.0 | 3.13.13 | 10.066s | 2,980 msg/s | 1.00x | 2,000 / 2,000 |
-| updated v3 | 3.3.0 | 3.13.13 | 0.762s | 39,381 msg/s | 13.21x | 2,000 / 2,000 |
+| v2.21.1 | 2.21.1 | 3.13.13 | 0.757s | 39,604 msg/s | 13.43x | n/a |
+| v3.3.0 | 3.3.0 | 3.13.13 | 10.170s | 2,950 msg/s | 1.00x | 2,000 / 2,000 |
+| v3.4.0 | 3.4.0 | 3.13.13 | 0.772s | 38,838 msg/s | 13.17x | 2,000 / 2,000 |
 
 Output check: **PASS** — 30,000 normalized records per version, digest `f03658607ca07c865d7d696097ef25d8e375bb7990750441053dfa85152d431f`.
 
 Samples (seconds):
 
-- v2.21.1: 0.758, 0.749, 0.744
-- v3.3.0: 10.078, 10.059, 10.066
-- updated v3: 0.762, 0.764, 0.755
+- v2.21.1: 0.757, 0.763, 0.754
+- v3.3.0: 10.152, 10.456, 10.170
+- v3.4.0: 0.770, 0.797, 0.772

@@ -45,6 +45,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from collections.abc import Callable
 from importlib.metadata import version as distribution_version
 from pathlib import Path
@@ -55,6 +56,11 @@ SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_REPORT = REPO_ROOT / "scripts/benchmark_results/pipe.md"
 VELOCITY_TEMPLATE = "8D485020994409940838175B284F"
 _CRC_POLY = 0xFFF409
+
+
+def _working_tree_version() -> str:
+    data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    return str(data["project"]["version"])
 
 
 def _build_crc_table() -> tuple[int, ...]:
@@ -376,10 +382,11 @@ def _parent(args: argparse.Namespace) -> int:
         if len(wheel_files) != 1:
             raise RuntimeError(f"expected one updated wheel, found {wheel_files}")
 
+        working_version = _working_tree_version()
         variants = [
             ("v2.21.1", "v2", "pyModeS==2.21.1"),
             ("v3.3.0", "v3", "pyModeS==3.3.0"),
-            ("updated v3", "v3", str(wheel_files[0])),
+            (f"v{working_version}", "v3", str(wheel_files[0])),
         ]
         results: list[dict[str, Any]] = []
         for label, api, requirement in variants:

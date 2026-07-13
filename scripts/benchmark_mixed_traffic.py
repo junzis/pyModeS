@@ -13,13 +13,15 @@ environments:
   even/odd CPR-pair cache.
 * released pyModeS 3.3.0: offer every frame to ``PipeDecoder`` before applying
   the same output selection, matching the supplied v3 processor.
-* updated working-tree v3: the same v3 code path, from a freshly-built wheel.
-* updated working-tree v3 with the recommended header prefilter applied
+* the working-tree release candidate: the same v3 code path, from a
+  freshly-built wheel.
+* the working-tree release candidate with the recommended header prefilter
+  applied
   before ``PipeDecoder`` (the filter itself remains inside the timed loop).
 
 The benchmark fixes the stripped example's accidental loop termination,
 renamed v3 velocity keys, flight-level units, and null-position emission.  It
-requires released and updated v3 to produce identical event counts and output
+requires both v3 versions to produce identical event counts and output
 digests.  V2 position/BDS inference is not required to match v3 because the
 algorithms intentionally differ; its input count is still required to match.
 """
@@ -38,6 +40,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import tomllib
 from collections import Counter
 from collections.abc import Callable
 from importlib.metadata import version as distribution_version
@@ -48,6 +51,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_CORPUS = REPO_ROOT / "scripts/data/airsquitter_2026-07-13_120s.csv.gz"
 DEFAULT_REPORT = REPO_ROOT / "scripts/benchmark_results/mixed_traffic.md"
+
+
+def _working_tree_version() -> str:
+    data = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())
+    return str(data["project"]["version"])
 
 
 def _open_corpus(path: Path):
@@ -471,10 +479,11 @@ def _format_report(
         "",
         (
             "V2 performs early DF filtering and selective field "
-            "decoding. The released and unfiltered updated v3 paths offer every "
-            "frame to `PipeDecoder`, matching the supplied v3 processor. The "
-            "prefiltered updated path includes cheap header filtering inside its "
-            "timed loop. All v3 paths must produce identical event output."
+            "decoding. The previous-release and unfiltered working-tree v3 paths "
+            "offer every frame to `PipeDecoder`, matching the supplied v3 "
+            "processor. The prefiltered working-tree path includes cheap header "
+            "filtering inside its timed loop. All v3 paths must produce identical "
+            "event output."
         ),
         "",
         (
@@ -505,7 +514,7 @@ def _format_report(
         [
             "",
             (
-                "Released/updated v3 output check: "
+                "Cross-version v3 output check: "
                 f"**{'PASS' if v3_match else 'FAIL'}** "
                 f"— {v3_results[0]['events']:,} events, digest "
                 f"`{v3_results[0]['digest']}`."
@@ -545,11 +554,16 @@ def _parent(args: argparse.Namespace) -> int:
         if len(wheel_files) != 1:
             raise RuntimeError(f"expected one updated wheel, found {wheel_files}")
 
+        working_version = _working_tree_version()
         variants = [
             ("v2.21.1", "v2", "pyModeS==2.21.1"),
             ("v3.3.0", "v3", "pyModeS==3.3.0"),
-            ("updated v3", "v3", str(wheel_files[0])),
-            ("updated v3 + header prefilter", "v3-filtered", str(wheel_files[0])),
+            (f"v{working_version}", "v3", str(wheel_files[0])),
+            (
+                f"v{working_version} + header prefilter",
+                "v3-filtered",
+                str(wheel_files[0]),
+            ),
         ]
         results = []
         for label, api, requirement in variants:
@@ -570,7 +584,7 @@ def _parent(args: argparse.Namespace) -> int:
             raise RuntimeError("worker input-count mismatch")
         v3_results = [result for result in results if result["api"].startswith("v3")]
         if len({(r["events"], r["digest"]) for r in v3_results}) != 1:
-            raise RuntimeError("released and updated v3 outputs differ")
+            raise RuntimeError("v3 output differs across versions")
 
         report = _format_report(
             results,

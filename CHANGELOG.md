@@ -5,7 +5,7 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [3.4.0] — 2026-07-13
 
 ### Fixed
 
@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - `scripts/stream_filtered.py`, a configurable live/replay Beast example
   demonstrating high-volume DF/typecode prefiltering before `PipeDecoder`.
+- Reproducible version-isolated benchmarks for mixed live traffic and
+  high-cardinality streaming, including checked-in reports and the public
+  Beast capture used by the mixed-traffic benchmark.
 
 ## [3.1.0] — 2026-04-14
 
