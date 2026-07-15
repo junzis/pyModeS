@@ -327,15 +327,28 @@ class TestIcaoVerification:
         # DF20 vector below). This avoids needing a paired real DF17
         # vector — we're testing the verification logic, not the
         # population logic, which is covered by the next test.
-        pipe._trusted_icaos.add("4243D0")
+        pipe._trusted_icaos["4243D0"] = 1000.0
         result = pipe.decode("a000029cffbaa11e2004727281f1", timestamp=1001.0)
         assert result["icao_verified"] is True
+
+    def test_df20_not_verified_after_trust_expires(self):
+        pipe = PipeDecoder(eviction_ttl=10.0)
+        pipe._trusted_icaos["4243D0"] = 1000.0
+
+        result = pipe.decode("a000029cffbaa11e2004727281f1", timestamp=1011.0)
+
+        assert result["icao_verified"] is False
 
     def test_trusted_set_populated_by_df17(self):
         pipe = PipeDecoder()
         # Any clean DF17 message populates the trusted set with its ICAO
         pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=1000.0)
         assert "406B90" in pipe._trusted_icaos
+
+    def test_trust_requires_timestamped_observation(self):
+        pipe = PipeDecoder()
+        pipe.decode("8D406B902015A678D4D220AA4BDA")
+        assert "406B90" not in pipe._trusted_icaos
 
     def test_trusted_set_not_populated_by_failing_crc(self):
         pipe = PipeDecoder()
@@ -1170,14 +1183,13 @@ class TestEviction:
         pipe.decode("8D406B902015A678D4D220AA4BDA")
         assert "485020" in pipe._state
 
-    def test_trusted_icaos_not_evicted(self):
-        # The trusted set is permanent — no TTL applied
+    def test_trusted_icaos_are_evicted(self):
         pipe = PipeDecoder(eviction_ttl=10.0)
         pipe.decode("8D406B902015A678D4D220AA4BDA", timestamp=0.0)
         assert "406B90" in pipe._trusted_icaos
         # 1000s later
         pipe.decode("8D485020994409940838175B284F", timestamp=1000.0)
-        assert "406B90" in pipe._trusted_icaos
+        assert "406B90" not in pipe._trusted_icaos
 
     def test_same_icao_stale_state_wiped_before_refresh(self):
         # When an ICAO's state is older than the TTL and the SAME

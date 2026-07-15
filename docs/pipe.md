@@ -13,9 +13,9 @@ message at a time and maintains per-ICAO state across calls, so:
 - **BDS 5,0 / 6,0 disambiguation** — when a Comm-B message plausibly
   matches both registers, prior observations of groundspeed, track,
   and heading score the candidates and pick the better fit.
-- **DF20/21 ICAO verification** — CRC-valid DF17/18 frames populate a
-  trusted-ICAO set; a later DF20/21 whose CRC-derived ICAO matches one
-  in the set is flagged with `icao_verified=True`.
+- **DF20/21 ICAO verification** — timestamped CRC-valid DF17/18 frames
+  populate a trusted-ICAO cache; a later DF20/21 whose CRC-derived ICAO
+  matches a non-expired entry is flagged with `icao_verified=True`.
 - **Phantom rejection** — CRC alone doesn't catch every FRUIT frame
   that happens to land with a plausible ICAO. Several cross-checks
   layered on top of CRC use per-ICAO anchors to drop phantoms before

@@ -82,7 +82,7 @@ print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 `PipeDecoder` is stateful — it holds per-ICAO state across calls,
 matches CPR pairs automatically, evicts stale aircraft after a
 TTL, and flags DF20/21 messages as `icao_verified` when their
-CRC-derived ICAO was already seen in a clean DF17/18 plaintext.
+CRC-derived ICAO was seen recently in clean DF17/18 plaintext.
 
 ```python
 from pyModeS import PipeDecoder

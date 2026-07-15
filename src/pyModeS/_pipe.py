@@ -265,7 +265,9 @@ class PipeDecoder:
         # parity; the next opposite frame can resolve each fresh entry.
         self._pending_even: dict[str, list[tuple[float, int, int, Decoded]]] = {}
         self._pending_odd: dict[str, list[tuple[float, int, int, Decoded]]] = {}
-        self._trusted_icaos: set[str] = set()
+        # Last CRC-valid plain-text observation per ICAO. Trust expires with
+        # the rest of the aircraft state rather than growing for process life.
+        self._trusted_icaos: dict[str, float] = {}
 
         # ADS-B-derived altitude anchor per ICAO, used to reject DF20
         # messages whose AC-code altitude is inconsistent with the
@@ -391,7 +393,7 @@ class PipeDecoder:
         if result.get("crc_valid") is False:
             self._stats["crc_fail"] += 1
 
-        # Promote ICAO to trusted set if this message has a plain-text
+        # Refresh ICAO trust if this message has a plain-text
         # ICAO (DF17/18) and CRC validated. Subsequent DF20/21 decodes
         # for the same ICAO get icao_verified=True because the
         # CRC-derived ICAO matches one we've seen in plain text.
@@ -399,10 +401,22 @@ class PipeDecoder:
         # DF11 is intentionally excluded: its interrogator-identifier parity
         # cannot be validated without extra context, so a corrupt all-call
         # reply must not pollute the trusted-address cache.
-        if message.df in (17, 18) and result.get("crc_valid") is True:
-            self._trusted_icaos.add(icao)
-        elif message.df in (20, 21) and icao in self._trusted_icaos:
-            result["icao_verified"] = True
+        if (
+            message.df in (17, 18)
+            and result.get("crc_valid") is True
+            and timestamp is not None
+        ):
+            trusted_at = self._trusted_icaos.get(icao)
+            if trusted_at is None or timestamp >= trusted_at:
+                self._trusted_icaos[icao] = timestamp
+        elif message.df in (20, 21) and timestamp is not None:
+            trusted_at = self._trusted_icaos.get(icao)
+            if (
+                trusted_at is not None
+                and trusted_at <= timestamp
+                and timestamp - trusted_at <= self._eviction_ttl
+            ):
+                result["icao_verified"] = True
 
         # Altitude cross-check: DF20 carries a 13-bit AC-code altitude in
         # its header. It should agree with the most recent CRC-validated
@@ -754,14 +768,16 @@ class PipeDecoder:
         self._next_eviction_at = now + self._eviction_interval
 
     def _evict_expired(self, now: float) -> None:
-        """Drop state and pending CPR entries older than eviction_ttl.
-
-        Called periodically by :meth:`_maybe_evict_expired`. The trusted
-        ICAO set is intentionally NOT evicted — once a plain-text DF17/18
-        has been seen for an ICAO, it remains trusted for the lifetime of
-        the PipeDecoder (until reset()).
-        """
+        """Drop caches and pending CPR entries older than eviction_ttl."""
         cutoff = now - self._eviction_ttl
+
+        stale_trust = [
+            icao
+            for icao, trusted_at in self._trusted_icaos.items()
+            if trusted_at < cutoff
+        ]
+        for icao in stale_trust:
+            self._trusted_icaos.pop(icao, None)
 
         # Evict pending CPR frames (and decrement the stat). Per-ICAO
         # Trim pending lists and drop ICAO keys whose lists become empty.
