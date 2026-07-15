@@ -83,10 +83,6 @@ def run(args: argparse.Namespace) -> int:
     # Non-TUI sink pipeline
     sink = _build_sink(args)
 
-    # Signal handling
-    stop = _StopFlag()
-    _install_signal_handlers(stop)
-
     silence_stderr = args.quiet
     source = NetworkSource(
         host,
@@ -101,6 +97,11 @@ def run(args: argparse.Namespace) -> int:
         ),
         silent=silence_stderr,
     )
+
+    # Signal handling: closing the source unblocks an idle socket immediately,
+    # so shutdown does not wait for the read timeout.
+    stop = _StopFlag()
+    _install_signal_handlers(stop, source)
 
     last_stats_ts = time.monotonic()
 
@@ -140,6 +141,7 @@ def run(args: argparse.Namespace) -> int:
     try:
         code = _loop()
     finally:
+        source.close()
         sink.close()
 
     _emit_stats_line(pipe, args.quiet, prefix="final")
@@ -186,9 +188,10 @@ def _build_sink(
     return stdout_sink
 
 
-def _install_signal_handlers(stop: _StopFlag) -> None:
+def _install_signal_handlers(stop: _StopFlag, source: NetworkSource) -> None:
     def _handler(signum: int, frame: FrameType | None) -> None:
         stop.stopped = True
+        source.close()
 
     # Only install in the main thread; tests that run main() in a
     # helper thread get a ValueError when calling signal.signal from

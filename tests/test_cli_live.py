@@ -15,9 +15,13 @@ class FakeSource:
 
     def __init__(self, frames: list[tuple[str, float]]) -> None:
         self._frames = frames
+        self.closed = False
 
     def __iter__(self):
         yield from self._frames
+
+    def close(self) -> None:
+        self.closed = True
 
 
 class TestLiveMainLoop:
@@ -153,6 +157,9 @@ class TestLiveGracefulShutdown:
         stop_holder: dict[str, Any] = {}
 
         class SlowSource:
+            def __init__(self):
+                self.closed = False
+
             def __iter__(self):
                 yield ("8D406B902015A678D4D220AA4BDA", 1000.0)
                 # Wait for the test to flip the stop flag
@@ -162,14 +169,17 @@ class TestLiveGracefulShutdown:
                         break
                     time.sleep(0.01)
 
+            def close(self):
+                self.closed = True
+
         def _fake_network_source(host, port, **kwargs):
             return SlowSource()
 
         original_install = live_mod._install_signal_handlers
 
-        def capturing_install(stop):
+        def capturing_install(stop, source):
             stop_holder["flag"] = stop
-            original_install(stop)
+            original_install(stop, source)
 
         monkeypatch.setattr(live_mod, "NetworkSource", _fake_network_source)
         monkeypatch.setattr(live_mod, "_install_signal_handlers", capturing_install)

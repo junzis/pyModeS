@@ -341,3 +341,54 @@ class TestMlatCalibration:
         assert src._prev_burst_wall is None
         assert src._prev_burst_mlat is None
         assert src._rate_estimate is None
+
+
+class TestNetworkSourceLifecycle:
+    class _FakeSocket:
+        def __init__(self) -> None:
+            self.shutdown_called = False
+            self.closed = False
+
+        def settimeout(self, timeout: float) -> None:
+            pass
+
+        def shutdown(self, how: int) -> None:
+            self.shutdown_called = True
+
+        def close(self) -> None:
+            self.closed = True
+
+    def test_close_unblocks_and_closes_socket(self) -> None:
+        from pyModeS.cli._source import NetworkSource
+
+        source = NetworkSource("fake", 1)
+        sock = self._FakeSocket()
+        source._sock = sock  # type: ignore[assignment]
+
+        source.close()
+
+        assert source._closed is True
+        assert source._close_event.is_set()
+        assert source._sock is None
+        assert sock.shutdown_called is True
+        assert sock.closed is True
+
+    def test_reconnect_closes_previous_socket(self, monkeypatch) -> None:
+        import pyModeS.cli._source as source_mod
+
+        source = source_mod.NetworkSource("fake", 1)
+        first = self._FakeSocket()
+        second = self._FakeSocket()
+        sockets = iter((first, second))
+        monkeypatch.setattr(
+            source_mod.socket,
+            "create_connection",
+            lambda *args, **kwargs: next(sockets),
+        )
+
+        source._connect()
+        source._connect()
+
+        assert first.closed is True
+        assert source._sock is second
+        source.close()

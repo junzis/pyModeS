@@ -28,8 +28,10 @@ FlightAware dump1090 ``net_io.c::modesReadFromClient``)::
 
 from __future__ import annotations
 
+import contextlib
 import socket
 import sys
+import threading
 import time
 from collections.abc import Callable, Iterator
 
@@ -267,10 +269,8 @@ class NetworkSource:
         for hex_msg, timestamp in src:
             ...
 
-    Iterator never terminates under normal operation — it reconnects
-    on dropped connections with exponential backoff. Caller is
-    responsible for interrupting via signal (Ctrl-C) or by raising
-    from the consuming loop.
+    The iterator reconnects on dropped connections with exponential backoff.
+    Call :meth:`close` to terminate it and unblock a pending socket read.
 
     If the initial read from the socket does not contain a beast
     marker byte (0x1a) within the first ``_DETECT_CAP`` bytes, the
@@ -301,6 +301,9 @@ class NetworkSource:
         # rendered table.
         self.silent = silent
         self._sock: socket.socket | None = None
+        self._socket_lock = threading.Lock()
+        self._closed = False
+        self._close_event = threading.Event()
         self._buf: bytes = b""
         self._detected: bool = False
         # MLAT-to-wall-clock calibration state. The last frame in each recv()
@@ -312,38 +315,68 @@ class NetworkSource:
 
     def __iter__(self) -> Iterator[tuple[str, float]]:
         backoff = 0.5
-        while True:
-            try:
-                self._connect()
-                backoff = 0.5  # reset on successful connect
-                yield from self._read_loop()
-            except UnsupportedStreamError:
-                raise
-            except (OSError, TimeoutError) as e:
-                if not self.silent:
-                    print(
-                        f"[pyModeS.live] connection dropped ({e}); "
-                        f"retrying in {backoff:.1f}s",
-                        file=sys.stderr,
-                    )
-                time.sleep(backoff)
-                backoff = min(backoff * 2, 10.0)
-                self._detected = False
-                self._buf = b""
-                # New TCP connection → the receiver's MLAT epoch
-                # may be unrelated to the previous one (and on
-                # radarcape feeds may even change after midnight).
-                # Drop the calibration state so the next burst
-                # re-anchors.
-                self._prev_burst_wall = None
-                self._prev_burst_mlat = None
-                self._rate_estimate = None
+        try:
+            while not self._closed:
+                try:
+                    self._connect()
+                    backoff = 0.5  # reset on successful connect
+                    yield from self._read_loop()
+                except UnsupportedStreamError:
+                    raise
+                except (OSError, TimeoutError) as e:
+                    self._close_socket()
+                    if self._closed:
+                        break
+                    if not self.silent:
+                        print(
+                            f"[pyModeS.live] connection dropped ({e}); "
+                            f"retrying in {backoff:.1f}s",
+                            file=sys.stderr,
+                        )
+                    if self._close_event.wait(backoff):
+                        break
+                    backoff = min(backoff * 2, 10.0)
+                    self._detected = False
+                    self._buf = b""
+                    # New TCP connection → the receiver's MLAT epoch
+                    # may be unrelated to the previous one. Drop calibration
+                    # state so the next burst anchors freshly.
+                    self._prev_burst_wall = None
+                    self._prev_burst_mlat = None
+                    self._rate_estimate = None
+        finally:
+            self._close_socket()
 
     def _connect(self) -> None:
-        self._sock = socket.create_connection(
+        sock = socket.create_connection(
             (self.host, self.port), timeout=self.connect_timeout
         )
-        self._sock.settimeout(self.read_timeout)
+        sock.settimeout(self.read_timeout)
+        with self._socket_lock:
+            if self._closed:
+                sock.close()
+                raise OSError("network source is closed")
+            old_sock = self._sock
+            self._sock = sock
+        if old_sock is not None:
+            old_sock.close()
+
+    def _close_socket(self) -> None:
+        """Detach and close the current socket, if any."""
+        with self._socket_lock:
+            sock = self._sock
+            self._sock = None
+        if sock is not None:
+            with contextlib.suppress(AttributeError, OSError):
+                sock.shutdown(socket.SHUT_RDWR)
+            sock.close()
+
+    def close(self) -> None:
+        """Stop iteration and close the socket, unblocking a pending recv()."""
+        with self._socket_lock:
+            self._closed = True
+        self._close_event.set()
+        self._close_socket()
 
     def _read_loop(self) -> Iterator[tuple[str, float]]:
         """Inner loop: read bytes, parse beast frames, yield (hex, ts).

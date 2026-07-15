@@ -411,15 +411,9 @@ class ModesLiveApp(App[int]):
         self.set_interval(1.0, self._refresh_title)
 
     def on_unmount(self) -> None:
-        # Signal the worker to stop and try to unblock a recv() by
-        # closing the underlying socket. The thread is a daemon so
-        # if it stays blocked (e.g. recv() not raising on close on
-        # some platforms) Python will still exit.
+        # Signal the worker to stop and close the source to unblock recv().
         self._stop_flag = True
-        sock = getattr(self._source, "_sock", None)
-        if sock is not None:
-            with contextlib.suppress(Exception):
-                sock.close()
+        self._source.close()
 
     def on_resize(self, event: Any) -> None:
         # Re-lay out columns if the width bracket changed.
