@@ -10,8 +10,13 @@ permissions:
   contents: write
 
 jobs:
+  quality:
+    name: Full test suite
+    uses: ./.github/workflows/test.yml
+
   build:
     name: Build pure-Python wheel and sdist
+    needs: [quality]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,11 +32,21 @@ jobs:
       - name: Build
         run: uv build
 
+      - name: Verify tag matches package version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PROJECT_VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          test "$TAG_VERSION" = "$PROJECT_VERSION" || {
+            echo "Tag v$TAG_VERSION does not match pyproject version $PROJECT_VERSION" >&2
+            exit 1
+          }
+
       - name: Smoke-test the built wheel
         # Installs the wheel into a fresh venv and verifies the
         # public API works end to end. Fails the build if the
         # wheel is structurally broken or the API regressed.
-        run: scripts/smoke_test_wheel.sh
+        run: scripts/smoke_test_wheel.sh dist/pymodes-*.whl
 
       - uses: actions/upload-artifact@v4
         with:
