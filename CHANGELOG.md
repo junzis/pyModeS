@@ -24,6 +24,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   and frame-by-frame coordinate agreement for v2.21.1, released v3.4.0, and
   v3.5.0 in addition to throughput.
 
+### Changed
+
+- `crc_valid` is now `None` when an address-parity message cannot be checked
+  independently. It remains `True` or `False` for frames whose parity can be
+  validated without assuming the address derived from that same parity.
+- `PipeDecoder` uses each message's source timestamp for state validity while
+  retaining a monotonic high-water mark for eviction. Reordered capture data
+  therefore cannot revive expired observations or prematurely evict newer
+  state.
+- Plausibility and position validation are isolated in a dedicated internal
+  module, keeping the streaming pipeline and its decision comments easier to
+  follow without changing the public API.
+- Release publishing now runs only after the full test matrix succeeds, checks
+  that the Git tag matches the package version, and smoke-tests the exact wheel
+  artifact that will be uploaded.
+
 ### Fixed
 
 - Surface references remain optional and are used only for BDS 0,6 surface
@@ -33,6 +49,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   separate last-accepted airborne reference is maintained and TTL-evicted.
 - Bootstrap promotion, including `flush()`, initializes the latest accepted
   airborne reference while keeping surface-derived positions separate.
+- Globally decoded surface CPR positions now select the correct longitude zone
+  across the antimeridian and other CPR zone boundaries.
+- Beast stream input resynchronizes after malformed or truncated frames instead
+  of losing subsequent valid messages.
+- Beast receiver timestamps are back-projected from the current wall clock with
+  rollover-safe receiver-tick deltas, avoiding dates near the Unix epoch and
+  preserving correct timing across the 12 MHz counter rollover.
+- BDS inference compares headings using circular angular distance, so values
+  around 0/360 degrees are scored correctly.
+- Trusted ICAO observations expire according to the configured state TTL and
+  cannot be refreshed by older, reordered messages.
+- Integer messages outside the valid 56-bit and 112-bit Mode S frame ranges are
+  rejected instead of being silently truncated or misclassified.
+- Network endpoint and surface-reference CLI arguments are validated before a
+  stream starts, and network sources are closed deterministically on normal
+  exit, errors, and interruption.
+- The live terminal UI synchronizes access to shared aircraft state, preventing
+  concurrent decoder and renderer updates from racing.
 
 ## [3.4.0] — 2026-07-13
 
