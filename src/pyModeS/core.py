@@ -95,7 +95,9 @@ def decode(
         msg: List of full Mode-S hex strings.
         timestamps: Parallel list of epoch seconds, one per message,
             used by the transient PipeDecoder for CPR pair matching
-            and state TTL eviction. If omitted, list-position indices
+            and state TTL eviction. Timestamps need not be sorted; CPR
+            recency follows their values rather than input order. If omitted,
+            list-position indices
             ``[0, 1, 2, ...]`` are synthesised as timestamps and a
             WARNING is logged — pair matching will still function
             but the synthesized values are not wall-clock times.

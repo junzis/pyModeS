@@ -443,6 +443,10 @@ class PipeDecoder:
             and result.get("bds") == "0,5"
             and result.get("altitude") is not None
             and timestamp is not None
+            and (
+                icao not in self._adsb_altitude
+                or timestamp >= self._adsb_altitude[icao][0]
+            )
         ):
             self._adsb_altitude[icao] = (timestamp, float(result["altitude"]))
 
@@ -471,6 +475,10 @@ class PipeDecoder:
             and result.get("groundspeed") is not None
             and result.get("track") is not None
             and timestamp is not None
+            and (
+                icao not in self._adsb_velocity
+                or timestamp >= self._adsb_velocity[icao][0]
+            )
         ):
             self._adsb_velocity[icao] = (
                 timestamp,
@@ -933,7 +941,7 @@ class PipeDecoder:
         lon: float,
         timestamp: float,
     ) -> None:
-        """Append to the per-ICAO ring buffer; drop oldest when full.
+        """Insert into the per-ICAO time-ordered ring buffer.
 
         Called for every resolved CPR pair regardless of whether
         `_motion_consistent` accepted it — rejected positions still
@@ -942,8 +950,8 @@ class PipeDecoder:
         """
         history = self._position_history.setdefault(icao, [])
         history.append((lat, lon, timestamp))
-        if len(history) > _POSITION_HISTORY_SIZE:
-            history.pop(0)
+        history.sort(key=lambda position: position[2])
+        del history[:-_POSITION_HISTORY_SIZE]
 
     def _pair_consistent(
         self,
@@ -1144,10 +1152,19 @@ class PipeDecoder:
             # position; older fresh opposites become "orphan pairs"
             # resolved independently so each gets its own lat/lon.
             fresh.sort(key=lambda e: e[0], reverse=True)
-            _primary_t, primary_lat, primary_lon, primary_result = fresh[0]
+            primary_t, primary_lat, primary_lon, primary_result = fresh[0]
+            position_timestamp = max(timestamp, primary_t)
 
             self._resolve_pair(
-                result, bds, cpr_format, cpr_lat, cpr_lon, primary_lat, primary_lon
+                result,
+                bds,
+                cpr_format,
+                cpr_lat,
+                cpr_lon,
+                timestamp,
+                primary_lat,
+                primary_lon,
+                primary_t,
             )
             lat = result.get("latitude")
             lon = result.get("longitude")
@@ -1159,10 +1176,18 @@ class PipeDecoder:
 
             # Orphan pairs — each opposite entry older than the primary
             # pairs independently with the arriving frame's cpr values.
-            for _o_t, o_lat, o_lon, o_result in fresh[1:]:
+            for o_t, o_lat, o_lon, o_result in fresh[1:]:
                 temp: Decoded = Decoded({"cpr_format": cpr_format})
                 self._resolve_pair(
-                    temp, bds, cpr_format, cpr_lat, cpr_lon, o_lat, o_lon
+                    temp,
+                    bds,
+                    cpr_format,
+                    cpr_lat,
+                    cpr_lon,
+                    timestamp,
+                    o_lat,
+                    o_lon,
+                    o_t,
                 )
                 o_lat_out = temp.get("latitude")
                 o_lon_out = temp.get("longitude")
@@ -1193,21 +1218,33 @@ class PipeDecoder:
             # share the verdict with the orphans.
             if lat is not None and lon is not None:
                 if icao in self._position_history:
-                    accepted = self._motion_consistent(icao, lat, lon, timestamp)
+                    accepted = self._motion_consistent(
+                        icao, lat, lon, position_timestamp
+                    )
                     if not accepted:
                         for d in paired_dicts:
                             d["latitude"] = None
                             d["longitude"] = None
                         self._stats["position_rejected"] += 1
-                    self._update_position_history(icao, lat, lon, timestamp)
-                    if accepted and bds == "0,5":
+                    self._update_position_history(icao, lat, lon, position_timestamp)
+                    if (
+                        accepted
+                        and bds == "0,5"
+                        and (
+                            icao not in self._airborne_position_reference
+                            or position_timestamp
+                            >= self._airborne_position_reference[icao][2]
+                        )
+                    ):
                         self._airborne_position_reference[icao] = (
                             lat,
                             lon,
-                            timestamp,
+                            position_timestamp,
                         )
                 else:
-                    self._bootstrap_accumulate(paired_dicts, icao, lat, lon, timestamp)
+                    self._bootstrap_accumulate(
+                        paired_dicts, icao, lat, lon, position_timestamp
+                    )
                 return True
             return False
 
@@ -1277,8 +1314,10 @@ class PipeDecoder:
         cpr_format: int,
         cpr_lat: int,
         cpr_lon: int,
+        timestamp: float,
         other_lat: int,
         other_lon: int,
+        other_timestamp: float,
     ) -> None:
         """Call the appropriate pair resolver and merge lat/lon in place."""
         from pyModeS.position import (
@@ -1287,17 +1326,18 @@ class PipeDecoder:
             surface_position_pair,
         )
 
-        # The current frame is the newer one (we just received it).
-        # cpr_format == 0 means we're the even, opposite is odd,
-        # so even is newer.
+        # Arrival order and source time can differ during capture replay or
+        # network reordering. CPR needs the newer timestamped parity, not the
+        # frame that happened to reach this method last.
+        current_is_newer = timestamp >= other_timestamp
         if cpr_format == 0:
             elat, elon = cpr_lat, cpr_lon
             olat, olon = other_lat, other_lon
-            even_is_newer = True
+            even_is_newer = current_is_newer
         else:
             elat, elon = other_lat, other_lon
             olat, olon = cpr_lat, cpr_lon
-            even_is_newer = False
+            even_is_newer = not current_is_newer
 
         resolved: tuple[float, float] | None
         if bds == "0,5":
@@ -1330,9 +1370,16 @@ class PipeDecoder:
     ) -> None:
         """Merge tracked fields from the result into per-ICAO state."""
         existing = self._state.get(icao)
+        last_seen = existing.get("_last_seen") if existing is not None else None
+        stale_update = (
+            timestamp is not None and last_seen is not None and timestamp < last_seen
+        )
         if downlink_format not in _STATEFUL_DFS:
-            if existing is not None and timestamp is not None:
+            if existing is not None and timestamp is not None and not stale_update:
                 existing["_last_seen"] = timestamp
+            return
+
+        if stale_update:
             return
 
         new_fields: dict[str, Any] = {}

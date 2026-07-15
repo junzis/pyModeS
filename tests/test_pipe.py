@@ -172,6 +172,15 @@ class TestStateTracking:
         state = pipe._state["485020"]
         assert state.get("_last_seen") == 2000.0
 
+    def test_older_message_does_not_regress_state_timestamp(self):
+        pipe = PipeDecoder()
+        pipe.decode("8D485020994409940838175B284F", timestamp=2000.0)
+        state_before = dict(pipe._state["485020"])
+
+        pipe.decode("8D485020994409940838175B284F", timestamp=1000.0)
+
+        assert pipe._state["485020"] == state_before
+
     def test_known_none_when_message_has_no_tracked_state(self, monkeypatch):
         # A BDS 0,8 identification message emits no field in
         # `_DECODED_TO_KNOWN`, so it creates no state. Repeated decodes
@@ -1010,6 +1019,30 @@ class TestCprPairAccumulation:
         # even_is_newer=True resolution
         assert result["latitude"] == pytest.approx(49.82410, abs=0.001)
         assert result["longitude"] == pytest.approx(6.06785, abs=0.001)
+
+    def test_pair_uses_timestamps_when_arrival_is_out_of_order(self):
+        pipe = PipeDecoder()
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
+        newer_odd = pipe.decode(
+            "8D40058B58C904A87F402D3B8C59",
+            timestamp=1446332405.0,
+        )
+        older_even = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1446332400.0,
+        )
+
+        for result in (newer_odd, older_even):
+            assert result["latitude"] == pytest.approx(49.81755, abs=0.001)
+            assert result["longitude"] == pytest.approx(6.08442, abs=0.001)
+        assert pipe._position_history["40058B"][-1][2] == 1446332405.0
+
+    def test_position_history_remains_timestamp_ordered(self):
+        pipe = PipeDecoder()
+        for timestamp in (3.0, 1.0, 2.0):
+            pipe._update_position_history("ABCDEF", 1.0, 2.0, timestamp)
+
+        assert [p[2] for p in pipe._position_history["ABCDEF"]] == [1.0, 2.0, 3.0]
 
     def test_surface_pair_without_surface_ref_skips_resolution(self):
         # When a surface CPR (BDS 0,6) pair is eligible but the decoder
