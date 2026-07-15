@@ -103,6 +103,10 @@ class Message:
                 raise InvalidLengthError(
                     actual=self._length // 4, expected=_HEX_LENGTHS
                 )
+            if msg < 0 or msg >= 1 << self._length:
+                raise ValueError(
+                    f"integer message must fit in {self._length} unsigned bits"
+                )
         else:
             raise TypeError(f"msg must be str, int, or bytes; got {type(msg).__name__}")
 

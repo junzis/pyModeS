@@ -117,6 +117,15 @@ class TestMessageConstruction:
         m = Message(0x8D406B902015A678D4D220AA4BDA)
         assert m._length == 112
 
+    @pytest.mark.parametrize("value", [-1, 1 << 112])
+    def test_integer_must_fit_declared_unsigned_width(self, value):
+        with pytest.raises(ValueError, match="fit in 112 unsigned bits"):
+            Message(value, length=112)
+
+    def test_short_integer_must_fit_56_bits(self):
+        with pytest.raises(ValueError, match="fit in 56 unsigned bits"):
+            Message(1 << 56, length=56)
+
     def test_invalid_hex_raises(self):
         with pytest.raises(InvalidHexError):
             Message("XYZ")
