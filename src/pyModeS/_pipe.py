@@ -396,11 +396,9 @@ class PipeDecoder:
         # for the same ICAO get icao_verified=True because the
         # CRC-derived ICAO matches one we've seen in plain text.
         #
-        # DF11 is intentionally excluded: Message.crc_valid for DF11 is
-        # hardcoded True (no actual II/SI syndrome check), so a corrupt
-        # DF11 with a garbage ICAO would pollute the trusted set. When
-        # full DF11 II/SI handling lands in a future plan, DF11 can join
-        # the promotion list.
+        # DF11 is intentionally excluded: its interrogator-identifier parity
+        # cannot be validated without extra context, so a corrupt all-call
+        # reply must not pollute the trusted-address cache.
         if message.df in (17, 18) and result.get("crc_valid") is True:
             self._trusted_icaos.add(icao)
         elif message.df in (20, 21) and icao in self._trusted_icaos:

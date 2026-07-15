@@ -140,13 +140,18 @@ class Message:
             # DF0/4/5/16/20/21: ICAO is the CRC remainder.
             self.icao = f"{self.crc:06X}"
         if self.df in (17, 18):
-            self.crc_valid: bool = self.crc == 0
+            self.crc_valid: bool | None = self.crc == 0
+        elif self.df in (0, 4, 5, 16, 20, 21) and self._icao_hint is not None:
+            # Address-parity formats can only be checked against an ICAO known
+            # independently of the parity remainder. Without a hint, deriving
+            # the ICAO from that same remainder would make validation circular.
+            self.crc_valid = self.crc == int(self._icao_hint, 16)
         else:
-            # DF0/4/5/11/16/20/21: CRC encodes ICAO (+ optional BDS
-            # overlay); the remainder is always a valid 24-bit ICAO-
-            # shaped value. Stronger verification comes from the
-            # trusted-ICAO set in PipeDecoder via icao_verified.
-            self.crc_valid = self.df in (0, 4, 5, 11, 16, 20, 21)
+            # Address/interrogator parity does not provide an independent
+            # validity verdict by itself. PipeDecoder can separately mark an
+            # ICAO as verified after observing it in CRC-valid extended
+            # squitter traffic.
+            self.crc_valid = None
 
     @staticmethod
     def _parse_hex(hexstr: str) -> tuple[int, int]:
@@ -215,6 +220,9 @@ class Message:
         # non-ADS-B DFs pick up the hint rather than a garbage CRC.
         obj._icao_hint = icao
         obj._init_header_fields()
+        # The payload-only constructor deliberately fills parity with zero, so
+        # it never represents a CRC-validated full message.
+        obj.crc_valid = False
         return obj
 
     @cached_property

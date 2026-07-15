@@ -163,6 +163,15 @@ class TestMessageDfIcaoCrc:
         m = Message(f"{n_full:014X}")
         assert m.df == 4
         assert m.icao == "400940"
+        assert m.crc_valid is None
+
+    def test_address_parity_validates_with_independent_icao_hint(self):
+        frame = "A000083E202CC371C31DE0AA1CCF"
+        derived = Message(frame).icao
+
+        assert Message(frame).crc_valid is None
+        assert Message(frame, icao_hint=derived).crc_valid is True
+        assert Message(frame, icao_hint="000000").crc_valid is False
 
     def test_df17_crc_valid(self):
         # Known-valid DF17 message — CRC remainder should be 0
@@ -206,6 +215,11 @@ class TestMessageFromPayload:
         assert m.df == 17
         assert m.icao == "406B90"
         assert m.typecode == 4  # payload[0:5] = 00100 = 4
+        assert m.crc_valid is False
+
+    def test_commb_payload_never_claims_crc_validation(self):
+        m = Message.from_payload("202CC371C31DE0", df=20, icao="00083E")
+        assert m.crc_valid is False
 
     def test_from_payload_wrong_length_raises(self):
         with pytest.raises(InvalidLengthError):

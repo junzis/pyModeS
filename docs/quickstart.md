@@ -138,6 +138,13 @@ cprNL(52.0)   # 36
 cprNL(0.0)    # 59
 ```
 
+`crc_valid` is a boolean when the parity can be checked independently:
+DF17/18 carry plain ICAO addresses, while address-parity formats require an
+`icao=` hint. Without that independent address, DF0/4/5/11/16/20/21 return
+`crc_valid=None`; deriving an ICAO and then checking it against the same parity
+remainder would be circular. `PipeDecoder` reports its separate address trust
+decision through `icao_verified`.
+
 These are thin wrappers around `pyModeS._bits`, `_altcode`,
 `_idcode`, and `position._cpr` — changing the primitives auto-
 flows through. Importing from `pyModeS.common` (the v2 location)
