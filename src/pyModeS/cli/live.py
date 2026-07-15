@@ -116,11 +116,10 @@ def run(args: argparse.Namespace) -> int:
                 # captures are self-contained for offline analysis.
                 # PipeDecoder already sets raw_msg on error results;
                 # we set it unconditionally here to cover the success
-                # path. `ts` comes from NetworkSource._mlat_to_wall,
-                # so it is anchored to the first frame's wall-clock
-                # and then interpolated from the beast 12 MHz MLAT
-                # counter — more accurate than time.time() on every
-                # recv() because TCP batching doesn't perturb it.
+                # path. NetworkSource anchors the last frame in each TCP burst
+                # to receive time and back-projects earlier frames from the
+                # Beast counter. This preserves within-burst timing without
+                # assigning already-received frames a future timestamp.
                 result["raw_msg"] = hex_msg
                 result["timestamp"] = ts
                 sink.write(result)

@@ -57,12 +57,37 @@ _BODY_LEN_MODE_AC = 7 + 2  # type 0x31
 # bursts. See ``_rate_estimate`` in ``_read_loop``.
 _MLAT_HZ_DUMP1090: float = 12_000_000.0
 _MLAT_HZ_RADARCAPE: float = 1_000_000_000.0
+_MLAT_MODULUS: int = 1 << 48
+_RADARCAPE_DAY_TICKS: int = 86_400_000_000_000
+_KNOWN_MLAT_RATES: tuple[float, ...] = (
+    _MLAT_HZ_DUMP1090,
+    _MLAT_HZ_RADARCAPE,
+)
 
 # Minimum wall-clock delta between calibration samples — a new
 # rate estimate is only accepted when the two anchoring bursts
 # are spaced at least this far apart. Avoids dividing by tiny
 # jitter in the wall-clock timestamps.
 _CALIB_MIN_DELTA_S: float = 0.1
+_CALIB_RATE_TOLERANCE: float = 0.25
+
+
+def _forward_tick_delta(newer: int, older: int) -> int:
+    """Return forward ticks across a free-running or midnight-reset counter."""
+    if newer >= older:
+        return newer - older
+
+    candidates = [(newer - older) % _MLAT_MODULUS]
+    if older <= _RADARCAPE_DAY_TICKS:
+        candidates.append(_RADARCAPE_DAY_TICKS - older + newer)
+    return min(candidates)
+
+
+def _canonical_mlat_rate(observed_rate: float) -> float | None:
+    """Snap a noisy wall-clock estimate to a supported Beast counter rate."""
+    closest = min(_KNOWN_MLAT_RATES, key=lambda rate: abs(rate - observed_rate))
+    relative_error = abs(observed_rate - closest) / closest
+    return closest if relative_error <= _CALIB_RATE_TOLERANCE else None
 
 
 class UnsupportedStreamError(RuntimeError):
@@ -135,10 +160,9 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
 
     ``mlat_ticks`` is the big-endian 48-bit counter at the head of
     the beast body. Interpretation (unix time vs free-running) is
-    receiver-dependent; :class:`NetworkSource` anchors the first
-    frame's MLAT against ``time.time()`` and computes per-frame
-    wall-clock from the 12 MHz tick rate used by dump1090-compatible
-    feeds.
+    receiver-dependent; :class:`NetworkSource` calibrates the counter rate,
+    anchors the last frame in each receive burst to ``time.time()``, and
+    back-projects the earlier frames.
     """
     frames: list[tuple[int, str]] = []
     i = 0
@@ -279,11 +303,9 @@ class NetworkSource:
         self._sock: socket.socket | None = None
         self._buf: bytes = b""
         self._detected: bool = False
-        # MLAT-to-wall-clock calibration state. A per-recv() anchor
-        # (wall time + first-frame MLAT in the burst) drives per-
-        # frame interpolation within the burst; the rate is learned
-        # from the delta between consecutive bursts. Both reset on
-        # reconnect so the post-reconnect burst anchors freshly.
+        # MLAT-to-wall-clock calibration state. The last frame in each recv()
+        # burst is paired with the wall time observed after recv() completes;
+        # earlier frames are back-projected at a calibrated counter rate.
         self._prev_burst_wall: float | None = None
         self._prev_burst_mlat: int | None = None
         self._rate_estimate: float | None = None
@@ -329,22 +351,13 @@ class NetworkSource:
         Per-frame timestamp strategy:
 
         - Take ``wall_now = time.time()`` once per ``recv()`` burst.
-        - Use the first frame's MLAT in the burst as a local
-          anchor; every frame in the burst is then assigned
-          ``wall_now + (frame.mlat - first_mlat) / rate``. This
-          gives sub-microsecond within-burst precision (at 1 GHz
-          radarcape) or sub-100 ns precision (12 MHz dump1090),
-          both of which are much finer than what TCP batching
-          leaves us with if we just stamp ``time.time()`` once
-          per batch.
-        - ``rate`` is auto-calibrated against the delta between
-          consecutive burst anchors: ``(mlat_N - mlat_{N-1}) /
-          (wall_N - wall_{N-1})``. The very first burst has no
-          prior anchor, so all its frames fall back to
-          ``wall_now``; by the second burst onward, interpolation
-          kicks in. The estimator is receiver-agnostic — it works
-          the same for 12 MHz dump1090 counters and radarcape
-          nanosecond counters with no configuration.
+        - Anchor the last frame's MLAT to ``wall_now``. Every earlier frame is
+          back-projected from it, ensuring no frame that was already received
+          is assigned a future timestamp.
+        - Auto-calibrate against consecutive last-frame anchors and snap noisy
+          estimates to the known 12 MHz or 1 GHz Beast counter rates. Tick
+          deltas account for both 48-bit free-running rollover and Radarcape's
+          midnight reset.
         """
         assert self._sock is not None
         while True:
@@ -380,9 +393,9 @@ class NetworkSource:
             if not frames:
                 continue
 
-            # Per-burst anchor: the first frame's MLAT pairs with
-            # wall_now. Interpolate later frames against that.
-            burst_anchor_mlat = frames[0][0]
+            # The last frame is closest in time to recv() completion. Anchor it
+            # to wall_now and back-project the frames that preceded it.
+            burst_anchor_mlat = frames[-1][0]
 
             # Update the rate estimate from the delta between this
             # burst's anchor and the previous one. Skip the very
@@ -390,16 +403,18 @@ class NetworkSource:
             # delta is too small to give a stable estimate.
             if self._prev_burst_wall is not None and self._prev_burst_mlat is not None:
                 dw = wall_now - self._prev_burst_wall
-                dm = burst_anchor_mlat - self._prev_burst_mlat
+                dm = _forward_tick_delta(burst_anchor_mlat, self._prev_burst_mlat)
                 if dw >= _CALIB_MIN_DELTA_S and dm > 0:
-                    self._rate_estimate = dm / dw
+                    calibrated = _canonical_mlat_rate(dm / dw)
+                    if calibrated is not None:
+                        self._rate_estimate = calibrated
             self._prev_burst_wall = wall_now
             self._prev_burst_mlat = burst_anchor_mlat
 
             rate = self._rate_estimate
             for mlat, hex_msg in frames:
                 if rate is not None and rate > 0:
-                    ts = wall_now + (mlat - burst_anchor_mlat) / rate
+                    ts = wall_now - _forward_tick_delta(burst_anchor_mlat, mlat) / rate
                 else:
                     # Pre-calibration fallback: every frame in the
                     # burst gets the same wall_now reading. Lasts
