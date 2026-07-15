@@ -122,6 +122,19 @@ class TestInferPhase3Disambiguation:
         result = infer(self.AMBIGUOUS_PAYLOAD, 20, known={"heading": 359})
         assert result[0] == "6,0"
 
+    def test_heading_score_wraps_across_north(self):
+        from pyModeS.decoder.bds._infer import infer
+
+        # BDS 6,0 decodes heading 359.12°, which is only 1.88° from the
+        # known 1° heading. A linear subtraction incorrectly treats it as a
+        # 358° mismatch and promotes the weaker BDS 5,0 track match.
+        result = infer(
+            self.AMBIGUOUS_PAYLOAD,
+            20,
+            known={"track": 245, "heading": 1},
+        )
+        assert result[0] == "6,0"
+
     def test_ambiguous_known_neither_field_unchanged(self):
         from pyModeS.decoder.bds._infer import infer
 

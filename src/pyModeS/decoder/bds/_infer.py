@@ -92,6 +92,7 @@ _SCORE_FIELDS_BDS60: list[tuple[str, str, float]] = [
     ("indicated_airspeed", "ias", 50.0),
     ("mach", "mach", 0.1),
 ]
+_ANGULAR_SCORE_FIELDS = frozenset({"true_track", "magnetic_heading"})
 
 
 def _score_candidate(bds_code: str, payload: int, known: dict[str, Any]) -> float:
@@ -117,7 +118,11 @@ def _score_candidate(bds_code: str, payload: int, known: dict[str, Any]) -> floa
         k_val = known.get(known_key)
         if d_val is None or k_val is None:
             continue
-        score += abs(float(d_val) - float(k_val)) / scale
+        distance = abs(float(d_val) - float(k_val))
+        if decoded_key in _ANGULAR_SCORE_FIELDS:
+            distance %= 360.0
+            distance = min(distance, 360.0 - distance)
+        score += distance / scale
         matched += 1
 
     return score if matched > 0 else float("inf")
