@@ -29,9 +29,9 @@ import signal
 import sys
 import time
 from types import FrameType
-from typing import Any
 
 from pyModeS import PipeDecoder
+from pyModeS.cli._parse import parse_network, parse_surface_ref
 from pyModeS.cli._sink import JsonLinesSink, NullSink, TeeSink
 from pyModeS.cli._source import NetworkSource, UnsupportedStreamError
 
@@ -45,16 +45,15 @@ class _StopFlag:
 
 def run(args: argparse.Namespace) -> int:
     """Entry point for ``modes live``. Returns exit code."""
-    host, port = _parse_network(args.network)
-    if host is None:
+    try:
+        host, port = parse_network(args.network)
+        surface_ref = parse_surface_ref(args.surface_ref)
+    except ValueError as error:
         print(
-            "modes live: error: --network must be in HOST:PORT form "
-            f"(got {args.network!r})",
+            f"modes live: error: {error}",
             file=sys.stderr,
         )
         return 2
-
-    surface_ref = _parse_surface_ref(args.surface_ref)
 
     pipe = PipeDecoder(surface_ref=surface_ref, full_dict=args.full_dict)
 
@@ -146,28 +145,6 @@ def run(args: argparse.Namespace) -> int:
 
     _emit_stats_line(pipe, args.quiet, prefix="final")
     return code
-
-
-def _parse_network(value: str) -> tuple[str | None, int]:
-    """Split a HOST:PORT string. Returns (None, 0) on parse failure."""
-    if ":" not in value:
-        return None, 0
-    host, _, port_str = value.rpartition(":")
-    try:
-        port = int(port_str)
-    except ValueError:
-        return None, 0
-    return host, port
-
-
-def _parse_surface_ref(value: str | None) -> Any:
-    """Accept either an ICAO airport code or a 'lat,lon' string."""
-    if value is None:
-        return None
-    if "," in value:
-        lat_str, lon_str = value.split(",", 1)
-        return (float(lat_str.strip()), float(lon_str.strip()))
-    return value
 
 
 def _build_sink(

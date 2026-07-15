@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 
+from pyModeS.cli._parse import parse_network, parse_surface_ref
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Build the top-level ``modes`` argument parser with both subcommands."""
@@ -160,6 +162,10 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
     and exits 2 — on the first violation.
     """
     if args.command == "decode":
+        try:
+            parse_surface_ref(args.surface_ref)
+        except ValueError as error:
+            parser.error(str(error))
         if args.file is not None and args.reference is not None:
             parser.error(
                 "--reference is only valid with a single positional MESSAGE "
@@ -178,6 +184,11 @@ def validate_args(args: argparse.Namespace, parser: argparse.ArgumentParser) -> 
             )
 
     if args.command == "live":
+        try:
+            parse_network(args.network)
+            parse_surface_ref(args.surface_ref)
+        except ValueError as error:
+            parser.error(str(error))
         if args.tui and args.dump_to is not None:
             parser.error(
                 "--tui and --dump-to are mutually exclusive: the TUI takes "

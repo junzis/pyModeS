@@ -26,9 +26,9 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any
 
 from pyModeS import decode as pyModeS_decode
+from pyModeS.cli._parse import parse_surface_ref
 from pyModeS.message import Decoded
 
 
@@ -41,26 +41,11 @@ def run(args: argparse.Namespace) -> int:
     return _run_file(args)
 
 
-def _parse_surface_ref(value: str | None) -> Any:
-    """Parse a --surface-ref value.
-
-    Accepts an ICAO airport code (e.g. "LFBO") or a "lat,lon" string
-    (e.g. "43.63,1.37"). ICAO codes are passed through as strings;
-    tuples are parsed into (float, float).
-    """
-    if value is None:
-        return None
-    if "," in value:
-        lat_str, lon_str = value.split(",", 1)
-        return (float(lat_str.strip()), float(lon_str.strip()))
-    return value
-
-
 def _run_single(args: argparse.Namespace) -> int:
     """Single-message path: one hex → one JSON object to stdout."""
     reference = tuple(args.reference) if args.reference is not None else None
-    surface_ref = _parse_surface_ref(args.surface_ref)
     try:
+        surface_ref = parse_surface_ref(args.surface_ref)
         result = pyModeS_decode(
             args.message,
             reference=reference,
@@ -138,15 +123,19 @@ def _emit_batch(
     "no timestamps provided" stderr warning for the common case where
     a user pastes hex messages into a terminal.
     """
-    surface_ref = _parse_surface_ref(args.surface_ref)
-    if timestamps is None:
-        timestamps = [float(i) for i in range(len(hexes))]
-    results: list[Decoded] = pyModeS_decode(
-        hexes,
-        timestamps=timestamps,
-        surface_ref=surface_ref,
-        full_dict=args.full_dict,
-    )
+    try:
+        surface_ref = parse_surface_ref(args.surface_ref)
+        if timestamps is None:
+            timestamps = [float(i) for i in range(len(hexes))]
+        results: list[Decoded] = pyModeS_decode(
+            hexes,
+            timestamps=timestamps,
+            surface_ref=surface_ref,
+            full_dict=args.full_dict,
+        )
+    except Exception as error:
+        print(f"modes decode: error: {error}", file=sys.stderr)
+        return 1
 
     # Stamp the source hex on every result (pyModeS_decode already
     # does this for error dicts; we set it unconditionally here so
