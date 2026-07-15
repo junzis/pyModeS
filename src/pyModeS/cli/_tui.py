@@ -13,20 +13,20 @@ exit-3 with an install hint.
 Architecture:
 
 - ``ModesLiveApp`` is a textual App with a single DataTable widget.
-- On mount, we spawn a daemon worker thread that drains the
-  blocking ``NetworkSource`` iterator, calls ``PipeDecoder.decode``
-  on each frame, and merges the decoded fields into a shared
-  ``dict[icao, state]`` that the UI thread reads from.
-- A 250 ms ``set_interval`` timer snapshots the shared dict,
+- On mount, we spawn a daemon worker thread that drains the blocking
+  ``NetworkSource`` iterator, calls ``PipeDecoder.decode`` on each frame, and
+  merges decoded fields into per-aircraft state under a lock.
+- A 250 ms ``set_interval`` timer takes an immutable state snapshot under the
+  same lock,
   applies any active search filter and sort, and rewrites the
   DataTable rows. At 4 Hz with <=500 aircraft this is O(2000
   cells/second) — negligible cost.
 - Terminal width changes trigger a column-set swap (7 / 10 / 18
   columns) matching jet1090's breakpoints.
 
-Thread safety: the shared dict sees single-key writes from the
-worker thread (GIL-atomic under CPython) and snapshot reads from
-the UI thread via ``list(state.items())``. No locks needed.
+Thread safety: the worker owns writes, while the UI reads copied snapshots.
+Both operations use ``_state_lock``; no mutable nested dictionary escapes the
+critical section.
 """
 
 from __future__ import annotations
@@ -347,12 +347,11 @@ class ModesLiveApp(App[int]):
         self._port = source.port
         self.sub_title = f"{self._host}:{self._port}"
 
-        # Shared per-aircraft state. Writes from the worker thread
-        # are single-key dict assignments (GIL-atomic under
-        # CPython); reads from the UI thread snapshot via
-        # ``list(state.items())`` to dodge "dict changed during
-        # iteration" errors.
+        # Shared per-aircraft state. Both the outer mapping and each nested
+        # aircraft dictionary are protected by this lock. UI rendering works
+        # only with copied snapshots, keeping the critical section short.
         self._state: dict[str, dict[str, Any]] = {}
+        self._state_lock = threading.Lock()
         self._msg_count: int = 0
         self._worker_error: BaseException | None = None
         self._stop_flag: bool = False
@@ -438,21 +437,10 @@ class ModesLiveApp(App[int]):
                 try:
                     decoded = self._pipe.decode(hex_msg, timestamp=ts)
                 except Exception:
-                    self._msg_count += 1
+                    with self._state_lock:
+                        self._msg_count += 1
                     continue
-                self._msg_count += 1
-                icao = decoded.get("icao")
-                if not icao:
-                    continue
-                state = self._state.get(icao)
-                if state is None:
-                    state = {"_first_seen": ts, "_last_seen": ts}
-                    self._state[icao] = state
-                for key in _TRACKED_FIELDS:
-                    val = decoded.get(key)
-                    if val is not None:
-                        state[key] = val
-                state["_last_seen"] = ts
+                self._record_decoded(decoded, ts)
         except UnsupportedStreamError as e:
             self._worker_error = e
             with contextlib.suppress(Exception):
@@ -463,6 +451,28 @@ class ModesLiveApp(App[int]):
             self._worker_error = e
             with contextlib.suppress(Exception):
                 self.call_from_thread(self.exit, 1)
+
+    def _record_decoded(self, decoded: dict[str, Any], timestamp: float) -> None:
+        """Merge one worker result while holding the shared-state lock."""
+        with self._state_lock:
+            self._msg_count += 1
+            icao = decoded.get("icao")
+            if not icao:
+                return
+            state = self._state.get(icao)
+            if state is None:
+                state = {"_first_seen": timestamp, "_last_seen": timestamp}
+                self._state[icao] = state
+            for key in _TRACKED_FIELDS:
+                val = decoded.get(key)
+                if val is not None:
+                    state[key] = val
+            state["_last_seen"] = timestamp
+
+    def _snapshot_state(self) -> list[tuple[str, dict[str, Any]]]:
+        """Return a stable, deeply-enough-copied snapshot for UI rendering."""
+        with self._state_lock:
+            return [(icao, state.copy()) for icao, state in self._state.items()]
 
     # ------------------------------------------------------------------
     # Periodic refresh
@@ -500,9 +510,7 @@ class ModesLiveApp(App[int]):
         now = _now()
         cutoff = now - _INTERACTIVE_EXPIRE
 
-        # Snapshot — dict may mutate from the worker thread between
-        # calls, so copy the items out first.
-        snapshot: list[tuple[str, dict[str, Any]]] = list(self._state.items())
+        snapshot = self._snapshot_state()
 
         # Filter
         filtered: list[tuple[str, dict[str, Any]]] = []
@@ -592,17 +600,18 @@ class ModesLiveApp(App[int]):
     def _refresh_title(self) -> None:
         now = _now()
         cutoff = now - _INTERACTIVE_EXPIRE
+        snapshot = self._snapshot_state()
         n_aircraft = sum(
-            1
-            for st in list(self._state.values())
-            if st.get("_last_seen", 0.0) >= cutoff
+            1 for _, state in snapshot if state.get("_last_seen", 0.0) >= cutoff
         )
+        with self._state_lock:
+            msg_count = self._msg_count
         sort_label = _SORT_LABELS.get(_SORT_KEYS[self._sort_index], "?")
         direction = "asc" if self._sort_asc else "desc"
         search_bit = f" /{self._search_query}" if self._search_query else ""
         self.sub_title = (
             f"{self._host}:{self._port}  "
-            f"{n_aircraft} a/c  {self._msg_count} msgs  "
+            f"{n_aircraft} a/c  {msg_count} msgs  "
             f"sort={sort_label}:{direction}{search_bit}"
         )
 
