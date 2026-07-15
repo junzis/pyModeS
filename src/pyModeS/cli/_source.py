@@ -34,6 +34,7 @@ import time
 from collections.abc import Callable, Iterator
 
 _DETECT_CAP = 16 * 1024  # give up on auto-detect after 16 KB
+_REMAINDER_CAP = 64 * 1024  # bound malformed/status-frame buffering
 
 # Beast body lengths: MLAT(6) + SIGNAL(1) + PAYLOAD
 _BODY_LEN_SHORT = 7 + 7  # type 0x32
@@ -87,7 +88,9 @@ def _walk_body(buf: bytes, start: int, body_len: int) -> tuple[list[int], int]:
     first byte after the last consumed byte in ``buf``.
 
     If the buffer ends before ``body_len`` un-escaped bytes have been
-    collected, returns (partial_body, -1) to signal incompleteness.
+    collected, returns ``(partial_body, -1)``. If another unescaped frame
+    marker interrupts the body, ``next_index`` points at that marker so the
+    caller can discard the truncated frame and resynchronise immediately.
     """
     body: list[int] = []
     j = start
@@ -103,10 +106,10 @@ def _walk_body(buf: bytes, start: int, body_len: int) -> tuple[list[int], int]:
                 body.append(0x1A)
                 j += 2
                 continue
-            # Unescaped 0x1a mid-body means the frame is truncated
-            # and the 0x1a is the start of the next frame. Caller
-            # will treat the current frame as incomplete.
-            return body, -1
+            # Unescaped 0x1a mid-body means the frame is truncated and this
+            # byte starts the next frame. Returning its index lets the parser
+            # recover instead of retaining the corrupt prefix forever.
+            return body, j
         body.append(b)
         j += 1
     if len(body) < body_len:
@@ -144,6 +147,7 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
     while i < len(buf):
         if buf[i] != 0x1A:
             i += 1
+            last_consumed = i
             continue
 
         # Potential frame start at buf[i]
@@ -164,6 +168,10 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
             body, next_i = _walk_body(buf, i + 2, _BODY_LEN_MODE_AC)
             if next_i == -1:
                 break  # incomplete; keep remainder from i
+            if len(body) < _BODY_LEN_MODE_AC:
+                i = next_i
+                last_consumed = next_i
+                continue
             i = next_i
             last_consumed = next_i
             continue
@@ -185,9 +193,14 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
             last_consumed = j
             continue
         else:
-            # Unknown type byte — advance past the escape and try
-            # again at the next byte.
-            i += 1
+            # Unknown marker type: discard both marker and type byte. Keeping
+            # the marker in the remainder would make an unknown-only stream
+            # grow without bound after format detection.
+            # Two consecutive markers can also arise when one recv() ends on
+            # a marker and the next starts with a complete frame. In that
+            # case retain the second marker as a possible new frame start.
+            i += 1 if msg_type == 0x1A else 2
+            last_consumed = i
             continue
 
         body, next_i = _walk_body(buf, i + 2, body_len)
@@ -195,6 +208,12 @@ def _parse_beast_buffer(buf: bytes) -> tuple[list[tuple[int, str]], bytes]:
             # Incomplete frame; keep remainder starting at i so the
             # next call can continue from this frame's 0x1a.
             break
+        if len(body) < body_len:
+            # A new unescaped marker interrupted this frame. Drop the corrupt
+            # prefix and retry from the marker returned by _walk_body().
+            i = next_i
+            last_consumed = next_i
+            continue
 
         # Body layout (after un-escape): MLAT(6) + SIG(1) + PAYLOAD.
         # The MLAT counter is big-endian 48-bit; NetworkSource turns
@@ -353,7 +372,10 @@ class NetworkSource:
 
             # Parse beast frames from the buffer
             frames, remainder = _parse_beast_buffer(self._buf)
-            self._buf = remainder
+            # A status frame with no following marker (or otherwise malformed
+            # input) can still leave an indeterminate remainder. Keep memory
+            # bounded while waiting for a future frame marker.
+            self._buf = remainder[-_REMAINDER_CAP:]
 
             if not frames:
                 continue

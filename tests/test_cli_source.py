@@ -133,6 +133,24 @@ class TestBeastParser:
         # parse call can complete it when more bytes arrive
         assert b"\x1a\x33" in remainder
 
+    def test_truncated_frame_resynchronises_at_next_marker(self):
+        from pyModeS.cli._source import _parse_beast_buffer
+
+        broken = b"\x1a\x33\x00\x00"
+        valid = self._make_long_frame("8D406B902015A678D4D220AA4BDA", mlat=123)
+        frames, remainder = _parse_beast_buffer(broken + valid + b"\x1a")
+
+        assert frames == [(123, "8D406B902015A678D4D220AA4BDA")]
+        assert remainder == b"\x1a"
+
+    def test_unknown_markers_do_not_accumulate(self):
+        from pyModeS.cli._source import _parse_beast_buffer
+
+        frames, remainder = _parse_beast_buffer(b"\x1a\x35" * 10_000)
+
+        assert frames == []
+        assert remainder == b""
+
     def test_skips_mode_ac_frames(self):
         from pyModeS.cli._source import _parse_beast_buffer
 
