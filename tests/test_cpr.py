@@ -295,6 +295,55 @@ class TestSurfacePositionPair:
         assert lat == pytest.approx(43.62646, abs=0.001)
         assert lon == pytest.approx(91.37476, abs=0.001)
 
+    def test_dateline_uses_circular_longitude_distance(self):
+        """A -180° candidate is closest to a +179° reference."""
+        from pyModeS.position._cpr import surface_position_pair
+
+        result = surface_position_pair(
+            0,
+            0,
+            0,
+            0,
+            lat_ref=1.0,
+            lon_ref=179.0,
+            even_is_newer=True,
+        )
+        assert result == (0.0, -180.0)
+
+    def test_equator_selects_latitude_by_distance(self):
+        """An equatorial reference must not default to the southern zone."""
+        from pyModeS.position._cpr import surface_position_pair
+
+        result = surface_position_pair(
+            0,
+            0,
+            0,
+            0,
+            lat_ref=0.0,
+            lon_ref=0.0,
+            even_is_newer=True,
+        )
+        assert result == (0.0, 0.0)
+
+    def test_reference_can_cross_the_equator(self):
+        """Nearby references on the other side of the equator remain valid."""
+        from pyModeS.position._cpr import surface_position_pair
+
+        # These raw values resolve to roughly -0.1° in the southern zone.
+        even_lat = round((89.9 / (90.0 / 60) - 59) * 131072)
+        odd_lat = round((89.9 / (90.0 / 59) - 58) * 131072)
+        result = surface_position_pair(
+            even_lat,
+            0,
+            odd_lat,
+            0,
+            lat_ref=0.1,
+            lon_ref=0.0,
+            even_is_newer=True,
+        )
+        assert result is not None
+        assert result[0] < 0.0
+
     def test_zone_mismatch_returns_none(self):
         """Synthetic CPR pair where N-hemi candidates fall in different NL zones.
 

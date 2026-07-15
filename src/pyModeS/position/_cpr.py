@@ -271,15 +271,24 @@ def surface_position_pair(
 
     j = floor(59 * cprlat_even - 60 * cprlat_odd + 0.5)
 
-    # Northern-hemisphere candidate latitudes
+    # Surface CPR is ambiguous over two 90-degree latitude zones. Resolve
+    # that ambiguity from the actual distance to the reference, rather than
+    # from the reference's hemisphere: a receiver and aircraft can be on
+    # opposite sides of the equator while still satisfying the 45 NM limit.
     lat_even_n = (90.0 / 60) * (j % 60 + cprlat_even)
     lat_odd_n = (90.0 / 59) * (j % 59 + cprlat_odd)
-    # Southern-hemisphere candidates
     lat_even_s = lat_even_n - 90
     lat_odd_s = lat_odd_n - 90
 
-    lat_even = lat_even_n if lat_ref > 0 else lat_even_s
-    lat_odd = lat_odd_n if lat_ref > 0 else lat_odd_s
+    latitude_pairs = (
+        (lat_even_n, lat_odd_n),
+        (lat_even_s, lat_odd_s),
+    )
+    newer_index = 0 if even_is_newer else 1
+    lat_even, lat_odd = min(
+        latitude_pairs,
+        key=lambda pair: abs(lat_ref - pair[newer_index]),
+    )
 
     if cprNL(lat_even) != cprNL(lat_odd):
         return None
@@ -298,9 +307,10 @@ def surface_position_pair(
         lon_base = (90.0 / ni) * (m % ni + cprlon_odd)
 
     # Four candidate longitudes (one per 90° quadrant), each wrapped
-    # to [-180, 180]. Pick the one closest to the receiver.
+    # to [-180, 180]. Longitude is circular: around the date line, -180°
+    # is one degree from a +179° reference, not 359 degrees away.
     candidates = [((lon_base + q + 180) % 360) - 180 for q in (0, 90, 180, 270)]
-    lon = min(candidates, key=lambda c: abs(lon_ref - c))
+    lon = min(candidates, key=lambda c: abs((c - lon_ref + 180) % 360 - 180))
     return lat, lon
 
 
