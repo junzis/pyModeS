@@ -5,6 +5,35 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.5.0] — 2026-07-15
+
+### Added
+
+- `PipeDecoder` now uses the last validated airborne position as a local CPR
+  reference for subsequent BDS 0,5 frames. This makes a position available on
+  the current streaming `decode()` call when no fresh global even/odd pair is
+  available, instead of relying on retroactive mutation of an earlier result.
+- `local_ref_window` configures the maximum reference age (30 seconds by
+  default); set it to zero to disable local airborne decoding.
+  `PipeDecoder.stats["local_positions"]` reports positions produced by this
+  path.
+- Position bootstrap now locks as soon as three candidates are pairwise
+  motion-consistent instead of always waiting for all five candidate slots.
+  The five-candidate limit still allows two unrelated outliers to be ignored.
+- The mixed-traffic benchmark now reports immediate streaming position yield
+  and frame-by-frame coordinate agreement for v2.21.1, released v3.4.0, and
+  v3.5.0 in addition to throughput.
+
+### Fixed
+
+- Surface references remain optional and are used only for BDS 0,6 surface
+  positions. Positions derived from `surface_ref` can never seed local
+  airborne CPR decoding.
+- Rejected global position candidates cannot become local CPR references; a
+  separate last-accepted airborne reference is maintained and TTL-evicted.
+- Bootstrap promotion, including `flush()`, initializes the latest accepted
+  airborne reference while keeping surface-derived positions separate.
+
 ## [3.4.0] — 2026-07-13
 
 ### Fixed
@@ -38,8 +67,8 @@ Comm-B reply to the wrong aircraft.
 ### Added
 
 - `PipeDecoder` bootstrap cluster analysis for the first position per
-  ICAO: lat/lon emission is held until `_BOOTSTRAP_K` (=5) candidate
-  positions agree under a motion-consistency check. Prevents an
+  ICAO: lat/lon emission is held until five candidate positions agree
+  under a motion-consistency check. Prevents an
   initial phantom frame from anchoring the rolling position history.
   On each decode the held result dicts are retro-filled once the
   cluster locks. Scattered buffers reset and accumulate a fresh K.

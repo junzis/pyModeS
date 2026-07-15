@@ -66,6 +66,7 @@ so the output list length always matches the input length.
 `PipeDecoder` holds per-ICAO state across calls. This lets it:
 
 - Resolve CPR pairs from consecutive even/odd frames
+- Resolve later airborne frames locally from the last validated position
 - Disambiguate BDS 5,0/6,0 Comm-B using recently-observed state
 - Verify DF20/21 ICAO addresses against ones learned from DF17/18
 
@@ -75,11 +76,15 @@ from pyModeS import PipeDecoder
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, timestamp in stream:
     decoded = pipe.decode(msg, timestamp=timestamp)
-    if "latitude" in decoded:
+    if decoded.get("latitude") is not None:
         print(decoded["icao"], decoded["latitude"], decoded["longitude"])
 
 print(pipe.stats)  # {'total': ..., 'decoded': ..., 'crc_fail': ..., 'pending_pairs': ...}
 ```
+
+`surface_ref` is optional and applies only to surface-position messages.
+Airborne local CPR references are learned automatically from validated global
+pairs and never use the surface reference.
 
 See the [PipeDecoder deep-dive](pipe.md) for the full state model.
 

@@ -18,9 +18,9 @@ and are NOT interchangeable:
   45 NM of the true position — tighter than the airborne tolerance.
 
 For streaming workflows where references aren't known ahead of time,
-use :class:`PipeDecoder` which resolves airborne positions from
-even/odd CPR pairs without any reference and still accepts
-``surface_ref`` for surface messages.
+use :class:`PipeDecoder`. It establishes airborne positions from even/odd CPR
+pairs, then resolves later frames locally from the last validated airborne
+position. The optional ``surface_ref`` applies only to surface messages.
 """
 
 from importlib.metadata import version as _version

@@ -153,26 +153,24 @@ of each other:
 12:44:21.950  DF=17 TC=11  F=0   8D485A33580592E162F2A2BAE957   alt=  25
 12:44:22.913  DF=17 TC=11  F=1   8D485A335805B64CAAEBE6E13238   alt=  75   <-- 2nd pair resolves
 12:44:23.385  DF=17 TC=11  F=0   8D485A335805B2E18AF2A490B664   alt=  75
-12:44:24.009  DF=17 TC=11  F=1   8D485A335805C64CC8EBE6A65861   alt= 100   <-- 3rd pair resolves
+12:44:24.009  DF=17 TC=11  F=1   8D485A335805C64CC8EBE6A65861   alt= 100   <-- 3rd pair resolves, lock fires
 12:44:24.457  DF=17 TC=11  F=0   8D485A335805D2E1ACF2A45AD98B   alt= 125
 12:44:24.849  DF=17 TC=11  F=1   8D485A335805E64CE4EBE7247A8D   alt= 150   <-- 4th pair resolves
 12:44:25.323  DF=17 TC=11  F=1   8D485A335805F64CF2EBE81ACBB3   alt= 175
 12:44:25.778  DF=17 TC=11  F=1   8D485A335805F64CFEEBE84338BF   alt= 175
-12:44:26.322  DF=17 TC=11  F=0   8D485A33580702E1E4F2A623AB8E   alt= 200   <-- 5th pair resolves, lock fires
+12:44:26.322  DF=17 TC=11  F=0   8D485A33580702E1E4F2A623AB8E   alt= 200   <-- 5th pair resolves
 ```
 
-Each of the first five resolved pairs produces a bootstrap candidate:
+The first three resolved pairs produce a pairwise-consistent bootstrap cluster:
 
 ```text
 candidate #1  12:44:20.982   (52.3200, 4.7390)
 candidate #2  12:44:22.913   (52.3212, 4.7390)
 candidate #3  12:44:24.009   (52.3219, 4.7390)
-candidate #4  12:44:24.849   (52.3226, 4.7391)
-candidate #5  12:44:26.322   (52.3236, 4.7392)
 ```
 
-All five lie within ~400 m of each other along runway 18L — a
-motion-consistent cluster. On the fifth arrival `_bootstrap_try_lock`
+All three lie within ~250 m of each other along runway 18L — a
+pairwise motion-consistent cluster. On the third arrival `_bootstrap_try_lock`
 promotes the whole cluster into `_position_history`, retro-fills
 `latitude`/`longitude` on every held result dict — typically two per
 candidate, one for each half of the CPR pair — and subsequent positions
@@ -205,25 +203,29 @@ corroboration before committing to an anchor.
 - sets `latitude`/`longitude` to `None` on every held dict so
   unverified positions are never emitted to the caller;
 - increments `_stats["bootstrap_held"]`;
-- on reaching `_BOOTSTRAP_K = 5`, calls `_bootstrap_try_lock`.
+- once at least three candidates exist, calls `_bootstrap_try_lock` and locks
+  when every pair in a three-member subset is motion-consistent;
+- resets after `_BOOTSTRAP_MAX_CANDIDATES = 5` candidates if no such subset
+  forms.
 
 `_bootstrap_try_lock`:
 
-- runs an O(K²) neighbour scan: for each candidate count how many
-  others are reachable under `_pair_consistent` (same helper as the
-  steady-state motion check);
-- picks the candidate with the most neighbours;
-- if it has **zero** neighbours, returns `False` → caller clears the
-  buffer and increments `_stats["bootstrap_reset"]` (all K were
-  scattered phantoms; start fresh);
-- otherwise, promotes that candidate plus its neighbours, retro-fills
+- checks candidate subsets from largest to smallest. The buffer is capped at
+  five, so an exhaustive pairwise check is small and avoids a central point
+  incorrectly joining two mutually-inconsistent neighbours;
+- if no three-member pairwise-consistent subset exists during live decoding,
+  returns `False`; at five candidates the caller clears the buffer and
+  increments `_stats["bootstrap_reset"]`;
+- otherwise, promotes the largest consistent subset, retro-fills
   `latitude`/`longitude` on every held result dict for each cluster
   member, seeds the last `_POSITION_HISTORY_SIZE` members into
   `_position_history`, and clears the bootstrap buffer.
 
 `flush()` runs the same cluster analysis at end-of-stream for any
 ICAO still in bootstrap — useful for batch consumers that finish with
-fewer than K candidates.
+fewer than three candidates. Promotion also initializes the latest accepted
+airborne position as the local CPR reference, so decoding may safely continue
+after `flush()`.
 
 ### Reproduce
 
@@ -244,7 +246,7 @@ pipe._bootstrap["485A33"] = [
     (52.3226, 4.7391, 1004.849, [results[8],  results[9]]),
     (52.3236, 4.7392, 1006.322, [results[10], results[11]]),
 ]
-assert pipe._bootstrap_try_lock("485A33", min_candidates=5) is True
+assert pipe._bootstrap_try_lock("485A33", min_cluster_size=3) is True
 
 # The five Schiphol pairs (10 dicts) were retro-filled; the phantom
 # pair's two dicts were not.

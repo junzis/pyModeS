@@ -9,21 +9,31 @@ ADS-B type codes: 0: 1, 4: 919, 7: 208, 10: 40, 11: 7,663, 12: 887, 19: 8,529, 2
 Timing: 1 discarded warmup(s), 3 measured round(s), median wall time reported.
 Host: `Linux-7.0.12-1-cachyos-x86_64-with-glibc2.43`.
 
-V2 performs early DF filtering and selective field decoding. The previous-release and unfiltered working-tree v3 paths offer every frame to `PipeDecoder`, matching the supplied v3 processor. The prefiltered working-tree path includes cheap header filtering inside its timed loop. All v3 paths must produce identical event output.
+V2 performs early DF filtering and selective field decoding, including global plus locally-unambiguous airborne CPR. The released and unfiltered working-tree v3 paths offer every frame to `PipeDecoder`, matching the supplied v3 processor. The prefiltered working-tree path includes cheap header filtering inside its timed loop. Position counts refer to coordinates available immediately from each streaming decode call.
 
-| Decoder | Version | Median | Throughput | vs v3.3.0 | Events | State / velocity anchors |
+| Decoder | Version | Median | Throughput | vs v3.4.0 | Events | Positions | State / velocity anchors |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| v2.21.1 | 2.21.1 | 3.447s | 51,231 msg/s | 1.07x | 33,481 | 7,871 | n/a |
+| v3.4.0 | 3.4.0 | 3.680s | 47,990 msg/s | 1.00x | 28,404 | 2,081 | 344 / 300 |
+| v3.5.0 | 3.5.0 | 3.874s | 45,590 msg/s | 0.95x | 33,066 | 6,743 | 344 / 300 |
+| v3.5.0 + header prefilter | 3.5.0 | 2.323s | 76,035 msg/s | 1.58x | 33,066 | 6,743 | 337 / 300 |
+
+Working-tree filtered/unfiltered output check: **PASS**.
+Released/working-tree non-position output check: **PASS** — identification, velocity, and Comm-B output is unchanged.
+
+Position yield and agreement against the v2 streaming reference:
+Required for v3.5.0: at least 80.0% of v2 position yield, at least 99.0% of shared positions within 100 m, and no yield regression from v3.4.0.
+
+| Decoder | Immediate positions | v2 yield | Shared messages | Within 100 m | Median delta | Maximum delta |
 |---|---:|---:|---:|---:|---:|---:|
-| v2.21.1 | 2.21.1 | 3.332s | 52,998 msg/s | 13.60x | 32,891 | n/a |
-| v3.3.0 | 3.3.0 | 45.325s | 3,897 msg/s | 1.00x | 28,404 | 365 / 300 |
-| v3.4.0 | 3.4.0 | 3.587s | 49,243 msg/s | 12.64x | 28,404 | 344 / 300 |
-| v3.4.0 + header prefilter | 3.4.0 | 2.055s | 85,963 msg/s | 22.06x | 28,404 | 337 / 300 |
+| v3.4.0 | 2,081 | 26.44% | 2,081 | 100.00% | 0.00 m | 0.00 m |
+| v3.5.0 | 6,743 | 85.67% | 6,743 | 100.00% | 0.00 m | 0.00 m |
 
-Cross-version v3 output check: **PASS** — 28,404 events, digest `21f7798793dc031c50d766ff1cb2f51246619e59ed8a88e582a7a74796ed99c2`.
-V2 event totals are reported but not compared for equality because its CPR validation and Comm-B inference intentionally differ from v3.
+V2 and v3 position totals need not be identical: v3 retains its multi-candidate bootstrap and motion validation. Agreement is measured only where both implementations emit a position for the same frame.
 
 Samples (seconds):
 
-- v2.21.1: 3.370, 3.325, 3.332
-- v3.3.0: 45.026, 45.355, 45.325
-- v3.4.0: 3.541, 3.587, 3.640
-- v3.4.0 + header prefilter: 2.066, 2.055, 2.007
+- v2.21.1: 3.465, 3.442, 3.447
+- v3.4.0: 3.680, 3.737, 3.662
+- v3.5.0: 3.877, 3.857, 3.874
+- v3.5.0 + header prefilter: 2.323, 2.290, 2.358

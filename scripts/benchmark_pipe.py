@@ -7,8 +7,8 @@ many ICAO addresses, keeps every aircraft active inside the default five-minute
 TTL, and decodes the same timestamped corpus through:
 
 1. pyModeS 2.21.1's public selective helpers;
-2. the released pyModeS 3.3.0 ``PipeDecoder``;
-3. a wheel built from the current working tree.
+2. the released pyModeS 3.4.0 ``PipeDecoder``;
+3. a pyModeS 3.5.0 wheel built from the current working tree.
 
 Every version runs in a separate ``uv run --no-project`` environment.  This is
 important: pyModeS 2 and 3 share the same distribution/import name, so loading
@@ -232,7 +232,12 @@ def _worker(args: argparse.Namespace) -> int:
 
 def _run_command(command: list[str], *, cwd: Path) -> str:
     environment = os.environ.copy()
-    for key in ("PYTHONPATH", "VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT"):
+    for key in (
+        "PYTHONPATH",
+        "UV_EXCLUDE_NEWER",
+        "VIRTUAL_ENV",
+        "UV_PROJECT_ENVIRONMENT",
+    ):
         environment.pop(key, None)
     completed = subprocess.run(
         command,
@@ -261,6 +266,8 @@ def _run_variant(
         "run",
         "--quiet",
         "--no-project",
+        "--exclude-newer-package",
+        "pymodes=2026-07-15T23:59:59Z",
         "--with",
         requirement,
         "python",
@@ -293,7 +300,7 @@ def _format_report(
     rounds: int,
     warmups: int,
 ) -> str:
-    current = next(result for result in results if result["label"] == "v3.3.0")
+    current = next(result for result in results if result["label"] == "v3.4.0")
     current_median = statistics.median(current["samples"])
 
     lines = [
@@ -320,7 +327,7 @@ def _format_report(
         "",
         (
             "| Decoder | Version | Python | Median | Throughput | "
-            "vs v3.3.0 | State / anchors |"
+            "vs v3.4.0 | State / anchors |"
         ),
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
@@ -385,7 +392,7 @@ def _parent(args: argparse.Namespace) -> int:
         working_version = _working_tree_version()
         variants = [
             ("v2.21.1", "v2", "pyModeS==2.21.1"),
-            ("v3.3.0", "v3", "pyModeS==3.3.0"),
+            ("v3.4.0", "v3", "pyModeS==3.4.0"),
             (f"v{working_version}", "v3", str(wheel_files[0])),
         ]
         results: list[dict[str, Any]] = []

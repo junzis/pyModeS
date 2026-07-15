@@ -21,6 +21,10 @@ Replay the benchmark capture::
 Every output line is one complete v3 decode with ``raw_msg`` and ``timestamp``
 added.  Replace ``emit_json()`` with the application's Kafka/database handoff
 while keeping ``is_relevant()`` before ``pipe.decode()``.
+
+``surface_ref`` is optional and only affects ground/surface CPR messages.
+Airborne local CPR starts automatically after validated global pairs establish
+the aircraft's position; no externally supplied airborne reference is needed.
 """
 
 from __future__ import annotations
@@ -154,7 +158,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--surface-ref",
         metavar="ICAO|LAT,LON",
-        help="reference used to resolve surface CPR positions",
+        help="optional airport/receiver reference used only for ground "
+        "(surface CPR) positions",
     )
     parser.add_argument(
         "--df",

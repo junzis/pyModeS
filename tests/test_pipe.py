@@ -18,6 +18,7 @@ class TestPipeDecoderSkeleton:
             "altitude_mismatch": 0,
             "velocity_mismatch": 0,
             "position_rejected": 0,
+            "local_positions": 0,
             "bootstrap_held": 0,
             "bootstrap_reset": 0,
         }
@@ -64,6 +65,7 @@ class TestPipeDecoderSkeleton:
             "altitude_mismatch": 0,
             "velocity_mismatch": 0,
             "position_rejected": 0,
+            "local_positions": 0,
             "bootstrap_held": 0,
             "bootstrap_reset": 0,
         }
@@ -754,12 +756,11 @@ class TestBothPairFramesCarryPosition:
         pipe = PipeDecoder()
         first_frames = []
         second_frames = []
-        for i in range(5):
+        for i in range(3):
             first_frames.append(pipe.decode(self.PAIR_A, timestamp=1000.0 + 2 * i))
             second_frames.append(pipe.decode(self.PAIR_B, timestamp=1001.0 + 2 * i))
-        # After the 5th pair the cluster locks and retro-fill runs over
-        # every cluster member's held dicts — that's both halves of all
-        # five pairs.
+        # The third pair completes the bootstrap cluster. Promotion updates
+        # both result dictionaries retained for each of the three pairs.
         assert "40058B" in pipe._position_history
         for r in first_frames + second_frames:
             assert r["latitude"] == pytest.approx(49.81755, abs=0.001)
@@ -768,7 +769,7 @@ class TestBothPairFramesCarryPosition:
     def test_superseded_same_parity_frame_retrofilled(self):
         """Two F=0 frames arrive before any F=1. Under the old single-
         entry pending, the first F=0 was orphaned (result dict returned
-        with latitude=None, never retro-filled). The pending deque pairs
+        with latitude=None, never retro-filled). The pending list pairs
         the arriving F=1 with EVERY fresh same-parity entry so both F=0
         frames get a lat/lon.
         """
@@ -839,6 +840,92 @@ class TestCprPairAccumulation:
         # 10s gap > 2s window — no pair resolution
         assert "latitude" not in result
 
+    def test_local_cpr_fills_current_frame_after_global_seed(self):
+        from pyModeS.position import airborne_position_with_ref
+
+        pipe = PipeDecoder()
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
+        pipe._airborne_position_reference["40058B"] = self.ICAO_40058B_SEED[-1]
+
+        result = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1446332400.0,
+        )
+        expected = airborne_position_with_ref(
+            result["cpr_format"],
+            result["cpr_lat"],
+            result["cpr_lon"],
+            self.ICAO_40058B_SEED[-1][0],
+            self.ICAO_40058B_SEED[-1][1],
+        )
+        assert result["latitude"] == pytest.approx(expected[0])
+        assert result["longitude"] == pytest.approx(expected[1])
+        assert pipe.stats["local_positions"] == 1
+
+    def test_bootstrap_seed_enables_local_position_on_next_frame(self):
+        pipe = PipeDecoder()
+        for i in range(3):
+            pipe.decode(
+                "8D40058B58C901375147EFD09357",
+                timestamp=1000.0 + 2 * i,
+            )
+            pipe.decode(
+                "8D40058B58C904A87F402D3B8C59",
+                timestamp=1001.0 + 2 * i,
+            )
+
+        result = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1006.0,
+        )
+        assert result["latitude"] == pytest.approx(49.82410, abs=0.001)
+        assert result["longitude"] == pytest.approx(6.06785, abs=0.001)
+        assert pipe.stats["local_positions"] == 1
+
+    def test_local_cpr_does_not_use_stale_reference(self):
+        pipe = PipeDecoder(local_ref_window=30.0)
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
+        pipe._airborne_position_reference["40058B"] = self.ICAO_40058B_SEED[-1]
+
+        result = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1446332430.1,
+        )
+        assert result.get("latitude") is None
+        assert pipe.stats["local_positions"] == 0
+
+    def test_local_cpr_can_be_disabled(self):
+        pipe = PipeDecoder(local_ref_window=0.0)
+        pipe._position_history["40058B"] = list(self.ICAO_40058B_SEED)
+        pipe._airborne_position_reference["40058B"] = self.ICAO_40058B_SEED[-1]
+
+        result = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1446332400.0,
+        )
+        assert result.get("latitude") is None
+        assert pipe.stats["local_positions"] == 0
+
+    def test_rejected_global_pair_does_not_fall_back_to_local(self):
+        pipe = PipeDecoder()
+        pipe._position_history["40058B"] = [
+            (70.0, -40.0, 990.0),
+            (70.1, -40.1, 995.0),
+        ]
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
+        pipe._airborne_position_reference["40058B"] = (70.1, -40.1, 995.0)
+        result = pipe.decode(
+            "8D40058B58C904A87F402D3B8C59",
+            timestamp=1001.0,
+        )
+        assert result.get("latitude") is None
+        assert pipe.stats["local_positions"] == 0
+        assert pipe._airborne_position_reference["40058B"] == (
+            70.1,
+            -40.1,
+            995.0,
+        )
+
     def test_single_frame_no_pair_keeps_raw_cpr(self):
         pipe = PipeDecoder()
         result = pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
@@ -877,11 +964,25 @@ class TestCprPairAccumulation:
         assert result["latitude"] == pytest.approx(43.62646, abs=0.001)
         assert result["longitude"] == pytest.approx(1.37476, abs=0.001)
 
-    def test_same_parity_appends_to_deque(self):
+    def test_ground_reference_never_seeds_airborne_local_cpr(self):
+        pipe = PipeDecoder(surface_ref="LFBO")
+        for i in range(5):
+            pipe.decode(
+                "903a23ff426a38565950432ebf95",
+                timestamp=float(2 * i),
+            )
+            pipe.decode(
+                "903a23ff426a4e65f7487a775d17",
+                timestamp=float(2 * i + 1),
+            )
+        assert "3A23FF" in pipe._position_history
+        assert "3A23FF" not in pipe._airborne_position_reference
+
+    def test_same_parity_appends_to_pending_list(self):
         pipe = PipeDecoder()
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0)
         # Decode another even frame from the same ICAO — pending is a
-        # deque per parity, so both entries accumulate (they'll both
+        # list per parity, so both entries accumulate (they'll both
         # get paired against the next opposite-parity arrival).
         pipe.decode("8D40058B58C901375147EFD09357", timestamp=1001.0)
         assert pipe.stats["pending_pairs"] == 2
@@ -990,6 +1091,7 @@ class TestEviction:
         [
             ({"eviction_ttl": -1.0}, "eviction_ttl must be >= 0"),
             ({"eviction_interval": -1.0}, "eviction_interval must be >= 0"),
+            ({"local_ref_window": -1.0}, "local_ref_window must be >= 0"),
         ],
     )
     def test_negative_eviction_configuration_rejected(self, kwargs, message):
@@ -1148,8 +1250,10 @@ class TestPositionMotionConsistency:
     def test_reset_clears_position_history(self):
         pipe = PipeDecoder()
         pipe._position_history[self.ICAO] = [(49.81, 6.08, 1000.0)]
+        pipe._airborne_position_reference[self.ICAO] = (49.81, 6.08, 1000.0)
         pipe.reset()
         assert pipe._position_history == {}
+        assert pipe._airborne_position_reference == {}
 
     def test_max_speed_configurable(self):
         # Tight max_speed — a 10 NM jump in 1 s should be rejected
@@ -1165,8 +1269,8 @@ class TestPositionMotionConsistency:
 
 class TestPositionBootstrap:
     ICAO = "40058B"
-    # A set of K=5 mutually-consistent positions walking near Amsterdam
-    # (aircraft cruising at ~500 kt).
+    # Five mutually-consistent positions walking near Amsterdam at a speed
+    # representative of a cruising aircraft.
     GOOD_CLUSTER: ClassVar[list[tuple[float, float, float]]] = [
         (52.30, 4.76, 1000.0),
         (52.31, 4.77, 1001.0),
@@ -1175,30 +1279,29 @@ class TestPositionBootstrap:
         (52.34, 4.82, 1004.0),
     ]
 
-    def test_hold_until_bootstrap_k_reached(self):
-        """First K-1 pairs hold lat/lon in the bootstrap buffer; the
-        result's `latitude` is None and the stat increments."""
-        from pyModeS._pipe import _BOOTSTRAP_K
+    def test_hold_until_bootstrap_majority_reached(self):
+        """Two candidates remain held until a 3-member majority exists."""
+        from pyModeS._pipe import _BOOTSTRAP_MIN_CLUSTER_SIZE
 
         pipe = PipeDecoder()
-        for _i, (lat, lon, t) in enumerate(self.GOOD_CLUSTER[: _BOOTSTRAP_K - 1]):
+        held = _BOOTSTRAP_MIN_CLUSTER_SIZE - 1
+        for lat, lon, t in self.GOOD_CLUSTER[:held]:
             pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
         # Still held — no history yet
         assert self.ICAO not in pipe._position_history
-        assert len(pipe._bootstrap[self.ICAO]) == _BOOTSTRAP_K - 1
-        assert pipe.stats["bootstrap_held"] == _BOOTSTRAP_K - 1
+        assert len(pipe._bootstrap[self.ICAO]) == held
+        assert pipe.stats["bootstrap_held"] == held
 
-    def test_cluster_locks_on_kth_consistent_candidate(self):
-        """When K mutually-consistent candidates accumulate, cluster
+    def test_cluster_locks_on_third_consistent_candidate(self):
+        """When three mutually-consistent candidates accumulate, cluster
         analysis promotes them all into _position_history and clears
         the bootstrap buffer."""
         pipe = PipeDecoder()
-        for lat, lon, t in self.GOOD_CLUSTER:
+        for lat, lon, t in self.GOOD_CLUSTER[:3]:
             pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
         assert self.ICAO in pipe._position_history
         assert self.ICAO not in pipe._bootstrap
-        # All five candidates were consistent → all kept (up to ring size).
-        assert len(pipe._position_history[self.ICAO]) == 5
+        assert len(pipe._position_history[self.ICAO]) == 3
         assert pipe.stats["bootstrap_reset"] == 0
 
     def test_bootstrap_picks_majority_cluster(self):
@@ -1209,7 +1312,8 @@ class TestPositionBootstrap:
         reals = self.GOOD_CLUSTER[:3]
         # 2 phantoms scattered across the world
         phantoms = [(70.0, -40.0, 999.5), (-30.0, 120.0, 1001.5)]
-        for lat, lon, t in reals + phantoms:
+        mixed = [reals[0], phantoms[0], reals[1], phantoms[1], reals[2]]
+        for lat, lon, t in mixed:
             pipe._bootstrap_accumulate({}, self.ICAO, lat, lon, t)
         # Locked on the reals
         assert self.ICAO in pipe._position_history
@@ -1218,6 +1322,19 @@ class TestPositionBootstrap:
         for lat, lon, _ in hist:
             assert 50 < lat < 55
             assert 0 < lon < 10
+
+    def test_bootstrap_requires_every_cluster_pair_to_be_consistent(self):
+        """A central point must not join two mutually-inconsistent points."""
+        pipe = PipeDecoder(max_speed_kt=0.0, motion_margin_km=2.0)
+
+        # At the equator, 0.015 degrees longitude is about 1.67 km. The
+        # centre is within the 2 km margin of both endpoints, while the
+        # endpoints are about 3.34 km apart.
+        for lon in (0.0, 0.015, 0.03):
+            pipe._bootstrap_accumulate({}, self.ICAO, 0.0, lon, 1000.0)
+
+        assert self.ICAO not in pipe._position_history
+        assert len(pipe._bootstrap[self.ICAO]) == 3
 
     def test_bootstrap_resets_when_all_phantoms(self):
         """All K candidates are mutually inconsistent (random scatter) —
@@ -1239,26 +1356,46 @@ class TestPositionBootstrap:
         assert pipe._bootstrap[self.ICAO] == []
         assert pipe.stats["bootstrap_reset"] == 1
 
-    def test_end_to_end_lock_after_five_real_pairs(self):
+    def test_end_to_end_lock_after_three_real_pairs(self):
         """Integration through the real pair-decode path.
 
-        The first 5 pairs are held during bootstrap; when the 5th
-        arrives, cluster analysis picks the consistent group and
-        retroactively fills in ``latitude``/``longitude`` on the
-        earlier result dicts. The 6th pair is emitted through the
-        normal motion-consistency check.
+        The first three pairs are held during bootstrap. The third completes
+        the consistent cluster and retroactively fills the earlier results.
+        The fourth pair follows the steady-state validation path.
         """
         pipe = PipeDecoder()
         results = []
-        for i in range(6):
+        for i in range(4):
             pipe.decode("8D40058B58C901375147EFD09357", timestamp=1000.0 + 2 * i)
             r = pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1001.0 + 2 * i)
             results.append(r)
-        # All six now have lat/lon — the first five via retro-fill on
-        # lock, the sixth via the steady-state motion-consistency check.
+        # The first three results are retro-filled during promotion; the
+        # fourth is emitted after the normal motion-consistency check.
         for r in results:
             assert r["latitude"] == pytest.approx(49.81755, abs=0.001)
             assert r["longitude"] == pytest.approx(6.08442, abs=0.001)
+
+    def test_flush_initializes_airborne_reference_for_continued_decoding(self):
+        pipe = PipeDecoder()
+        for i in range(2):
+            pipe.decode(
+                "8D40058B58C901375147EFD09357",
+                timestamp=1000.0 + 2 * i,
+            )
+            pipe.decode(
+                "8D40058B58C904A87F402D3B8C59",
+                timestamp=1001.0 + 2 * i,
+            )
+
+        pipe.flush()
+
+        assert "40058B" in pipe._airborne_position_reference
+        result = pipe.decode(
+            "8D40058B58C901375147EFD09357",
+            timestamp=1004.0,
+        )
+        assert result["latitude"] == pytest.approx(49.82410, abs=0.001)
+        assert result["longitude"] == pytest.approx(6.06785, abs=0.001)
 
     def test_bootstrap_eviction_clears_stale_candidates(self):
         pipe = PipeDecoder(eviction_ttl=10.0)

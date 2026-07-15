@@ -90,7 +90,7 @@ from pyModeS import PipeDecoder
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, timestamp in stream:
     decoded = pipe.decode(msg, timestamp=timestamp)
-    if "latitude" in decoded:
+    if decoded.get("latitude") is not None:
         print(decoded["icao"], decoded["latitude"], decoded["longitude"])
 ```
 
@@ -167,35 +167,14 @@ the full command reference.
 - Unified `decode()` returns every decodable field in one dict
 - Batch mode preserves list length (errors become error-dicts, not
   exceptions)
-- `PipeDecoder` for streams: per-ICAO state, CPR pair accumulation,
-  TTL eviction, DF20/21 ICAO verification via trusted-set promotion
+- `PipeDecoder` for streams: per-ICAO state, global and local CPR position
+  decoding, TTL eviction, DF20/21 ICAO verification via trusted-set promotion
 - `full_dict=True` populates every key in the canonical 123-field
   schema for pandas / parquet workflows
 - `known=` aircraft state disambiguates Comm-B BDS 5,0/6,0 ambiguity
 - Airport ICAO database for surface CPR resolution (`surface_ref="EHAM"`)
 - Type-checked under mypy strict across all source files
 - Golden-file oracle regression test against `pyModeS 2.21.1`
-
-## Performance
-
-The committed benchmarks run each released/working-tree version in an
-isolated environment and reject output mismatches before reporting timings.
-On the captured 176,612-frame mixed Beast feed, the header-prefiltered v3 path
-processes 85,963 incoming messages/s:
-
-| Decoder path | Throughput |
-|---|---:|
-| pyModeS 2.21.1 selective helpers | 52,998 msg/s |
-| released v3.3.0 `PipeDecoder` | 3,897 msg/s |
-| v3.4.0 `PipeDecoder` | 49,243 msg/s |
-| v3.4.0 + header prefilter | **85,963 msg/s** |
-
-On the 2,000-aircraft synthetic PipeDecoder workload, v3.4.0 processes
-38,838 msg/s versus v2's 39,604 msg/s, with identical normalized output.
-
-See [`scripts/README.md`](./scripts/README.md) for the reproducible commands
-and [`scripts/benchmark_results/`](./scripts/benchmark_results/) for the full
-methodology, timings, and output digests.
 
 ## Supported messages
 

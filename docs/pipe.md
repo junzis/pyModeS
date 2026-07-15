@@ -6,6 +6,10 @@ message at a time and maintains per-ICAO state across calls, so:
 - **CPR pair resolution** — an even/odd pair of airborne-position
   frames produced ≤ `pair_window` seconds apart is resolved to absolute
   lat/lon without needing an external reference.
+- **Local airborne CPR** — after global pairs establish a validated track,
+  each subsequent airborne-position frame can be resolved immediately from
+  the last accepted position, provided it is no older than
+  `local_ref_window`.
 - **BDS 5,0 / 6,0 disambiguation** — when a Comm-B message plausibly
   matches both registers, prior observations of groundspeed, track,
   and heading score the candidates and pick the better fit.
@@ -25,6 +29,7 @@ from pyModeS import PipeDecoder
 pipe = PipeDecoder(
     surface_ref="EHAM",
     pair_window=10.0,
+    local_ref_window=30.0,
     eviction_ttl=300.0,
     eviction_interval=1.0,
 )
@@ -40,13 +45,16 @@ pipe.reset()       # clear all state
 
 ## Constructor options
 
-- `surface_ref` — airport code or `(lat, lon)` for surface CPR
-  resolution (single-message path). Required for surface positions to
-  return lat/lon. Not needed for airborne.
+- `surface_ref` — optional airport code or `(lat, lon)` for surface CPR
+  resolution. It is used only for BDS 0,6 surface messages and can never seed
+  airborne decoding.
 - `full_dict` — if `True`, every decoded result is populated with every
   key from the canonical schema (missing fields = `None`).
 - `pair_window` — maximum age gap (seconds) between an even and odd
   CPR frame for them to count as a pair. Default `10.0`.
+- `local_ref_window` — maximum age of the last validated airborne position
+  used for locally-unambiguous CPR. Default `30.0` seconds; set to `0` to
+  disable local airborne decoding.
 - `eviction_ttl` — per-ICAO state and pending CPR frames older than
   this are ignored immediately when that ICAO is decoded again. A periodic
   global sweep removes inactive aircraft from memory. Default `300.0`
@@ -139,13 +147,24 @@ are scrubbed, the anchor is not updated, and state is not mutated.
 
 The first few resolved positions for a new ICAO don't yet have an
 anchor to cross-check against — so they're held back. The decoder
-collects up to 5 candidate positions into `_bootstrap`, runs a cluster
-analysis to pick a consistent seed, and only then promotes them into
+collects up to 5 candidate positions into `_bootstrap` and locks as soon as
+three positions are pairwise motion-consistent. If no such subset exists when
+the buffer reaches 5 candidates, the buffer resets. The accepted cluster seeds
 the rolling position history used for the motion check. While held,
 `latitude` / `longitude` are suppressed in the returned result; once
 the cluster locks, **both halves** of each resolved CPR pair are
 retro-filled, so batch callers who keep their result list around see
 the positions on their early samples.
+
+After bootstrap locks, its most recent accepted airborne position becomes the
+local CPR reference. A position frame without a fresh opposite parity can then
+return lat/lon in the current `decode()` result. Local candidates pass the same
+motion envelope before they update either the output or the reference. The
+optional `surface_ref` is kept separate and is never used by this path.
+
+`flush()` uses the same promotion path with a lower corroboration threshold for
+finite batches. If decoding continues afterward, the promoted airborne
+position remains available as the local CPR reference.
 
 If no consistent cluster forms, the bootstrap buffer resets and
 candidates start over — counted as `bootstrap_reset`.
@@ -221,6 +240,8 @@ locking is needed — just don't share the decoder across threads.
 - `velocity_mismatch` — frames rejected by a velocity / heading check
 - `position_rejected` — post-bootstrap positions rejected by the
   motion check
+- `local_positions` — airborne positions resolved immediately from the last
+  validated airborne reference
 - `bootstrap_held` — candidate positions added to the bootstrap buffer
   (some may end up promoted, others discarded on reset)
 - `bootstrap_reset` — bootstrap buffers that failed to cluster and

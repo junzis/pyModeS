@@ -5,7 +5,8 @@
 #
 # Usage: scripts/smoke_test_wheel.sh [/path/to/wheel]
 #
-# If no argument: uses the most recently built dist/*.whl. PyPI normalises
+# If no argument is supplied, build a fresh wheel from the working tree. This
+# avoids accidentally testing an older file left under dist/. PyPI normalises
 # the distribution name to lowercase (PEP 503), so wheel files use
 # `pymodes-*.whl` even though the package imports as `pyModeS`.
 
@@ -14,25 +15,28 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_ROOT"
 
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
+
 WHEEL="${1:-}"
 if [ -z "$WHEEL" ]; then
-    WHEEL=$(ls -t dist/pymodes-*.whl 2>/dev/null | head -1 || true)
+    mkdir -p "$TMPDIR/wheels"
+    uv build --quiet --wheel --out-dir "$TMPDIR/wheels"
+    WHEEL=$(find "$TMPDIR/wheels" -maxdepth 1 -name 'pymodes-*.whl' -print -quit)
 fi
 
-if [ -z "$WHEEL" ] || [ ! -f "$WHEEL" ]; then
-    echo "ERROR: no wheel found under dist/. Run 'uv build' first." >&2
+if [ ! -f "$WHEEL" ]; then
+    echo "ERROR: wheel not found: $WHEEL" >&2
     exit 1
 fi
 
 echo "Testing wheel: $WHEEL"
 
-TMPDIR=$(mktemp -d)
-trap 'rm -rf "$TMPDIR"' EXIT
-
 uv venv --python 3.12 "$TMPDIR/venv" >/dev/null
 # `uv venv` doesn't ship pip; use `uv pip install` with the venv
-# as the target interpreter instead.
-uv pip install --quiet --python "$TMPDIR/venv/bin/python" "$WHEEL"
+# as the target interpreter instead. Bypass uv's cache so a stale local cache
+# entry cannot make a release check fail or install the wrong artifact.
+uv pip install --no-cache --quiet --python "$TMPDIR/venv/bin/python" "$WHEEL"
 
 "$TMPDIR/venv/bin/python" - <<'PY'
 import pyModeS
@@ -71,10 +75,10 @@ results = pyModeS.decode(
     timestamps=[1.0, 2.0],
 )
 assert len(results) == 2
-# Second frame completes the pair — latitude/longitude filled.
-# (v3.3+ also retro-fills the first half when the bootstrap cluster
-# locks, so results[0] may have a position too — we don't pin either
-# way here.)
+# Batch finalization promotes the remaining CPR pair and fills both result
+# dictionaries retained for that position.
+assert results[0]["latitude"] is not None, results[0]
+assert results[0]["longitude"] is not None, results[0]
 assert results[1]["latitude"] is not None, results[1]
 assert results[1]["longitude"] is not None, results[1]
 # Sanity-check the decoded coordinates land in the expected

@@ -197,7 +197,7 @@ def _decode_batch(
     ]
     # Batch callers want lat/lon on every held position they can get —
     # flush the bootstrap buffers so cluster analysis runs on whatever
-    # candidates arrived (even if fewer than _BOOTSTRAP_K) and the
+    # candidates arrived (even if fewer than the live-stream threshold) and the
     # held result dicts get retro-filled in place.
     pipe.flush()
     return results

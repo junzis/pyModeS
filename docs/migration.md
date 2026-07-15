@@ -143,8 +143,8 @@ from pyModeS import PipeDecoder
 pipe = PipeDecoder(surface_ref="EHAM")
 for msg, t in stream:
     result = pipe.decode(msg, timestamp=t)
-    # lat/lon is populated when the CPR pair resolves
-    if "latitude" in result:
+    # A global pair seeds the track; later frames also use local CPR.
+    if result.get("latitude") is not None:
         print(result["icao"], result["latitude"], result["longitude"])
 ```
 

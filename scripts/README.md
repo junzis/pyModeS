@@ -18,8 +18,12 @@ through their names; generated benchmark reports live in
 
 ## Benchmarks
 
-- `benchmark_mixed_traffic.py` — isolated v2, released-v3, updated-v3, and
-  prefiltered-v3 comparison on mixed captured traffic. Writes
+- `benchmark_mixed_traffic.py` — isolated v2.21.1, released v3.4.0, v3.5.0,
+  and prefiltered v3.5.0 comparison on mixed captured traffic. It measures
+  throughput, immediate streaming position yield, and coordinate agreement.
+  By default it fails below 80% of v2 position yield, below 99% agreement
+  within 100 m, or when v3.5.0 yields fewer positions than v3.4.0. The two
+  percentage floors are configurable through command-line options. Writes
   `benchmark_results/mixed_traffic.md` by default.
 - `benchmark_pipe.py` — synthetic high-cardinality PipeDecoder comparison.
   Writes `benchmark_results/pipe.md` by default.
@@ -54,5 +58,6 @@ access unless those packages are already cached.
   environment and checks the public API.
 - `smoke_test_cli.sh` — checks CLI decoding and a short live Beast connection.
 
-The CLI smoke test requires network access. The wheel smoke test uses the most
-recent `dist/pymodes-*.whl` when no path is supplied.
+The CLI smoke test requires network access. The wheel smoke test accepts an
+explicit wheel path; without one, it builds a fresh working-tree wheel in a
+temporary directory so stale files under `dist/` cannot be selected.
