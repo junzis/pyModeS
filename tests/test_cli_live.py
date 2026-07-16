@@ -116,6 +116,17 @@ class TestLiveMainLoop:
         for key in _FULL_SCHEMA:
             assert key in data
 
+    def test_include_meteo(self, capsys):
+        self._fake_source = FakeSource([("A0001692185BD5CF400000DFC696", 1000.0)])
+        from pyModeS.cli import main
+
+        code = main(["live", "--network", "h:1", "--include-meteo"])
+        assert code == 0
+        captured = capsys.readouterr()
+        data = json.loads(captured.out.strip().splitlines()[-1])
+        assert data["bds"] == "4,4"
+        assert data["wind_speed"] == 22
+
     def test_tui_without_textual_exits_three(self, capsys, monkeypatch):
         """--tui without the textual optional extra exits 3 with install hint."""
         self._fake_source = FakeSource([])

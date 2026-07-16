@@ -55,7 +55,11 @@ def run(args: argparse.Namespace) -> int:
         )
         return 2
 
-    pipe = PipeDecoder(surface_ref=surface_ref, full_dict=args.full_dict)
+    pipe = PipeDecoder(
+        surface_ref=surface_ref,
+        include_meteo=args.include_meteo,
+        full_dict=args.full_dict,
+    )
 
     # TUI path takes its own branch — textual owns the event loop
     # and drives the source + pipe itself, so the sink pipeline

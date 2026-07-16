@@ -25,6 +25,8 @@ while keeping ``is_relevant()`` before ``pipe.decode()``.
 ``surface_ref`` is optional and only affects ground/surface CPR messages.
 Airborne local CPR starts automatically after validated global pairs establish
 the aircraft's position; no externally supplied airborne reference is needed.
+Comm-B BDS 4,4/4,5 meteorological inference is heuristic and remains disabled
+unless ``--include-meteo`` is supplied.
 """
 
 from __future__ import annotations
@@ -189,6 +191,11 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="decode without JSON output (useful for throughput measurement)",
     )
+    parser.add_argument(
+        "--include-meteo",
+        action="store_true",
+        help="include heuristic Comm-B BDS 4,4/4,5 meteorological inference",
+    )
     return parser
 
 
@@ -204,7 +211,10 @@ def main(argv: list[str] | None = None) -> int:
             if args.input is not None
             else _network_source(args.network)
         )
-        pipe = PipeDecoder(surface_ref=_surface_ref(args.surface_ref))
+        pipe = PipeDecoder(
+            surface_ref=_surface_ref(args.surface_ref),
+            include_meteo=args.include_meteo,
+        )
     except ValueError as error:
         print(f"stream_filtered: error: {error}", file=sys.stderr)
         return 2

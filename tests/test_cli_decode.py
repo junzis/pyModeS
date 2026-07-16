@@ -81,6 +81,16 @@ class TestDecodeSingleMessage:
         assert abs(data["latitude"] - 43.62646) < 0.001
         assert abs(data["longitude"] - 1.37476) < 0.001
 
+    def test_include_meteo(self, capsys):
+        code, out, _err = _run(
+            ["decode", "A0001692185BD5CF400000DFC696", "--include-meteo"],
+            capsys,
+        )
+        assert code == 0
+        data = json.loads(out)
+        assert data["bds"] == "4,4"
+        assert data["wind_speed"] == 22
+
     def test_invalid_hex_exits_one(self, capsys):
         code, out, err = _run(["decode", "not-hex-at-all"], capsys)
         assert code == 1

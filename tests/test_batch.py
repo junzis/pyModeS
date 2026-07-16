@@ -78,6 +78,15 @@ class TestBatchDecode:
         for key in _FULL_SCHEMA:
             assert key in results[0]
 
+    def test_batch_with_meteorological_inference(self):
+        results = decode(
+            ["A0001692185BD5CF400000DFC696"],
+            timestamps=[0.0],
+            include_meteo=True,
+        )
+        assert results[0]["bds"] == "4,4"
+        assert results[0]["wind_speed"] == 22
+
     def test_batch_timestamps_length_mismatch_raises(self):
         with pytest.raises(ValueError, match="length"):
             decode(

@@ -8,16 +8,16 @@ Host: `Linux-7.0.12-1-cachyos-x86_64-with-glibc2.43`.
 
 Each version ran in a separate `uv run --no-project` environment. v2 uses its public selective DF17 helpers; both v3 variants use `PipeDecoder`. Common velocity outputs were normalized and SHA-256 checked before reporting.
 
-| Decoder | Version | Python | Median | Throughput | vs v3.4.0 | State / anchors |
+| Decoder | Version | Python | Median | Throughput | vs v3.5.0 | State / anchors |
 |---|---:|---:|---:|---:|---:|---:|
-| v2.21.1 | 2.21.1 | 3.13.13 | 0.760s | 39,491 msg/s | 1.01x | n/a |
-| v3.4.0 | 3.4.0 | 3.13.13 | 0.768s | 39,066 msg/s | 1.00x | 2,000 / 2,000 |
-| v3.5.0 | 3.5.0 | 3.13.13 | 0.766s | 39,142 msg/s | 1.00x | 2,000 / 2,000 |
+| v2.21.1 | 2.21.1 | 3.13.13 | 0.752s | 39,882 msg/s | 1.09x | n/a |
+| v3.5.0 | 3.5.0 | 3.13.13 | 0.823s | 36,461 msg/s | 1.00x | 2,000 / 2,000 |
+| v3.5.1 | 3.5.1 | 3.13.13 | 0.802s | 37,429 msg/s | 1.03x | 2,000 / 2,000 |
 
 Output check: **PASS** — 30,000 normalized records per version, digest `f03658607ca07c865d7d696097ef25d8e375bb7990750441053dfa85152d431f`.
 
 Samples (seconds):
 
-- v2.21.1: 0.758, 0.797, 0.760
-- v3.4.0: 0.770, 0.768, 0.758
-- v3.5.0: 0.766, 0.765, 0.780
+- v2.21.1: 0.752, 0.750, 0.753
+- v3.5.0: 0.823, 0.832, 0.821
+- v3.5.1: 0.797, 0.802, 0.821

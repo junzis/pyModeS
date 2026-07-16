@@ -104,6 +104,8 @@ class PipeDecoder(ValidationMixin):
         surface_ref: Optional surface-position CPR reference (ICAO airport
             code or (lat, lon) tuple). Used only for BDS 0,6 surface messages.
             See pyModeS.decode for details.
+        include_meteo: When True, Comm-B inference also considers the
+            heuristic BDS 4,4 and 4,5 meteorological registers. Default False.
         full_dict: When True, every decoded result is populated with
             every key from _FULL_SCHEMA.
         pair_window: Maximum age difference (seconds) between an even
@@ -129,6 +131,7 @@ class PipeDecoder(ValidationMixin):
         "_eviction_interval",
         "_eviction_ttl",
         "_full_dict",
+        "_include_meteo",
         "_local_ref_window",
         "_max_speed_kmps",
         "_motion_margin_km",
@@ -147,6 +150,7 @@ class PipeDecoder(ValidationMixin):
         self,
         *,
         surface_ref: str | tuple[float, float] | None = None,
+        include_meteo: bool = False,
         full_dict: bool = False,
         pair_window: float = 10.0,
         local_ref_window: float = 30.0,
@@ -156,6 +160,7 @@ class PipeDecoder(ValidationMixin):
         motion_margin_km: float = 2.0,
     ) -> None:
         self._surface_ref = surface_ref
+        self._include_meteo = include_meteo
         self._full_dict = full_dict
         self._pair_window = pair_window
         if local_ref_window < 0:
@@ -307,11 +312,22 @@ class PipeDecoder(ValidationMixin):
         else:
             known = None
 
-        result = message.decode(
-            surface_ref=self._surface_ref,
-            known=known,
-            full_dict=self._full_dict,
-        )
+        # Avoid forwarding a false opt-in flag on every message. Keyword
+        # dispatch is measurable in this hot path; only enabled streams need
+        # the additional Comm-B inference branch.
+        if self._include_meteo:
+            result = message.decode(
+                surface_ref=self._surface_ref,
+                known=known,
+                include_meteo=True,
+                full_dict=self._full_dict,
+            )
+        else:
+            result = message.decode(
+                surface_ref=self._surface_ref,
+                known=known,
+                full_dict=self._full_dict,
+            )
 
         self._stats["decoded"] += 1
         if result.get("crc_valid") is False:

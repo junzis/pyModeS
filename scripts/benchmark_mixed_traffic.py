@@ -11,17 +11,17 @@ environments:
 * pyModeS 2.21.1: inspect DF first, then selectively decode the DF17/20/21
   fields consumed by the example processor; use global and local CPR with
   O(1) per-aircraft state.
-* released pyModeS 3.4.0: offer every frame to ``PipeDecoder`` before applying
+* released pyModeS 3.5.0: offer every frame to ``PipeDecoder`` before applying
   the same output selection, matching the supplied v3 processor.
-* pyModeS 3.5.0 from the working tree: the same v3 code path, from a
+* pyModeS 3.5.1 from the working tree: the same v3 code path, from a
   freshly-built wheel.
-* pyModeS 3.5.0 with the recommended header prefilter applied before
+* pyModeS 3.5.1 with the recommended header prefilter applied before
   ``PipeDecoder`` (the filter itself remains inside the timed loop).
 
 The benchmark fixes the stripped example's accidental loop termination,
 renamed v3 velocity keys, flight-level units, and null-position emission. It
-checks filtered/unfiltered v3.5 output equality, unchanged non-position output
-from v3.4, immediate position yield, and coordinate agreement with v2 on every
+checks filtered/unfiltered v3.5.1 output equality, unchanged non-position output
+from v3.5.0, immediate position yield, and coordinate agreement with v2 on every
 frame where both implementations emit a position.
 """
 
@@ -51,6 +51,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_CORPUS = REPO_ROOT / "scripts/data/airsquitter_2026-07-13_120s.csv.gz"
 DEFAULT_REPORT = REPO_ROOT / "scripts/benchmark_results/mixed_traffic.md"
+BASELINE_VERSION = "3.5.0"
+BASELINE_LABEL = f"v{BASELINE_VERSION}"
 
 
 def _working_tree_version() -> str:
@@ -618,7 +620,7 @@ def _require_position_quality(
     released_positions = int(released["event_counts"].get("position", 0))
     if working_positions < released_positions:
         raise RuntimeError(
-            "working-tree position yield regressed below released v3.4.0: "
+            f"working-tree position yield regressed below released {BASELINE_LABEL}: "
             f"{working_positions:,} < {released_positions:,}"
         )
 
@@ -660,7 +662,7 @@ def _format_report(
     min_v2_yield_pct: float,
     min_agreement_pct: float,
 ) -> str:
-    current = next(result for result in results if result["label"] == "v3.4.0")
+    current = next(result for result in results if result["label"] == BASELINE_LABEL)
     working = next(result for result in results if result["api"] == "v3-working")
     v2 = next(result for result in results if result["api"] == "v2")
     current_median = statistics.median(current["samples"])
@@ -695,7 +697,7 @@ def _format_report(
         ),
         "",
         (
-            "| Decoder | Version | Median | Throughput | vs v3.4.0 | "
+            f"| Decoder | Version | Median | Throughput | vs {BASELINE_LABEL} | "
             "Events | Positions | State / velocity anchors |"
         ),
         "|---|---:|---:|---:|---:|---:|---:|---:|",
@@ -744,14 +746,14 @@ def _format_report(
                 f"Required for v{working['version']}: at least "
                 f"{min_v2_yield_pct:.1f}% of v2 position yield, at least "
                 f"{min_agreement_pct:.1f}% of shared positions within 100 m, "
-                "and no yield regression from v3.4.0."
+                f"and no yield regression from {BASELINE_LABEL}."
             ),
             "",
             "| Decoder | Immediate positions | v2 yield | Shared messages | "
             "Within 100 m | Median delta | Maximum delta |",
             "|---|---:|---:|---:|---:|---:|---:|",
             (
-                f"| v3.4.0 | {current_quality['candidate']:,} | "
+                f"| {BASELINE_LABEL} | {current_quality['candidate']:,} | "
                 f"{_format_optional(current_quality['coverage_pct'], '%')} | "
                 f"{current_quality['shared']:,} | "
                 f"{_format_optional(current_quality['agreement_100m_pct'], '%')} | "
@@ -804,7 +806,7 @@ def _parent(args: argparse.Namespace) -> int:
         working_version = _working_tree_version()
         variants = [
             ("v2.21.1", "v2", "pyModeS==2.21.1"),
-            ("v3.4.0", "v3", "pyModeS==3.4.0"),
+            (BASELINE_LABEL, "v3", f"pyModeS=={BASELINE_VERSION}"),
             (f"v{working_version}", "v3-working", str(wheel_files[0])),
             (
                 f"v{working_version} + header prefilter",

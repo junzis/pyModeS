@@ -551,12 +551,27 @@ class TestBds44Decoder:
 class TestCommBBds44RequiresIncludeMeteo:
     def test_bds44_hidden_from_default_infer(self):
         # BDS44 is meteorological and only appears when infer() is
-        # called with include_meteo=True. CommB.decode() does not
-        # enable this flag in Plan 3, so the register is not routed
-        # through pyModeS.decode() directly.
+        # explicitly enabled. The public API keeps it off by default
+        # because meteorological registers are heuristic.
         result = decode("A0001692185BD5CF400000DFC696")
         assert result["df"] == 20
         assert result.get("bds") != "4,4"
+
+    def test_bds44_decodes_when_enabled(self):
+        result = decode(
+            "A0001692185BD5CF400000DFC696",
+            include_meteo=True,
+        )
+        assert result["bds"] == "4,4"
+        assert result["wind_speed"] == 22
+        assert result["wind_direction"] == pytest.approx(344.53125)
+        assert result["static_air_temperature"] == pytest.approx(-48.75)
+
+    def test_message_decode_accepts_include_meteo(self):
+        from pyModeS import Message
+
+        result = Message("A0001692185BD5CF400000DFC696").decode(include_meteo=True)
+        assert result["bds"] == "4,4"
 
 
 class TestBds50Validator:
@@ -871,8 +886,14 @@ class TestBds45Decoder:
 class TestCommBBds45RequiresIncludeMeteo:
     def test_bds45_hidden_from_default_infer(self):
         # BDS45 is meteorological and only appears when infer() is
-        # called with include_meteo=True. CommB.decode() does not
-        # enable this flag in Plan 3.
+        # explicitly enabled through the public API.
         result = decode("A00004190001FB80000000000000")
         assert result["df"] == 20
         assert result.get("bds") != "4,5"
+
+    def test_bds45_decodes_when_enabled(self):
+        result = decode(
+            "A00004190001FB80000000000000",
+            include_meteo=True,
+        )
+        assert result["bds"] == "4,5"

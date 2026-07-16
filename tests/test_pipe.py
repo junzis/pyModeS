@@ -86,6 +86,12 @@ class TestPipeDecoderSkeleton:
         for key in _FULL_SCHEMA:
             assert key in result
 
+    def test_include_meteo_propagates_to_decode(self):
+        pipe = PipeDecoder(include_meteo=True)
+        result = pipe.decode("A0001692185BD5CF400000DFC696", timestamp=1.0)
+        assert result["bds"] == "4,4"
+        assert result["wind_speed"] == 22
+
 
 class TestKnownKwargPlumbing:
     def test_message_decode_accepts_known(self):

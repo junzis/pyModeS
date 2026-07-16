@@ -172,6 +172,7 @@ the full command reference.
 - `full_dict=True` populates every key in the canonical 123-field
   schema for pandas / parquet workflows
 - `known=` aircraft state disambiguates Comm-B BDS 5,0/6,0 ambiguity
+- `include_meteo=True` opts into heuristic Comm-B BDS 4,4/4,5 inference
 - Airport ICAO database for surface CPR resolution (`surface_ref="EHAM"`)
 - Type-checked under mypy strict across all source files
 - Golden-file oracle regression test against `pyModeS 2.21.1`
@@ -200,6 +201,10 @@ the full command reference.
   - BDS 4,5: meteorological hazard report
   - BDS 5,0: track and turn report
   - BDS 6,0: heading and speed report
+
+BDS 4,4 and 4,5 are heuristic and disabled by default. Enable them with
+`decode(..., include_meteo=True)` or `PipeDecoder(include_meteo=True)` when
+these meteorological registers are expected on the input feed.
 
 ## Migrating from pyModeS 2.x
 

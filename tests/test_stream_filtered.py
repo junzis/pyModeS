@@ -64,3 +64,16 @@ def test_emit_json_adds_source_metadata() -> None:
         "raw_msg": "8D406B902015A678D4D220AA4BDA",
         "timestamp": 1234.5,
     }
+
+
+def test_include_meteo_flag_reaches_pipe(tmp_path, capsys) -> None:
+    script = _load_script()
+    capture = tmp_path / "meteo.csv"
+    capture.write_text("1000.0,A0001692185BD5CF400000DFC696\n")
+
+    code = script.main(["--input", str(capture), "--include-meteo"])
+
+    assert code == 0
+    record = json.loads(capsys.readouterr().out)
+    assert record["bds"] == "4,4"
+    assert record["wind_speed"] == 22

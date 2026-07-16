@@ -58,6 +58,14 @@ assert r["bds"] == "0,8", r
 assert r["callsign"] == "EZY85MH", r
 assert r["category"] == 0, r
 
+# Opt-in Comm-B meteorological inference. It remains disabled by default
+# because BDS 4,4/4,5 payload patterns can overlap other registers.
+meteo_msg = "A0001692185BD5CF400000DFC696"
+assert pyModeS.decode(meteo_msg).get("bds") != "4,4"
+meteo = pyModeS.decode(meteo_msg, include_meteo=True)
+assert meteo["bds"] == "4,4", meteo
+assert meteo["wind_speed"] == 22, meteo
+
 # PipeDecoder construction + stats baseline. Check the counters we
 # have always guaranteed rather than pinning the full dict — newer
 # releases can add counters without breaking this smoke test.

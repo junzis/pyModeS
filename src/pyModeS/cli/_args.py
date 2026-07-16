@@ -77,6 +77,11 @@ def _add_decode_parser(
         help="Populate every key in the canonical schema (missing = null).",
     )
     decode_p.add_argument(
+        "--include-meteo",
+        action="store_true",
+        help="Include heuristic Comm-B BDS 4,4/4,5 meteorological inference.",
+    )
+    decode_p.add_argument(
         "--reference",
         nargs=2,
         type=float,
@@ -131,6 +136,11 @@ def _add_live_parser(
         "--full-dict",
         action="store_true",
         help="Emit every key in the canonical schema (missing = null).",
+    )
+    live_p.add_argument(
+        "--include-meteo",
+        action="store_true",
+        help="Include heuristic Comm-B BDS 4,4/4,5 meteorological inference.",
     )
     live_p.add_argument(
         "--dump-to",

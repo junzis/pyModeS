@@ -37,6 +37,7 @@ class TestDecodeSubcommand:
         assert args.file is None
         assert args.compact is False
         assert args.full_dict is False
+        assert args.include_meteo is False
         assert args.reference is None
         assert args.surface_ref is None
 
@@ -66,6 +67,13 @@ class TestDecodeSubcommand:
             ["decode", "8D406B902015A678D4D220AA4BDA", "--full-dict"]
         )
         assert args.full_dict is True
+
+    def test_decode_include_meteo_flag(self):
+        parser = build_parser()
+        args = parser.parse_args(
+            ["decode", "A0001692185BD5CF400000DFC696", "--include-meteo"]
+        )
+        assert args.include_meteo is True
 
     def test_decode_with_file(self):
         parser = build_parser()
@@ -128,6 +136,7 @@ class TestLiveSubcommand:
         assert args.dump_to is None
         assert args.surface_ref is None
         assert args.full_dict is False
+        assert args.include_meteo is False
 
     @pytest.mark.parametrize(
         "endpoint",
@@ -152,6 +161,7 @@ class TestLiveSubcommand:
                 "--surface-ref",
                 "EHAM",
                 "--full-dict",
+                "--include-meteo",
                 "--dump-to",
                 "out.jsonl",
             ]
@@ -159,6 +169,7 @@ class TestLiveSubcommand:
         assert args.network == "host.example:10003"
         assert args.surface_ref == "EHAM"
         assert args.full_dict is True
+        assert args.include_meteo is True
         assert args.dump_to == "out.jsonl"
 
     def test_live_tui_with_dump_to_errors(self):

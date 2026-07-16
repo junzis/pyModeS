@@ -17,10 +17,13 @@ This module defines two public types:
 
 import json
 from functools import cached_property
-from typing import Any, Self
+from typing import TYPE_CHECKING, Any, Self, cast
 
 from pyModeS._bits import crc_remainder, extract_unsigned
 from pyModeS.errors import InvalidHexError, InvalidLengthError, UnknownDFError
+
+if TYPE_CHECKING:
+    from pyModeS.decoder.commb import CommB
 
 _HEX_CHARS = frozenset("0123456789abcdefABCDEF")
 _VALID_LENGTHS = (56, 112)
@@ -242,6 +245,7 @@ class Message:
         reference: tuple[float, float] | None = None,
         surface_ref: str | tuple[float, float] | None = None,
         known: dict[str, Any] | None = None,
+        include_meteo: bool = False,
         full_dict: bool = False,
     ) -> Decoded:
         """Decode every field of this message.
@@ -270,6 +274,10 @@ class Message:
                 Comm-B BDS inference to disambiguate BDS 5,0 vs 6,0
                 when both heuristic validators pass. Ignored for
                 non-Comm-B downlink formats.
+            include_meteo: When True, Comm-B inference also considers the
+                heuristic BDS 4,4 and 4,5 meteorological registers. Disabled
+                by default because their payloads can overlap other Comm-B
+                formats.
             full_dict: When True, the result dict is augmented with
                 every key from `_FULL_SCHEMA`, defaulting missing
                 keys to `None`. Useful for pandas/parquet workflows
@@ -291,7 +299,14 @@ class Message:
             decoder = decoder_cls(
                 self._n, df=self.df, icao=self.icao, length=self._length
             )
-            result.update(decoder.decode(known=known))
+            # Keep the common non-meteorological path free of an extra keyword
+            # dispatch. This matters for high-rate ADS-B streams, while the
+            # opt-in branch is relevant only to DF20/21 Comm-B decoders.
+            if include_meteo and self.df in (20, 21):
+                commb_decoder = cast("CommB", decoder)
+                result.update(commb_decoder.decode(known=known, include_meteo=True))
+            else:
+                result.update(decoder.decode(known=known))
 
         self._resolve_position(result, reference=reference, surface_ref=surface_ref)
 

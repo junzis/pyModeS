@@ -48,6 +48,10 @@ pipe.reset()       # clear all state
 - `surface_ref` — optional airport code or `(lat, lon)` for surface CPR
   resolution. It is used only for BDS 0,6 surface messages and can never seed
   airborne decoding.
+- `include_meteo` — include heuristic BDS 4,4 routine meteorological reports
+  and BDS 4,5 meteorological hazard reports in Comm-B inference. Default
+  `False`; enable only when the input is expected to contain these registers,
+  because their payload patterns can overlap other Comm-B formats.
 - `full_dict` — if `True`, every decoded result is populated with every
   key from the canonical schema (missing fields = `None`).
 - `pair_window` — maximum age gap (seconds) between an even and odd
@@ -189,7 +193,7 @@ What happens per register when it's offered to `PipeDecoder`:
 | 1,0, 1,7 data-link capability | — | — | yes (`supported_bds`) |
 | 2,0 aircraft identification | — | — | yes (`callsign`) |
 | 4,0 selected vertical intention | — | — | yes (MCP/FMS alt, VNAV, etc.) |
-| 4,4, 4,5 meteorological | — | — | yes (wind, temperature, turbulence, …) |
+| 4,4, 4,5 meteorological (opt-in) | — | — | yes (wind, temperature, turbulence, …) |
 | 5,0 track & turn | gs / true_track | yes | yes |
 | 6,0 heading & speed | magnetic_heading | yes | yes |
 

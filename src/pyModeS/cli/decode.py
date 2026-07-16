@@ -50,6 +50,7 @@ def _run_single(args: argparse.Namespace) -> int:
             args.message,
             reference=reference,
             surface_ref=surface_ref,
+            include_meteo=args.include_meteo,
             full_dict=args.full_dict,
         )
     except Exception as e:
@@ -131,6 +132,7 @@ def _emit_batch(
             hexes,
             timestamps=timestamps,
             surface_ref=surface_ref,
+            include_meteo=args.include_meteo,
             full_dict=args.full_dict,
         )
     except Exception as error:

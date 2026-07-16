@@ -159,6 +159,27 @@ result = pyModeS.decode("8D406B902015A678D4D220AA4BDA", full_dict=True)
 # Result contains all ~123 schema keys; missing values default to None
 ```
 
+## Meteorological Comm-B reports
+
+BDS 4,4 routine meteorological reports and BDS 4,5 hazard reports use
+heuristic inference and are disabled by default because their payload patterns
+can overlap other Comm-B registers. Enable them only for feeds where these
+reports are expected:
+
+```python
+result = pyModeS.decode(
+    "A0001692185BD5CF400000DFC696",
+    include_meteo=True,
+)
+assert result["bds"] == "4,4"
+print(result["wind_speed"], result["wind_direction"])
+
+pipe = pyModeS.PipeDecoder(include_meteo=True)
+```
+
+When several formats remain plausible, inspect `bds_candidates`; `bds` is the
+decoder's preferred candidate.
+
 ## Error handling
 
 Malformed input raises an exception in single-message mode:
@@ -191,7 +212,7 @@ console script when you run `pip install pyModeS`.
 ### `modes decode`
 
 ```
-modes decode [--compact] [--full-dict] [--surface-ref REF]
+modes decode [--compact] [--full-dict] [--include-meteo] [--surface-ref REF]
              (MESSAGE [--reference LAT LON] | --file PATH)
 ```
 
@@ -215,6 +236,7 @@ Flags:
 - `--compact` — emit one-line JSON instead of pretty-printed. In
   batch shapes this yields one JSON line per message (JSONL).
 - `--full-dict` — populate every key in the canonical schema
+- `--include-meteo` — include heuristic Comm-B BDS 4,4/4,5 inference
 - `--reference LAT LON` — airborne CPR reference (only valid with
   a single positional MESSAGE — not with `--file` or comma-batch,
   since one reference cannot apply to multiple aircraft)
@@ -252,6 +274,7 @@ cat flight.log | modes decode --file -
 ```
 modes live --network HOST:PORT [--surface-ref REF]
                                [--full-dict]
+                               [--include-meteo]
                                [--dump-to FILE]
                                [--tui]
                                [--quiet]
@@ -268,6 +291,7 @@ Flags:
 - `--surface-ref REF` — forwarded to the internal `PipeDecoder`
   for surface CPR resolution
 - `--full-dict` — emit every schema key per line
+- `--include-meteo` — include heuristic Comm-B BDS 4,4/4,5 inference
 - `--dump-to FILE` — tee JSON lines to a file in addition to
   stdout (incompatible with `--tui`)
 - `--tui` — interactive live aircraft table (requires

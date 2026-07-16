@@ -13,16 +13,20 @@ through their names; generated benchmark reports live in
 
   ```bash
   uv run python scripts/stream_filtered.py \
-    --network airsquitter.lr.tudelft.nl:10006 > decoded.jsonl
+    --network airsquitter.lr.tudelft.nl:10006 \
+    --include-meteo > decoded.jsonl
   ```
+
+  `--include-meteo` is optional and enables heuristic Comm-B BDS 4,4/4,5
+  reports when the feed is expected to contain meteorological data.
 
 ## Benchmarks
 
-- `benchmark_mixed_traffic.py` — isolated v2.21.1, released v3.4.0, v3.5.0,
-  and prefiltered v3.5.0 comparison on mixed captured traffic. It measures
+- `benchmark_mixed_traffic.py` — isolated v2.21.1, released v3.5.0, v3.5.1,
+  and prefiltered v3.5.1 comparison on mixed captured traffic. It measures
   throughput, immediate streaming position yield, and coordinate agreement.
   By default it fails below 80% of v2 position yield, below 99% agreement
-  within 100 m, or when v3.5.0 yields fewer positions than v3.4.0. The two
+  within 100 m, or when v3.5.1 yields fewer positions than v3.5.0. The two
   percentage floors are configurable through command-line options. Writes
   `benchmark_results/mixed_traffic.md` by default.
 - `benchmark_pipe.py` — synthetic high-cardinality PipeDecoder comparison.

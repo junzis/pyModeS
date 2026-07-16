@@ -7,8 +7,8 @@ many ICAO addresses, keeps every aircraft active inside the default five-minute
 TTL, and decodes the same timestamped corpus through:
 
 1. pyModeS 2.21.1's public selective helpers;
-2. the released pyModeS 3.4.0 ``PipeDecoder``;
-3. a pyModeS 3.5.0 wheel built from the current working tree.
+2. the released pyModeS 3.5.0 ``PipeDecoder``;
+3. a pyModeS 3.5.1 wheel built from the current working tree.
 
 Every version runs in a separate ``uv run --no-project`` environment.  This is
 important: pyModeS 2 and 3 share the same distribution/import name, so loading
@@ -54,6 +54,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT_PATH = Path(__file__).resolve()
 DEFAULT_REPORT = REPO_ROOT / "scripts/benchmark_results/pipe.md"
+BASELINE_VERSION = "3.5.0"
+BASELINE_LABEL = f"v{BASELINE_VERSION}"
 VELOCITY_TEMPLATE = "8D485020994409940838175B284F"
 _CRC_POLY = 0xFFF409
 
@@ -300,7 +302,7 @@ def _format_report(
     rounds: int,
     warmups: int,
 ) -> str:
-    current = next(result for result in results if result["label"] == "v3.4.0")
+    current = next(result for result in results if result["label"] == BASELINE_LABEL)
     current_median = statistics.median(current["samples"])
 
     lines = [
@@ -327,7 +329,7 @@ def _format_report(
         "",
         (
             "| Decoder | Version | Python | Median | Throughput | "
-            "vs v3.4.0 | State / anchors |"
+            f"vs {BASELINE_LABEL} | State / anchors |"
         ),
         "|---|---:|---:|---:|---:|---:|---:|",
     ]
@@ -392,7 +394,7 @@ def _parent(args: argparse.Namespace) -> int:
         working_version = _working_tree_version()
         variants = [
             ("v2.21.1", "v2", "pyModeS==2.21.1"),
-            ("v3.4.0", "v3", "pyModeS==3.4.0"),
+            (BASELINE_LABEL, "v3", f"pyModeS=={BASELINE_VERSION}"),
             (f"v{working_version}", "v3", str(wheel_files[0])),
         ]
         results: list[dict[str, Any]] = []

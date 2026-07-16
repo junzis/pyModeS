@@ -84,7 +84,7 @@ result.callsign  # same as result["callsign"]
 | `pms.adsb.position(m0, m1, t0, t1)` | `pyModeS.decode([m0, m1], timestamps=[t0, t1])` |
 | `pms.adsb.position_with_ref(msg, lat, lon)` | `pyModeS.decode(msg, reference=(lat, lon))` |
 | `pms.adsb.surface_position_with_ref(msg, lat, lon)` | `pyModeS.decode(msg, surface_ref=(lat, lon))` |
-| `pms.bds.infer(msg, mrar=True)` | `pyModeS.decode(msg)["bds"]` (for DF20/21) |
+| `pms.bds.infer(msg, mrar=True)` | `pyModeS.decode(msg, include_meteo=True)["bds"]` (for DF20/21) |
 | `pms.commb.cs20(msg)` | `pyModeS.decode(msg)["callsign"]` (for BDS 2,0) |
 | `pms.commb.selalt40mcp(msg)` | `pyModeS.decode(msg)["selected_altitude_mcp"]` |
 | `pms.commb.selalt40fms(msg)` | `pyModeS.decode(msg)["selected_altitude_fms"]` |

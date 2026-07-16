@@ -25,6 +25,7 @@ def decode(
     reference: tuple[float, float] | None = None,
     surface_ref: str | tuple[float, float] | None = None,
     known: dict[str, Any] | None = None,
+    include_meteo: bool = False,
     full_dict: bool = False,
 ) -> Decoded: ...
 
@@ -35,6 +36,7 @@ def decode(
     *,
     timestamps: list[float] | None = None,
     surface_ref: str | tuple[float, float] | None = None,
+    include_meteo: bool = False,
     full_dict: bool = False,
 ) -> list[Decoded]: ...
 
@@ -48,6 +50,7 @@ def decode(
     reference: Any = None,
     surface_ref: Any = None,
     known: Any = None,
+    include_meteo: bool = False,
     full_dict: bool = False,
     timestamps: Any = None,
 ) -> Any:
@@ -79,6 +82,9 @@ def decode(
             Comm-B BDS inference to disambiguate BDS 5,0 vs 6,0
             when both heuristic validators pass. Ignored for
             non-Comm-B downlink formats.
+        include_meteo: When True, Comm-B inference also considers BDS 4,4
+            and 4,5 meteorological registers. Disabled by default because
+            their heuristic payload patterns can overlap other registers.
         full_dict: When True, the result dict is augmented with
             every key from `_FULL_SCHEMA`, defaulting missing keys
             to `None`. Useful for pandas/parquet workflows that
@@ -102,6 +108,7 @@ def decode(
             WARNING is logged — pair matching will still function
             but the synthesized values are not wall-clock times.
         surface_ref: Same as single-message mode.
+        include_meteo: Same as single-message mode.
         full_dict: Same as single-message mode.
 
     Batch mode returns a ``list[Decoded]`` of the same length as
@@ -140,6 +147,7 @@ def decode(
             msg,
             timestamps=timestamps,
             surface_ref=surface_ref,
+            include_meteo=include_meteo,
             full_dict=full_dict,
         )
 
@@ -164,6 +172,7 @@ def decode(
         reference=reference,
         surface_ref=surface_ref,
         known=known,
+        include_meteo=include_meteo,
         full_dict=full_dict,
     )
 
@@ -173,6 +182,7 @@ def _decode_batch(
     *,
     timestamps: list[float] | None,
     surface_ref: str | tuple[float, float] | None,
+    include_meteo: bool,
     full_dict: bool,
 ) -> list[Decoded]:
     """Run ``msgs`` through a transient PipeDecoder and return results."""
@@ -193,7 +203,11 @@ def _decode_batch(
             f"messages length {len(msgs)}"
         )
 
-    pipe = PipeDecoder(surface_ref=surface_ref, full_dict=full_dict)
+    pipe = PipeDecoder(
+        surface_ref=surface_ref,
+        include_meteo=include_meteo,
+        full_dict=full_dict,
+    )
     results = [
         pipe.decode(m, timestamp=t) for m, t in zip(msgs, timestamps, strict=True)
     ]

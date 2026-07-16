@@ -11,29 +11,29 @@ Host: `Linux-7.0.12-1-cachyos-x86_64-with-glibc2.43`.
 
 V2 performs early DF filtering and selective field decoding, including global plus locally-unambiguous airborne CPR. The released and unfiltered working-tree v3 paths offer every frame to `PipeDecoder`, matching the supplied v3 processor. The prefiltered working-tree path includes cheap header filtering inside its timed loop. Position counts refer to coordinates available immediately from each streaming decode call.
 
-| Decoder | Version | Median | Throughput | vs v3.4.0 | Events | Positions | State / velocity anchors |
+| Decoder | Version | Median | Throughput | vs v3.5.0 | Events | Positions | State / velocity anchors |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| v2.21.1 | 2.21.1 | 3.447s | 51,231 msg/s | 1.07x | 33,481 | 7,871 | n/a |
-| v3.4.0 | 3.4.0 | 3.680s | 47,990 msg/s | 1.00x | 28,404 | 2,081 | 344 / 300 |
-| v3.5.0 | 3.5.0 | 3.874s | 45,590 msg/s | 0.95x | 33,066 | 6,743 | 344 / 300 |
-| v3.5.0 + header prefilter | 3.5.0 | 2.323s | 76,035 msg/s | 1.58x | 33,066 | 6,743 | 337 / 300 |
+| v2.21.1 | 2.21.1 | 3.536s | 49,943 msg/s | 1.10x | 33,481 | 7,871 | n/a |
+| v3.5.0 | 3.5.0 | 3.892s | 45,381 msg/s | 1.00x | 33,066 | 6,743 | 344 / 300 |
+| v3.5.1 | 3.5.1 | 3.991s | 44,253 msg/s | 0.98x | 33,066 | 6,743 | 344 / 300 |
+| v3.5.1 + header prefilter | 3.5.1 | 2.340s | 75,489 msg/s | 1.66x | 33,066 | 6,743 | 337 / 300 |
 
 Working-tree filtered/unfiltered output check: **PASS**.
 Released/working-tree non-position output check: **PASS** — identification, velocity, and Comm-B output is unchanged.
 
 Position yield and agreement against the v2 streaming reference:
-Required for v3.5.0: at least 80.0% of v2 position yield, at least 99.0% of shared positions within 100 m, and no yield regression from v3.4.0.
+Required for v3.5.1: at least 80.0% of v2 position yield, at least 99.0% of shared positions within 100 m, and no yield regression from v3.5.0.
 
 | Decoder | Immediate positions | v2 yield | Shared messages | Within 100 m | Median delta | Maximum delta |
 |---|---:|---:|---:|---:|---:|---:|
-| v3.4.0 | 2,081 | 26.44% | 2,081 | 100.00% | 0.00 m | 0.00 m |
 | v3.5.0 | 6,743 | 85.67% | 6,743 | 100.00% | 0.00 m | 0.00 m |
+| v3.5.1 | 6,743 | 85.67% | 6,743 | 100.00% | 0.00 m | 0.00 m |
 
 V2 and v3 position totals need not be identical: v3 retains its multi-candidate bootstrap and motion validation. Agreement is measured only where both implementations emit a position for the same frame.
 
 Samples (seconds):
 
-- v2.21.1: 3.465, 3.442, 3.447
-- v3.4.0: 3.680, 3.737, 3.662
-- v3.5.0: 3.877, 3.857, 3.874
-- v3.5.0 + header prefilter: 2.323, 2.290, 2.358
+- v2.21.1: 3.536, 3.470, 3.623
+- v3.5.0: 3.936, 3.874, 3.892
+- v3.5.1: 3.964, 3.991, 3.992
+- v3.5.1 + header prefilter: 2.316, 2.376, 2.340
