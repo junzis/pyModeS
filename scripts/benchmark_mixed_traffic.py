@@ -13,14 +13,14 @@ environments:
   O(1) per-aircraft state.
 * released pyModeS 3.5.0: offer every frame to ``PipeDecoder`` before applying
   the same output selection, matching the supplied v3 processor.
-* pyModeS 3.5.1 from the working tree: the same v3 code path, from a
+* pyModeS 3.6.0 from the working tree: the same v3 code path, from a
   freshly-built wheel.
-* pyModeS 3.5.1 with the recommended header prefilter applied before
+* pyModeS 3.6.0 with the recommended header prefilter applied before
   ``PipeDecoder`` (the filter itself remains inside the timed loop).
 
 The benchmark fixes the stripped example's accidental loop termination,
 renamed v3 velocity keys, flight-level units, and null-position emission. It
-checks filtered/unfiltered v3.5.1 output equality, unchanged non-position output
+checks filtered/unfiltered v3.6.0 output equality, unchanged non-position output
 from v3.5.0, immediate position yield, and coordinate agreement with v2 on every
 frame where both implementations emit a position.
 """

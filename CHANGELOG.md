@@ -5,11 +5,11 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [3.5.1] — 2026-07-16
+## [3.6.0] — 2026-07-16
 
 ### Added
 
-- `decode()`, `Message.decode()`, and `PipeDecoder` now accept
+- `decode()`, `Message.decode()`, and `PipeDecoder` accept
   `include_meteo=True` to opt into heuristic Comm-B BDS 4,4 routine
   meteorological reports and BDS 4,5 meteorological hazard reports. The
   default remains `False` because these payload patterns can overlap other

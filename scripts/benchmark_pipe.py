@@ -8,7 +8,7 @@ TTL, and decodes the same timestamped corpus through:
 
 1. pyModeS 2.21.1's public selective helpers;
 2. the released pyModeS 3.5.0 ``PipeDecoder``;
-3. a pyModeS 3.5.1 wheel built from the current working tree.
+3. a pyModeS 3.6.0 wheel built from the current working tree.
 
 Every version runs in a separate ``uv run --no-project`` environment.  This is
 important: pyModeS 2 and 3 share the same distribution/import name, so loading
