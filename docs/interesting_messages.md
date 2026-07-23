@@ -6,6 +6,10 @@ ambiguity, malformed payloads, etc. Each entry keeps the raw hex plus a
 few neighbouring messages so you can replay them through the decoder
 and reason about what went wrong.
 
+Most entries come from captured traffic. Cases explicitly labelled
+**synthetic regression vector** isolate a protocol boundary that is difficult
+to reproduce safely from a live feed.
+
 Use this as a reference when:
 
 - debugging a surprising decode output;
@@ -98,7 +102,7 @@ contributor but can produce the same signature.
 
 ### How PipeDecoder handles it
 
-Since 3.3.0, `PipeDecoder._reject_velocity_mismatch` cross-checks each
+The `PipeDecoder` validation layer cross-checks each
 CRC-valid DF17/18 TC=19 frame against the per-ICAO velocity anchor
 (`_adsb_velocity[icao] = (timestamp, groundspeed, track)`) populated
 from previously-accepted TC=19 frames. Tolerances scale with the gap
@@ -312,7 +316,7 @@ the altitude-code bits and CPR bits are completely rewritten.
 
 ### Handling
 
-Since this change, `PipeDecoder._reject_df17_altitude_mismatch` runs
+The `PipeDecoder` validation layer runs
 the same altitude cross-check used for DF20 (see the DF20 entry below),
 but for CRC-valid DF17/18 BDS 0,5 frames:
 
@@ -555,9 +559,10 @@ buffer and fails to find any entry within
 The stream also shows an **altitude ghost** (TC=12 frames decoding to
 4075 ft while the aircraft is at 7400–7475 ft) interleaved with the
 real positions — same CRC-collision mechanism, different manifestation.
-Those don't trip the motion check because the raw stream sample is
-spatially close; the altitude mismatch stays in the position's BDS 0,5
-payload and passes through today.
+They do not necessarily trip the spatial motion check because their CPR
+coordinates may remain nearby. The current DF17/18 altitude check catches
+them earlier: with a recent 7400–7475 ft ADS-B anchor, it sets
+`altitude_mismatch=True` and clears the CPR fields before they can pair.
 
 ### Handling
 
@@ -578,6 +583,10 @@ On rejection:
    rotate the history toward reality rather than locking the decoder
    out forever.
 
+This recovery history is not the local CPR reference. Rejected global
+candidates never enter `_airborne_position_reference`, so they cannot poison
+subsequent locally-unambiguous airborne decoding.
+
 For the first few samples of a new ICAO (before the ring buffer is
 locked), candidates live in `_bootstrap[icao]` instead and go through
 the cluster-analysis step in `_bootstrap_try_lock`.
@@ -597,6 +606,88 @@ pipe._position_history["484164"] = [
 ]
 # A candidate in Hamburg is unreachable in the elapsed seconds.
 assert pipe._motion_consistent("484164", 53.765, 9.624, 1000.0) is False
+```
+
+---
+
+## DF20 BDS 4,4 — explicit meteorological opt-in
+
+**Case:** a routine meteorological report has a valid BDS 4,4 payload pattern,
+but default decoding intentionally does not classify it.
+
+- **Message:** `A0001692185BD5CF400000DFC696`
+- **Header decode:** DF20, derived ICAO `3C4DD7`, altitude 35 050 ft
+- **Opt-in decode:** BDS 4,4, wind 22 kt at 344.53°, static air temperature
+  −48.75 °C
+
+### Why opt-in is required
+
+BDS 4,4 and 4,5 have no explicit register identifier in the Comm-B payload.
+They are inferred from status bits and value ranges that can also occur in
+other traffic. Enabling them globally would therefore turn some unrelated
+Comm-B messages into false meteorological reports.
+
+The default result keeps the independently decoded DF20 header fields but does
+not add a BDS classification. `include_meteo=True` adds BDS 4,4/4,5 to the
+heuristic candidate set. This is appropriate for a feed known to contain
+meteorological reports, and remains a deliberate per-decoder choice.
+
+### Reproduce
+
+```python
+import pyModeS
+
+msg = "A0001692185BD5CF400000DFC696"
+
+default = pyModeS.decode(msg)
+assert default.get("bds") is None
+
+meteo = pyModeS.decode(msg, include_meteo=True)
+assert meteo["bds"] == "4,4"
+assert meteo["wind_speed"] == 22
+assert meteo["static_air_temperature"] == -48.75
+
+pipe = pyModeS.PipeDecoder(include_meteo=True)
+assert pipe.decode(msg)["bds"] == "4,4"
+```
+
+---
+
+## Surface CPR at the equator and date line
+
+**Case:** **synthetic regression vectors** exercise the two circular boundaries
+where a naïve surface-CPR reference comparison chooses the wrong zone.
+
+Surface CPR is ambiguous across two 90° latitude zones and four 90° longitude
+quadrants. Selecting latitude only from the reference's hemisphere fails when
+the aircraft and nearby reference straddle the equator. Comparing longitude
+with ordinary subtraction fails at the date line because −180° is only 1° from
+a +179° reference, not 359° away.
+
+The resolver now evaluates both latitude-zone candidates by distance to the
+reference and compares longitude circularly.
+
+### Reproduce
+
+```python
+from pyModeS.position import surface_position_pair
+
+# At the equator, zero-valued CPR resolves to the zero-degree zone rather than
+# defaulting to the southern 90-degree zone.
+assert surface_position_pair(
+    0, 0, 0, 0,
+    lat_ref=0.0,
+    lon_ref=0.0,
+    even_is_newer=True,
+) == (0.0, 0.0)
+
+# Around the date line, -180° is the closest quadrant to +179°.
+assert surface_position_pair(
+    0, 0, 0, 0,
+    lat_ref=1.0,
+    lon_ref=179.0,
+    even_is_newer=True,
+) == (0.0, -180.0)
 ```
 
 ---
@@ -625,7 +716,10 @@ surrounding BDS 6,0 stream.
 
 ### Why it's hard
 
-Three checks were tried and rejected:
+Three checks were tried experimentally and rejected. These thresholds are not
+active validation rules. The current decoder uses magnetic heading for the
+dedicated BDS 6,0 plausibility check; IAS and Mach contribute to ambiguity
+scoring, but do not trigger hard rejection.
 
 1. **Mach smoothness against per-ICAO state.** Real Mach changes by up
    to 0.13 over ~30 s during cruise-to-IAS-transition descent; a
@@ -635,13 +729,12 @@ Three checks were tried and rejected:
    Phantom Mach-IAS pair differed from the gs-derived expectation by
    only 0.092 — well inside the 0.20 tolerance needed to accommodate
    ±100 kt of real-world wind.
-3. **Mach-IAS internal consistency at the anchor altitude.** The
+3. **Mach-IAS internal consistency at the anchor altitude.** The prototype
    phantom's `(Mach 0.78, IAS 316)` evaluated at the anchor's 2400 ft
    produces a TAS-from-Mach of ~338 kt vs TAS-from-IAS of ~295 kt —
-   a 43 kt disagreement, just above the 40 kt threshold used for
-   cruise-phase checks. But lowering the altitude floor that enables
-   this check (currently `> 500 ft`) any further starts rejecting
-   real late-descent traffic, and tightening the 40 kt bound
+   a 43 kt disagreement, just above its experimental 40 kt threshold.
+   Lowering the experiment's `> 500 ft` altitude floor further started
+   rejecting real late-descent traffic, and tightening the 40 kt bound
    false-positives in the presence of large wind changes.
 
 The signal that would reliably catch this pathology is *interrogator

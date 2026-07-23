@@ -100,6 +100,23 @@ eviction runs no more than once per `eviction_interval` to reclaim inactive
 aircraft. This keeps streaming decode cost independent of the total active-
 aircraft count without allowing stale state to affect inference.
 
+### Timestamp semantics
+
+Pass the message's source or capture timestamp—not the wall-clock time at which
+replay happens. `PipeDecoder` uses it for CPR pairing, anchor age, local CPR,
+plausibility envelopes, and TTL expiry.
+
+Reordered input is supported. An older message can pair with a newer opposite
+CPR parity, but source timestamps determine which parity is newer. Older state,
+altitude, velocity, and local-position observations cannot replace a newer
+anchor. Eviction follows the stream's timestamp high-water mark, so a late
+older message cannot revive state that a newer observation already expired.
+
+If `timestamp` is omitted, stateless payload decoding and basic Comm-B state
+updates still work, but time-dependent features—CPR pair matching, local
+airborne CPR, ICAO trust promotion, plausibility anchors, and TTL expiry—cannot
+operate reliably and are skipped where required.
+
 ### High-volume pre-filtering
 
 `PipeDecoder` returns a complete decode for every message offered to it.
@@ -133,7 +150,7 @@ can connect to a live feed or replay the committed mixed-traffic capture.
 
 ## Validation
 
-On top of CRC, `PipeDecoder` runs four plausibility cross-checks
+On top of CRC, `PipeDecoder` runs five plausibility cross-checks
 against per-ICAO anchors updated only from CRC-valid frames that
 passed their own check. A frame that fails is kept (header fields
 intact) so the caller can see it, but its position / velocity fields
@@ -175,12 +192,16 @@ candidates start over — counted as `bootstrap_reset`.
 
 ### Motion check
 
-Post-bootstrap, each candidate position is compared against the most
-recent accepted anchor. The allowed distance is
-`max_speed_kt * dt + motion_margin_km`. Positions that exceed it are
-rejected (`position_rejected`) — the anchor still rotates through the
-history regardless of accept/reject, so real tracks eventually
-out-vote lingering phantoms.
+Post-bootstrap, each candidate position is compared against the rolling
+five-position history. It is accepted when at least one history entry is within
+`max_speed_kt * dt + motion_margin_km`. A rejected global candidate is still
+added to this motion history so a sustained real track can eventually rotate
+past a bad initial cluster; it increments `position_rejected` and is not
+emitted.
+
+The local airborne CPR reference is deliberately separate. Only accepted
+airborne positions can update it, so neither a rejected global candidate nor a
+position derived from `surface_ref` can seed later local airborne decoding.
 
 ### BDS coverage
 
@@ -251,5 +272,5 @@ locking is needed — just don't share the decoder across threads.
 - `bootstrap_reset` — bootstrap buffers that failed to cluster and
   restarted
 
-The trusted ICAO set, per-ICAO state, pending CPR frames, anchors,
+The trusted ICAO cache, per-ICAO state, pending CPR frames, anchors,
 bootstrap buffers, and position history are all cleared by `reset()`.

@@ -22,9 +22,10 @@ pip install "pyModeS>=3"
 pip install "pyModeS<3"
 ```
 
-Both can coexist on PyPI because v3 uses the lowercase `pyModeS` name
-and v2 uses the camelCase `pyModeS` name — they're distinct
-distributions that never collide during import.
+Versions 2 and 3 occupy the same PyPI distribution and import name.
+Python package names are normalized case-insensitively, so installing
+one version replaces the other in a given environment. Use separate
+virtual environments when running or comparing both versions.
 
 ## Import change
 
@@ -102,12 +103,13 @@ result.callsign  # same as result["callsign"]
 
 See the [API reference](api.md) for the full list of decoded fields.
 
-## Renamed keys
+## Returned fields
 
-No pyModeS 2.21.1 field names were renamed in v3. The field-name
-surface is identical across the two versions; only the invocation
-shape changed (function-per-field → single `decode()`). See the
-equivalence table above.
+pyModeS 2 did not expose one unified record with a field-name surface:
+individual helpers returned scalars or function-specific tuples. pyModeS 3
+collects those values into explicitly named dictionary fields. The equivalence
+table above is the mapping to use when replacing each v2 helper or unpacked
+tuple element.
 
 ## Live streams
 
@@ -152,7 +154,7 @@ for msg, t in stream:
 
 - Per-ICAO state for Comm-B BDS 5,0/6,0 disambiguation (Phase 3 scoring)
 - TTL eviction of stale aircraft after 5 minutes of silence
-- DF20/21 `icao_verified=True` promotion via a trusted-ICAO set
+- DF20/21 `icao_verified=True` promotion via a trusted-ICAO cache
   populated from clean DF17/18 plain-text addresses
 
 See the [PipeDecoder deep-dive](pipe.md) for the full state model
@@ -192,9 +194,12 @@ Notable differences:
 
 ## Removed features
 
-- **Cython extension (`c_common`)** — v3 is pure Python and is
-  measurably faster than v2's compiled C path. No reintroduction
-  planned.
+- **Cython extension (`c_common`)** — v3 is pure Python. Performance depends
+  on the workload: the unified decoder does more work per offered message than
+  a selective sequence of v2 helpers, while its stateful streaming path avoids
+  repeated parsing and scales independently of the active-aircraft count.
+  Applications that consume only selected DF/typecode combinations should
+  prefilter them as described in the [PipeDecoder guide](pipe.md#high-volume-pre-filtering).
 - **Python 3.9 / 3.10 support** — v3 requires Python 3.11+.
 - **`pyModeS.streamer` subpackage** — the legacy streamer is not
   ported. The `modeslive` entry point is replaced by `modes live`
@@ -208,6 +213,6 @@ If any of your code still depends on v2 behavior, pin to v2 explicitly:
 pyModeS<3
 ```
 
-and migrate incrementally. v3 and v2 install under different import
-names (`pyModeS` vs `pyModeS`), so they can coexist in the same
-virtualenv during migration — import whichever you need per module.
+and migrate incrementally. Because v2 and v3 share the `pyModeS`
+distribution and import name, they cannot coexist in one virtual environment.
+Use a separate environment or process for each version while comparing them.
