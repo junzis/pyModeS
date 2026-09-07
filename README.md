@@ -38,7 +38,9 @@ print(result)
 
 ### Batch decode (mixed message types)
 
-Pass a list of hex strings and parallel timestamps. Any mix of
+Pass a list of hex strings and parallel timestamps (in seconds, on a
+monotonic clock — the same base as the CPR pair window and cache TTLs).
+Any mix of
 downlink formats, typecodes, and Comm-B registers is fine —
 the dispatcher routes each message to the right decoder and
 uses the timestamps to resolve CPR pairs and disambiguate
@@ -79,7 +81,9 @@ print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 
 ### Streaming decoder
 
-`PipeDecoder` is stateful — it holds per-ICAO state across calls,
+`PipeDecoder` is stateful — `timestamp` values passed to
+`pipe.decode(msg, timestamp=...)` are in seconds on a monotonic clock
+(see `pair_window`/TTLs) — it holds per-ICAO state across calls,
 matches CPR pairs automatically, evicts stale aircraft after a
 TTL, and flags DF20/21 messages as `icao_verified` when their
 CRC-derived ICAO was seen recently in clean DF17/18 plaintext.
