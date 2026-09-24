@@ -257,9 +257,7 @@ class PipeDecoder(ValidationMixin):
     ) -> Decoded:
         """Decode a single message.
 
-        ``timestamp`` must be in seconds on a monotonic clock (the same
-        base as the CPR pair window and cache TTLs); passing e.g.
-        milliseconds breaks CPR pair matching and state expiry.
+        ``timestamp`` is in seconds from a consistent clock.
 
         Looks up any prior per-ICAO state and forwards it as ``known=``
         to :meth:`Message.decode` so Comm-B BDS 5,0/6,0 disambiguation
