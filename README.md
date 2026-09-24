@@ -38,7 +38,7 @@ print(result)
 
 ### Batch decode (mixed message types)
 
-Pass a list of hex strings and parallel timestamps. Any mix of
+Pass a list of hex strings and parallel timestamps in seconds. Any mix of
 downlink formats, typecodes, and Comm-B registers is fine —
 the dispatcher routes each message to the right decoder and
 uses the timestamps to resolve CPR pairs and disambiguate
@@ -83,6 +83,8 @@ print(r["latitude"], r["longitude"])  # 43.6264..., 1.3747...
 matches CPR pairs automatically, evicts stale aircraft after a
 TTL, and flags DF20/21 messages as `icao_verified` when their
 CRC-derived ICAO was seen recently in clean DF17/18 plaintext.
+
+Pass timestamps in seconds from a consistent clock.
 
 ```python
 from pyModeS import PipeDecoder

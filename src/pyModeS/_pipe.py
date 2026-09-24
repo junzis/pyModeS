@@ -257,6 +257,8 @@ class PipeDecoder(ValidationMixin):
     ) -> Decoded:
         """Decode a single message.
 
+        ``timestamp`` is in seconds from a consistent clock.
+
         Looks up any prior per-ICAO state and forwards it as ``known=``
         to :meth:`Message.decode` so Comm-B BDS 5,0/6,0 disambiguation
         can score candidates against recent observations. After the
