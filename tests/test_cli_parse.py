@@ -9,8 +9,8 @@ from pyModeS.cli._parse import parse_network, parse_surface_ref
     ("value", "expected"),
     [
         ("host.example:10006", ("host.example", 10006)),
-        ("[::1]:30005", ("::1", 30005)),
-        ("::1:30005", ("::1", 30005)),
+        ("[::1]:10006", ("::1", 10006)),
+        ("::1:10006", ("::1", 10006)),
     ],
 )
 def test_parse_network(value, expected) -> None:

@@ -280,8 +280,8 @@ modes live --network HOST:PORT [--surface-ref REF]
                                [--quiet]
 ```
 
-Opens a TCP connection to a Mode-S Beast binary feed (dump1090's
-default port 30005, dump1090-fa, readsb, piaware, AirSquitter) and
+Opens a TCP connection to a Mode-S Beast binary feed (dump1090,
+dump1090-fa, readsb, piaware, AirSquitter) and
 emits decoded JSON lines to stdout as they arrive. Legacy AVR raw
 text format is not supported in v3.
 
@@ -303,17 +303,14 @@ Examples:
 
 ```sh
 # Basic streaming to stdout
-modes live --network localhost:30005
-
-# Public test feed over Europe (TU Delft)
-modes live --network airsquitter.lr.tudelft.nl:10006
+modes live --network localhost:10006
 
 # Tee to a file for later analysis
-modes live --network host:30005 --dump-to flight.jsonl
+modes live --network host:10006 --dump-to flight.jsonl
 
 # Interactive TUI
 pip install "pyModeS[tui]"
-modes live --network host:30005 --tui
+modes live --network host:10006 --tui
 ```
 
 Signal handling: Ctrl-C (SIGINT) and SIGTERM trigger a clean

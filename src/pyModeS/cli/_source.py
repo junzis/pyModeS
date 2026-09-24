@@ -4,11 +4,9 @@
 verifies the stream is Mode-S Beast binary format, parses frames into
 hex strings, and yields ``(hex_msg, timestamp)`` tuples.
 
-Only Mode-S Beast binary is supported — that covers dump1090's default
-port 30005, dump1090-fa, readsb, piaware, the AirSquitter receiver,
-and most modern Mode-S feeds. The legacy AVR raw text format (port
-30002) is out of scope for v3 and can be added later if a user
-requests it.
+Only Mode-S Beast binary is supported — that covers dump1090,
+dump1090-fa, readsb, piaware, the AirSquitter receiver,
+and most modern Mode-S feeds.
 
 Beast format (per Mode-S Beast wire protocol, cross-checked against
 FlightAware dump1090 ``net_io.c::modesReadFromClient``)::
@@ -265,7 +263,7 @@ class NetworkSource:
 
     Usage::
 
-        src = NetworkSource("airsquitter.lr.tudelft.nl", 10006)
+        src = NetworkSource("localhost", 10006)
         for hex_msg, timestamp in src:
             ...
 
@@ -274,9 +272,8 @@ class NetworkSource:
 
     If the initial read from the socket does not contain a beast
     marker byte (0x1a) within the first ``_DETECT_CAP`` bytes, the
-    iterator raises ``UnsupportedStreamError`` — the stream is either
-    legacy AVR raw text, a totally unrelated protocol, or a broken
-    feed.
+    iterator raises ``UnsupportedStreamError`` because the stream does
+    not contain valid Beast frames.
     """
 
     def __init__(

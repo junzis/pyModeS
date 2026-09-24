@@ -167,10 +167,10 @@ pyModeS 3 replaces it with a new `modes` command that has subcommands:
 
 ```sh
 # v2
-modeslive --source net --connect host 30005 beast
+modeslive --source net --connect host 10006 beast
 
 # v3
-modes live --network host:30005
+modes live --network host:10006
 ```
 
 Notable differences:
@@ -179,8 +179,8 @@ Notable differences:
   of `modes live`.
 - **Simplified network flag.** `--network HOST:PORT` replaces
   `--source net --connect HOST PORT DATATYPE`. Only the Mode-S
-  Beast binary format is supported; point at dump1090's port
-  30005 (or the equivalent beast port on your feed).
+  Beast binary format is supported; use the configured Beast
+  port on your feed.
 - **Firehose default.** `modes live` writes JSON lines to stdout
   by default — pipe to `jq`, redirect to a file, or stream into
   a parquet writer.
@@ -189,8 +189,8 @@ Notable differences:
   (`pip install "pyModeS[tui]"`). Powered by `rich` instead of
   `curses`.
 - **RTL-SDR.** Deferred to a follow-up release. For now, pipe
-  through `dump1090 --net` and connect via `--network
-  localhost:30005`.
+  through `dump1090 --net` with Beast output configured on port
+  10006 and connect via `--network localhost:10006`.
 
 ## Removed features
 

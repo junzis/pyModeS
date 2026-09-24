@@ -45,7 +45,7 @@ class TestLiveMainLoop:
         )
         from pyModeS.cli import main
 
-        code = main(["live", "--network", "host.example:30005"])
+        code = main(["live", "--network", "host.example:10006"])
         assert code == 0
         captured = capsys.readouterr()
         lines = [line for line in captured.out.splitlines() if line.strip()]

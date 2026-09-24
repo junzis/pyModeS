@@ -13,7 +13,7 @@ through their names; generated benchmark reports live in
 
   ```bash
   uv run python scripts/stream_filtered.py \
-    --network airsquitter.lr.tudelft.nl:10006 \
+    --network localhost:10006 \
     --include-meteo > decoded.jsonl
   ```
 
@@ -62,6 +62,7 @@ access unless those packages are already cached.
   environment and checks the public API.
 - `smoke_test_cli.sh` — checks CLI decoding and a short live Beast connection.
 
-The CLI smoke test requires network access. The wheel smoke test accepts an
-explicit wheel path; without one, it builds a fresh working-tree wheel in a
-temporary directory so stale files under `dist/` cannot be selected.
+The CLI smoke test requires a local Beast feed at `localhost:10006`.
+The wheel smoke test accepts an explicit wheel path; without one, it builds
+a fresh working-tree wheel in a temporary directory so stale files under
+`dist/` cannot be selected.

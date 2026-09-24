@@ -2,7 +2,7 @@
 # Manual integration smoke test for the `modes` CLI.
 #
 # Runs three checks: single-message decode, stdin file decode, and
-# a 5-second sample against the TU Delft public Mode-S feed. Not
+# a 5-second sample against the local Mode-S Beast feed. Not
 # intended for CI (requires network + hangs on feed outages). Run
 # manually during release prep.
 
@@ -22,12 +22,12 @@ echo "8D406B902015A678D4D220AA4BDA" \
     | grep -q '"df":17'
 echo "    PASSED"
 
-echo ">>> 3. Live against TU Delft feed (5 second sample)"
+echo ">>> 3. Live against local Beast feed (5 second sample)"
 # Use timeout to cap the run; the command exits 124 on timeout or
 # 0 on graceful SIGINT, both acceptable.
 set +e
 timeout --signal=INT 5 uv run modes live \
-    --network airsquitter.lr.tudelft.nl:10006 \
+    --network localhost:10006 \
     > /tmp/pyModeS_live_sample.jsonl 2>/tmp/pyModeS_live_sample.err
 rc=$?
 set -e

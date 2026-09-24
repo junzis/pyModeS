@@ -111,11 +111,10 @@ def _add_live_parser(
         ),
         epilog=(
             "Examples:\n"
-            "  modes live --network localhost:30005\n"
-            "  modes live --network airsquitter.lr.tudelft.nl:10006\n"
-            "  modes live --network host:30002 --dump-to flight.jsonl\n"
-            "  modes live --network host:30002 --tui  (requires pyModeS[tui])\n"
-            "  modes live --network host:30002 --quiet --dump-to flight.jsonl\n"
+            "  modes live --network localhost:10006\n"
+            "  modes live --network host:10006 --dump-to flight.jsonl\n"
+            "  modes live --network host:10006 --tui  (requires pyModeS[tui])\n"
+            "  modes live --network host:10006 --quiet --dump-to flight.jsonl\n"
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

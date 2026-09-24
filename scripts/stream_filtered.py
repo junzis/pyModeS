@@ -10,7 +10,7 @@ the rest of a mixed 1090 MHz feed wastes most of the CPU time.
 Live Beast feed::
 
     python scripts/stream_filtered.py \
-        --network airsquitter.lr.tudelft.nl:10006 > decoded.jsonl
+        --network localhost:10006 > decoded.jsonl
 
 Replay the benchmark capture::
 
@@ -43,7 +43,7 @@ from typing import TextIO
 from pyModeS import PipeDecoder
 from pyModeS.util import df, typecode
 
-DEFAULT_NETWORK = "airsquitter.lr.tudelft.nl:10006"
+DEFAULT_NETWORK = "localhost:10006"
 DEFAULT_DOWNLINK_FORMATS = frozenset((17, 20, 21))
 DEFAULT_EXCLUDED_TYPECODES = frozenset((28, 29, 31))
 

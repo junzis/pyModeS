@@ -145,21 +145,17 @@ cat taxi.log | modes decode --file - --surface-ref LFBO
 
 ```sh
 # Stream decoded JSON lines from a dump1090-style beast feed
-modes live --network localhost:30005
+modes live --network localhost:10006
 
 # Tee output to a file
-modes live --network host:30005 --dump-to flight.jsonl
-
-# Stream from the TU Delft public feed (live aircraft over Europe)
-modes live --network airsquitter.lr.tudelft.nl:10006
+modes live --network host:10006 --dump-to flight.jsonl
 
 # Interactive live aircraft table (requires pyModeS[tui] extra)
 pip install "pyModeS[tui]"
-modes live --network host:30005 --tui
+modes live --network host:10006 --tui
 ```
 
-Mode-S Beast binary format is supported (dump1090 port 30005 and
-equivalents). See [`docs/quickstart.md`](./docs/quickstart.md) for
+Mode-S Beast binary format is supported (dump1090 and compatible feeds). See [`docs/quickstart.md`](./docs/quickstart.md) for
 the full command reference.
 
 ## Features
