@@ -958,7 +958,9 @@ class PipeDecoder(ValidationMixin):
                             d["longitude"] = None
                         self._stats["position_rejected"] += 1
                     if accepted:
-                        self._update_position_history(icao, lat, lon, position_timestamp)
+                        self._update_position_history(
+                            icao, lat, lon, position_timestamp
+                        )
                     if (
                         accepted
                         and bds == "0,5"
