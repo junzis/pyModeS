@@ -674,12 +674,10 @@ class PipeDecoder(ValidationMixin):
         lon: float,
         timestamp: float,
     ) -> None:
-        """Insert into the per-ICAO time-ordered ring buffer.
+        """Insert a trusted position into the per-ICAO time-ordered ring buffer.
 
-        Called for every resolved CPR pair regardless of whether
-        `_motion_consistent` accepted it — rejected positions still
-        enter the buffer so future real positions can find corroborating
-        neighbours even after a streak of phantoms.
+        Callers add positions only after motion consistency or bootstrap
+        validation. Rejected candidates must not validate themselves or repeats.
         """
         history = self._position_history.setdefault(icao, [])
         history.append((lat, lon, timestamp))
@@ -959,7 +957,10 @@ class PipeDecoder(ValidationMixin):
                             d["latitude"] = None
                             d["longitude"] = None
                         self._stats["position_rejected"] += 1
-                    self._update_position_history(icao, lat, lon, position_timestamp)
+                    if accepted:
+                        self._update_position_history(
+                            icao, lat, lon, position_timestamp
+                        )
                     if (
                         accepted
                         and bds == "0,5"

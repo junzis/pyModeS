@@ -1284,8 +1284,16 @@ class TestPositionMotionConsistency:
         # Pair was resolved but rejected — lat/lon must be absent or None
         assert r.get("latitude") in (None, 0, False) or r["latitude"] is None
         assert pipe.stats["position_rejected"] == 1
-        # Ring buffer still updated with the rejected position
-        assert len(pipe._position_history[self.ICAO]) == 3
+        assert len(pipe._position_history[self.ICAO]) == 2
+
+        # Repeating the same CPR pair must not be accepted because the first
+        # rejected position was not added to trusted history.
+        pipe.decode("8D40058B58C901375147EFD09357", timestamp=1002.0)
+        repeated = pipe.decode("8D40058B58C904A87F402D3B8C59", timestamp=1003.0)
+        assert repeated.get("latitude") is None
+        assert repeated.get("longitude") is None
+        assert pipe.stats["position_rejected"] == 2
+        assert len(pipe._position_history[self.ICAO]) == 2
 
     def test_eviction_prunes_old_position_history(self):
         pipe = PipeDecoder(eviction_ttl=10.0)
