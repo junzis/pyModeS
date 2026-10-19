@@ -5,6 +5,19 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.6.1] - 2026-10-19
+
+### Fixed
+
+- Keep rejected CPR positions out of trusted position history so repeated
+  messages cannot validate a previously rejected position (#204).
+
+### Changed
+
+- Clarify that decoder timestamps use seconds from a consistent clock (#203).
+- Refresh decoder guides and network examples. The filtered streaming example
+  now defaults to `localhost:10006`.
+
 ## [3.6.0] — 2026-07-16
 
 ### Added
