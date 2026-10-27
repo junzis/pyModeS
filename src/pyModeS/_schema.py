@@ -21,10 +21,11 @@ omissions.
 """
 
 _FULL_SCHEMA: dict[str, type | str] = {
-    # Always present (set by Message.decode for any DF)
-    "df": int,
+    # Common header: df for downlink replies, uf for uplink interrogations
+    "df": "int | None",
+    "uf": "int | None",
     "icao": str,
-    # Set by Message.decode for DF17/18/20/21
+    # Set by Message.decode; None when parity cannot be checked independently
     "crc_valid": "bool | None",
     # Set by Message.decode for DF20/21 only
     "icao_verified": "bool | None",
@@ -45,6 +46,13 @@ _FULL_SCHEMA: dict[str, type | str] = {
     "flight_status_text": "str | None",
     "downlink_request": "int | None",
     "utility_message": "int | None",
+    # Uplink interrogation (UF4/5/11/20/21)
+    "designator_identification": "int | None",
+    "reply_request": "int | None",
+    "reply_request_subfield": "int | None",
+    "interrogator_code": "str | None",
+    "lockout": "bool | None",
+    "probability_of_reply": "int | None",
     # All-call reply (DF11)
     "capability": "int | None",
     "capability_text": "str | None",

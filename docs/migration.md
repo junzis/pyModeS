@@ -105,6 +105,58 @@ See the [API reference](api.md) for the full list of decoded fields.
 
 ## Returned fields
 
+### Mode-S uplink interrogations
+
+Use `pyModeS.decode(msg, uplink=True)` for ground-to-air interrogations.
+The direction must be explicit because UF and DF numbers overlap.
+Lists of uplink messages are supported and decoded independently.
+`Message(msg, uplink=True).decode()` provides the same fields.
+
+```python
+result = pyModeS.decode("2097AB60000000", uplink=True)
+result["uf"]                # 4
+result["bds"]               # "2,B"
+result["interrogator_code"] # "II10"
+result["lockout"]           # True
+```
+
+| v2 `pyModeS.decoder.uplink` helper | v3 result field |
+|---|---|
+| `uf(msg)` | `uf` (values 24–31 normalize to 24) |
+| `uplink_icao(msg)` | `icao` |
+| `bds(msg)` | `bds`, using comma notation (`"20"` becomes `"2,0"`) |
+| `pr(msg)` | `probability_of_reply` (raw PR code, 0–15) |
+| `ic(msg)` | `interrogator_code` (`"II…"` or `"SI…"`) |
+| `lockout(msg)` | `lockout` |
+| `uplink_fields(msg)["DI"]` | `designator_identification` |
+| `uplink_fields(msg)["RR"]` | `reply_request` |
+| `uplink_fields(msg)["RRS"]` | `reply_request_subfield` |
+
+UF11 provides PR and interrogator code fields. UF4/5/20/21 provide
+selective interrogation fields. Other UFs return header fields only.
+Inapplicable fields are omitted; `full_dict=True` fills them with `None`.
+Reserved UF11 code labels produce `interrogator_code=None`.
+The PR code retains the v2 encoding: codes 0–4 mean reply probabilities
+1, 1/2, 1/4, 1/8, and 1/16; codes 8–12 use those probabilities and disregard
+lockout. Codes 5–7 and 13–15 are unassigned.
+
+Uplink address recovery follows the v2 algorithm. For UF11, `crc_valid` checks
+the recovered address against the fixed all-call address `FFFFFF`; ICAO hints
+are ignored. For other UFs, `crc_valid` is `None` without an independent address.
+Pass `icao="ABCDEF"` to check address/parity against a known address.
+Payload-only construction and `PipeDecoder` handle
+downlink messages. Use `decode(list_of_messages, uplink=True)` for uplink batches.
+
+The CLI accepts the same direction flag for a single message, inline batch,
+or file:
+
+```sh
+modes decode 2097AB60000000 --uplink
+modes decode --file interrogations.csv --uplink --compact
+```
+
+### Downlink fields
+
 pyModeS 2 did not expose one unified record with a field-name surface:
 individual helpers returned scalars or function-specific tuples. pyModeS 3
 collects those values into explicitly named dictionary fields. The equivalence

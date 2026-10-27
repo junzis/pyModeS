@@ -18,6 +18,36 @@ def _run(argv: list[str], capsys: pytest.CaptureFixture[str]) -> tuple[int, str,
 
 
 class TestDecodeSingleMessage:
+    def test_uplink(self, capsys):
+        code, out, err = _run(
+            ["decode", "2097AB60000000", "--uplink", "--compact"], capsys
+        )
+        assert code == 0
+        assert not err
+        result = json.loads(out)
+        assert result["uf"] == 4
+        assert result["bds"] == "2,B"
+        assert result["raw_msg"] == "2097AB60000000"
+        assert "df" not in result
+
+    @pytest.mark.parametrize("file_input", [False, True])
+    def test_uplink_batch(self, capsys, tmp_path, file_input):
+        messages = ["2097AB60000000", "XYZ", "5D4CA2D4000000"]
+        if file_input:
+            capture = tmp_path / "uplink.csv"
+            capture.write_text("\n".join(f"{i},{m}" for i, m in enumerate(messages)))
+            arguments = ["--file", str(capture)]
+        else:
+            arguments = [",".join(messages)]
+        code, out, err = _run(["decode", *arguments, "--uplink", "--compact"], capsys)
+        assert code == 0
+        assert not err
+        results = [json.loads(line) for line in out.splitlines()]
+        assert [result["raw_msg"] for result in results] == messages
+        assert results[0]["uf"] == 4
+        assert results[1]["error"]
+        assert results[2]["uf"] == 11
+
     def test_basic_pretty(self, capsys):
         code, out, _err = _run(["decode", "8D406B902015A678D4D220AA4BDA"], capsys)
         assert code == 0

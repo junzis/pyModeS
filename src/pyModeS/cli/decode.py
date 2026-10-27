@@ -52,6 +52,7 @@ def _run_single(args: argparse.Namespace) -> int:
             surface_ref=surface_ref,
             include_meteo=args.include_meteo,
             full_dict=args.full_dict,
+            uplink=args.uplink,
         )
     except Exception as e:
         print(f"modes decode: error: {e}", file=sys.stderr)
@@ -134,6 +135,7 @@ def _emit_batch(
             surface_ref=surface_ref,
             include_meteo=args.include_meteo,
             full_dict=args.full_dict,
+            uplink=args.uplink,
         )
     except Exception as error:
         print(f"modes decode: error: {error}", file=sys.stderr)

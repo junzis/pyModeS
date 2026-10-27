@@ -10,6 +10,7 @@ returns a list of Decoded dicts of the same length.
 import logging
 from typing import Any, overload
 
+from pyModeS.errors import DecodeError
 from pyModeS.message import Decoded, Message
 
 _log = logging.getLogger("pyModeS")
@@ -27,6 +28,7 @@ def decode(
     known: dict[str, Any] | None = None,
     include_meteo: bool = False,
     full_dict: bool = False,
+    uplink: bool = False,
 ) -> Decoded: ...
 
 
@@ -38,6 +40,7 @@ def decode(
     surface_ref: str | tuple[float, float] | None = None,
     include_meteo: bool = False,
     full_dict: bool = False,
+    uplink: bool = False,
 ) -> list[Decoded]: ...
 
 
@@ -53,6 +56,7 @@ def decode(
     include_meteo: bool = False,
     full_dict: bool = False,
     timestamps: Any = None,
+    uplink: bool = False,
 ) -> Any:
     """Decode a single Mode-S message or a batch of messages.
 
@@ -67,6 +71,7 @@ def decode(
         icao: ICAO address hint. Optional for `msg=`; required for
             `payload=`. For the `msg=` path with DF20/21 it overrides
             the CRC-derived ICAO and sets `icao_verified=True`.
+            Ignored for uplink UF11, which uses the fixed all-call address.
         reference: (lat, lon) for single-message airborne CPR
             position decoding (BDS 0,5). Must be within 180 NM of
             the true position. If omitted, only raw CPR fields are
@@ -89,9 +94,13 @@ def decode(
             every key from `_FULL_SCHEMA`, defaulting missing keys
             to `None`. Useful for pandas/parquet workflows that
             need a uniform shape across messages.
+        uplink: Decode ground-to-air interrogations instead of downlink
+            replies. Returns `uf` in place of `df`. Supports single messages
+            and lists; uplink lists are stateless and do not use PipeDecoder.
+            Payload-only construction is not available for uplink messages.
 
     Returns:
-        A Decoded dict with at least `df`, `icao`, `crc_valid`. For
+        A Decoded dict with at least `df` (`uf` for uplink), `icao`, `crc_valid`. For
         airborne/surface positions, `latitude` and `longitude` are
         added when sufficient context is provided.
 
@@ -107,9 +116,12 @@ def decode(
             ``[0, 1, 2, ...]`` are synthesised as timestamps and a
             WARNING is logged — pair matching will still function
             but the synthesized values are not wall-clock times.
+            Uplink batches only check the list length; they do not track
+            aircraft state or require timestamps.
         surface_ref: Same as single-message mode.
         include_meteo: Same as single-message mode.
         full_dict: Same as single-message mode.
+        uplink: Same as single-message mode.
 
     Batch mode returns a ``list[Decoded]`` of the same length as
     ``msg``. Messages that fail parsing are returned as error dicts
@@ -143,6 +155,22 @@ def decode(
                     f"{kw_name}= is not allowed in batch mode "
                     f"(received list of {len(msg)} messages)"
                 )
+        if uplink:
+            if timestamps is not None and len(timestamps) != len(msg):
+                raise ValueError(
+                    f"timestamps length {len(timestamps)} does not match "
+                    f"messages length {len(msg)}"
+                )
+            results = []
+            for raw in msg:
+                try:
+                    result = Message(raw, uplink=True).decode(full_dict=full_dict)
+                except DecodeError as error:
+                    result = Decoded(error=str(error), raw_msg=raw)
+                    if full_dict:
+                        Message._populate_full_dict(result)
+                results.append(result)
+            return results
         return _decode_batch(
             msg,
             timestamps=timestamps,
@@ -161,12 +189,14 @@ def decode(
         raise ValueError("exactly one of msg or payload must be provided")
 
     if payload is not None:
+        if uplink:
+            raise ValueError("payload= is not available for uplink messages")
         if df is None or icao is None:
             raise ValueError("df and icao are required when payload is provided")
         message = Message.from_payload(payload, df=df, icao=icao)
     else:
         assert msg is not None
-        message = Message(msg, icao_hint=icao)
+        message = Message(msg, icao_hint=icao, uplink=uplink)
 
     return message.decode(
         reference=reference,

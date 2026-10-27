@@ -1,0 +1,1738 @@
+[
+  {
+    "msg": "20000000000000",
+    "expected": {
+      "uf": 4,
+      "icao": "C051F6",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 0,
+      "lockout": false,
+      "interrogator_code": "II0"
+    }
+  },
+  {
+    "msg": "5D4CA2D4000000",
+    "expected": {
+      "uf": 11,
+      "icao": "5C8214",
+      "crc_valid": null,
+      "probability_of_reply": 10,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "A000083E202CC371C31DE0AA1CCF",
+    "expected": {
+      "uf": 20,
+      "icao": "6C63DA",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 0,
+      "lockout": false,
+      "interrogator_code": "II0"
+    }
+  },
+  {
+    "msg": "A097AB600123456789ABCD123456",
+    "expected": {
+      "uf": 20,
+      "icao": "F2EDD2",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II10",
+      "reply_request_subfield": 11,
+      "bds": "2,B"
+    }
+  },
+  {
+    "msg": "207856941FC070",
+    "expected": {
+      "uf": 4,
+      "icao": "725675",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II5"
+    }
+  },
+  {
+    "msg": "2090C4F4EC861B",
+    "expected": {
+      "uf": 4,
+      "icao": "925CD0",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II12",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20F860B289103E",
+    "expected": {
+      "uf": 4,
+      "icao": "B61287",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II6",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "2079805779C241",
+    "expected": {
+      "uf": 4,
+      "icao": "CB6DA3",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 15,
+      "lockout": true,
+      "interrogator_code": "II8"
+    }
+  },
+  {
+    "msg": "2091CA963C9418",
+    "expected": {
+      "uf": 4,
+      "icao": "5C6D4D",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II12",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20F93AA8152BBC",
+    "expected": {
+      "uf": 4,
+      "icao": "E7F7AE",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II3",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "207A548F6FE4E6",
+    "expected": {
+      "uf": 4,
+      "icao": "BECAD4",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "20921FBC44197D",
+    "expected": {
+      "uf": 4,
+      "icao": "7E58AD",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20FABA24109B6F",
+    "expected": {
+      "uf": 4,
+      "icao": "7CABD0",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "207B2C037626CD",
+    "expected": {
+      "uf": 4,
+      "icao": "1F7C85",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "SI11",
+      "reply_request_subfield": 0
+    }
+  },
+  {
+    "msg": "2093A3FDD09E7F",
+    "expected": {
+      "uf": 4,
+      "icao": "71D3F4",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "SI40",
+      "reply_request_subfield": 15,
+      "bds": "2,F"
+    }
+  },
+  {
+    "msg": "20FB81F99CC176",
+    "expected": {
+      "uf": 4,
+      "icao": "D94423",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "SI32",
+      "reply_request_subfield": 15,
+      "bds": "F,F"
+    }
+  },
+  {
+    "msg": "207C5DEFC935D2",
+    "expected": {
+      "uf": 4,
+      "icao": "33C387",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "209459110744E0",
+    "expected": {
+      "uf": 4,
+      "icao": "D71928",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20FC5C20D97D5D",
+    "expected": {
+      "uf": 4,
+      "icao": "3B159C",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "207D9327F9BA48",
+    "expected": {
+      "uf": 4,
+      "icao": "AF889B",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "2095DD38A54932",
+    "expected": {
+      "uf": 4,
+      "icao": "0FFA6B",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20FD31BF2798EE",
+    "expected": {
+      "uf": 4,
+      "icao": "330FC9",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "207E74143C5265",
+    "expected": {
+      "uf": 4,
+      "icao": "4D7C78",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "20960322053A49",
+    "expected": {
+      "uf": 4,
+      "icao": "CBBDE4",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "20FEFD0D14CCBA",
+    "expected": {
+      "uf": 4,
+      "icao": "AAB1CC",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "207F46E698793E",
+    "expected": {
+      "uf": 4,
+      "icao": "14DFC3",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 15,
+      "lockout": true,
+      "interrogator_code": "II4",
+      "reply_request_subfield": 6
+    }
+  },
+  {
+    "msg": "20978364439717",
+    "expected": {
+      "uf": 4,
+      "icao": "229192",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II8",
+      "reply_request_subfield": 3,
+      "bds": "2,3"
+    }
+  },
+  {
+    "msg": "20FFA31B42A09C",
+    "expected": {
+      "uf": 4,
+      "icao": "706E81",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II10",
+      "reply_request_subfield": 3,
+      "bds": "F,3"
+    }
+  },
+  {
+    "msg": "2878C40298056C",
+    "expected": {
+      "uf": 5,
+      "icao": "4578AD",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II12"
+    }
+  },
+  {
+    "msg": "28901F09515B5D",
+    "expected": {
+      "uf": 5,
+      "icao": "02CA36",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II1",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28F8AD8A7F8B0E",
+    "expected": {
+      "uf": 5,
+      "icao": "68002C",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II10",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287956BC0FE453",
+    "expected": {
+      "uf": 5,
+      "icao": "902397",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II5"
+    }
+  },
+  {
+    "msg": "289127D515D2AD",
+    "expected": {
+      "uf": 5,
+      "icao": "908D18",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II2",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28F9B5D3BAF696",
+    "expected": {
+      "uf": 5,
+      "icao": "9E82AD",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 31,
+      "lockout": true,
+      "interrogator_code": "II11",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287AEC2E8ADFE6",
+    "expected": {
+      "uf": 5,
+      "icao": "20C0C1",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "2892C8B69C34E4",
+    "expected": {
+      "uf": 5,
+      "icao": "52F90F",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28FAF74D288398",
+    "expected": {
+      "uf": 5,
+      "icao": "0C3994",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287B04E7123BC8",
+    "expected": {
+      "uf": 5,
+      "icao": "D78413",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "SI1",
+      "reply_request_subfield": 7
+    }
+  },
+  {
+    "msg": "289365CD033C2A",
+    "expected": {
+      "uf": 5,
+      "icao": "CB696E",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "SI25",
+      "reply_request_subfield": 14,
+      "bds": "2,E"
+    }
+  },
+  {
+    "msg": "28FB10485A95FC",
+    "expected": {
+      "uf": 5,
+      "icao": "1532FD",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "SI4",
+      "reply_request_subfield": 2,
+      "bds": "F,2"
+    }
+  },
+  {
+    "msg": "287C4E7CE0B7D3",
+    "expected": {
+      "uf": 5,
+      "icao": "F1350C",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "28941A9B2B4F85",
+    "expected": {
+      "uf": 5,
+      "icao": "400FDD",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28FCF180E86863",
+    "expected": {
+      "uf": 5,
+      "icao": "26BDF7",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287D290E6D003B",
+    "expected": {
+      "uf": 5,
+      "icao": "6E1B00",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "289524270216C0",
+    "expected": {
+      "uf": 5,
+      "icao": "BC2A30",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28FD654993BACD",
+    "expected": {
+      "uf": 5,
+      "icao": "DC3DB1",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287E69712A3522",
+    "expected": {
+      "uf": 5,
+      "icao": "D6BF1D",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "28969C25B07D37",
+    "expected": {
+      "uf": 5,
+      "icao": "3633D9",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "28FECF4C6EF397",
+    "expected": {
+      "uf": 5,
+      "icao": "3C0F3A",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "287F2F81C8FB81",
+    "expected": {
+      "uf": 5,
+      "icao": "3DAC9F",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II2",
+      "reply_request_subfield": 15
+    }
+  },
+  {
+    "msg": "28971375B26B1C",
+    "expected": {
+      "uf": 5,
+      "icao": "CE35C0",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II1",
+      "reply_request_subfield": 3,
+      "bds": "2,3"
+    }
+  },
+  {
+    "msg": "28FF78273A7283",
+    "expected": {
+      "uf": 5,
+      "icao": "C1B823",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II7",
+      "reply_request_subfield": 8,
+      "bds": "F,8"
+    }
+  },
+  {
+    "msg": "A078344AE6F7648EA9EA6D443B50",
+    "expected": {
+      "uf": 20,
+      "icao": "ABD8A4",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II3"
+    }
+  },
+  {
+    "msg": "A090847C8178DBA5A08AE9B9514D",
+    "expected": {
+      "uf": 20,
+      "icao": "477885",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II8",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0F8EAC245BDD1BD760EF90CE58F",
+    "expected": {
+      "uf": 20,
+      "icao": "241794",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II14",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A079A7A7FB57E7C34F628AB97E31",
+    "expected": {
+      "uf": 20,
+      "icao": "C20A9E",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II10"
+    }
+  },
+  {
+    "msg": "A09157E8A059EC758AA0F8C3B8FD",
+    "expected": {
+      "uf": 20,
+      "icao": "DE20E6",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II5",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0F9BE1AA6BBD043C96553DAD585",
+    "expected": {
+      "uf": 20,
+      "icao": "F9345D",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II11",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A07AC09FED00E84478FFB8B102D8",
+    "expected": {
+      "uf": 20,
+      "icao": "9650D0",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A092F5B5B10A04B37FCAD2B285A1",
+    "expected": {
+      "uf": 20,
+      "icao": "EF6832",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0FABFA70AAC507637521607F133",
+    "expected": {
+      "uf": 20,
+      "icao": "A7C808",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A07B9567A8F15108A893C8FAF8A9",
+    "expected": {
+      "uf": 20,
+      "icao": "C77995",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "SI37",
+      "reply_request_subfield": 11
+    }
+  },
+  {
+    "msg": "A0934F691AC5B2F021FD273B2F8B",
+    "expected": {
+      "uf": 20,
+      "icao": "5ECC5E",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "SI19",
+      "reply_request_subfield": 11,
+      "bds": "2,B"
+    }
+  },
+  {
+    "msg": "A0FBF2A18E081F2EC57F54D0B614",
+    "expected": {
+      "uf": 20,
+      "icao": "CD2BBD",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 31,
+      "lockout": true,
+      "interrogator_code": "SI60",
+      "reply_request_subfield": 5,
+      "bds": "F,5"
+    }
+  },
+  {
+    "msg": "A07CC2E9B6A87F78CD36364D9EE9",
+    "expected": {
+      "uf": 20,
+      "icao": "2F339D",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A0941EC3AA8309C0BC6948C8C455",
+    "expected": {
+      "uf": 20,
+      "icao": "22F497",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0FC918BCFCB660049ABBBDAE558",
+    "expected": {
+      "uf": 20,
+      "icao": "D6D843",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A07D1F6FB827234EBBDC1C5E7C2B",
+    "expected": {
+      "uf": 20,
+      "icao": "B0A9D8",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A09575E2134E99F51176436DD85E",
+    "expected": {
+      "uf": 20,
+      "icao": "26E278",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0FDC21AC02FABCF46A6AF0015EF",
+    "expected": {
+      "uf": 20,
+      "icao": "AFAF03",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A07E9BE901C975E482EC7828A26E",
+    "expected": {
+      "uf": 20,
+      "icao": "EA8BF9",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A096EC9F7EFF4C59036C0FAA7FE9",
+    "expected": {
+      "uf": 20,
+      "icao": "4C2D39",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A0FE12CF95962C4F2791C851B416",
+    "expected": {
+      "uf": 20,
+      "icao": "C01522",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A07F2B217BEDBA1EF2D0C510C972",
+    "expected": {
+      "uf": 20,
+      "icao": "1DB178",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II2",
+      "reply_request_subfield": 11
+    }
+  },
+  {
+    "msg": "A0979F05CD4AD6D20C9CDB9FE754",
+    "expected": {
+      "uf": 20,
+      "icao": "912018",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II9",
+      "reply_request_subfield": 15,
+      "bds": "2,F"
+    }
+  },
+  {
+    "msg": "A0FFC15337F930D8CD6ACC518801",
+    "expected": {
+      "uf": 20,
+      "icao": "A3825C",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 31,
+      "lockout": true,
+      "interrogator_code": "II12",
+      "reply_request_subfield": 1,
+      "bds": "F,1"
+    }
+  },
+  {
+    "msg": "A878744D7EFD3EE5CCFF6F21C8FB",
+    "expected": {
+      "uf": 21,
+      "icao": "1A3705",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II7"
+    }
+  },
+  {
+    "msg": "A8905FB0961E6F40D63737B92BB4",
+    "expected": {
+      "uf": 21,
+      "icao": "DD0E8A",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 18,
+      "lockout": false,
+      "interrogator_code": "II5",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8F872CEB0BC8A7872896D71716C",
+    "expected": {
+      "uf": 21,
+      "icao": "1907D7",
+      "crc_valid": null,
+      "designator_identification": 0,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II7",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A879C39B80ACE2285CECCB2B19FB",
+    "expected": {
+      "uf": 21,
+      "icao": "B74CAE",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II12"
+    }
+  },
+  {
+    "msg": "A89177DEB7838A756327A10DBD2B",
+    "expected": {
+      "uf": 21,
+      "icao": "DD2638",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II7",
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8F932BF0BFD78EEF34182CB17A5",
+    "expected": {
+      "uf": 21,
+      "icao": "638266",
+      "crc_valid": null,
+      "designator_identification": 1,
+      "reply_request": 31,
+      "lockout": false,
+      "interrogator_code": "II3",
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87A096E759DAD45EE27386EF146",
+    "expected": {
+      "uf": 21,
+      "icao": "DC648C",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A892CBEF65D2365C084170CB380E",
+    "expected": {
+      "uf": 21,
+      "icao": "5245B4",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8FA50052A8DD53EE374CA691574",
+    "expected": {
+      "uf": 21,
+      "icao": "AC8AB3",
+      "crc_valid": null,
+      "designator_identification": 2,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87B5C8BA89988453C00FE1C6F60",
+    "expected": {
+      "uf": 21,
+      "icao": "1D5082",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "SI23",
+      "reply_request_subfield": 4
+    }
+  },
+  {
+    "msg": "A893920A539398BF456EC81A8ACC",
+    "expected": {
+      "uf": 21,
+      "icao": "AFB09F",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "SI36",
+      "reply_request_subfield": 0,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8FBEA0DA08D5B8C41DF8D19BBDB",
+    "expected": {
+      "uf": 21,
+      "icao": "51374D",
+      "crc_valid": null,
+      "designator_identification": 3,
+      "reply_request": 31,
+      "lockout": true,
+      "interrogator_code": "SI58",
+      "reply_request_subfield": 0,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87C34C609D87CC3FF6DFA86F864",
+    "expected": {
+      "uf": 21,
+      "icao": "380806",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A89431C60E53BE84D234168879AC",
+    "expected": {
+      "uf": 21,
+      "icao": "C0FA90",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8FC7A52A6BCFA59AA1254E1564B",
+    "expected": {
+      "uf": 21,
+      "icao": "9F601F",
+      "crc_valid": null,
+      "designator_identification": 4,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87DB9A37217A769A46335D09152",
+    "expected": {
+      "uf": 21,
+      "icao": "72CBD2",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A89575BB9755779605DFEAE0CC4C",
+    "expected": {
+      "uf": 21,
+      "icao": "D9D71C",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8FDD1A1D803B2E0C0853C22432B",
+    "expected": {
+      "uf": 21,
+      "icao": "3C8B13",
+      "crc_valid": null,
+      "designator_identification": 5,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87ED58271188B7DC3E7B12A9B6F",
+    "expected": {
+      "uf": 21,
+      "icao": "EA7D29",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 15,
+      "lockout": false
+    }
+  },
+  {
+    "msg": "A8961B4D6DFAE4495F9058D4D001",
+    "expected": {
+      "uf": 21,
+      "icao": "11F785",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 18,
+      "lockout": false,
+      "bds": "2,0"
+    }
+  },
+  {
+    "msg": "A8FEAA1F6C0C8658E2ED81C29BCA",
+    "expected": {
+      "uf": 21,
+      "icao": "BADCF9",
+      "crc_valid": null,
+      "designator_identification": 6,
+      "reply_request": 31,
+      "lockout": false,
+      "bds": "F,0"
+    }
+  },
+  {
+    "msg": "A87F363197764E09467268ED20E8",
+    "expected": {
+      "uf": 21,
+      "icao": "5AB8C2",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 15,
+      "lockout": false,
+      "interrogator_code": "II3",
+      "reply_request_subfield": 6
+    }
+  },
+  {
+    "msg": "A89799C302BDA84099214F104466",
+    "expected": {
+      "uf": 21,
+      "icao": "DB1D2D",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 18,
+      "lockout": true,
+      "interrogator_code": "II9",
+      "reply_request_subfield": 9,
+      "bds": "2,9"
+    }
+  },
+  {
+    "msg": "A8FF196D20280A517A97042B0A9B",
+    "expected": {
+      "uf": 21,
+      "icao": "CD9077",
+      "crc_valid": null,
+      "designator_identification": 7,
+      "reply_request": 31,
+      "lockout": true,
+      "interrogator_code": "II1",
+      "reply_request_subfield": 9,
+      "bds": "F,9"
+    }
+  },
+  {
+    "msg": "58483044BE8AC2",
+    "expected": {
+      "uf": 11,
+      "icao": "5497F3",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": "II9"
+    }
+  },
+  {
+    "msg": "5A480D33879E5E",
+    "expected": {
+      "uf": 11,
+      "icao": "5A6BF2",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": "II9"
+    }
+  },
+  {
+    "msg": "5C48DDEF6BAD38",
+    "expected": {
+      "uf": 11,
+      "icao": "15917A",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": "II9"
+    }
+  },
+  {
+    "msg": "5E487EA7819CD8",
+    "expected": {
+      "uf": 11,
+      "icao": "4B55DD",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": "II9"
+    }
+  },
+  {
+    "msg": "5FC81E6616B06D",
+    "expected": {
+      "uf": 11,
+      "icao": "D38ECA",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": "II9"
+    }
+  },
+  {
+    "msg": "5849BE8CC12F0A",
+    "expected": {
+      "uf": 11,
+      "icao": "E2AE20",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": "SI9"
+    }
+  },
+  {
+    "msg": "5A49DA1A263E56",
+    "expected": {
+      "uf": 11,
+      "icao": "4992BA",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": "SI9"
+    }
+  },
+  {
+    "msg": "5C497A1C8F1789",
+    "expected": {
+      "uf": 11,
+      "icao": "94EBB4",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": "SI9"
+    }
+  },
+  {
+    "msg": "5E4949414DDFF2",
+    "expected": {
+      "uf": 11,
+      "icao": "633A5E",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": "SI9"
+    }
+  },
+  {
+    "msg": "5FC9E6AEE450A7",
+    "expected": {
+      "uf": 11,
+      "icao": "6B755C",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": "SI9"
+    }
+  },
+  {
+    "msg": "584A36B6947945",
+    "expected": {
+      "uf": 11,
+      "icao": "4C3ED8",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": "SI25"
+    }
+  },
+  {
+    "msg": "5A4AA798C43140",
+    "expected": {
+      "uf": 11,
+      "icao": "552DCB",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": "SI25"
+    }
+  },
+  {
+    "msg": "5C4A4E021662EB",
+    "expected": {
+      "uf": 11,
+      "icao": "C9743F",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": "SI25"
+    }
+  },
+  {
+    "msg": "5E4A815847E32F",
+    "expected": {
+      "uf": 11,
+      "icao": "7E8221",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": "SI25"
+    }
+  },
+  {
+    "msg": "5FCA71EE56249E",
+    "expected": {
+      "uf": 11,
+      "icao": "B523CF",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": "SI25"
+    }
+  },
+  {
+    "msg": "584B02AE38E5D9",
+    "expected": {
+      "uf": 11,
+      "icao": "28F7F6",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": "SI41"
+    }
+  },
+  {
+    "msg": "5A4B867A91B15C",
+    "expected": {
+      "uf": 11,
+      "icao": "0EC9FF",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": "SI41"
+    }
+  },
+  {
+    "msg": "5C4BF7B198330E",
+    "expected": {
+      "uf": 11,
+      "icao": "FB016A",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": "SI41"
+    }
+  },
+  {
+    "msg": "5E4B1F75C6908A",
+    "expected": {
+      "uf": 11,
+      "icao": "5E7957",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": "SI41"
+    }
+  },
+  {
+    "msg": "5FCB950DE04C5C",
+    "expected": {
+      "uf": 11,
+      "icao": "16A2FC",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": "SI41"
+    }
+  },
+  {
+    "msg": "584C30D640BF4C",
+    "expected": {
+      "uf": 11,
+      "icao": "FD4083",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "5A4C32CA96287B",
+    "expected": {
+      "uf": 11,
+      "icao": "2E75EF",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "5C4C2515E58ABA",
+    "expected": {
+      "uf": 11,
+      "icao": "C9A853",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "5E4C2AECFCB98B",
+    "expected": {
+      "uf": 11,
+      "icao": "5058A9",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "5FCC8A55C0DF8F",
+    "expected": {
+      "uf": 11,
+      "icao": "F28261",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": "SI57"
+    }
+  },
+  {
+    "msg": "584D8F25257D18",
+    "expected": {
+      "uf": 11,
+      "icao": "651045",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5A4D7C0A34BC4C",
+    "expected": {
+      "uf": 11,
+      "icao": "ECFBD7",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5C4DF8EC993383",
+    "expected": {
+      "uf": 11,
+      "icao": "35DAEF",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5E4DA26F35D839",
+    "expected": {
+      "uf": 11,
+      "icao": "BFE936",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5FCDBE2255FD71",
+    "expected": {
+      "uf": 11,
+      "icao": "303F29",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "584E6B7E015A6C",
+    "expected": {
+      "uf": 11,
+      "icao": "0EFD09",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5A4E2186C3A88B",
+    "expected": {
+      "uf": 11,
+      "icao": "CECB81",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5C4E8A5B5D9002",
+    "expected": {
+      "uf": 11,
+      "icao": "EA6AE9",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5E4E5695F2E665",
+    "expected": {
+      "uf": 11,
+      "icao": "538828",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5FCE150CFE9760",
+    "expected": {
+      "uf": 11,
+      "icao": "2544B4",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "584F1AF84D3057",
+    "expected": {
+      "uf": 11,
+      "icao": "913D3B",
+      "crc_valid": null,
+      "probability_of_reply": 0,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5A4F31E317B864",
+    "expected": {
+      "uf": 11,
+      "icao": "681607",
+      "crc_valid": null,
+      "probability_of_reply": 4,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5C4F1A215E4B48",
+    "expected": {
+      "uf": 11,
+      "icao": "F5E7AC",
+      "crc_valid": null,
+      "probability_of_reply": 8,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5E4F74757FB8A7",
+    "expected": {
+      "uf": 11,
+      "icao": "A7D4E0",
+      "crc_valid": null,
+      "probability_of_reply": 12,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "5FCF85493EDBBA",
+    "expected": {
+      "uf": 11,
+      "icao": "1955CD",
+      "crc_valid": null,
+      "probability_of_reply": 15,
+      "interrogator_code": null
+    }
+  },
+  {
+    "msg": "019D0B6814D667",
+    "expected": {
+      "uf": 0,
+      "icao": "220759",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "80468265534766191ADA2C63407D",
+    "expected": {
+      "uf": 16,
+      "icao": "D14097",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "8BE34673225FF05C26B0EA20DE33",
+    "expected": {
+      "uf": 17,
+      "icao": "AE8A9D",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "90A578A316326C810A453138F5B6",
+    "expected": {
+      "uf": 18,
+      "icao": "B88B81",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "C5244CFF50E1F5FA04939905B9FB",
+    "expected": {
+      "uf": 24,
+      "icao": "96BD71",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "CA4EE5D9E9DCCDE729CE188383DD",
+    "expected": {
+      "uf": 24,
+      "icao": "4984AC",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "D414E842F013610CFB6D5C004283",
+    "expected": {
+      "uf": 24,
+      "icao": "E122B5",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "DD356FAF41318AF5512332DFE006",
+    "expected": {
+      "uf": 24,
+      "icao": "FF4DD0",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "E23EB5FA1A797DB994BC1F3FED30",
+    "expected": {
+      "uf": 24,
+      "icao": "6FCCB0",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "EF0DB3C9D1F9F9C088F474559A05",
+    "expected": {
+      "uf": 24,
+      "icao": "63431A",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "F5C896D7D887B8C5157359B84477",
+    "expected": {
+      "uf": 24,
+      "icao": "794521",
+      "crc_valid": null
+    }
+  },
+  {
+    "msg": "FD2205DFD9A59C8F96C3B95DDE20",
+    "expected": {
+      "uf": 24,
+      "icao": "AC92C4",
+      "crc_valid": null
+    }
+  }
+]

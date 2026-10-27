@@ -8,9 +8,9 @@ from pyModeS._schema import _FULL_SCHEMA
 class TestSchemaShape:
     def test_schema_size(self):
         # Schema was generated from an AST survey of every decoder.
-        # Expected count is 123 as of the initial generation. Bump
+        # Expected count is 130 including uplink interrogation fields. Bump
         # this when adding new decoders or extending existing ones.
-        assert len(_FULL_SCHEMA) == 123
+        assert len(_FULL_SCHEMA) == 130
 
     def test_schema_has_core_fields(self):
         for key in ("df", "icao", "crc_valid", "altitude", "callsign", "latitude"):
@@ -36,6 +36,8 @@ class TestSchemaDriftDetection:
     # and one per supported DF. (hex_msg, decode_kwargs) tuples.
     # Synthetic 56-bit / 112-bit messages carry pre-computed CRC parity.
     _CORPUS: ClassVar[list[tuple[str, dict[str, Any]]]] = [
+        ("5D4CA2D4000000", {"uplink": True}),
+        ("2097AB60000000", {"uplink": True}),
         # Short surveillance and all-call
         ("0061103063A012", {}),  # DF0  ACAS short (synthetic)
         ("22001030766CD1", {}),  # DF4  altitude reply (synthetic)

@@ -77,6 +77,11 @@ def _add_decode_parser(
         help="Populate every key in the canonical schema (missing = null).",
     )
     decode_p.add_argument(
+        "--uplink",
+        action="store_true",
+        help="Decode ground-to-air Mode-S interrogations (UF) instead of replies.",
+    )
+    decode_p.add_argument(
         "--include-meteo",
         action="store_true",
         help="Include heuristic Comm-B BDS 4,4/4,5 meteorological inference.",

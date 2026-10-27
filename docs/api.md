@@ -4,6 +4,11 @@
 
 ::: pyModeS.decode
 
+Use `decode(msg, uplink=True)` for ground-to-air Mode-S interrogations.
+This applies to single messages and lists. Results contain `uf` instead
+of `df`. See the [uplink migration table](migration.md#mode-s-uplink-interrogations)
+for the decoded fields and the mapping from v2 helpers.
+
 ## Core types
 
 ::: pyModeS.Message

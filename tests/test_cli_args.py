@@ -38,6 +38,7 @@ class TestDecodeSubcommand:
         assert args.compact is False
         assert args.full_dict is False
         assert args.include_meteo is False
+        assert args.uplink is False
         assert args.reference is None
         assert args.surface_ref is None
 
