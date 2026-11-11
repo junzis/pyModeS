@@ -945,8 +945,9 @@ class PipeDecoder(ValidationMixin):
             # Position-filter dispatch: bootstrapping ICAOs hold every
             # paired dict (primary + orphans) as a single candidate so
             # that nothing unverified reaches the caller; locked ICAOs
-            # run the motion check against the primary resolution and
-            # share the verdict with the orphans.
+            # run the motion check against the primary resolution. A
+            # rejected primary clears the orphans too; an accepted one
+            # leaves each orphan to pass the check on its own.
             if lat is not None and lon is not None:
                 if icao in self._position_history:
                     accepted = self._motion_consistent(
@@ -958,6 +959,20 @@ class PipeDecoder(ValidationMixin):
                             d["longitude"] = None
                         self._stats["position_rejected"] += 1
                     if accepted:
+                        # An orphan pair resolves independently of the
+                        # primary, so it can disagree with it (a corrupted
+                        # older frame); check each orphan on its own.
+                        for d in paired_dicts[2:]:
+                            o_lat = d.get("latitude")
+                            o_lon = d.get("longitude")
+                            if o_lat is None or o_lon is None:
+                                continue
+                            if not self._motion_consistent(
+                                icao, o_lat, o_lon, position_timestamp
+                            ):
+                                d["latitude"] = None
+                                d["longitude"] = None
+                                self._stats["position_rejected"] += 1
                         self._update_position_history(
                             icao, lat, lon, position_timestamp
                         )

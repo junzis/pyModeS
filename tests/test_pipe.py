@@ -1295,6 +1295,27 @@ class TestPositionMotionConsistency:
         assert pipe.stats["position_rejected"] == 2
         assert len(pipe._position_history[self.ICAO]) == 2
 
+    def test_orphan_pair_checked_on_its_own(self):
+        # Real frames from 4CAA5F, tracked near (52.47, -0.92). Two even
+        # frames are pending when the odd one arrives; the older is
+        # corrupted (CRC-valid, CPR bits wrong), so its orphan pair
+        # resolves in Siberia while the primary pair is fine. The orphan
+        # must not inherit the primary's verdict.
+        pipe = PipeDecoder()
+        pipe._position_history["4CAA5F"] = [
+            (52.46, -0.91, 1950.0),
+            (52.46, -0.91, 1953.0),
+        ]
+        corrupted = pipe.decode("8D4CAA5F608BB333B439270755FB", timestamp=1954.71)
+        even = pipe.decode("8D4CAA5F608BB2FA25D1087E441C", timestamp=1955.22)
+        odd = pipe.decode("8D4CAA5F608BA66509D2497D8D6C", timestamp=1955.76)
+        assert corrupted.get("latitude") is None
+        assert corrupted.get("longitude") is None
+        for r in (even, odd):
+            assert r["latitude"] == pytest.approx(52.4664, abs=0.001)
+            assert r["longitude"] == pytest.approx(-0.9184, abs=0.001)
+        assert pipe.stats["position_rejected"] == 1
+
     def test_eviction_prunes_old_position_history(self):
         pipe = PipeDecoder(eviction_ttl=10.0)
         pipe._position_history[self.ICAO] = [
