@@ -5,6 +5,21 @@ All notable changes to pyModeS are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [3.7.0] - 2026-11-11
+
+### Added
+
+- `decode(msg, uplink=True)` and `Message(msg, uplink=True)` decode Mode-S
+  ground-to-air interrogations. Results use `uf` instead of `df` and include
+  UF11 all-call fields and UF4/5/20/21 selective interrogation fields.
+- Uplink decoding supports message lists and `full_dict=True`. The
+  `modes decode --uplink` option supports single messages, inline batches,
+  and files.
+- UF11 parity validation checks the fixed all-call address `FFFFFF`. Other
+  uplink formats can validate parity against an independently known ICAO
+  address supplied with `icao=` or `icao_hint=`.
+- The migration guide maps v2 uplink helpers to v3 result fields.
+
 ## [3.6.1] - 2026-10-19
 
 ### Fixed
